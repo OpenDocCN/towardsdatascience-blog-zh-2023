@@ -120,6 +120,8 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在torch编译中，存在许多创新技术，包括[TorchDynamo](https://github.com/pytorch/torchdynamo/tree/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd)、[FX
+    Graph](https://pytorch.org/docs/stable/fx.html)、[TorchInductor](https://dev-discuss.pytorch.org/t/torchinductor-a-pytorch-native-compiler-with-define-by-run-ir-and-symbolic-shapes/747)、[Triton](https://github.com/openai/triton)等。虽然我们在此不会深入探讨这些不同的组件，但我们鼓励你从[PyTorch文档](https://pytorch.org/get-started/pytorch-2.0/#technology-overview)、[2022年PyTorch大会](https://www.youtube.com/watch?v=vbtGZL7IrAw&ab_channel=PyTorch)或[这篇有用的TDS帖子](/how-pytorch-2-0-accelerates-deep-learning-with-operator-fusion-and-cpu-gpu-code-generation-35132a85bd26)中了解它们。通常，对幕后发生的事情有一个好的理解可以帮助你弄清楚为什么模型没有编译成功以及如何解决这个问题。
 - en: This post should not — in any way — be viewed as a replacement for the official
     PyTorch documentation (e.g., [here](https://pytorch.org/get-started/pytorch-2.0/)).
     This post should also not be viewed as an endorsement for PyTorch over TensorFlow
@@ -135,11 +137,13 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文绝不应被视为官方PyTorch文档的替代品（例如，[这里](https://pytorch.org/get-started/pytorch-2.0/)）。本文也不应被视为对PyTorch相对于TensorFlow（或其他ML训练框架）、编译模式相对于急切模式，或任何我们提到的工具、库或平台的认可。我发现所有框架都有其优缺点。我对任何特定框架没有强烈的偏好或热情。我的热情在于解决有趣的技术挑战——挑战越难越好——无论它们存在于何种平台或框架上。你可以说我对框架是中立的。尽管如此，请允许我对PyTorch和TensorFlow库如何随时间演变进行两个完全无关紧要的观察。可以跳过这些观察，直接回到正题。
 - en: Two Completely Unimportant Observations on the TensorFlow vs. PyTorch Wars
   id: totrans-16
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: TensorFlow与PyTorch战争的两个完全无关紧要的观察
 - en: '**Observation 1**: In the olden days, when life was simple, there was a clear
     distinction between PyTorch and TensorFlow. PyTorch used eager execution mode,
     TensorFlow used graph mode, and everyone was happy because we all knew what we
@@ -153,6 +157,8 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '**观察1**：在过去，当生活很简单时，PyTorch和TensorFlow之间有明显的区别。PyTorch使用急切执行模式，TensorFlow使用图模式，大家都很满意，因为我们都知道自己在争论什么。但后来出现了TensorFlow
+    2，它将急切执行作为默认执行模式，TensorFlow变得有点像PyTorch。现在，PyTorch也推出了自己的图编译解决方案，变得有点像TensorFlow。TensorFlow与PyTorch的战争依然继续，但两者之间的差异正在慢慢消失。请参见[这条推文](https://twitter.com/cHHillee/status/1601371638913638402?lang=en)，其中对PyTorch演变的评论我觉得很有趣。'
 - en: '**Observation 2**: AI development is a trendy business. Not unlike the fashion
     industry, the popular AI models, model architectures, learning algorithms, **training
     frameworks**, etc., change from season to season. Not unlike the fashion industry,
@@ -649,11 +655,14 @@
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的实现包括一个在每个输入批次上调用大模型的损失函数。这是一个比上面提到的 [CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html)
+    更加计算密集的损失函数，*急切* 运行它并不理想。
 - en: 'We describe two ways to solve this. The first is to simply wrap the loss function
     in a torch.compile invocation of its own, as shown here:'
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们描述了解决这个问题的两种方法。第一种方法是将损失函数简单地包装在一个 torch.compile 调用中，如下所示：
 - en: '[PRE7]'
   id: totrans-76
   prefs: []
@@ -667,6 +676,7 @@
   id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种选项的缺点是，损失函数的编译图与模型的编译图不相交。第二种选项通过创建一个包含两者的包装模型并返回结果损失作为输出，来将模型和损失函数一起编译。此选项在下面的代码块中演示：
 - en: '[PRE8]'
   id: totrans-78
   prefs: []
@@ -678,6 +688,7 @@
   id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法的缺点是，当需要以 *推理* 模式运行模型时，内部模型需要从包装模型中提取出来。
 - en: In our case, both options result in roughly the same 8% performance boost, demonstrating
     the importance of this kind of optimization. When the loss is run eagerly, the
     total step time is 0.37 seconds, and when the loss is compiled, the total step
@@ -685,11 +696,14 @@
   id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的案例中，两种选项都带来了大约 8% 的性能提升，展示了这种优化的重要性。当损失函数被急切运行时，总步长时间为 0.37 秒，而当损失函数被编译时，总步长时间为
+    0.34 秒。
 - en: Dynamic Shapes
   id: totrans-81
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 动态形状
 - en: As reported in the [documentation](https://pytorch.org/get-started/pytorch-2.0/#dynamic-shapes),
     compilation support for models with dynamic shapes is limited (as of the time
     of this writing). Depending on the details of the dynamism, dynamic models could
@@ -700,6 +714,9 @@
   id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据 [文档](https://pytorch.org/get-started/pytorch-2.0/#dynamic-shapes) 的报告，动态形状模型的编译支持有限（截至本文撰写时）。根据动态性的细节，动态模型可能会带来显著的性能开销，可能会引入图断裂和/或触发过多的
+    [图重编译](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#excessive-recompilation)。图重编译发生在原始编译期间对模型所做的假设（称为
+    [guards](https://github.com/pytorch/torchdynamo/tree/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd#guards)）被违反时。
 - en: The [torch.compile](https://pytorch.org/docs/stable/generated/torch.compile.html)
     API includes the *dynamic* flag for signaling to the compiler to optimize for
     dynamic shapes. However, as of the time of this writing, the degree to which this
@@ -709,11 +726,14 @@
   id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: '[torch.compile](https://pytorch.org/docs/stable/generated/torch.compile.html)
+    API 包含 *动态* 标志，用于指示编译器优化动态形状。然而，截至本文撰写时，这种优化的效果尚不明确。如果你在编译和优化动态图时遇到问题，可能需要等到支持水平成熟后再考虑使用这一功能。'
 - en: Summary
   id: totrans-84
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 摘要
 - en: PyTorch 2.0 compile mode comes with the potential for a considerable boost to
     the speed of training and inference and, consequently, meaningful savings in cost.
     However, the amount of work that your model will require to realize this potential
