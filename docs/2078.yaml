@@ -1,12 +1,15 @@
 - en: 'Efficient Image Segmentation Using PyTorch: Part 3'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-3-3534cf04fb89?source=collection_archive---------7-----------------------#2023-06-27](https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-3-3534cf04fb89?source=collection_archive---------7-----------------------#2023-06-27)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Depthwise separable convolutions
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,20 +17,25 @@
     Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------)
     [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----3534cf04fb89--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----3534cf04fb89---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3534cf04fb89--------------------------------)
     ·12 min read·Jun 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3534cf04fb89&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&user=Dhruv+Matani&userId=63f5d5495279&source=-----3534cf04fb89---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3534cf04fb89&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-3-3534cf04fb89&source=-----3534cf04fb89---------------------bookmark_footer-----------)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: In this 4-part series, we’ll implement image segmentation step by step from
@@ -35,21 +43,26 @@
     our CNN baseline model using depthwise separable convolutions to reduce the number
     of trainable parameters, making the model deployable on mobile and other edge
     devices.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Co-authored with [Naresh Singh](https://medium.com/@brocolishbroxoli)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/f29d9d6903f7abb12a21cd463b98a2b2.png)'
+  id: totrans-10
   prefs: []
   type: TYPE_IMG
 - en: 'Figure 1: Result of running image segmentation using a CNN with depth-wise
     separable convolutions instead of regular convolutions. From top to bottom, input
     images, ground truth segmentation masks, and predicted segmentation masks. Source:
     Author(s)'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
 - en: Article outline
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -61,45 +74,63 @@
     and the only change we’ll make is to replace our convolutional layers with depth-wise-separable-convolutions
     (DSC). Before we do this, we will dive into the theory and practice of depth-wise-separable-convolutions,
     and appreciate the idea behind the technique.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们将增强我们[早期构建的卷积神经网络（CNN）](https://medium.com/p/bed68cadd7c7/)，以减少网络中可学习参数的数量。识别输入图像中的宠物像素（属于猫、狗、仓鼠等的像素）这一任务保持不变。我们选择的网络将继续是[SegNet](https://arxiv.org/abs/1511.00561)，我们唯一的改变是用深度可分卷积（DSC）替换卷积层。在此之前，我们将深入探讨深度可分卷积的理论与实践，并欣赏这一技术背后的理念。
 - en: Throughout this article, we will reference code and results from this [notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/oxford-iiit-pets-segmentation-using-pytorch-segnet-and-depth-wise-separable-convs.ipynb)
     for model training, and this [notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/types%20of%20convolutions.ipynb)
     for a primer on DSC. If you wish to reproduce the results, you’ll need a GPU to
     ensure that the first notebook completes running in a reasonable amount of time.
     The second notebook can be run on a regular CPU.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们将引用来自这个[笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/oxford-iiit-pets-segmentation-using-pytorch-segnet-and-depth-wise-separable-convs.ipynb)的代码和结果用于模型训练，以及这个[笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/types%20of%20convolutions.ipynb)作为DSC的入门。如果你希望复现结果，你需要一个GPU以确保第一个笔记本在合理的时间内完成运行。第二个笔记本可以在普通的CPU上运行。
 - en: Articles in this series
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 本系列文章
 - en: 'This series is for readers at all experience levels with deep learning. If
     you want to learn about the practice of deep learning and vision AI along with
     some solid theory and hands-on experience, you’ve come to the right place! This
     is expected to be a 4-part series with the following articles:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 本系列适合所有深度学习经验水平的读者。如果你想学习深度学习和视觉AI的实践，了解一些扎实的理论和实践经验，你来对地方了！预计将会有4篇文章的系列，内容如下：
 - en: '[Concepts and Ideas](https://medium.com/p/89e8297a0923/)'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[概念与想法](https://medium.com/p/89e8297a0923/)'
 - en: '[A CNN-based model](https://medium.com/p/bed68cadd7c7/)'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[基于CNN的模型](https://medium.com/p/bed68cadd7c7/)'
 - en: '**Depthwise separable convolutions (this article)**'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**深度可分卷积（本文）**'
 - en: '[A Vision Transformer-based model](https://medium.com/p/6c86da083432/)'
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[基于视觉变换器的模型](https://medium.com/p/6c86da083432/)'
 - en: Introduction
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 介绍
 - en: Let’s start this discussion with a closer look at the convolutions from the
     perspective of model size and computation cost. The number of trainable parameters
     is a good indication of the size of a model and the number of the tensor operations
@@ -110,31 +141,46 @@
     layer will produce an output with shape *n x h x w* as shown in Figure 2\. We
     are assuming that the convolution uses *stride=1*. Let’s go ahead and evaluate
     this setup in terms of trainable parameters and computation cost.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从模型大小和计算成本的角度深入探讨卷积。可训练参数的数量是模型大小的一个很好的指标，而张量操作的数量反映了模型的复杂性或计算成本。考虑一个具有n个dₖ
+    x dₖ大小滤波器的卷积层。进一步假设此层处理形状为*m x h x w*的输入，其中*m*是输入通道的数量，而*h*和*w*分别是高度和宽度维度。在这种情况下，卷积层将产生形状为*n
+    x h x w*的输出，如图2所示。我们假设卷积使用*stride=1*。让我们继续评估这一设置的可训练参数和计算成本。
 - en: '![](../Images/f05ac4a1e2764b6daf7b1c0384ff9c5f.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f05ac4a1e2764b6daf7b1c0384ff9c5f.png)'
 - en: 'Figure 2: Regular convolutional filters applied to input to produce output.
     Assume stride=1 and padding=dₖ-2\. Source: [Efficient Deep Learning Book](https://efficientdlbook.com/)'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2：常规卷积滤波器应用于输入以产生输出。假设stride=1和padding=dₖ-2。来源：[高效深度学习书](https://efficientdlbook.com/)
 - en: '**Evaluation Of Trainable Parameters:** We have *n* filters, each of which
     has *m x dₖ x dₖ* learnable parameters. This results in a total of *n x m x dₖ
     x dₖ* learnable parameters. Bias terms are ignored to simplify this discussion.
     Let’s look at the PyTorch code below to validate our understanding.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Prints the following.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Now, let’s evaluate the computation costs of convolution.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: '**Evaluation Of Computational Cost:** A single convolutional filter of shape
@@ -144,17 +190,23 @@
     results in a cost of *m x dₖ x dₖ x h x w* per filter or output channel. Since
     we wish to compute n output channels, the total cost will be *m x dₖ x dₖ x h
     x n*. Let’s go ahead and validate this using the torchinfo PyTorch package.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Will print the following.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'If we ignore the implementation details of a convolution layer for a moment,
     we would realize that, on a high level, a convolution layer just transforms a
     *m x h x w* input into a *n x h x w* output. The transformation is achieved through
@@ -164,9 +216,11 @@
     learning capabilities of the layer? Depthwise Separable Convolutions were proposed
     to answer this exact question. Let’s understand them in detail and learn how they
     stack up on our evaluation metrics.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: Depthwise Separable Convolution
+  id: totrans-35
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -174,35 +228,42 @@
     Laurent Sifre in their PhD thesis titled [Rigid-Motion Scattering For Image Classification](https://www.di.ens.fr/data/publications/papers/phd_sifre.pdf).
     Since then, they have been used successfully in various popular deep convolutional
     networks such as [XceptionNet](https://arxiv.org/abs/1610.02357) and [MobileNet](/review-mobilenetv1-depthwise-separable-convolution-light-weight-model-a382df364b69).
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: 'The main difference between a regular convolution, and a DSC is that a DSC
     is composed of 2 convolutions as described below:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: A **depthwise grouped convolution**, where the number of input channels m is
     equal to the number of output channels such that each output channel is affected
     only by a single input channel. In PyTorch, this is called a “grouped” convolution.
     You can read more about grouped convolutions in PyTorch [here](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html).
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: A **pointwise convolution** (filter size=1), which operates like a regular convolution
     such that each of the n filters operates on all m input channels to produce a
     single output value.
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: '![](../Images/0f229cb577579524f10f7960aaa3e0b3.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
 - en: 'Figure 3: Depthwise Separable Convolution filters applied to input to produce
     output. Assume *stride=1* and *padding=dₖ-2*. Source: [Efficient Deep Learning
     Book](https://efficientdlbook.com/)'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: Let’s perform the same exercise that we did for regular convolutions for DSCs
     and compute the number of trainable parameters and computations.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: '**Evaluation Of Trainable Parameters:** The “grouped” convolutions have m filters,
@@ -210,19 +271,26 @@
     This results in a total of *m x dₖ x dₖ* learnable parameters. The pointwise convolution
     has n filters of size *m x 1 x 1* which adds up to *n x m x 1 x 1* learnable parameters.
     Let’s look at the PyTorch code below to validate our understanding.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Which will print.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: We can see that the DSC version has roughly *7x* less parameters. Next, let’s
     focus our attention on the computation costs for a DSC layer.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: '**Evaluation Of Computational Cost:** Let’s assume our input has spatial dimensions
@@ -234,22 +302,30 @@
     costs of the grouped and pointwise operations to compute the total cost. Let’s
     go ahead and validate this using the [torchinfo](https://pypi.org/project/torchinfo/)
     PyTorch package.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE6]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Which will print.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE7]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Let’s compare the sizes and costs of both the convolutions for a few examples
     to gain some intuition.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: Size and Cost comparison for regular and depthwise separable convolutions
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -258,25 +334,31 @@
     x 3*, and a network that progressively halves the spatial dimensions and doubles
     the number of channel dimensions. We assume a single 2d-conv layer at every step,
     but in practice, there could be more.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/4646694c069f37f3ed9be0287e6d4d40.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
 - en: 'Figure 4: Comparing the number of trainable parameters (size) and multi-adds
     (cost) of regular and depthwise separable convolutions. We also show the ratio
     of the size and cost for the 2 types of convolutions. Source: Author(s).'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: You can see that on average both the size and computational cost of DSC is about
     11% to 12% of the cost of regular convolutions for the configuration mentioned
     above.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/12addf86c5b96f25ef62b5277e3360ea.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
 - en: 'Figure 5: Relative size and cost of regular v/s DSC. Source: Author(s).'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: Now that we have developed a good understanding of the types of convolutions
@@ -284,92 +366,127 @@
     DSCs. Everything we’ve seen so far seems to suggest that they are better in every
     way! Well, we haven’t yet considered an important aspect which is the impact they
     have on the accuracy of our model. Let’s dive into it via an experiment below.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经对各种卷积类型及其相对成本有了很好的理解，你一定在想使用DSC是否有任何缺点。到目前为止，我们看到的一切似乎都表明它们在各方面都更好！不过，我们还没有考虑一个重要方面，即它们对模型准确性的影响。让我们通过下面的实验来探讨这个问题。
 - en: SegNet Using Depthwise Separable Convolutions
+  id: totrans-61
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用深度可分离卷积的SegNet
 - en: '[This notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/oxford-iiit-pets-segmentation-using-pytorch-segnet-and-depth-wise-separable-convs.ipynb)
     contains all the code for this section.'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '[这个笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/pets_segmentation/oxford-iiit-pets-segmentation-using-pytorch-segnet-and-depth-wise-separable-convs.ipynb)包含了本节的所有代码。'
 - en: We will adapt our SegNet model from the [previous post](https://medium.com/p/bed68cadd7c7/)
     and replace all the regular convolutional layers with a DSC layer. Once we do
     this, we notice that the number of parameters in our notebook drops from 15.27M
     to 1.75M parameters, which is a reduction of 88.5%! This is inline with our earlier
     estimates of an 11% to 12% reduction in the number of trainable parameters of
     the network.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从[之前的帖子](https://medium.com/p/bed68cadd7c7/)中调整我们的SegNet模型，并将所有常规卷积层替换为DSC层。这样做后，我们发现笔记本中的参数数量从15.27M减少到1.75M，减少了88.5%！这与我们之前估计的网络可训练参数减少11%到12%的一致。
 - en: A similar configuration as [before](https://medium.com/p/bed68cadd7c7/) was
     used during model training and validation. The configuration is specified below.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在模型训练和验证过程中使用了与[之前](https://medium.com/p/bed68cadd7c7/)相似的配置。配置如下所示。
 - en: The *random horizontal flip* and *colour jitter* data augmentations are applied
     to the training set to prevent overfitting
+  id: totrans-65
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*随机水平翻转*和*颜色抖动*数据增强方法被应用于训练集，以防止过拟合。'
 - en: The images are resized to 128x128 pixels in a non-aspect preserving resize operation
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 图像在进行不保持长宽比的调整操作时被调整为128x128像素。
 - en: No input normalization is applied to the images — instead a [batch normalization
     layer is used as the first layer of the model](/replace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c)
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 图像没有进行输入归一化处理，而是[使用批量归一化层作为模型的第一层](/replace-manual-normalization-with-batch-normalization-in-vision-ai-models-e7782e82193c)。
 - en: The model is trained for 20 epochs using the Adam optimizer with a LR of 0.001
     and no LR scheduler
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 模型使用Adam优化器进行20个周期的训练，学习率为0.001，并且没有学习率调度器。
 - en: The cross-entropy loss function is used to classify a pixel as belonging to
     a pet, the background, or a pet border
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 交叉熵损失函数用于将像素分类为宠物、背景或宠物边界。
 - en: The model achieved a validation accuracy of 86.96% after 20 training epochs.
     This is less than the 88.28% accuracy achieved by the model using regular convolutions
     for the same number of training epochs. We have determined experimentally that
     training for more epochs improves the accuracy of both models, so 20 epochs is
     definitely not the end of the training cycle. We stop at 20 epochs for the purposes
     of this article for demonstration purposes.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 该模型在20个训练周期后达到了86.96%的验证准确率。这低于使用常规卷积在相同训练周期内达到的88.28%准确率。我们已经通过实验确定，训练更多周期会提高两个模型的准确性，因此20个周期绝对不是训练周期的结束。为了本文章的演示目的，我们在20个周期后停止训练。
 - en: We plotted a gif showing how the model is learning to predict the segmentation
     masks for 21 images in the validation set.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们绘制了一个gif，展示了模型如何学习预测验证集中21张图像的分割掩码。
 - en: '![](../Images/aa9aec7b78d408275a886ec1f9bcafc1.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/aa9aec7b78d408275a886ec1f9bcafc1.png)'
 - en: 'Figure 6: A gif showing how the SegNet model with DSC is learning to predict
     segmentation masks for 21 images in the validation set. Source: Author(s)'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6：一个gif展示了使用DSC的SegNet模型如何学习预测验证集中21张图像的分割掩码。来源：作者
 - en: Now that we have seen how the model progresses through the training cycle, let’s
     compare the train cycles of models with regular convolutions and DSC.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经看到模型如何通过训练周期的进展，让我们比较一下使用常规卷积和DSC的模型的训练周期。
 - en: Accuracy Comparisons
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 准确性比较
 - en: We found it useful to look at the training cycles of the models using regular
     convolutions and DSC. The main difference we noticed is in the early phases (epochs)
     of training, after which both models settled roughly into the same prediction
     flow. In fact after training both models for 100 epochs, we noticed that the accuracy
     of the model with DSC is just about 1% less than the model with regular convolutions.
     This is inline with our observations from just 20 epochs of training.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/e1142979b7b9b8d83e1a5eac150d630c.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
 - en: 'Figure 7: A gif showing the progression of segmentation masks predicted by
     the SegNet model using regular convolutions v/s DSC. Source: Author(s).'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: You would have noticed that both models get the predictions roughly right after
@@ -381,33 +498,40 @@
     of this on the quality of predictions is much more. We’ve noticed that a single
     digit of accuracy improvement at higher absolute accuracy values (going from 89%
     to 90%) results in significant qualitative improvements to the predictions.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
 - en: Comparison with a UNet model
+  id: totrans-80
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: We ran an experiment that changed a lot of hyperparameters with a focus on improving
     the overall accuracy to get a sense of how far this setting is from close to optimal.
     Here’s the configuration of that experiment.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: 'Image size: 128 x 128 — same as the experiments so far'
+  id: totrans-82
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'Train epochs: 100 — current experiments trained for 20 epochs'
+  id: totrans-83
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'Augmentations: A lot more augmentations such as image rotation, channel dropping,
     random block removal. We used Albumentations instead of torchvision transforms.
     Albumentations automatically transforms segmentation masks for us'
+  id: totrans-84
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'LR Scheduler: A StepLR scheduler was used with a decay of 0.8x every 25 train
     epochs'
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -416,14 +540,17 @@
     comparable to each other. In fact the difference in best accuracy between the
     rest after 100 epochs was in the 4th digit after the decimal (assuming the accuracy
     is a number between 0.0 and 1.0)'
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'Convolution type: Regular'
+  id: totrans-87
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'Model type: UNet — current experiments used a SegNet model'
+  id: totrans-88
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -432,20 +559,25 @@
     when we changed the image size to 256 x 256, the best validation accuracy went
     up to 93.0%. However, training took much longer, and used more memory, which meant
     that we had to reduce the batch size.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/adf9fa994f9857ab5aaa8a0ce9b761c0.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
 - en: 'Figure 8: Result of training a UNet model for 100 train epochs with the hyperparameters
     mentioned above. Source: Author(s).'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
 - en: You can see that the predictions are much smoother and crisper compared to the
     ones we have been seeing so far.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: Conclusion
+  id: totrans-93
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -453,6 +585,7 @@
     (DSC) as a technique to reduce model size and training/inference cost without
     a significant loss in validation accuracy. We learned about the size/cost tradeoff
     to expect between regular and DSC for a specific setting.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: We showed how to adapt the SegNet model to use DSC in PyTorch. This technique
@@ -461,6 +594,7 @@
     of them. Choosing which layers to replace will depend on the balance you wish
     to strike between model size/runtime-cost and prediction accuracy. This decision
     will depend on your specific use case and deployment setup.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: While this article trained models for 20 epochs, we explained that this is insufficient
@@ -470,22 +604,27 @@
     list is by no means comprehensive, it should allow you to appreciate the complexity
     and decision making needed to train an image segmentation model for production
     workloads.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: In the [next part of this series](https://medium.com/p/6c86da083432/), we’ll
     take a look at Vision Transformers, and how we can use this model architecture
     to perform image segmentation for the pets segmentation task.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
 - en: References and further reading
+  id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: '[Efficient Deep Learning Book Chapter 04 — Efficient Architectures](https://github.com/EfficientDL/book/raw/main/book/%5BEDL%5D%20Chapter%204%20-%20Efficient%20Architectures.pdf)'
+  id: totrans-99
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '[A Basic Introduction to Separable Convolutions](/a-basic-introduction-to-separable-convolutions-b99ec3102728)'
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
