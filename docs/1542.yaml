@@ -1,157 +1,243 @@
 - en: Infinitely Scalable Storage for Kubernetes
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Kubernetes 的无限可扩展存储
 - en: 原文：[https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07](https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07](https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07)
 - en: A destructive experiment to make sure our data recover
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一项破坏性实验，确保我们的数据能够恢复
 - en: '[](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[![Flavien
     Berwick](../Images/545083139e3cd14233a9a758b4ba762c.png)](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)
     [Flavien Berwick](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[![Flavien
+    Berwick](../Images/545083139e3cd14233a9a758b4ba762c.png)](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)
+    [Flavien Berwick](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F615f38f3989a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&user=Flavien+Berwick&userId=615f38f3989a&source=post_page-615f38f3989a----9a20393e37e4---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)
     ·6 min read·May 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9a20393e37e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&user=Flavien+Berwick&userId=615f38f3989a&source=-----9a20393e37e4---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[跟进](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F615f38f3989a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&user=Flavien+Berwick&userId=615f38f3989a&source=post_page-615f38f3989a----9a20393e37e4---------------------post_header-----------)
+    发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)
+    ·6 分钟阅读·2023 年 5 月 7 日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9a20393e37e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&user=Flavien+Berwick&userId=615f38f3989a&source=-----9a20393e37e4---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9a20393e37e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&source=-----9a20393e37e4---------------------bookmark_footer-----------)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9a20393e37e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&source=-----9a20393e37e4---------------------bookmark_footer-----------)'
 - en: Sometimes, you just need storage that works. The luxury of having a Cloud provider
     storage class is not always possible, and you have to manage it all by yourself.
     This is the challenge I had to answer for my on-premise client in healthcare.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时候，你只需要一个可靠的存储解决方案。享有云服务提供商存储类的奢侈并非总是可能的，有时你必须自己全权管理。这是我在医疗保健领域的客户的挑战。
 - en: In this article, you will learn why and how to install Rook Ceph to provide
     your Kubernetes cluster with an easy-to-use replicated storage class.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，您将了解为什么以及如何安装 Rook Ceph，为您的 Kubernetes 集群提供易于使用的复制存储类。
 - en: We will then deploy a file-sharing app, destroy the node on which it is deployed,
     and see what happens. Will Ceph make our files accessible again?
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们将部署一个文件共享应用程序，摧毁部署它的节点，然后看看会发生什么。Ceph 是否会让我们的文件再次可访问？
 - en: '![](../Images/0adf23b4539f2fc1d127b4ebb0e5336f.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0adf23b4539f2fc1d127b4ebb0e5336f.png)'
 - en: Containers to the horizon. [Photo by Kelly on Pexels](https://www.pexels.com/photo/rows-of-colorful-containers-in-industrial-area-6595781/).
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 看向地平线的容器。[Kelly 摄于 Pexels](https://www.pexels.com/photo/rows-of-colorful-containers-in-industrial-area-6595781/)。
 - en: Choosing a storage solution
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 选择存储解决方案
 - en: Storage has always been a challenge in Kubernetes as it doesn’t natively provide
     redundant and distributed storage solutions. With native Kubernetes, you can only
     attach a hostPath volume for persistent storage.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 存储在 Kubernetes 中一直是一个挑战，因为它没有原生提供冗余和分布式存储解决方案。在原生 Kubernetes 中，你只能附加一个 hostPath
+    卷以实现持久存储。
 - en: My client has its own on-premise infrastructure and wanted to make sure none
     of its data would get lost if one of its servers went down. Most of its apps are
     monoliths and don’t natively include data replication mechanisms.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的客户拥有自己的本地基础设施，并希望确保如果其中一台服务器出现故障，其数据不会丢失。大多数应用程序是单体应用，并且没有原生的数据复制机制。
 - en: 'So I had to choose from [a variety of storage solutions](https://vitobotta.com/2019/08/06/kubernetes-storage-openebs-rook-longhorn-storageos-robin-portworx/).
     My client didn’t need ultra-high performances but wanted a stable solution. I
     came to choose Rook Ceph because :'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我必须从[各种存储解决方案](https://vitobotta.com/2019/08/06/kubernetes-storage-openebs-rook-longhorn-storageos-robin-portworx/)中进行选择。我的客户不需要超高性能，但希望有一个稳定的解决方案。我选择了
+    Rook Ceph，原因如下：
 - en: It is a CNCF-graduated project ([guarantee of stability and quality](https://github.com/cncf/toc/blob/main/process/graduation_criteria.md#graduation-stage))
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这是一个 CNCF 毕业项目（[稳定性和质量的保证](https://github.com/cncf/toc/blob/main/process/graduation_criteria.md#graduation-stage)）
 - en: Is open source with great documentation and [community support](https://github.com/rook/rook/issues?)
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 是开源的，具有出色的文档和[社区支持](https://github.com/rook/rook/issues?)
 - en: It is easy to deploy and use
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它易于部署和使用
 - en: Performances [are fair](https://vitobotta.com/2019/08/06/kubernetes-storage-openebs-rook-longhorn-storageos-robin-portworx/)
     (chapter “The benchmarks”)
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 性能[是公平的](https://vitobotta.com/2019/08/06/kubernetes-storage-openebs-rook-longhorn-storageos-robin-portworx/)（章节“基准测试”）
 - en: Prepare your cluster
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 准备你的集群
 - en: We need a Kubernetes cluster of a minimum of 3 nodes and 1 empty attached disk
     for each.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要一个最少包含 3 个节点的 Kubernetes 集群，每个节点有一个空的附加磁盘。
 - en: 'I recommend using [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule)
     to easily instantiate a Kubernetes cluster and attribute unformatted disks. Once
     the Kubernetes cluster has started, we will create an attached volume (disk) for
     each node :'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我推荐使用[Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule)来轻松实例化
+    Kubernetes 集群并分配未格式化的磁盘。一旦 Kubernetes 集群启动，我们将为每个节点创建一个附加卷（磁盘）：
 - en: Go to “Instances”
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 进入“实例”
 - en: Select your node
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 选择你的节点
 - en: Click the “Attached volumes” tab
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 点击“附加卷”标签
 - en: Click “+” (Create volume) and create a new disk
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 点击“+”（创建卷），并创建一个新磁盘
 - en: Download your *kubeconf* file and place it in `~/.kube/config` . You should
     now get access to your cluster with your *kubectl* CLI.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 下载你的*kubeconf*文件，并将其放置在`~/.kube/config`中。你现在应该可以使用你的*kubectl* CLI 访问集群。
 - en: Install Rook Ceph
+  id: totrans-29
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 安装 Rook Ceph
 - en: '**1.** This blog post has a [companion repo on GitHub](https://github.com/flavienbwk/ceph-kubernetes),
     let’s clone it to have all resources we need'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1\.** 本博客文章有一个[GitHub 上的配套仓库](https://github.com/flavienbwk/ceph-kubernetes)，让我们克隆它以获取我们需要的所有资源'
 - en: '[PRE0]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '**2\.** Clone the Rook repo and deploy the Rook Ceph operator'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**2\.** 克隆 Rook 仓库并部署 Rook Ceph 操作员'
 - en: '[PRE1]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '**3\.** Create the Ceph cluster'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '**3\.** 创建 Ceph 集群'
 - en: '[PRE2]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Wait several minutes for Ceph to configure the disks. Health should be `HEALTH_OK`
     :'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 等待几分钟，直到 Ceph 配置完磁盘。健康状态应为 `HEALTH_OK`：
 - en: '[PRE3]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '**4\.** Create the storage classes'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '**4\.** 创建存储类'
 - en: Rook Ceph can provide you with two main storage classes. One is RBD and allows
     you to have a replicated storage in `ReadWriteOnce` mode. The second one we’ll
     install is CephFS, which allows you to have replicated storage in `ReadWriteMany`
@@ -159,189 +245,302 @@
     to provision volumes in your Kubernetes cluster. This only supports `ReadWriteOnce`
     volumes (RWO). CephFS acts like a replicated NFS server. This is what will allow
     us to create volumes in `ReadWriteMany` mode (RWX).
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: Rook Ceph 可以为你提供两个主要的存储类。一个是 RBD，允许你在 `ReadWriteOnce` 模式下拥有复制存储。第二个是我们将要安装的
+    CephFS，允许你在 `ReadWriteMany` 模式下拥有复制存储。RBD 代表 *RADOS Block Device*，允许你在 Kubernetes
+    集群中配置卷。它仅支持 `ReadWriteOnce` 卷（RWO）。CephFS 像一个复制的 NFS 服务器。这将使我们能够在 `ReadWriteMany`
+    模式下创建卷（RWX）。
 - en: '[PRE4]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '**5\.** Deploy the Ceph dashboard'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '**5\.** 部署 Ceph 控制面板'
 - en: '[PRE5]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Forward dashboard’s HTTP access :'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 转发控制面板的 HTTP 访问：
 - en: '[PRE6]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Connect with the username `admin` and the following password :'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用用户名 `admin` 和以下密码进行连接：
 - en: '[PRE7]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: You should get the following page browsing [*https://localhost:8443*](https://localhost:8443)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 你应该访问以下页面：[*https://localhost:8443*](https://localhost:8443)
 - en: '![](../Images/3fbc9a0b4427c3e2c71116133ce5d448.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3fbc9a0b4427c3e2c71116133ce5d448.png)'
 - en: 'Image by author: Ceph dashboard'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图像：Ceph 控制面板
 - en: Deploying an app
+  id: totrans-50
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 部署应用
 - en: We will deploy a self-hosted file-sharing app ([psitransfer](https://github.com/psi-4ward/psitransfer))
     to check if our volumes bind correctly.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将部署一个自托管的文件共享应用（[psitransfer](https://github.com/psi-4ward/psitransfer)）来检查我们的卷是否正确绑定。
 - en: '**1.** Deploy the file-sharing app (NodePort 30080)'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1.** 部署文件共享应用（NodePort 30080）'
 - en: '[PRE8]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '**2.** See on which node it is deployed'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '**2.** 查看它被部署在哪个节点上'
 - en: '[PRE9]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Retrieve the IP of this node (through the Scaleway interface) and check the
     app is running at *http://nodeip:30080*
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 获取该节点的 IP（通过 Scaleway 界面）并检查应用是否在 *http://nodeip:30080* 上运行。
 - en: '**3\.** Let''s upload some files'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '**3\.** 上传一些文件'
 - en: Download the [5MB](http://212.183.159.230/5MB.zip), [10MB](http://212.183.159.230/10MB.zip)
     and [20MB](http://212.183.159.230/20MB.zip) files from [xcal1.vodafone.co.uk website](http://xcal1.vodafone.co.uk/).
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 从 [xcal1.vodafone.co.uk 网站](http://xcal1.vodafone.co.uk/) 下载 [5MB](http://212.183.159.230/5MB.zip)、[10MB](http://212.183.159.230/10MB.zip)
+    和 [20MB](http://212.183.159.230/20MB.zip) 文件。
 - en: Upload them to our file transfer app. Click the link that appears on the screen.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 将文件上传到我们的文件传输应用中。点击屏幕上出现的链接。
 - en: You should now see the tree files imported. Click on it and **keep the link
     in your browser tab**, we'll use it later.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在您应该能看到导入的树形文件。点击它并**保持浏览器标签中的链接**，我们稍后会用到它。
 - en: 'After uploading around 400MB of files, we can see the replication of data is
     coherent across disks. We see that the 3 disks are written simultaneously while
     we upload files. In the following screenshot, usage is 1% for each disk: although
     I uploaded on the same host, it seems the replication is working as expected with
     data equally persisted across the 3 disks (OSDs). Disk 2 has a lot of "read" activity
     as the 2 other disks synchronize data from it.'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 上传了大约 400MB 的文件后，我们可以看到数据在磁盘之间的复制是一致的。我们看到 3 个磁盘在文件上传时被同时写入。在以下截图中，每个磁盘的使用率为
+    1%：尽管我在同一主机上上传文件，但似乎复制按预期工作，数据在 3 个磁盘（OSD）之间均匀持久化。磁盘 2 有大量的“读取”活动，因为另外两个磁盘从它那里同步数据。
 - en: '![](../Images/d5eac05176d2cea5167815e58df40a20.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d5eac05176d2cea5167815e58df40a20.png)'
 - en: 'Ceph''s dashboard should look like this now :'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: Ceph 的仪表盘现在应该是这样的：
 - en: '![](../Images/f85692aa66c5d10385c2ed4e7953ba15.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f85692aa66c5d10385c2ed4e7953ba15.png)'
 - en: C. Destroy and see
+  id: totrans-65
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: C. 销毁并查看
 - en: We're going to stop the node hosting the web app to make sure data was replicated
     on the other nodes.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将停止托管 Web 应用的节点，以确保数据已复制到其他节点。
 - en: See on which node the app is deployed
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 查看应用部署在哪个节点上
 - en: '[PRE10]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 2\. Power off the node from the Scaleway console
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. 从 Scaleway 控制台关闭节点
 - en: 'This simulates a power failure on a node. It should become `NotReady` after
     several minutes :'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 这模拟了节点上的电力故障。它应该在几分钟后变为 `NotReady`：
 - en: '[PRE11]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'And Node 3 is unavailable on our Ceph dashboard :'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 而且 Node 3 在我们的 Ceph 仪表盘上不可用：
 - en: '![](../Images/44c6bfae7fa77f59ce43d5a5e387e61b.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/44c6bfae7fa77f59ce43d5a5e387e61b.png)'
 - en: 'Ceph''s dashboard should now look like this :'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: Ceph 的仪表盘现在应该是这样：
 - en: '![](../Images/b6e839f15f8cadbd73b5a670420d3a84.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b6e839f15f8cadbd73b5a670420d3a84.png)'
 - en: '**3\.** Reschedule our pod'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '**3\.** 重新调度我们的 Pod'
 - en: 'The scheduled pod node is unavailable. However, our pod still thinks it is
     active :'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 调度的 Pod 节点不可用。然而，我们的 Pod 仍然认为它是活动的：
 - en: '[PRE12]'
+  id: totrans-78
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Delete it to reschedule it on another node :'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 删除它以便在另一个节点上重新调度：
 - en: '[PRE13]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Check the status of the newly-restarted pod. Your app should be available again
     at the link previously kept.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 检查刚刚重新启动的 Pod 的状态。您的应用程序应该可以通过之前保留的链接再次访问。
 - en: '![](../Images/24657c632e2ca8c88632d90bd220c2fd.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/24657c632e2ca8c88632d90bd220c2fd.png)'
 - en: To avoid having to manually delete the pod to be rescheduled when a node gets
     "NotReady", scale the number of replicas of your app to at least 3 by default.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了避免在节点变为“NotReady”时需要手动删除 Pod 以便重新调度，建议将应用的副本数默认扩展到至少 3。
 - en: You can now restart the previously powered-off node.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在您可以重新启动之前关闭的节点。
 - en: When to use *rook-ceph-block* or rook-cephfs ?
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么时候使用 *rook-ceph-block* 或 *rook-cephfs*？
 - en: If your applications need better performance and require block storage with
     RWO access mode, use the *rook-ceph-block* (RBD) storage class. On the other hand,
     if your applications need a shared file system with RWX (CephFS) access mode and
     POSIX compliance, use the *rook-cephfs* storage class.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您的应用程序需要更好的性能并且需要 RWO 访问模式的块存储，请使用 *rook-ceph-block* (RBD) 存储类。另一方面，如果您的应用程序需要具有
+    RWX (CephFS) 访问模式和 POSIX 兼容的共享文件系统，请使用 *rook-cephfs* 存储类。
 - en: 'If choosing RBD and trying to reschedule a pod while its original node is offline
     as we did with CephFS, you will get an error from the PVC stating: "*Volume is
     already exclusively attached to one node and can''t be attached to another*".
     In that case, you just need to wait for the PVC to bind back (it took ~6 minutes
     for my cluster to automatically re-attribute the PVC to my pod, allowing it to
     start).'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果选择 RBD 并尝试在原节点离线时重新调度一个 pod，就像我们在 CephFS 中做的那样，你会收到来自 PVC 的错误，内容为："*卷已独占地附加到一个节点，无法附加到另一个节点*”。在这种情况下，你只需等待
+    PVC 重新绑定（我的集群自动重新分配 PVC 给我的 pod，花了大约 6 分钟，使其可以启动）。
 - en: Try this behavior [following the associated repo chapter](https://github.com/flavienbwk/ceph-kubernetes#when-to-use-rook-ceph-block-or-rook-cephfs-).
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 尝试这种行为 [按照相关仓库章节](https://github.com/flavienbwk/ceph-kubernetes#when-to-use-rook-ceph-block-or-rook-cephfs-)。
 - en: Final word
+  id: totrans-89
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 最后一句
 - en: You have learned how to install and deploy an app with Ceph. You have even proven
     that it replicates data. Congrats ✨
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 你已经学会了如何使用 Ceph 安装和部署应用程序。你甚至证明了它能够复制数据。恭喜你 ✨
 - en: '*All images, unless otherwise noted, are by the author.*'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: '*除非另有说明，否则所有图片均由作者提供。*'
