@@ -80,55 +80,65 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本系列的前两部分中，我们讨论了信息检索中的两种基本算法：**倒排文件索引**和**产品量化**。这两者都优化了搜索性能，但关注的方面不同：前者加快了搜索速度，而后者则将向量压缩为更小、更节省内存的表示。
 - en: '[](/similarity-search-knn-inverted-file-index-7cab80cc0e79?source=post_page-----a8e508c765fa--------------------------------)
     [## Similarity Search, Part 1: kNN & Inverted File Index'
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 相似性搜索，第一部分：kNN与倒排文件索引](https://towardsdatascience.com/similarity-search-knn-inverted-file-index-7cab80cc0e79?source=post_page-----a8e508c765fa--------------------------------)'
 - en: Similarity search is a popular problem where given a query Q we need to find
     the most similar documents to it among all…
   id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 相似性搜索是一个热门问题，其中给定一个查询Q，我们需要在所有文档中找到最相似的文档。
 - en: 'towardsdatascience.com](/similarity-search-knn-inverted-file-index-7cab80cc0e79?source=post_page-----a8e508c765fa--------------------------------)
     [](https://medium.com/@slavahead/similarity-search-product-quantization-b2a1a6397701?source=post_page-----a8e508c765fa--------------------------------)
     [## Similarity Search, Part 2: Product Quantization'
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 相似性搜索，第二部分：产品量化](https://medium.com/@slavahead/similarity-search-product-quantization-b2a1a6397701?source=post_page-----a8e508c765fa--------------------------------)'
 - en: In the first part of this article series, we looked at kNN and inverted file
     index structure for performing similarity…
   id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在本系列文章的第一部分，我们查看了用于执行相似性搜索的kNN和倒排文件索引结构。
 - en: medium.com](https://medium.com/@slavahead/similarity-search-product-quantization-b2a1a6397701?source=post_page-----a8e508c765fa--------------------------------)
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/@slavahead/similarity-search-product-quantization-b2a1a6397701?source=post_page-----a8e508c765fa--------------------------------)'
 - en: Since both algorithm focus on different aspects, the question that naturally
     arises is whether it is possible to merge these two algorithms into a new one
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这两种算法侧重于不同方面，自然会产生一个问题，即是否可以将这两种算法合并成一种新算法。
 - en: In this article, we will combine the advantages of both approaches to produce
     a fast and memory-efficient algorithm. For information, most of the discussed
     ideas will be based on this [paper](https://lear.inrialpes.fr/pubs/2011/JDS11/jegou_searching_with_quantization.pdf).
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们将结合这两种方法的优点，以产生一种快速且节省内存的算法。供参考，大多数讨论的想法将基于这篇[论文](https://lear.inrialpes.fr/pubs/2011/JDS11/jegou_searching_with_quantization.pdf)。
 - en: Before diving into details, it is necessary to understand what residual vectors
     are and get a simple intuition on their useful properties. We will use them later
     while designing an algorithm.
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入细节之前，有必要了解残差向量是什么，并对其有用的属性有一个简单的直观认识。我们将在设计算法时使用它们。
 - en: Residual vectors
   id: totrans-20
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 残差向量
 - en: Imagine a clustering algorithm was executed and it produced several clusters.
     Each cluster has a centroid and points associated with it. **Residual** is an
     offset of a point (vector) from its centroid. Basically, to find a residual for
@@ -136,6 +146,7 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下执行了一个聚类算法，并产生了几个簇。每个簇都有一个质心和与之相关的点。**残差**是一个点（向量）与其质心之间的偏移。基本上，要找出特定向量的残差，需要从其质心中减去该向量。
 - en: If the cluster was built by the k-means algorithm, then the cluster centroid
     is the mean of all points belonging to that cluster. Thus, finding a residual
     from any point would be equivalent to subtracting the mean of a cluster from it.
@@ -144,26 +155,31 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果簇是由k-means算法构建的，那么簇的质心是所有属于该簇的点的均值。因此，从任何点找出残差将等同于从中减去簇的均值。通过从属于特定簇的所有点中减去均值，这些点将围绕0中心对齐。
 - en: '![](../Images/7070915590dccde2b899bc0a636574f5.png)'
   id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7070915590dccde2b899bc0a636574f5.png)'
 - en: An original cluster of points is shown on the left. Then the cluster centroid
     is subtracted from all cluster points. The resulting residual vectors are shown
     on the right.
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始的点簇显示在左侧。然后从所有簇点中减去簇质心。结果的残差向量显示在右侧。
 - en: 'We can observe a useful fact:'
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以观察到一个有用的事实：
 - en: Replacing original vectors with their residuals does not change their relative
     position to each other.
   id: totrans-26
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 用残差替换原始向量不会改变它们之间的相对位置。
 - en: That is, the distance between vectors stays always the same. Let us simply look
     at two equations below.
   id: totrans-27
