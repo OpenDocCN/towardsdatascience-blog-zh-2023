@@ -311,10 +311,14 @@
   id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们已经看到了如何检测离散事件中的异常。然而，Sigma 规则可以将事件与之前的事件相关联。一个经典的例子是在 [Windows 安全日志
+    (事件 ID 4688)](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4688)
+    中找到的。在这个日志源中，我们可以找到有关进程创建的信息。该日志中的一个关键部分是启动此进程的进程。你可以使用这些 `Process ID` 来确定程序在运行时做了什么等。
 - en: 'Let’s use this Sigma rule as an example: [Rundll32 Execution Without DLL File](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml).'
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 以这个 Sigma 规则为例：[Rundll32 执行没有 DLL 文件](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml)。
 - en: '[PRE6]'
   id: totrans-47
   prefs: []
@@ -326,6 +330,7 @@
   id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在原始遥测中，一个事件只知道父级 `Process ID`。然而，规则中提到 `ParentImage` 和 `ParentCommandLine`。规则基本上假设已经进行了连接。
 - en: 'Luckily Spark Structured Streaming supports [stream-stream joins](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#stream-stream-joins).
     In order to retrieve the ParentImage and ParentCommanLine, we perform a self-join
     of the process logs. We will join the `current` side with the `parent_of_interest`
@@ -333,24 +338,32 @@
   id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，Spark Structured Streaming 支持 [流-流连接](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#stream-stream-joins)。为了检索
+    `ParentImage` 和 `ParentCommandLine`，我们对进程日志进行自连接。我们将 `current` 侧与 `parent_of_interest`
+    侧连接。连接条件如下：
 - en: '`current.ParentProcessID = parent_of_interest.ProcessID`'
   id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '`current.ParentProcessID = parent_of_interest.ProcessID`'
 - en: 'Left side: Set flags for every detection rule'
   id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 左侧：为每个检测规则设置标志
 - en: We use a convention `c` for current process and `r1` for rule 1.
   id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用 `c` 作为当前进程的约定，使用 `r1` 作为规则1。
 - en: So `filter_empty` in [Rundll32 Execution Without DLL File](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml)
     (rule 1) is named `cr1_filter_empty`
   id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，在 [Rundll32 执行没有 DLL 文件](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml)（规则1）中，`filter_empty`
+    被
 - en: '[PRE7]'
   id: totrans-54
   prefs: []
@@ -361,6 +374,7 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 右侧：在 `parents_of_interest` 上过滤消息
 - en: We do the same with conditions that apply to parent process. However, in this
     case we also filter the table. This means parent process that are filtered out
     necessarily had all their flags set to `FALSE`. By filtering we greatly reduce
@@ -369,6 +383,8 @@
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于应用于父进程的条件，我们也进行相同的操作。然而，在这种情况下，我们还会过滤表格。这意味着被过滤的父进程的所有标志必然都设置为 `FALSE`。通过过滤，我们大大减少了执行流式连接时需要缓存的
+    `parents_of_interest` 键的数量。
 - en: '[PRE8]'
   id: totrans-57
   prefs: []
@@ -379,6 +395,7 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 将当前与其父级连接
 - en: 'We are doing a left join with the parent side. Since the parent side is filtered
     it is possible we will not find the corresponding parent process id. When a parent
     is not found, the columns will have flags set to NULL. We use coalesce to assign
@@ -387,6 +404,8 @@
   id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们对父级侧进行左连接。由于父级侧被过滤，因此可能找不到对应的父进程 ID。当未找到父进程时，列将具有标志设置为 NULL。我们使用 `coalesce`
+    将这些父级标志的值设置为 `FALSE`。`pr3_selection_atexec` 是一个父标志，因此我们像这样应用 `coalesce`：
 - en: '[PRE9]'
   id: totrans-60
   prefs: []
@@ -397,6 +416,7 @@
   id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还组合来自当前和父级的条件。例如，`selection_atexec` 条件由父级和子级条件组成。
 - en: '[PRE10]'
   id: totrans-62
   prefs: []
@@ -406,6 +426,7 @@
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此我们像这样组合它们：
 - en: '[PRE11]'
   id: totrans-64
   prefs: []
@@ -415,6 +436,7 @@
   id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '`r3_selection_atexec` 是规则3中 `selection_atexec` 的最终标志。'
 - en: '[PRE12]'
   id: totrans-66
   prefs: []
@@ -425,10 +447,12 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最后我们应用 Sigma 规则条件
 - en: 'For example rule1’s condition is:'
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如规则1的条件是：
 - en: '[PRE13]'
   id: totrans-69
   prefs: []
@@ -438,6 +462,7 @@
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们只需应用这个条件，并将结果命名为 `rule1`。
 - en: '[PRE14]'
   id: totrans-71
   prefs: []
@@ -447,6 +472,7 @@
   id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是完整语句中的条件。
 - en: '[PRE15]'
   id: totrans-73
   prefs: []
