@@ -1,634 +1,942 @@
 - en: Monitoring NLP models in production
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 监控生产环境中的NLP模型
 - en: 原文：[https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20](https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20](https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20)
 - en: A code tutorial on detecting drift in text data
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关于检测文本数据漂移的代码教程
 - en: '[](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[![Elena
     Samuylova](../Images/bc3024500f8b90a97f13d82ecaa1c9e7.png)](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)
     [Elena Samuylova](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[![Elena
+    Samuylova](../Images/bc3024500f8b90a97f13d82ecaa1c9e7.png)](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)
+    [Elena Samuylova](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9621354b583a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=post_page-9621354b583a----ac65745772cf---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)
     ·13 min read·Feb 20, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=-----ac65745772cf---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9621354b583a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=post_page-9621354b583a----ac65745772cf---------------------post_header-----------)
+    发布于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)
+    ·13 min read·2023年2月20日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=-----ac65745772cf---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&source=-----ac65745772cf---------------------bookmark_footer-----------)![](../Images/29f88501939d130d890f1672efc66d29.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&source=-----ac65745772cf---------------------bookmark_footer-----------)![](../Images/29f88501939d130d890f1672efc66d29.png)'
 - en: Image by Author.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供。
 - en: All production ML models need [monitoring](https://www.evidentlyai.com/blog/pragmatic-ml-monitoring-metrics).
     NLP models are no exception. But, monitoring models that use text data can be
     quite different from, say, a model built on tabular data.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有生产环境中的机器学习模型都需要[监控](https://www.evidentlyai.com/blog/pragmatic-ml-monitoring-metrics)。NLP模型也不例外。但是，监控使用文本数据的模型可能与监控基于表格数据的模型有所不同。
 - en: '**In this tutorial, we will dive into a specific example.** We will explore
     issues affecting the performance of NLP models in production, imitate them on
     an example toy dataset, and show how to monitor and debug them.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在本教程中，我们将深入探讨一个具体的例子。** 我们将探索影响生产环境中NLP模型性能的问题，使用一个示例玩具数据集模拟这些问题，并展示如何监控和调试它们。'
 - en: 'We will work with a drug review dataset and go through the following steps:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用一个药品评论数据集，并按照以下步骤进行操作：
 - en: Train a simple review classification model, and evaluate its quality on a validation
     dataset;
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 训练一个简单的评论分类模型，并在验证数据集上评估其质量；
 - en: Imitate data quality issues, test their impact on the model accuracy, and explore
     how one can identify them in advance;
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模拟数据质量问题，测试它们对模型准确性的影响，并探索如何提前识别这些问题；
 - en: Apply the model to the new data, and explore how to detect and debug model quality
     decay when applied to previously unseen inputs.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将模型应用于新数据，并探索如何检测和调试模型质量衰退问题，当模型应用于之前未见过的输入时。
 - en: We will use the [Evidently open-source Python library](https://github.com/evidentlyai/evidently)
     to evaluate and debug model issues.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用 [Evidently 开源 Python 库](https://github.com/evidentlyai/evidently) 来评估和调试模型问题。
 - en: '*You can reproduce the steps and explore additional details in the* [*example
     Colab notebook*](https://colab.research.google.com/drive/15ON-Ub_1QUYkDbdLpyt-XyEx34MD28E1)*.*'
+  id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*你可以在* [*示例 Colab 笔记本*](https://colab.research.google.com/drive/15ON-Ub_1QUYkDbdLpyt-XyEx34MD28E1)*中重现这些步骤并探索更多细节。*'
 - en: The use case
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 用例
 - en: '![](../Images/70b7ab28a5ca20556f1eb7af415191fe.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/70b7ab28a5ca20556f1eb7af415191fe.png)'
 - en: Image by Author.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供。
 - en: Let’s imagine that you want to **classify reviews of medications.**
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们假设你想要**对药品评论进行分类**。
 - en: This NLP use case is common in e-commerce. For example, users might leave reviews
     on the online pharmacy website. You might want to assign a category to each review
     based on its content, such as “side effects,” “ease of use,” or “effectiveness.”
     Once you create a model, you can automatically classify each newly submitted review.
     Tags will improve the user experience, helping find relevant content faster.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个自然语言处理用例在电子商务中很常见。例如，用户可能会在在线药房网站上留下评论。你可能希望根据内容将每条评论分配到一个类别，如“副作用”、“使用难易”或“效果”。一旦你创建了模型，你可以自动对每个新提交的评论进行分类。标签将改善用户体验，帮助更快地找到相关内容。
 - en: You might use a similar classification model in other scenarios. For example,
     to surface relevant information and enrich user experience in a healthcare-focused
     chat app. In this case, you’d likely classify the reviews in batches and store
     them in some database. You can retrieve them on demand to surface the content
     to the user.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会在其他场景中使用类似的分类模型。例如，在以医疗保健为重点的聊天应用中，挖掘相关信息并丰富用户体验。在这种情况下，你可能会批量分类评论并将其存储在某个数据库中。你可以按需检索这些评论，将内容展示给用户。
 - en: Let’s take this use case as an inspiration and start with a simpler classification
     model. Our goal is to predict whether **the overall review sentiment** is highly
     positive or negative.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们以这个用例作为灵感，从一个更简单的分类模型开始。我们的目标是预测**整体评论情感**是否高度积极或消极。
 - en: Creating a model
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 创建一个模型
 - en: To solve this problem, you first need a labeled dataset.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 要解决这个问题，你首先需要一个标注数据集。
 - en: '![](../Images/bec67970ac4767dc4d9bbd76ea6d4d8d.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bec67970ac4767dc4d9bbd76ea6d4d8d.png)'
 - en: Image by Author.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供。
 - en: For illustration purposes, we will work with a [drug review dataset](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Drugs.com%29)
     from the UCI repository.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了说明，我们将使用 [UCI 存储库中的药品评论数据集](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Drugs.com%29)。
 - en: '***Disclaimer:*** *this created model is used solely for research and educational
     purposes to illustrate the ML model evaluation and monitoring process. It should
     not be used in any other form or purpose or to inform any actual decisions.*'
+  id: totrans-29
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '***免责声明：*** *这个创建的模型仅用于研究和教育目的，以展示机器学习模型评估和监控过程。它不应以任何其他形式或目的使用，也不应用于通知任何实际决策。*'
 - en: 'The dataset is fairly large. We will start with one particular subset: reviews
     of painkiller medications. We will split them into two parts. 60% goes to the
     “training” partition. The other 40% is the “validation” part.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集相当大。我们将从一个特定的子集开始：止痛药的评论。我们将其分为两部分。60% 用于“训练”部分。另 40% 是“验证”部分。
 - en: We will train a model to distinguish between reviews with ratings “1” (negative
     review) and “10” (positive review), making it a simple binary classification problem.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将训练一个模型来区分“1”（负面评论）和“10”（正面评论）的评分，使其成为一个简单的二分类问题。
 - en: In practice, you often have limited labeled data. It is not unusual to start
     with a dataset representing only a subset of the data to which the model might
     eventually be applied.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实际操作中，你通常会面临有限的标注数据。以仅表示模型最终可能应用的数据子集的数据集开始并不罕见。
 - en: 'Once we train the model, we can evaluate its accuracy on the validation dataset.
     Here is what we got: the accuracy on the validation dataset is 0.836\. Let’s consider
     it to be good enough for our demo purposes.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们训练了模型，我们可以在验证数据集上评估其准确性。我们得到的结果是：验证数据集上的准确率为 0.836。我们认为这对于我们的演示目的已经足够好。
 - en: We can expect similar quality in production on similar data. If the accuracy
     falls considerably below this level, we should react and dig deeper into what
     is happening.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以期待在类似数据中生产中的质量相似。如果准确性大幅低于这一水平，我们应该做出反应并深入探讨发生了什么。
 - en: '![](../Images/507f774ac6b71d1cfbbdc1e95eba5286.png)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/507f774ac6b71d1cfbbdc1e95eba5286.png)'
 - en: '**Note:** this is a simple demo. If you are working with a real use case, don’t
     forget about cross-validation to make better-informed expectations about your
     model quality.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意：** 这是一个简单的演示。如果你在处理真实用例时，不要忘记交叉验证，以便对模型质量做出更有依据的预期。'
 - en: Model in production
+  id: totrans-37
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 生产中的模型
 - en: Once we put the model in production, we apply it to the new, unseen data.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们将模型投入生产，就会将其应用于新的、未见过的数据。
 - en: In the e-commerce example, we will likely wrap the model as an API. We will
     call the model once a new review is submitted on the website and assign a category
     to display based on the model’s response. In the chat app scenario, we will likely
     perform batch scoring. We will write the new predictions with assigned labels
     to a database.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 在电子商务示例中，我们可能会将模型封装为 API。我们将在网站上提交新评论时调用模型，并根据模型的响应分配一个类别进行显示。在聊天应用场景中，我们可能会执行批量评分。我们将新的预测与分配的标签一起写入数据库。
 - en: ‍ **In both cases, you typically do not get immediate feedback.** There is no
     quick way to know if the predicted labels are correct. However, you do need *something*
     to keep tabs on the model’s performance to ensure it works as expected.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: ‍ **在这两种情况下，你通常不会得到即时反馈。** 没有快速的方法来知道预测标签是否正确。然而，你确实需要*某种东西*来监控模型的表现，以确保其按预期工作。
 - en: '![](../Images/995ce8d5d0943125e79b605401c4805e.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/995ce8d5d0943125e79b605401c4805e.png)'
 - en: Image by Author.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者。
 - en: 'There are different ways to understand if the model is doing well:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 了解模型表现良好的方式有很多：
 - en: '**You can have a feedback mechanism directly in the website UI.** For example,
     you can allow the review authors or readers to report incorrectly assigned categories
     and suggest a better one. If you get a lot of reports or corrections, you can
     react to this and investigate.'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**你可以在网站界面中直接设置反馈机制。** 例如，你可以允许评论作者或读者报告错误分配的类别并建议更好的类别。如果收到大量报告或修正，你可以对此做出反应并进行调查。'
 - en: '**Manual labeling as quality control.** In the simplest form, the model creator
     can look at some of the model predictions to see if it behaves as expected. You
     can also engage external labelers from time to time to label a portion of the
     data. This way, you can directly evaluate the quality of the model predictions
     against expert-assigned labels.'
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**手动标注作为质量控制。** 在最简单的形式下，模型创建者可以查看一些模型预测，以查看其是否按预期行为。你也可以不时地邀请外部标注者标注一部分数据。通过这种方式，你可以直接评估模型预测的质量与专家分配的标签之间的差异。'
 - en: 'In both cases, the model checks are reactive: you can only notice and address
     any model quality issues **after** you get the labels and evaluate the accuracy.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这两种情况下，模型检查是被动的：你只能在获得标签并评估准确性**之后**才注意到并解决模型质量问题。
 - en: While you might often accept some delay or even quality drops (since the cost
     of error is tolerable), trying to detect the issues in advance is a good practice.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然你可能经常接受一些延迟或甚至质量下降（因为错误的成本是可以接受的），但尝试提前检测问题是一个好习惯。
 - en: The two frequent culprits of model quality decay are data quality issues and
     changes in the input data distributions. Let’s explore how one can detect those!
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型质量下降的两个常见原因是数据质量问题和输入数据分布的变化。让我们探讨一下如何检测这些问题！
 - en: 'Example 1: data quality and integrity'
+  id: totrans-49
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 示例 1：数据质量和完整性
 - en: '![](../Images/93c8d467152f2715cc8b248474802871.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/93c8d467152f2715cc8b248474802871.png)'
 - en: Image by Author.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者。
 - en: '**Data quality issues come in all shapes and sizes.** For example, you might
     have some bugs in the input data processing that leak HTML tags into the text
     of the reviews. Data might also be corrupted due to wrong encoding, the presence
     of special symbols, text in different languages, emojis, and so on. There might
     be bugs in the feature transformation code, post-processing, or cleaning steps
     that you run as part of a scoring pipeline.'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '**数据质量问题千差万别。** 例如，你可能在输入数据处理过程中有一些漏洞，将 HTML 标签泄露到评论文本中。数据还可能因为编码错误、特殊符号的存在、不同语言的文本、表情符号等而被损坏。在作为评分流程的一部分运行的特征转换代码、后处理或清理步骤中可能存在错误。'
 - en: '**In our case, we artificially changed the dataset.** We took the same validation
     dataset and made a few changes: injected random HTML tags and translated some
     reviews into French. The goal was to “break” the dataset, imitating the data quality
     issues.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在我们的例子中，我们人为地改变了数据集。** 我们使用了相同的验证数据集，并做了一些更改：注入了随机的 HTML 标签，并将一些评论翻译成法语。目标是“破坏”数据集，模拟数据质量问题。'
 - en: '*You can see the complete code in the accompanying* [*notebook*](https://colab.research.google.com/drive/15ON-Ub_1QUYkDbdLpyt-XyEx34MD28E1)*.*'
+  id: totrans-54
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*你可以在随附的* [*notebook*](https://colab.research.google.com/drive/15ON-Ub_1QUYkDbdLpyt-XyEx34MD28E1)*
+    中查看完整的代码。*'
 - en: 'Now, let’s check the model quality on this modified data:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们检查一下这个修改后的数据上的模型质量：
 - en: '![](../Images/79b684d8650e9248e80b4fb171f1bd39.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/79b684d8650e9248e80b4fb171f1bd39.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供。Evidently 库的截图。
 - en: The model quality is below what was seen in the initial validation on the “clean”
     dataset. The accuracy is only 0.747.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型质量低于在“干净”数据集上的初始验证结果。准确率仅为 0.747。
 - en: '**How can we troubleshoot this decay?** Had it occurred in practice, our next
     step would be to dig into the model’s performance and data to understand what
     is happening. Let’s have a look!'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们如何解决这种下降问题？** 如果这种情况在实际中发生，我们的下一步是深入研究模型的表现和数据，以了解发生了什么。让我们来看看！'
 - en: We’ll use [Evidently Python library](https://github.com/evidentlyai/evidently).
     It contains various evaluation metrics and tests and helps generate interactive
     reports for different scenarios.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将使用 [Evidently Python library](https://github.com/evidentlyai/evidently)。它包含各种评估指标和测试，并帮助生成适用于不同场景的交互式报告。
 - en: In this case, we will create a custom report by combining several evaluations
     we want to run to understand data changes.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，我们将通过结合几个我们想运行的评估来创建一个自定义报告，以了解数据的变化。
 - en: To apply Evidently, we first need to prepare the data and map the schema so
     that Evidently can parse it correctly. This is called “column mapping.” We re-use
     it across all our evaluations since the data schema stays the same.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 要应用 Evidently，我们首先需要准备数据并映射架构，以便 Evidently 能够正确解析。这称为“列映射”。我们在所有评估中重用它，因为数据架构保持不变。
 - en: 'Here is how we point to the columns with the predictions, target values and
     specify that the column with reviews should be treated as the text column:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是我们如何指向包含预测值、目标值的列，并指定评论列应被视为文本列：
 - en: '[PRE0]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Next, we generate the report. To do that, we need to do the following:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们生成报告。为此，我们需要执行以下操作：
 - en: pass our original validation data as “reference” (the baseline for comparison)
     and the modified validation data as “current,”
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将我们的原始验证数据作为“参考”（比较基线）传入，并将修改后的验证数据作为“当前”，
 - en: specify the types of evaluations (“metrics”) that we want to include in the
     report,
+  id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 指定我们想在报告中包含的评估类型（“指标”），
 - en: call the visual report to explore in the Jupyter notebook or Colab.
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 调用可视化报告以在 Jupyter notebook 或 Colab 中进行探索。
 - en: In our case, we choose the evaluate target, prediction, and data drift. First,
     we want to see if the model outputs have changed. Second, we want to see if the
     input text has changed.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的例子中，我们选择评估目标、预测和数据漂移。首先，我们想查看模型输出是否发生了变化。其次，我们想查看输入文本是否发生了变化。
 - en: ‍ **There are a few ways to evaluate the similarity between text datasets.**
     One way is to compare the descriptive statistics of the text data (such as length
     of text, the share of out-of-vocabulary words, and the share of non-letter symbols)
     and explore if they have shifted between the two datasets. This option is available
     in Evidently as the **Text Descriptors Drift** metric. We will include it in the
     combined report in addition to evaluating drift in the model predictions and target.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '**有几种方法可以评估文本数据集之间的相似性。** 一种方法是比较文本数据的描述性统计（例如文本长度、词汇外单词的比例以及非字母符号的比例），并探索它们是否在两个数据集之间发生了变化。这个选项在
+    Evidently 中作为 **Text Descriptors Drift** 指标提供。除了评估模型预测和目标的漂移之外，我们将其包含在综合报告中。'
 - en: 'Here is how you can call it:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是你可以调用它的方式：
 - en: '[PRE1]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Once we display the report, one can see no drift in the true labels or predicted
     probabilities.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们展示报告，可以看到真实标签或预测概率没有漂移。
 - en: '![](../Images/1ff9eadc4b9e316df5e0b600b7677af4.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1ff9eadc4b9e316df5e0b600b7677af4.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供。Evidently 库的截图。
 - en: But some input text properties are different!
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 但有些输入文本属性是不同的！
 - en: '![](../Images/54d0cbb0432144ee736f70f8ac52bf8a.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/54d0cbb0432144ee736f70f8ac52bf8a.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供。Evidently 库的截图。
 - en: Under the hood, Evidently calculates these descriptors and applies different
     statistical tests and distance metrics to examine if there is a significant shift
     between the two datasets.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 在后台，Evidently计算这些描述符并应用不同的统计测试和距离度量，以检查两个数据集之间是否存在显著的变化。
 - en: In particular, it points out a **change in the distribution of text length**.
     If we expand the details in the report, we can see some additional plots that
     help understand the shift.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是，它指出了**文本长度分布的变化**。如果我们扩展报告中的细节，我们可以看到一些附加的图表，这些图表有助于理解这种变化。
 - en: 'Some reviews are now suspiciously long:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些评论现在疑似变得很长：
 - en: '![](../Images/dfe31d04294252342c2fcfdaaca6b62f.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dfe31d04294252342c2fcfdaaca6b62f.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。截图来自Evidently库。
 - en: '**The vocabulary has also shifted.** Multiple reviews contain over 30% of out-of-vocabulary
     words:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '**词汇量也发生了变化**。多个评论包含超过30%的词汇外单词：'
 - en: '![](../Images/6fba019ed3de59b38b551767960974db.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6fba019ed3de59b38b551767960974db.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。截图来自Evidently库。
 - en: These findings can help us find examples of changes to understand what is going
     on. For instance, we can query our dataset for all the long reviews with over
     1000 words and reviews with over 30% of out-of-vocabulary words.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些发现可以帮助我们找到变化的例子，以了解发生了什么。例如，我们可以在数据集中查询所有超过1000字的长评论和超过30%为词汇外单词的评论。
 - en: 'Once we surface the examples, we can quickly see what is going on here:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们显示出这些例子，我们可以迅速了解发生了什么：
 - en: Texts containing HTML tags directly in the body are passed to the model
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 含有HTML标签的文本直接传递给模型
 - en: The reviews are in a new, unexpected language
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 评论使用了新的、意想不到的语言
 - en: 'Here is one of the query results:'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是查询结果之一：
 - en: '![](../Images/73d9980b30bf109fd6af00299f610299.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/73d9980b30bf109fd6af00299f610299.png)'
 - en: Image by Author. Screenshot from the example notebook.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。截图来自示例笔记本。
 - en: Knowing what exactly has happened, we can now resolve the issue with the data
     engineering team (to sort out the pipelines) and the product team (to make sure
     that the reviews in French are expected, and it is time to create a separate model
     for those).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 知道发生了什么之后，我们可以与数据工程团队（以整理管道）和产品团队（以确保法语评论是预期的，并且是时候为这些评论创建一个单独的模型）解决问题。
 - en: 'Example 2: data distribution change'
+  id: totrans-95
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 示例2：数据分布变化
 - en: '![](../Images/ce069d5fe9c72783104b64de2273ea69.png)'
+  id: totrans-96
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ce069d5fe9c72783104b64de2273ea69.png)'
 - en: Image by Author.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。
 - en: 'There is another type of change that might occur in production: change in the
     **content** of the texts the model is tasked to analyze. Such a shift can ultimately
     lead to model quality degradation or **model drift**. It can come in different
     forms.'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 生产中可能发生的另一种变化是**内容**的变化，即模型需要分析的文本内容发生变化。这种变化最终可能导致模型质量下降或**模型漂移**。它可以以不同的形式出现。
 - en: One is **concept drift,** when some concepts the model learns evolve. For example,
     some words or symbols can gradually change their meaning. Maybe some emoji previously
     representative of a “positive” review is now frequently used with the opposite
     intention. Or perhaps there is a second new drug on the market with the same active
     ingredient, which converts one “concept” into two different ones.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中一种是**概念漂移**，当模型学习到的一些概念发生演变时。例如，一些词语或符号的意义可能会逐渐改变。也许之前代表“积极”评论的某些表情符号现在经常用于相反的意图。或者市场上出现了另一种具有相同活性成分的新药，这将一个“概念”转换为两个不同的概念。
 - en: Another is **data drift,** when the model is applied to new data different from
     the training. The relationships the model has learned still hold. But it hasn’t
     seen anything related to the patterns on the latest data and thus cannot score
     it that well. For example, you will observe data drift if you apply the model
     trained to classify medical reviews to other products.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个是**数据漂移**，当模型应用于与训练数据不同的新数据时。模型学到的关系依然成立，但它没有见过最新数据中的模式，因此无法很好地评分。例如，如果你将训练用于分类医学评论的模型应用于其他产品，你将会观察到数据漂移。
 - en: Understanding the difference between data and concept drift is useful when interpreting
     the changes. However, to detect them, we would typically use the same approach.
     If you already have the labels, **the true model quality** (e.g., accuracy) is
     the best measure of model drift. If you do not have the labels or want to debug
     the quality drop, you can look at the **change in the input data and prediction**
     and then interpret it using your domain understanding**.**
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 理解数据漂移和概念漂移的区别对于解释变化很有用。然而，要检测这些变化，我们通常会使用相同的方法。如果你已经有了标签，**真实模型质量**（例如准确率）是衡量模型漂移的最佳指标。如果你没有标签或者想要调试质量下降，你可以查看**输入数据和预测的变化**，然后利用你对领域的理解来解释。
 - en: Let’s return to our example dataset and see how the model drift can look in
     practice.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们回到我们的示例数据集，看看模型漂移在实践中可能是什么样的。
 - en: '**We will now apply our model to a new, unseen dataset.** We will use a different
     category of drug reviews: they are no longer related to the painkiller medication
     but instead to the anti-depressant drugs. We may still expect reasonable quality:
     reviewers could use overlapping words to describe whether or not some medication
     works.'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我们现在将模型应用于一个新的、未见过的数据集。** 我们将使用不同类别的药物评论：这些评论不再与止痛药有关，而是与抗抑郁药有关。我们可能仍然会期望合理的质量：评论者可能会使用重叠的词汇来描述某种药物是否有效。'
 - en: The model does not fail completely, but the accuracy is only 0.779.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型没有完全失败，但准确率只有 0.779。
 - en: '![](../Images/ae6d6708b6c5720ebdc9e3c6b39c4559.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ae6d6708b6c5720ebdc9e3c6b39c4559.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。截图来自 Evidently 库。
 - en: This is lower than expected. Let’s investigate!
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 这低于预期。我们来调查一下吧！
 - en: We can again generate the drift report and will immediately notice some changes.
     Notably, the distribution of labels has drifted.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以再次生成漂移报告，并立即注意到一些变化。特别是，标签的分布已经发生漂移。
 - en: '![](../Images/7e147694988fe7ed6597367cf8c4cf55.png)'
+  id: totrans-109
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7e147694988fe7ed6597367cf8c4cf55.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。截图来自 Evidently 库。
 - en: Reviews are also longer in the current dataset, and OOV words appear more often.
     But there is nothing as obvious as in the case above.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 当前数据集中的评论也更长，OOV 词汇出现的频率更高。但没有像上述情况那样明显的变化。
 - en: '![](../Images/453e3c043d60b54a65131852e8afc109.png)'
+  id: totrans-112
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/453e3c043d60b54a65131852e8afc109.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。截图来自 Evidently 库。
 - en: 'We can try something else to debug what is happening: instead of comparing
     text stats, look to evaluate if the **content** of the dataset has changed.'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以尝试其他方法来调试发生了什么：除了比较文本统计数据，看看是否**数据集的内容**发生了变化。
 - en: 'There are many methods to detect data drift. With tabular data, you’d typically
     look at the distributions of the individual features in the dataset. With text
     data, this approach is not so convenient: you probably do not want to count the
     distribution of each word in the dataset. There are simply too many, and the results
     will be hard to interpret.'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 检测数据漂移的方法有很多。对于表格数据，你通常会查看数据集中各个特征的分布。对于文本数据，这种方法就不太方便了：你可能不想计算数据集中每个词的分布。词汇实在太多了，结果也难以解释。
 - en: ‍**Evidently applies a different approach for text drift detection:** [**a domain
     classifier**](https://www.evidentlyai.com/blog/evidently-data-quality-monitoring-and-drift-detection-for-text-data)**.**
     It trains a background model to distinguish between the reference and the current
     dataset. The ROC AUC of the binary classifier shows if the drift is detected.
     If a model can reliably identify the reviews that belong to the current or reference
     dataset, the two datasets are probably sufficiently different.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: ‍**Evidently 使用了不同的文本漂移检测方法：** [**一个领域分类器**](https://www.evidentlyai.com/blog/evidently-data-quality-monitoring-and-drift-detection-for-text-data)**。**
+    它训练一个背景模型来区分参考数据集和当前数据集。二分类器的 ROC AUC 显示漂移是否被检测到。如果一个模型可以可靠地区分当前或参考数据集中的评论，那么这两个数据集可能足够不同。
 - en: '![](../Images/1e2b46a3cb38cf68cad5643f7634f1bb.png)'
+  id: totrans-117
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1e2b46a3cb38cf68cad5643f7634f1bb.png)'
 - en: Image by Author.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。
 - en: 'This approach, among others, is described in the paper “ [Failing loudly](https://arxiv.org/abs/1810.11953):
     An Empirical Study of Methods for Detecting Dataset Shift.”'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '这种方法和其他方法在论文“ [Failing loudly](https://arxiv.org/abs/1810.11953): An Empirical
+    Study of Methods for Detecting Dataset Shift”中进行了描述。'
 - en: It is not without caveats. If you have some temporal information in the new
     dataset (for example, each review includes the date), the model might quickly
     learn to distinguish between the datasets. This might be simply because one of
     them contains the word “March” and another “February,” or due to the mention of
     the Black Friday promotions. However, we can evaluate this by looking at the top
     features of the domain classifier model and some examples.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 这并非没有警告。如果你在新数据集中有一些时间信息（例如，每条评论包括日期），模型可能会很快学会区分数据集。这可能只是因为其中一个数据集包含“March”一词，而另一个包含“February”，或者提到了黑色星期五促销。然而，我们可以通过查看领域分类器模型的顶级特征和一些示例来评估这一点。
 - en: 'If the text data drift is detected, Evidently will automatically provide some
     helpful information:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果检测到文本数据漂移，Evidently将自动提供一些有用的信息：
 - en: '**Typical words in the current and reference dataset**. These words are most
     indicative when predicting which dataset a specific review belongs to.'
+  id: totrans-122
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**当前数据集和参考数据集中的典型词汇**。这些词汇在预测特定评论属于哪个数据集时最具指示性。'
 - en: '**Examples of texts** from current and reference datasets that were the easiest
     for a classifier to label correctly (with predicted probabilities being very close
     to 0 or 1).'
+  id: totrans-123
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**文本示例**来自当前和参考数据集，这些文本对分类器来说最容易正确标记（预测概率非常接近0或1）。'
 - en: To use this method, we will create a new report and include the metric that
     helps detect drift in a given column. For columns containing text data, domain
     classifier is the default method.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使用这种方法，我们将创建一个新报告，并在给定列中包含有助于检测漂移的度量。对于包含文本数据的列，领域分类器是默认方法。
 - en: '[PRE2]'
+  id: totrans-125
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Here is what it shows for our dataset.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是它对我们的数据集的显示情况。
 - en: '**First, it does indeed detect the distribution drift.** The classifier model
     is very confident and has a ROC AUC of 0.94\. Second, the top distinctive features
     very explicitly point to the possible change in the contents of the text.'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: '**首先，它确实检测到了分布漂移。** 分类器模型非常自信，ROC AUC为0.94。其次，最具辨识性的特征非常明确地指向了文本内容的可能变化。'
 - en: The reference dataset contains words like “pain” and “migraine.”
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 参考数据集包含“pain”和“migraine”这些词汇。
 - en: '![](../Images/4a9043c06299641496b3e0f8d03e3619.png)'
+  id: totrans-129
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4a9043c06299641496b3e0f8d03e3619.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。来自Evidently库的截图。
 - en: The current dataset has words like “depression” and “antidepressant.”
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 当前数据集包含“depression”和“antidepressant”这些词汇。
 - en: '![](../Images/9c1f9519f7804f1dc52681350fc62e2b.png)'
+  id: totrans-132
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9c1f9519f7804f1dc52681350fc62e2b.png)'
 - en: Image by Author. Screenshot from the Evidently library.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片。来自Evidently库的截图。
 - en: The same is clear from the specific example reviews. They refer to the different
     groups of drugs, and the authors use different vocabulary to describe whether
     a particular medication helped. For example, “improve mood” differs from “relieve
     pain,” making it more difficult for the model to classify the review’s sentiment.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 从具体的示例评论中也可以看出这一点。它们指的是不同的药物类别，作者使用不同的词汇来描述某种药物是否有效。例如，“improve mood”与“relieve
+    pain”不同，使得模型更难以分类评论的情感。
 - en: 'Once we identify the reason for model drift, we can devise a solution: typically,
     retrain the model using the newly labeled data.'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们确定了模型漂移的原因，我们可以制定解决方案：通常是使用新标记的数据重新训练模型。
 - en: How to apply this in production?
+  id: totrans-136
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何在生产环境中应用这一点？
 - en: In this toy example, we showed the debugging workflow. We measured the factual
     model accuracy and dug deeper to identify the reasons for the quality drop.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个玩具示例中，我们展示了调试工作流程。我们测量了模型的实际准确性，并深入挖掘以确定质量下降的原因。
 - en: '**In practice, you can perform data quality checks proactively.** For example,
     you can implement this early quality control step in your batch scoring pipeline.
     You can test your data to surface potential issues before you get the actual labels
     or even score the model.'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在实践中，你可以主动进行数据质量检查。** 例如，你可以在批量评分流程中实现这个早期质量控制步骤。你可以测试你的数据，以便在获得实际标签或甚至评分模型之前发现潜在问题。'
 - en: 'If you detect issues like the HTML tags in the body of the review, you can
     take immediate action to resolve them: by updating and re-running the pre-processing
     pipeline.'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你发现评论正文中有HTML标签等问题，你可以立即采取行动解决它们：通过更新和重新运行预处理流程。
 - en: '**You can do the same for data drift checks**. Every time you get a new batch
     of data, you can evaluate its key characteristics and how similar it is to the
     previous batch.'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '**你可以对数据漂移检查做同样的事情**。每次获得新一批数据时，你可以评估其关键特征以及它与前一批数据的相似程度。'
 - en: If you detect drift and see that it is indeed due to new types of content or
     topics appearing, you can also take proactive steps. In this case, it most likely
     means initiating a new labeling process and subsequent model retraining.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你检测到漂移并发现它确实是由于新类型的内容或话题出现，你也可以采取主动措施。在这种情况下，这很可能意味着启动新的标记过程和随后的模型重新训练。
 - en: '***Evidently*** *is an open-source Python library that helps evaluate, test,
     and monitor ML models in production. You can use it to detect data drift, data
     quality issues or track model performance for tabular and text data.*'
+  id: totrans-142
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '***Evidently*** *是一个开源 Python 库，帮助评估、测试和监控生产中的机器学习模型。你可以使用它来检测数据漂移、数据质量问题或跟踪表格和文本数据的模型性能。*'
 - en: ''
+  id: totrans-143
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '[*Check it out on GitHub ⟶*](https://github.com/evidentlyai/evidently)'
+  id: totrans-144
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[*在 GitHub 上查看 ⟶*](https://github.com/evidentlyai/evidently)'
 - en: What’s next?
+  id: totrans-145
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 接下来做什么？
 - en: Evaluating text data drift can involve other challenges. For example, you might
     need to monitor drift in embeddings instead of raw text data. You can also run
     additional tests and evaluations, for example, related to the model’s robustness
     and fairness.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 评估文本数据漂移可能涉及其他挑战。例如，你可能需要监控嵌入中的漂移，而不是原始文本数据。你还可以进行额外的测试和评估，例如与模型的鲁棒性和公平性相关的测试。
 - en: '[Sign up here](https://www.evidentlyai.com/user-newsletter) if you want to
     get updates on the new hands-on tutorials and new feature releases.'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: '[点击这里注册](https://www.evidentlyai.com/user-newsletter) 以获取有关新手动教程和新功能发布的更新。'
 - en: '*Originally published at* [*https://www.evidentlyai.com*](https://www.evidentlyai.com/blog/tutorial-detecting-drift-in-text-data)
     *on February 20, 2023, and co-authored with Natalia Tarasova.*'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: '*最初发表于* [*https://www.evidentlyai.com*](https://www.evidentlyai.com/blog/tutorial-detecting-drift-in-text-data)
+    *于 2023 年 2 月 20 日，并与 Natalia Tarasova 合著。*'
