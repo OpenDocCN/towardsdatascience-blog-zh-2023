@@ -1,13 +1,16 @@
 - en: HyperLogLog implemented using SQL
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/hyperloglog-implemented-using-sql-d516fc4828ce?source=collection_archive---------16-----------------------#2023-01-23](https://towardsdatascience.com/hyperloglog-implemented-using-sql-d516fc4828ce?source=collection_archive---------16-----------------------#2023-01-23)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: We look at an implementation of the HyperLogLog cardinality estimation algorithm
     written entirely in declarative SQL
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -15,104 +18,134 @@
     Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----d516fc4828ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)
     [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----d516fc4828ce--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----d516fc4828ce---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)
     ·6 min read·Jan 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd516fc4828ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&user=Dhruv+Matani&userId=63f5d5495279&source=-----d516fc4828ce---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd516fc4828ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&source=-----d516fc4828ce---------------------bookmark_footer-----------)![](../Images/31dfa44e59ebefd0b15bd9d0057b2f7b.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Vidar Smits](https://unsplash.com/es/@vidarsmits?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: The [HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog) algorithm is an
     extremely popular algorithm used to estimate (approximate) the number of unique
     elements in a given dataset. There are some difference between this and exact
     unique counting in SQL.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: COUNT(DISTINCT x)
+  id: totrans-10
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Performs an *exact* unique count.
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Uses *O(unique elements)* additional memory.
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: HyperLogLog
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Performs an *approximate* unique count.
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Uses *O(1)* additional memory. This is a significant reduction in memory requirements
     when you have millions or billions of unique values to track.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: If you want to know the details about the LogLog and HyperLogLog algorithms,
     you can find them [here](/hyperloglog-a-simple-but-powerful-algorithm-for-data-scientists-aed50fe47869).
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: Basic Intuition Behind The Working Of HyperLogLog
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: Q. How many coin flips would you need to get 3 heads in a row?
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
 - en: We expect to see the following when we flip a coin once.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We expect to see the following when we flip a coin twice.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We expect to see the following when we flip a coin thrice.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: That’s roughly 8 (2³) coin flips (in expectation) before you see 3 heads in
     a row.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: Q. How many coin flips would you need to get 4heads in a row?
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: Similarly, it would take roughly 16 (2⁴) coin flips (in expectation) before
     you see 4 heads in a row.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: Input Preprocessing
+  id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Take every element of your input and hash it using a hashing algorithm that
     produces 64-bit hashes both randomly and uniformly. i.e. the chance of seeing
     a 0 (or 1) at any bit position is equal to 1/2.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: Now, start from the least significant bit (BIT) of this bit-string, and count
@@ -120,84 +153,104 @@
     problem we discussed above. Using the same intuition, we expect to see a run of
     K 0s every time we see 2^K unique hashes. We assume that every element hashes
     to a unique hash, and that hashes have a random bit stream distribution.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: First Version
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: '![](../Images/17898d4a0ef823838822266e3d7efe0b.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
 - en: An example bitstring (Image by author)
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: We just track the maximum bit position (starting from position 1) for where
     a string of consecutive 0s ends. i.e. if we see some numbers that have 1 at bit
     positions 3, 2, 2, 2, 1, 4, then we just track 4.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: The approximation of the number of unique values seen is 8.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: Drawback
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'The main drawbacks of the above are:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: We can estimate the count only for powers of 2\. i.e. once we see a string of
     zeroes we estimate the number to be 2^K. We can’t estimate any number between
     2 consecutive powers of 2\. This is a pretty wide range for larger powers of 2.
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: We could get really unlucky and see a string of (say) 6 zeroes for just 1 unique
     element. This means that we would estimate having seen 2⁶ = 256 unique elements,
     when in fact we’ve seen just 1.
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Second Version (LogLog estimator)
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: To address both the drawbacks mentioned above, we can make 2 changes.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: Maintain 2^B counters instead of just one counter. Each counter is updated by
     a different hash applied to the same input. If we assume a total of N elements
     in the input, this means that each counter roughly counts the number of unique
     elements in N/(2^B) elements of the input.
+  id: totrans-42
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: When calculating 2^K as the number of unique elements, take the average across
     all the 2^B counters, and then do 2^avg(K). Multiply this result by 2^B (the number
     of buckets).
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: As an optimization, we can take the last B bits of the hash and use that to
     compute the bucket and then use the rest of the bits (shifted right B bits) in
     the way we used them above.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/03693667883b3f13622b3c1e3e0694df.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
 - en: Splitting a bit string into a bucket and a random hash bit string (Image by
     author)
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/5976fa0fcd0bbb639d25f3ff90757be6.png)'
+  id: totrans-47
   prefs: []
   type: TYPE_IMG
 - en: B buckets each containing a single LogLog estimator (Image by author)
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: This is basically the [LogLog estimator](https://www.ic.unicamp.br/~celio/peer2peer/math/bitmap-algorithms/durand03loglog.pdf).
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: 'Trivia: This is called LogLog, since it requires *log2(log2(n))* bits to store
@@ -205,104 +258,137 @@
     then “n” has “b” bits, and b == log2(n). We need log2(b) == log2(log2(n)) bits
     to store the value “b”. “b” also represents the largest position that can have
     a 1 bit with all 0 bits after it (this is what we want to measure for each hash).'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: Third Version (HyperLogLog)
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Instead of taking the arithmetic mean (average) of the values before raising
     to the power of 2, we take the [harmonic mean](https://en.wikipedia.org/wiki/Harmonic_mean)
     of the values.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: Since the harmonic mean of a list of numbers tends strongly toward the least
     elements of the list, it tends (compared to the arithmetic mean) to mitigate the
     impact of large outliers and aggravate the impact of small ones.
+  id: totrans-53
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: That’s it!
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: SQL Input Schema
+  id: totrans-55
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: The input table is very simple. It’s basically a table with a single integer
     column (the input integer).
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: HyperLogLog in SQL
+  id: totrans-58
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Here’s the result of running the query above.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/944c1314fe01669cc96b64dee979d10e.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
 - en: Actual v/s estimated unique counts of numbers (Image by author)
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
 - en: '**Error Rate:** The actual number of unique elements in the input table is
     1729\. The LogLog estimator is way off in this case with an estimate of 2795 unique
     elements. The [HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog) estimator
     has a 3.6% error with an estimate of 1792 unique elements.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
 - en: We can get a much better estimate (smaller error) by using a larger number of
     buckets.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
 - en: '**Buckets:** The implementation we showed above uses 64 buckets. Since we can
     practically store any number between 0 and 63 in an 8-bit (single byte) number,
     we use 64 bytes for the implementation shown above.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
 - en: According to the Wikipedia article above,
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
 - en: The HyperLogLog algorithm is able to estimate cardinalities of > 109 with a
     typical accuracy (standard error) of 2%, using 1.5 kB of memory.
+  id: totrans-67
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '**Space:** The implementation above uses O(n) additional space due to the way
     the query has been written. An actual (non-toy) implementation would not store
     the computed hashes but would just update in-memory buckets.'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
 - en: '**Hash Computation:** We use md5 in the query above, but you can use any hash
     that produces uniform random 64-bit numbers.'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: There are some details about the correction factor constant 0.77351 that I have
     omitted for brevity. You can read the paper for details about this constant.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
 - en: SQL Fiddle
+  id: totrans-71
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SQL Fiddle
 - en: The SQL Fiddle for the queries above can be found [here](http://sqlfiddle.com/#!17/e783f4/103).
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述查询的 SQL Fiddle 可以在[这里](http://sqlfiddle.com/#!17/e783f4/103)找到。
 - en: Conclusion
+  id: totrans-73
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: The HyperLogLog algorithm is surprisingly simple yet powerful at the same time.
     It stores a lot of information per bit of storage!
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: HyperLogLog 算法既简单又强大，同时每个存储位能存储大量信息！
 - en: 'Previous article: [Validate a String as HTML Using SQL](https://medium.com/towards-data-science/validate-a-string-as-html-using-sql-d70e81149a2)'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '之前的文章: [使用 SQL 验证字符串是否为 HTML](https://medium.com/towards-data-science/validate-a-string-as-html-using-sql-d70e81149a2)'
