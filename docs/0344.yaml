@@ -3,17 +3,20 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 SQL 实现的 HyperLogLog
 - en: 原文：[https://towardsdatascience.com/hyperloglog-implemented-using-sql-d516fc4828ce?source=collection_archive---------16-----------------------#2023-01-23](https://towardsdatascience.com/hyperloglog-implemented-using-sql-d516fc4828ce?source=collection_archive---------16-----------------------#2023-01-23)
   id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/hyperloglog-implemented-using-sql-d516fc4828ce?source=collection_archive---------16-----------------------#2023-01-23](https://towardsdatascience.com/hyperloglog-implemented-using-sql-d516fc4828ce?source=collection_archive---------16-----------------------#2023-01-23)
 - en: We look at an implementation of the HyperLogLog cardinality estimation algorithm
     written entirely in declarative SQL
   id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 我们查看一个完全使用声明式 SQL 编写的 HyperLogLog 基数估计算法的实现
 - en: '[](https://medium.com/@dhruvbird?source=post_page-----d516fc4828ce--------------------------------)[![Dhruv
     Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----d516fc4828ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)
@@ -21,29 +24,41 @@
   id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@dhruvbird?source=post_page-----d516fc4828ce--------------------------------)[![Dhruv
+    Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----d516fc4828ce--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)
+    [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----d516fc4828ce--------------------------------)'
 - en: ·
   id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----d516fc4828ce---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)
     ·6 min read·Jan 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd516fc4828ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&user=Dhruv+Matani&userId=63f5d5495279&source=-----d516fc4828ce---------------------clap_footer-----------)'
   id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[跟随](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----d516fc4828ce---------------------post_header-----------)
+    发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d516fc4828ce--------------------------------)
+    ·6 min read·2023年1月23日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd516fc4828ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&user=Dhruv+Matani&userId=63f5d5495279&source=-----d516fc4828ce---------------------clap_footer-----------)'
 - en: --
   id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd516fc4828ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&source=-----d516fc4828ce---------------------bookmark_footer-----------)![](../Images/31dfa44e59ebefd0b15bd9d0057b2f7b.png)'
   id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd516fc4828ce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperloglog-implemented-using-sql-d516fc4828ce&source=-----d516fc4828ce---------------------bookmark_footer-----------)![](../Images/31dfa44e59ebefd0b15bd9d0057b2f7b.png)'
 - en: Photo by [Vidar Smits](https://unsplash.com/es/@vidarsmits?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
   id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片由 [Vidar Smits](https://unsplash.com/es/@vidarsmits?utm_source=medium&utm_medium=referral)
+    提供，发布在 [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 - en: The [HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog) algorithm is an
     extremely popular algorithm used to estimate (approximate) the number of unique
     elements in a given dataset. There are some difference between this and exact
@@ -51,55 +66,67 @@
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog) 算法是一种极为流行的算法，用于估算（近似）给定数据集中的唯一元素数量。这与
+    SQL 中的精确唯一计数有所不同。'
 - en: COUNT(DISTINCT x)
   id: totrans-10
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: COUNT(DISTINCT x)
 - en: Performs an *exact* unique count.
   id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 执行*准确*唯一计数。
 - en: Uses *O(unique elements)* additional memory.
   id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用*O(唯一元素)* 额外内存。
 - en: HyperLogLog
   id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: HyperLogLog
 - en: Performs an *approximate* unique count.
   id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 执行*近似*唯一计数。
 - en: Uses *O(1)* additional memory. This is a significant reduction in memory requirements
     when you have millions or billions of unique values to track.
   id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用*O(1)*额外内存。当你需要跟踪数百万或数十亿个唯一值时，这大大减少了内存需求。
 - en: If you want to know the details about the LogLog and HyperLogLog algorithms,
     you can find them [here](/hyperloglog-a-simple-but-powerful-algorithm-for-data-scientists-aed50fe47869).
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想了解关于LogLog和HyperLogLog算法的详细信息，可以在[这里](/hyperloglog-a-simple-but-powerful-algorithm-for-data-scientists-aed50fe47869)找到。
 - en: Basic Intuition Behind The Working Of HyperLogLog
   id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: HyperLogLog工作原理的基本直觉
 - en: Q. How many coin flips would you need to get 3 heads in a row?
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 问：你需要多少次抛硬币才能得到3次连续的正面？
 - en: We expect to see the following when we flip a coin once.
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望在抛一次硬币时看到以下结果。
 - en: '[PRE0]'
   id: totrans-20
   prefs: []
@@ -109,6 +136,7 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望在抛两次硬币时看到以下结果。
 - en: '[PRE1]'
   id: totrans-22
   prefs: []
@@ -118,6 +146,7 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望在抛三次硬币时看到以下结果。
 - en: '[PRE2]'
   id: totrans-24
   prefs: []
@@ -128,26 +157,31 @@
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 期望你需要大约8次（2³）抛硬币才能看到3次连续的正面。
 - en: Q. How many coin flips would you need to get 4heads in a row?
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 问：你需要多少次抛硬币才能得到4次连续的正面？
 - en: Similarly, it would take roughly 16 (2⁴) coin flips (in expectation) before
     you see 4 heads in a row.
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，期望你需要大约16次（2⁴）抛硬币才能看到4次连续的正面。
 - en: Input Preprocessing
   id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 输入预处理
 - en: Take every element of your input and hash it using a hashing algorithm that
     produces 64-bit hashes both randomly and uniformly. i.e. the chance of seeing
     a 0 (or 1) at any bit position is equal to 1/2.
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 对你的每个输入元素使用一个生成64位哈希的哈希算法进行哈希，确保哈希结果是随机且均匀的。也就是说，任何位上的0（或1）的概率是1/2。
 - en: Now, start from the least significant bit (BIT) of this bit-string, and count
     the number of consecutive 0 bits. This should remind you of the heads-in-a-row
     problem we discussed above. Using the same intuition, we expect to see a run of
@@ -156,38 +190,46 @@
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，从这个比特串的最低有效位（BIT）开始，计数连续0位的数量。这应该让你想起我们上面讨论的连续正面问题。运用相同的直觉，我们期望每次看到2^K个唯一哈希时都会看到一串K个0。我们假设每个元素哈希到一个唯一的哈希值，并且哈希值具有随机位流分布。
 - en: First Version
   id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第一版
 - en: '![](../Images/17898d4a0ef823838822266e3d7efe0b.png)'
   id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/17898d4a0ef823838822266e3d7efe0b.png)'
 - en: An example bitstring (Image by author)
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 示例比特串（作者提供的图片）
 - en: We just track the maximum bit position (starting from position 1) for where
     a string of consecutive 0s ends. i.e. if we see some numbers that have 1 at bit
     positions 3, 2, 2, 2, 1, 4, then we just track 4.
   id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们只跟踪最长的比特位置（从位置1开始），即一串连续0结束的位置。也就是说，如果我们看到一些数字在比特位置3、2、2、2、1、4有1，那么我们只跟踪4。
 - en: The approximation of the number of unique values seen is 8.
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 看到的唯一值数量的近似值是8。
 - en: Drawback
   id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 缺点
 - en: 'The main drawbacks of the above are:'
   id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述方法的主要缺点是：
 - en: We can estimate the count only for powers of 2\. i.e. once we see a string of
     zeroes we estimate the number to be 2^K. We can’t estimate any number between
     2 consecutive powers of 2\. This is a pretty wide range for larger powers of 2.
@@ -195,6 +237,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们只能估算2的幂的数量。也就是说，一旦看到一串零，我们估计数量为2^K。我们不能估算2个连续的2的幂之间的任何数量。这对于较大的2的幂来说范围相当广泛。
 - en: We could get really unlucky and see a string of (say) 6 zeroes for just 1 unique
     element. This means that we would estimate having seen 2⁶ = 256 unique elements,
     when in fact we’ve seen just 1.
@@ -202,15 +245,18 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们可能会非常不幸地看到一串（比如）6个零，仅仅代表1个唯一元素。这意味着我们会估计看到2⁶ = 256个唯一元素，而实际上我们只看到1个。
 - en: Second Version (LogLog estimator)
   id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第二版（LogLog估算器）
 - en: To address both the drawbacks mentioned above, we can make 2 changes.
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决上述两个缺点，我们可以进行2个更改。
 - en: Maintain 2^B counters instead of just one counter. Each counter is updated by
     a different hash applied to the same input. If we assume a total of N elements
     in the input, this means that each counter roughly counts the number of unique
@@ -219,6 +265,7 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 维护2^B个计数器，而不仅仅是一个计数器。每个计数器由对相同输入应用的不同哈希更新。如果假设输入中共有N个元素，那么每个计数器大致计数N/(2^B)个输入元素中的唯一元素数。
 - en: When calculating 2^K as the number of unique elements, take the average across
     all the 2^B counters, and then do 2^avg(K). Multiply this result by 2^B (the number
     of buckets).
@@ -226,33 +273,40 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算2^K作为唯一元素的数量时，取所有2^B个计数器的平均值，然后计算2^avg(K)。将结果乘以2^B（桶的数量）。
 - en: As an optimization, we can take the last B bits of the hash and use that to
     compute the bucket and then use the rest of the bits (shifted right B bits) in
     the way we used them above.
   id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为优化，我们可以取哈希的最后B位，并用它来计算桶，然后使用其余的位（右移B位）如上面所述。
 - en: '![](../Images/03693667883b3f13622b3c1e3e0694df.png)'
   id: totrans-45
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/03693667883b3f13622b3c1e3e0694df.png)'
 - en: Splitting a bit string into a bucket and a random hash bit string (Image by
     author)
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 将位串分成桶和随机哈希位串（作者图像）
 - en: '![](../Images/5976fa0fcd0bbb639d25f3ff90757be6.png)'
   id: totrans-47
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5976fa0fcd0bbb639d25f3ff90757be6.png)'
 - en: B buckets each containing a single LogLog estimator (Image by author)
   id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个桶包含一个LogLog估计器（作者图像）
 - en: This is basically the [LogLog estimator](https://www.ic.unicamp.br/~celio/peer2peer/math/bitmap-algorithms/durand03loglog.pdf).
   id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 这基本上是[LogLog 估计器](https://www.ic.unicamp.br/~celio/peer2peer/math/bitmap-algorithms/durand03loglog.pdf)。
 - en: 'Trivia: This is called LogLog, since it requires *log2(log2(n))* bits to store
     the number of bits needed to represent the number “n”. For example, if n == 2^b,
     then “n” has “b” bits, and b == log2(n). We need log2(b) == log2(log2(n)) bits
@@ -261,17 +315,21 @@
   id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 小知识：这叫做LogLog，因为它需要*log2(log2(n))* 位来存储表示数字“n”所需的位数。例如，如果n == 2^b，则“n”有“b”位，而b
+    == log2(n)。我们需要log2(b) == log2(log2(n))位来存储值“b”。“b”也表示在其后的所有位都为0的情况下，可以有1位的最大位置（这是我们要测量的每个哈希的情况）。
 - en: Third Version (HyperLogLog)
   id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第三版（HyperLogLog）
 - en: Instead of taking the arithmetic mean (average) of the values before raising
     to the power of 2, we take the [harmonic mean](https://en.wikipedia.org/wiki/Harmonic_mean)
     of the values.
   id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不是取值的算术均值（平均值）再平方，而是取值的[调和均值](https://en.wikipedia.org/wiki/Harmonic_mean)。
 - en: Since the harmonic mean of a list of numbers tends strongly toward the least
     elements of the list, it tends (compared to the arithmetic mean) to mitigate the
     impact of large outliers and aggravate the impact of small ones.
@@ -279,20 +337,24 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 由于一组数字的调和均值强烈趋向于列表中的最小元素，它比算术均值更能减轻大异常值的影响，而加重小异常值的影响。
 - en: That’s it!
   id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 就是这样！
 - en: SQL Input Schema
   id: totrans-55
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SQL输入模式
 - en: The input table is very simple. It’s basically a table with a single integer
     column (the input integer).
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 输入表非常简单。基本上是一个包含单一整数列（输入整数）的表。
 - en: '[PRE3]'
   id: totrans-57
   prefs: []
@@ -303,6 +365,7 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SQL中的HyperLogLog
 - en: '[PRE4]'
   id: totrans-59
   prefs: []
@@ -312,14 +375,17 @@
   id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是运行上述查询的结果。
 - en: '![](../Images/944c1314fe01669cc96b64dee979d10e.png)'
   id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/944c1314fe01669cc96b64dee979d10e.png)'
 - en: Actual v/s estimated unique counts of numbers (Image by author)
   id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际与估计的唯一数字计数（作者图像）
 - en: '**Error Rate:** The actual number of unique elements in the input table is
     1729\. The LogLog estimator is way off in this case with an estimate of 2795 unique
     elements. The [HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog) estimator
@@ -327,43 +393,51 @@
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '**误差率：** 输入表中唯一元素的实际数量是1729。LogLog估计器在这种情况下相差很大，估计为2795个唯一元素。[HyperLogLog](https://en.wikipedia.org/wiki/HyperLogLog)估计器的误差为3.6%，估计为1792个唯一元素。'
 - en: We can get a much better estimate (smaller error) by using a larger number of
     buckets.
   id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过使用更多的桶，我们可以得到更好的估计（更小的误差）。
 - en: '**Buckets:** The implementation we showed above uses 64 buckets. Since we can
     practically store any number between 0 and 63 in an 8-bit (single byte) number,
     we use 64 bytes for the implementation shown above.'
   id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '**桶：** 上述实现使用了64个桶。由于我们可以在一个8位（单字节）数字中实际存储0到63之间的任何数字，因此我们为上面显示的实现使用了64个字节。'
 - en: According to the Wikipedia article above,
   id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据上述维基百科文章，
 - en: The HyperLogLog algorithm is able to estimate cardinalities of > 109 with a
     typical accuracy (standard error) of 2%, using 1.5 kB of memory.
   id: totrans-67
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: HyperLogLog算法能够估计> 109的基数，典型准确度（标准误差）为2%，使用1.5 kB的内存。
 - en: '**Space:** The implementation above uses O(n) additional space due to the way
     the query has been written. An actual (non-toy) implementation would not store
     the computed hashes but would just update in-memory buckets.'
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '**空间：** 上述实现由于查询编写方式使用了O(n)的额外空间。实际（非玩具）实现不会存储计算出的哈希，而只是更新内存中的桶。'
 - en: '**Hash Computation:** We use md5 in the query above, but you can use any hash
     that produces uniform random 64-bit numbers.'
   id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**哈希计算：** 我们在上述查询中使用了md5，但你可以使用任何生成均匀随机64位数字的哈希。'
 - en: There are some details about the correction factor constant 0.77351 that I have
     omitted for brevity. You can read the paper for details about this constant.
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于校正因子常数0.77351的一些细节我为了简洁起见省略了。你可以阅读论文以了解有关此常数的详细信息。
 - en: SQL Fiddle
   id: totrans-71
   prefs:
