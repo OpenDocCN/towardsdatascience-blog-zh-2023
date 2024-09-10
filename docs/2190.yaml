@@ -149,6 +149,8 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从一个批量版本的模型开始实现，然后将其转换为纯 Spark Structured Streaming 实现。最终，我们得到一个小笔记本以引导流作业和一个包含所需逻辑的自定义
+    Python 包。
 - en: During the development process we learned a few things about programming using
     Structured Streaming. First, the programming interface of SQL DataFrames and Structured
     Streaming DataFrames is not the same. Structured Streaming is a lot more limited
@@ -159,6 +161,9 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在开发过程中，我们学到了一些关于使用 Structured Streaming 编程的知识。首先，SQL DataFrames 和 Structured
+    Streaming DataFrames 的编程接口是不一样的。Structured Streaming 在可做的事情上限制更多，这意味着我们不能将批量模型逐一实现为流模式，因此不得不多次修订算法以使其有效。Structured
+    Streaming 接口的有限表达能力导致代码变得难以阅读，因此也难以维护。
 - en: 'A simple example of this is that we wanted to perform an outer join on two
     streams of data based on a time window. However, Spark Structured Streaming requires
     having an equality in the join condition and we did not have two columns with
@@ -169,6 +174,8 @@
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个简单的例子是，我们希望在两个数据流上基于时间窗口执行外连接。然而，Spark Structured Streaming 需要在连接条件中有等式，而我们没有两个相同数据的列。我们尝试向两个数据流中添加两个具有相同值的文字字段以实现等式，但
+    Spark 并不那么容易被欺骗。最终我们创建了一个“千年”字段，因为我们的时间戳都在第三千年：这样做有效，但实际上我们制造了一个“Y3K”错误。
 - en: Furthermore, we had to split the algorithm in separate steps because we had
     different time constraints on different parts of the model which we couldn’t implement
     in a single Structured Streaming job. We chose to split the model into several
@@ -178,15 +185,19 @@
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们不得不将算法拆分成多个步骤，因为模型的不同部分有不同的时间限制，而这些限制无法在一个单一的结构化流作业中实现。我们选择将模型拆分成几个部分，使用
+    Azure Event Hubs 作为持久存储层将它们连接起来。这种方法的好处是处理的每一部分都有明确的目标，并且可以单独测试。
 - en: '![](../Images/77164311ef064682032c62d8031a61d4.png)'
   id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/77164311ef064682032c62d8031a61d4.png)'
 - en: '*Figure 3: Overview of streaming processing of train capacity updates using
     Spark Structured Streaming. Image created using draw.io.*'
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '*图3：使用 Spark Structured Streaming 处理列车容量更新的流处理概述。图像使用 draw.io 创建。*'
 - en: We tested our flow in two ways. For the unit tests, we would simply take the
     streaming logic and fed it with hand-crafted batch Spark SQL DataFrames for testing.
     This means we could test parts of the streaming flow without actually starting
@@ -197,6 +208,8 @@
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们用两种方式测试了我们的流程。对于单元测试，我们会简单地使用手工制作的批量 Spark SQL DataFrames 来测试流逻辑。这意味着我们可以测试流动流程的部分而无需实际启动流作业。这种方法捕获了许多功能需求，但无法捕获任何时间问题。第二步测试使用了
+    Spark Structured Streaming 内存接收器，以流模式运行查询来捕获一些时间效应。
 - en: 'Eventually, we deployed our code and we saw our cloud bill increase dramatically.
     We identified two reasons for this: First, Databricks is a great solution for
     batch analytics jobs, but it is expensive to keep running continuously for streaming
@@ -208,6 +221,7 @@
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，我们部署了代码，并且发现我们的云账单急剧增加。我们确定了两个原因：首先，Databricks 是一个很好的批处理分析作业解决方案，但它持续运行以处理流式作业的成本非常高。其次，我们雇主的信息安全政策要求我们记录数据访问。由于结构化流的状态存储可能包含数据，我们也必须记录这些数据。然而，状态存储更新非常频繁，包含许多小文件，这导致产生大量日志，捕获这些日志的成本很高。
 - en: Eventually, we decided to abandon this approach. Our cloud costs were too high
     for the problem we tried to tackle. Combined with the fact that the model implementation
     was very difficult to understand and maintain due to the limited expressiveness
@@ -217,11 +231,13 @@
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，我们决定放弃这种方法。由于我们尝试解决的问题导致的云成本过高，再加上 Spark Structured Streaming 表达能力有限，使得模型实现非常难以理解和维护，我们得出结论认为我们不愿进一步投资改进这种方法，而是看看是否可以以不同的方式解决这个问题。
 - en: Redesign using serverless technologies
   id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用无服务器技术重新设计
 - en: Noting that many parts of the flow do not require state, we landed on a system
     which used Azure Functions as a compute platform such that each message can be
     handled separately. Where state is necessary we use Stream Analytics. This allows
@@ -231,20 +247,26 @@
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意到流程中的许多部分不需要状态，我们选择了一个使用 Azure Functions 作为计算平台的系统，以便每条消息可以单独处理。需要状态的地方我们使用
+    Stream Analytics。这使我们能够比较消息、重放消息或将其与另一个流连接。为了快速访问辅助数据，我们使用 Cosmos 数据库。我们仍然使用 Azure
+    Event Hubs 将所有部分连接在一起。
 - en: '![](../Images/3410471c9905e65088de9140f4005f2a.png)'
   id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3410471c9905e65088de9140f4005f2a.png)'
 - en: '*Figure 4: Final architecture using serverless technologies. Image created
     using draw.io.*'
   id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '*图 4：使用无服务器技术的最终架构。图像使用 draw.io 创建。*'
 - en: Azure Functions
   id: totrans-35
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Azure Functions
 - en: 'Azure Functions are an easy method to apply operations to a stream of events.
     They are invoked separately for each event in the stream which makes it easy to
     reason about the business logic. They have native support for Python, making it
@@ -254,40 +276,47 @@
   id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: Azure Functions 是对事件流应用操作的简单方法。它们对流中的每个事件分别调用，使得业务逻辑容易理解。它们原生支持 Python，使编写可维护的操作变得简单。由于平台管理所有的云连接样板代码，它们可以很容易地在本地开发和测试。我们在流程的各个部分使用它们：
 - en: Some functions simply filter incoming messages, reducing the compute load of
     subsequent steps and thus reducing capacity and cost;
   id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一些函数仅仅过滤传入的消息，从而减少后续步骤的计算负载，降低容量和成本；
 - en: Several functions enrich messages by joining them with other data sources available
     in for example Cosmos DB;
   id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一些函数通过将消息与例如 Cosmos DB 中的其他数据源进行连接来丰富消息；
 - en: Other functions transforms the message from one format to e.g. the final output
     format;
   id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 其他功能将消息从一种格式转换为例如最终输出格式；
 - en: Finally, we use Azure Functions to ingest data from the batch layer into the
     streaming layer.
   id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最终，我们使用 Azure Functions 将数据从批处理层摄取到流处理层。
 - en: Filtering, enriching, and transformations
   id: totrans-41
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 过滤、丰富和转换
 - en: 'The functions performing these steps are straightforward Python code. As an
     example, the main part of the filtering function is just a few lines:'
   id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 执行这些步骤的函数是直接的 Python 代码。例如，过滤函数的主要部分仅仅是几行代码：
 - en: '[PRE0]'
   id: totrans-43
   prefs: []
@@ -297,6 +326,7 @@
   id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '*列表 1：示例 Azure Function 代码，用于过滤和转换消息。*'
 - en: Here, we take each message, filter only the messages related to trains our company
     operates, and remove keys (data fields) from the message we are not interested
     in. Finally, we add a build ID metadata to the message such that we have some
@@ -388,6 +418,7 @@
   id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: Azure Stream Analytics 查询是用 SQL 方言编写的。实现转换相对简单。然而，当消息吞吐量需要很高时，需要特别注意。在我们的案例中，直接实现无法跟上输入流，我们必须确保流分析查询能够以尴尬并行的方式运行。
 - en: Embarrassingly parallel queries have some requirements and limitations. They
     need to process partitioned data, and they need to perform stateful operations
     (e.g. joins) contained within a partition. This means that when joining two Event
@@ -396,6 +427,8 @@
   id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 尴尬并行查询有一些要求和限制。它们需要处理分区数据，并且需要在分区内执行有状态操作（例如连接）。这意味着在连接两个 Event Hub 流时，它们必须具有相同数量的分区，且第一个
+    Event Hub 的分区 1 上的数据只能与第二个 Event Hub 的分区 1 上的数据进行连接。
 - en: In order to solve this, we duplicate some of our data on several Event Hub partitions
     and essentially implement a broadcast join operation. We illustrate this in the
     following query. Here, each of our crowdedness predictions is given a batch ID
@@ -407,6 +440,9 @@
   id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，我们在多个 Event Hub 分区上复制了一些数据，并基本上实现了广播连接操作。我们在下面的查询中展示了这一点。在这里，我们的每个拥挤度预测都会被分配一个批次
+    ID 和一个批次开始时间，用于决定哪个火车容量更新消息适用于哪个预测。如果消息在计算新一组预测期间到达，它可以适用于多个预测。在这种情况下，会输出多个消息。每个批次
+    ID 会在多个 Event Hub 分区上复制。
 - en: '[PRE1]'
   id: totrans-56
   prefs: []
@@ -417,11 +453,13 @@
   id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '*清单 2：将相应的批次 ID 添加到每条消息中的示例 Azure Stream Analytics 查询。*'
 - en: End-to-end integration testing
   id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 端到端集成测试
 - en: From the initial commit on the project we decided to perform automated end-to-end
     integration testing on the streaming flow. This testing took the form of seeding
     the entry Event Hubs with sample messages that we generate, and then validating
@@ -432,10 +470,13 @@
   id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 从项目的初始提交开始，我们决定对流处理流执行自动化端到端集成测试。这种测试的形式是用我们生成的示例消息对入口 Event Hubs 进行种子填充，然后验证在输出
+    Event Hubs 上创建的消息。我们还将 Cosmos 数据库摄取包含在这个集成测试流程中。将这些测试作为我们持续部署的一部分，让我们在更改时充满信心，因为流中的组件数量增加，并且复杂性也随之增加。
 - en: '![](../Images/862c9e638336e2c6445752a5a0b1d962.png)'
   id: totrans-60
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/862c9e638336e2c6445752a5a0b1d962.png)'
 - en: '*Figure 5: Overview of the CI/CD pipeline steps used for integration testing
     of the streaming flow. We delete any stray data from earlier tests if needed,
     upload new data and start the data ingest functions for three data sources. Then,
@@ -445,17 +486,21 @@
   id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '*图 5：用于集成测试流的 CI/CD 流程步骤概述。如果需要，我们会删除早期测试中的任何遗留数据，上传新数据并启动三个数据源的数据摄取功能。然后，我们向
+    Event Hub 提供事件消息，并检查它们是否正确地从另一端输出。最后，我们对 Cosmos 数据库摄取进行额外检查。图片由作者提供。*'
 - en: Conclusions and key learnings
   id: totrans-62
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论和关键学习
 - en: In our quest to give our train travelers the most recent insights into passenger
     crowdedness, even in situations where changes in train service occur, we embraced
     a lambda architecture to update our prognoses when train capacity changes.
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们努力为火车旅行者提供最新的乘客拥挤度信息，即使在火车服务发生变化的情况下，我们也采用了 lambda 架构来更新我们的预测，以应对火车容量的变化。
 - en: Our initial implementation using Spark Structured Streaming didn’t perform as
     expected and we switched to a serverless architecture using Azure Event Hubs,
     Azure Functions, Azure Stream Analytics and Azure Cosmos DB.
