@@ -1,14 +1,17 @@
 - en: Speeding up vision transformer prediction by 9 times with PyTorch, ONNX and
     TensorRT
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/making-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814?source=collection_archive---------4-----------------------#2023-06-04](https://towardsdatascience.com/making-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814?source=collection_archive---------4-----------------------#2023-06-04)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: How to use 16bit float, TensorRT, network rewriting and multi-threading to dramatically
     speed up deep learning model prediction
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -16,24 +19,30 @@
     Yi](../Images/24b7a438912082519f24d18e11ac9638.png)](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)
     [Wei Yi](https://jasonweiyi.medium.com/?source=post_page-----dc1f09b6814--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1b4bd5317a6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814&user=Wei+Yi&userId=1b4bd5317a6e&source=post_page-1b4bd5317a6e----dc1f09b6814---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dc1f09b6814--------------------------------)
     ·11 min read·Jun 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdc1f09b6814&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814&user=Wei+Yi&userId=1b4bd5317a6e&source=-----dc1f09b6814---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdc1f09b6814&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-vision-transformers-predict-9-times-faster-with-pytorch-onnx-tensorrt-and-multi-threading-dc1f09b6814&source=-----dc1f09b6814---------------------bookmark_footer-----------)![](../Images/8072ede2bfa4cf3d5e55d53741fc8600.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Sanjeevan SatheesKumar](https://unsplash.com/@sanjeevan_s?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Vision transformer such as [UNET](https://en.wikipedia.org/wiki/U-Net), [SwinUNETR](https://openaccess.thecvf.com/content/CVPR2022/html/Tang_Self-Supervised_Pre-Training_of_Swin_Transformers_for_3D_Medical_Image_Analysis_CVPR_2022_paper.html)
@@ -41,32 +50,48 @@
     But it takes a lot of time for such models to make a prediction. This article
     shows how to speed up such model’s prediction by 9 times. This improvement paves
     the way for many real-time or near real-time applications.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 视觉变换器如[UNET](https://en.wikipedia.org/wiki/U-Net)、[SwinUNETR](https://openaccess.thecvf.com/content/CVPR2022/html/Tang_Self-Supervised_Pre-Training_of_Swin_Transformers_for_3D_Medical_Image_Analysis_CVPR_2022_paper.html)在计算机视觉任务中，如语义分割，处于最前沿。但这样的模型进行预测需要很长时间。本文展示了如何将这种模型的预测速度提高9倍。这一改进为许多实时或近实时应用铺平了道路。
 - en: The tumours segmentation task
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 肿瘤分割任务
 - en: 'To set the scene, I’m using the SwinUNETR model to segment lung tumours from
     chest CT scan images, which are single channel grayscale 3D images. Here is an
     example:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了设定场景，我使用了SwinUNETR模型来分割肺部肿瘤，这些是单通道的灰度3D图像。这里是一个例子：
 - en: '![](../Images/4b7a6181e9ed9bc45a923632e2cc2783.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4b7a6181e9ed9bc45a923632e2cc2783.png)'
 - en: Images from the public [NSCLC-Radiomics dataset](https://wiki.cancerimagingarchive.net/display/Public/NSCLC-Radiomics)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自公共[NSCLC-Radiomics数据集](https://wiki.cancerimagingarchive.net/display/Public/NSCLC-Radiomics)的图像
 - en: Left column shows a few 2D slices from a 3D CT scan image, at the axial plane.
     The two crescent black areas are lungs.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 左侧列展示了来自3D CT扫描图像的一些2D切片，位于轴向平面。两个弯月形的黑色区域是肺部。
 - en: Right column shows the manual annotation of lung tumours.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 右侧列显示了肺部肿瘤的人工标注。
 - en: Chest CT scans are typically sized 512×512×300, taking roughly 60 to 90 megabytes…
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 胸部CT扫描图像的尺寸通常为512×512×300，大小大约为60到90兆字节…
