@@ -73,6 +73,7 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近，基于变换器的方法被广泛采用。像BERT和ChatGPT这样的模型取得的显著成就鼓励了研究人员探索这种架构在各种领域的应用，包括时间序列预测。然而，香港中文大学和国际数字经济活动的研究人员最近的工作表明，为这一任务开发的实现效果不佳，并且在各种基准测试中可能被简单的线性模型击败[1]。
 - en: 'In response, researchers at Princeton and IBM proposed PatchTST (Patched Time
     Series Transformer) in their paper [A Time Series is Worth 64 Words](https://arxiv.org/abs/2211.14730)
     [2]. In this paper, Nie et. al introduces 2 key mechanisms that bring transformers
@@ -80,28 +81,34 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 为此，普林斯顿大学和IBM的研究人员在他们的论文[A Time Series is Worth 64 Words](https://arxiv.org/abs/2211.14730)
+    [2]中提出了PatchTST（修补时间序列变换器）。在这篇论文中，Nie等人介绍了两种关键机制，将变换器带回预测领域：
 - en: 'Patched attention: Their attention takes in large parts of the time series
     as tokens instead of a point-wise attention'
   id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 修补注意力：他们的注意力机制将时间序列的大部分作为标记进行处理，而不是逐点注意力
 - en: 'Channel Independence: different target series in a time series are processed
     independently of each other with different attention weights.'
   id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 渠道独立性：时间序列中的不同目标序列被独立处理，使用不同的注意力权重。
 - en: In this post, I aim to summarize how these two mechanisms work and discuss the
     implications of the results discovered by Nie et. al [2].
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我旨在总结这两种机制的工作原理，并讨论Nie等人[2]发现的结果的意义。
 - en: 'Background: Are Transformers Effective'
   id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 背景：变换器是否有效
 - en: 'Before we dive into PatchTST, we need to first understand the problems that
     Zeng et. al discovered with self-attention in the forecasting space. For those
     interested in a detailed summary, I highly encourage reading the original paper
@@ -109,32 +116,41 @@
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入探讨PatchTST之前，我们需要首先了解Zeng等人发现的自注意力在预测领域中的问题。对于那些对详细总结感兴趣的人，我强烈建议阅读原始论文或我对他们工作的总结：
 - en: '[](https://arxiv.org/abs/2205.13504?source=post_page-----24f6fec5bc30--------------------------------)
     [## Are Transformers Effective for Time Series Forecasting?'
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://arxiv.org/abs/2205.13504?source=post_page-----24f6fec5bc30--------------------------------)
+    [## 变换器在时间序列预测中有效吗？'
 - en: Recently, there has been a surge of Transformer-based solutions for the long-term
     time series forecasting (LTSF) task…
   id: totrans-18
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 最近，长期时间序列预测（LTSF）任务中出现了许多基于变换器的解决方案……
 - en: arxiv.org](https://arxiv.org/abs/2205.13504?source=post_page-----24f6fec5bc30--------------------------------)
     [](/transformers-lose-to-linear-models-902164ca5974?source=post_page-----24f6fec5bc30--------------------------------)
     [## Do Transformers Lose to Linear Models?
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: arxiv.org](https://arxiv.org/abs/2205.13504?source=post_page-----24f6fec5bc30--------------------------------)
+    [](/transformers-lose-to-linear-models-902164ca5974?source=post_page-----24f6fec5bc30--------------------------------)
+    [## 变换器是否输给了线性模型？
 - en: Long-Term Forecasting using Transformers may not be the way to go
   id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用变换器进行长期预测可能不是最佳选择
 - en: towardsdatascience.com](/transformers-lose-to-linear-models-902164ca5974?source=post_page-----24f6fec5bc30--------------------------------)
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/transformers-lose-to-linear-models-902164ca5974?source=post_page-----24f6fec5bc30--------------------------------)
 - en: In summary, self-attention has a few key problems when applied to the forecasting
     space. More specifically, prior time-series transformers had point-wise self-attention
     mechanisms where each individual time-stamp was treated as a token. However, this
@@ -146,6 +162,7 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 总而言之，自注意力在应用于预测领域时存在一些关键问题。具体而言，以前的时间序列变换器使用逐点自注意力机制，其中每个时间戳被视为一个标记。然而，这存在两个主要问题。首先，这导致注意力机制对点的排列不变，如果你将点的位置颠倒，则观察到的注意力值相同。此外，单个时间戳本身包含的信息有限，其重要性来自于周围的时间戳。与语言处理中的情况类似，如果我们关注单个字符而不是单词。
 - en: 'These problems led to a few interesting results when testing forecasting transformers:'
   id: totrans-23
   prefs: []
