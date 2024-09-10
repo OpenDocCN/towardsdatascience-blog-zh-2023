@@ -1,12 +1,15 @@
 - en: Introduction to Weight Quantization
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/introduction-to-weight-quantization-2494701b9c0c?source=collection_archive---------0-----------------------#2023-07-07](https://towardsdatascience.com/introduction-to-weight-quantization-2494701b9c0c?source=collection_archive---------0-----------------------#2023-07-07)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Reducing the size of Large Language Models with 8-bit quantization
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,20 +17,25 @@
     Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------)
     [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----2494701b9c0c--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----2494701b9c0c---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2494701b9c0c--------------------------------)
     ·14 min read·Jul 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2494701b9c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&user=Maxime+Labonne&userId=dc89da634938&source=-----2494701b9c0c---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2494701b9c0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-weight-quantization-2494701b9c0c&source=-----2494701b9c0c---------------------bookmark_footer-----------)![](../Images/cb9fa85d2c510e5126e6d30fce29eff4.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Large Language Models (LLMs) are known for their extensive computational requirements.
@@ -35,15 +43,18 @@
     (**size**) by the precision of these values (**data type**). However, to save
     memory, weights can be stored using lower-precision data types through a process
     known as quantization.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: 'We distinguish two main families of weight quantization techniques in the literature:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: '**Post-Training Quantization** (PTQ) is a straightforward technique where the
     weights of an already trained model are converted to lower precision without necessitating
     any retraining. Although easy to implement, PTQ is associated with potential performance
     degradation.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -51,19 +62,23 @@
     during the pre-training or fine-tuning stage, resulting in enhanced model performance.
     However, QAT is computationally expensive and demands representative training
     data.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: In this article, we focus on PTQ to reduce the precision of our parameters.
     To get a good intuition, we will apply both naïve and more sophisticated techniques
     to a toy example using a GPT-2 model.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
 - en: The entire code is freely available on [Google Colab](https://colab.research.google.com/drive/1DPr4mUQ92Cc-xf4GgAaB6dFcFnWIvqYi?usp=sharing)
     and [GitHub](https://github.com/mlabonne/llm-course/blob/main/Introduction_to_Weight_Quantization.ipynb).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
 - en: 📚 Background on Floating Point Representation
+  id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -71,16 +86,19 @@
     affecting the speed and efficiency of the model. In deep learning applications,
     balancing precision and computational performance becomes a vital exercise as
     higher precision often implies greater computational demands.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: 'Among various data types, floating point numbers are predominantly employed
     in deep learning due to their ability to represent a wide range of values with
     high precision. Typically, a floating point number uses *n* bits to store a numerical
     value. These *n* bits are further partitioned into three distinct components:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: '**Sign**: The sign bit indicates the positive or negative nature of the number.
     It uses one bit where 0 indicates a positive number and 1 signals a negative number.'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -88,30 +106,36 @@
     which the base (usually 2 in binary representation) is raised. The exponent can
     also be positive or negative, allowing the number to represent very large or very
     small values.'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: '**Significand/Mantissa**: The remaining bits are used to store the significand,
     also referred to as the mantissa. This represents the significant digits of the
     number. The precision of the number heavily depends on the length of the significand.'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'This design allows floating point numbers to cover a wide range of values with
     varying levels of precision. The formula used for this representation is:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/2e8ab62ec7cb0706b3d6b99f32abc5fa.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
 - en: 'To understand this better, let’s delve into some of the most commonly used
     data types in deep learning: float32 (FP32), float16 (FP16), and bfloat16 (BF16):'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: '**FP32** uses 32 bits to represent a number: one bit for the sign, eight for
     the exponent, and the remaining 23 for the significand. While it provides a high
     degree of precision, the downside of FP32 is its high computational and memory
     footprint.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -119,6 +143,7 @@
     the exponent, and ten for the significand. Although this makes it more memory-efficient
     and accelerates computations, the reduced range and precision can introduce numerical
     instability, potentially impacting model accuracy.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -128,13 +153,16 @@
     a reduction in precision due to fewer significand bits, BF16 typically does not
     significantly impact model performance and is a useful compromise for deep learning
     tasks.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '![](../Images/7f97ce565ee75a23253ee19eeff714bd.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
 - en: Image by author
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: In ML jargon, FP32 is often termed “full precision” (4 bytes), while BF16 and
@@ -142,9 +170,11 @@
     using a single byte? The answer is the INT8 data type, which consists of an 8-bit
     representation capable of storing 2⁸ = 256 different values. In the next section,
     we’ll see how to convert FP32 weights into an INT8 format.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: 🔰 Naïve 8-bit Quantization
+  id: totrans-29
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -152,6 +182,7 @@
     one with **absolute maximum (absmax) quantization** and an asymmetric one with
     **zero-point quantization**. In both cases, the goal is to map an FP32 tensor
     **X** (original weights) to an INT8 tensor **X_quant** (quantized weights).'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: With **absmax quantization**, the original number is divided by the absolute
@@ -159,20 +190,25 @@
     into the range [-127, 127]. To retrieve the original FP16 values, the INT8 number
     is divided by the quantization factor, acknowledging some loss of precision due
     to rounding.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/7dfd58e4be8f1412c262188ca9eecb4f.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
 - en: 'For instance, let’s say we have an absolution maximum value of 3.2\. A weight
     of 0.1 would be quantized to *round(0.1 × 127/3.2) = 4*. If we want to dequantize
     it, we would get *4 × 3.2/127 = 0.1008*, which implies an error of 0.008\. Here’s
     the corresponding Python implementation:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'With **zero-point quantization**, we can consider asymmetric input distributions,
     which is useful when you consider the output of a ReLU function (only positive
     values), for example. The input values are first scaled by the total range of
@@ -180,15 +216,19 @@
     This distribution is then shifted by the zero-point to map it into the range [-128,
     127] (notice the extra value compared to absmax). First, we calculate the scale
     factor and the zero-point value:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/8553578f6e6bc10ce524fcf7ec3c4088.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
 - en: 'Then, we can use these variables to quantize or dequantize our weights:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/bd1fff48751ed91f96d614a7b1fdced9.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
 - en: 'Let’s take an example: we have a maximum value of 3.2 and a minimum value of
@@ -196,55 +236,75 @@
     *-round(41.13 × -3.0) - 128 = 123 -128 = -5*, so our previous weight of 0.1 would
     be quantized to *round(41.13 × 0.1 -5) = -1*. This is very different from the
     previous value obtained using absmax (4 vs. -1).'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/773e8d8dbc9ac7c43c8d7f0fbfbe5fda.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
 - en: Image by author
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: 'The Python implementation is quite straightforward:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Instead of relying on complete toy examples, we can use these two functions
     on a real model thanks to the `transformers`library.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: We start by loading the model and tokenizer for GPT-2\. This is a very small
     model we probably don’t want to quantize, but it will be good enough for this
     tutorial. First, we want to observe the model’s size so we can compare it later
     and evaluate the **memory savings** due to 8-bit quantization.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '[PRE3]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '[PRE4]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The size of the GPT-2 model is approximately 487MB in FP32\. The next step consists
     of quantizing the weights using zero-point and absmax quantization. In the following
     example, we apply these techniques to the first attention layer of GPT-2 to see
     the results.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '[PRE6]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: The difference between the original (FP32) and quantized values (INT8) is clear,
     but the difference between absmax and zero-point weights is more subtle. In this
     case, the inputs look shifted by a value of -1\. This suggests that the weight
     distribution in this layer is quite symmetric.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: 'We can compare these techniques by quantizing every layer in GPT-2 (linear
@@ -252,73 +312,93 @@
     To be precise, we will actually replace the original weights with ***de***-quantized
     ones. This has two benefits: it allows us to 1/ compare the distribution of our
     weights (same scale) and 2/ actually run the models.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: Indeed, PyTorch doesn’t allow INT8 matrix multiplication by default. In a real
     scenario, we would dequantize them to run the model (in FP16 for example) but
     store them as INT8\. In the next section, we will use the `[bitsandbytes](https://github.com/TimDettmers/bitsandbytes)`
     library to solve this issue.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE7]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Now that our models have been quantized, we want to check the impact of this
     process. Intuitively, we want to make sure that the quantized weights are **close
     to the original ones**. A visual way to check it is to plot the distribution of
     the dequantized and original weights. If the quantization is lossy, it would drastically
     change the weight distribution.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: The following figure shows this comparison, where the blue histogram represents
     the original (FP32) weights, and the red one represents the dequantized (from
     INT8) weights. Note that we only display this plot between -2 and 2 because of
     outliers with very high absolute values (more on that later).
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/9e93b5636f8e65de4bb386d68ad67b61.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
 - en: Both plots are quite similar, with a surprising spike around 0\. This spike
     shows that our quantization is quite lossy since reversing the process doesn’t
     output the original values. This is particularly true for the absmax model, which
     displays both a lower valley and a higher spike around 0.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: Let’s compare the performance of the original and quantized models. For this
     purpose, we define a `generate_text()` function to generate 50 tokens with [top-k
     sampling](https://mlabonne.github.io/blog/posts/2023-06-07-Decoding_strategies.html).
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE8]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '[PRE9]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Instead of trying to see if one output makes more sense than the others, we
     can quantify it by calculating the **perplexity** of each output. This is a common
     metric used to evaluate language models, which measures the uncertainty of a model
     in predicting the next token in a sequence. In this comparison, we make the common
     assumption that the lower the score, the better the model is. In practice, a sentence
     with a high perplexity could also be correct.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
 - en: We implement it using a minimal function since it doesn’t need to consider details
     like the length of the context window since our sentences are short.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE10]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[PRE11]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: We see that the perplexity of the original model is **slightly lower** than
     the two others. A single experiment is not very reliable, but we could repeat
     this process multiple times to see the difference between each model. In theory,
     zero-point quantization should be slightly better than absmax, but is also more
     costly to compute.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: 'In this example, we applied quantization techniques to entire layers (per-tensor
@@ -327,6 +407,7 @@
     degrade the performance, while quantizing individual values would create a big
     overhead. In practice, we often prefer the **vector-wise quantization**, which
     considers the variability of values in rows and columns inside of the same tensor.'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
 - en: However, even vector-wise quantization doesn’t solve the problem of outlier
@@ -335,9 +416,11 @@
     This is an issue since a single outlier can reduce the precision for all other
     values. But discarding these outlier features is not an option since it would
     **greatly degrade** the model’s performance.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: 🔢 8-bit Quantization with LLM.int8()
+  id: totrans-70
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -347,98 +430,128 @@
     are processed in a FP16 format to retain their precision, while the other values
     are processed in an INT8 format. As outliers represent about 0.1% of values, this
     effectively reduces the memory footprint of the LLM by almost 2x.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/f7ce7de0c94eb22aaf2c926341e6f2ff.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
 - en: Image by author
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
 - en: 'LLM.int8() works by conducting matrix multiplication computation in three key
     steps:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
 - en: Extract columns from the input hidden states **X** containing outlier features
     using a custom threshold.
+  id: totrans-75
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Perform the matrix multiplication of the outliers using FP16 and the non-outliers
     using INT8 with vector-wise quantization (row-wise for the hidden state **X**
     and column-wise for the weight matrix **W**).
+  id: totrans-76
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Dequantize the non-outlier results (INT8 to FP16) and add them to the outlier
     results to get the full result in FP16.
+  id: totrans-77
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: '![](../Images/3b4bb0a164b5ebebc1dcaca4b96f34d7.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
 - en: Image by author
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
 - en: This approach is necessary because 8-bit precision is limited and can lead to
     substantial errors when quantizing a vector with large values. These errors also
     tend to amplify as they propagate through multiple layers.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
 - en: We can easily use this technique thanks to the integration of the `bitsandbytes`
     library into the Hugging Face ecosystem. We just need to specify `load_in_8bit=True`
     when loading the model (it also requires a GPU).
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE12]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '[PRE13]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'With this extra line of code, the model is now almost three times smaller (168MB
     vs. 487MB). We can even compare the distribution of the original and quantized
     weights as we did earlier:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/b46d4868b6ce8ce99e4746e100fc1525.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
 - en: In this case, we see spikes around -2, -1, 0, 1, 2, etc. These values correspond
     to the parameters stored in the INT8 format (non-outliers). You can verify it
     by printing the model’s weights using `model_int8.parameters()`.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
 - en: We can also generate text with this quantized model and compare it to the original
     model.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE14]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '[PRE15]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: Once again, it is difficult to judge what is the best output, but we can rely
     on the perplexity metric to give us an (approximate) answer.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE16]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '[PRE17]'
+  id: totrans-92
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'In this case, the perplexity of the quantized model is twice as low as the
     original one. In general, this is not the case, but it shows that this quantization
     technique is very competitive. In fact, the authors of LLM.int8() show that the
     performance degradation is so low it’s negligible (<1%). However, it has an additional
     cost in terms of computation: LLM.int8() is roughly about 20% slower for large
     models.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: Conclusion
+  id: totrans-94
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -449,6 +562,7 @@
     outliers, led to **LLM.int8()**, a technique that also preserves the model’s performance.
     This approach underlines the progress being made in the field of weight quantization,
     revealing the importance of properly addressing outliers.'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: Looking forward, our next article will explore the GPTQ weight quantization
@@ -456,45 +570,62 @@
     only utilizes 4 bits and represents a significant advancement in the field of
     weight quantization. We will provide a comprehensive guide on how to implement
     GPTQ using the AutoGPTQ library.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: If you’re interested in more technical content around LLMs, follow me on Twitter
     [@maximelabonne](https://twitter.com/maximelabonne).
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
 - en: References
+  id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'T. Dettmers, M. Lewis, Y. Belkada, and L. Zettlemoyer, [LLM.int8(): 8-bit Matrix
     Multiplication for Transformers at Scale](https://arxiv.org/abs/2208.07339). 2022.'
+  id: totrans-99
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Y. Beldaka, and T. Dettmers, [A Gentle Introduction to 8-bit Matrix Multiplication](https://huggingface.co/blog/hf-bitsandbytes-integration),
     Hugging Face Blog (2022).
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Y. Beldaka 和 T. Dettmers, [8位矩阵乘法的简明介绍](https://huggingface.co/blog/hf-bitsandbytes-integration),
+    Hugging Face Blog (2022)。
 - en: A. Gholami, S. Kim, Z. Dong, Z. Yao, M. W. Mahoney, and K. Keutzer, [A Survey
     of Quantization Methods for Efficient Neural Network Inference](https://arxiv.org/abs/2103.13630).
     2021.
+  id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: A. Gholami, S. Kim, Z. Dong, Z. Yao, M. W. Mahoney 和 K. Keutzer, [高效神经网络推理的量化方法综述](https://arxiv.org/abs/2103.13630)。2021年。
 - en: 'H. Wu, P. Judd, X. Zhang, M. Isaev, and P. Micikevicius, [Integer Quantization
     for Deep Learning Inference: Principles and Empirical Evaluation](https://arxiv.org/abs/2004.09602).
     2020.'
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: H. Wu, P. Judd, X. Zhang, M. Isaev 和 P. Micikevicius, [深度学习推理的整数量化：原理与实证评估](https://arxiv.org/abs/2004.09602)。2020年。
 - en: Lilian Weng, [Large Transformer Model Inference Optimization](https://lilianweng.github.io/posts/2023-01-10-inference-optimization/),
     Lil’Log (2023).
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Lilian Weng, [大型变压器模型推理优化](https://lilianweng.github.io/posts/2023-01-10-inference-optimization/),
+    Lil’Log (2023)。
 - en: Kamil Czarnogorski, [Local Large Language Models](https://int8.io/local-large-language-models-beginners-guide/),
     Int8 (2023).
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Kamil Czarnogorski, [本地大型语言模型](https://int8.io/local-large-language-models-beginners-guide/),
+    Int8 (2023)。
