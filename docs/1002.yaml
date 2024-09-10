@@ -1,254 +1,383 @@
 - en: Anomaly Detection using Sigma Rules (Part 5) Flux Capacitor Optimization
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 Sigma 规则进行异常检测（第5部分）：Flux Capacitor 优化
 - en: 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4?source=collection_archive---------11-----------------------#2023-03-17](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4?source=collection_archive---------11-----------------------#2023-03-17)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4?source=collection_archive---------11-----------------------#2023-03-17](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4?source=collection_archive---------11-----------------------#2023-03-17)
 - en: To boost performance, we implement a forgetful bloom filter and a custom Spark
     state store provider
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为了提升性能，我们实现了一种遗忘布隆过滤器和一个定制的 Spark 状态存储提供者
 - en: '[](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)[![Jean-Claude
     Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)
     [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)[![Jean-Claude
+    Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)
+    [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----118e538cf8c4---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)
     ·8 min read·Mar 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F118e538cf8c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&user=Jean-Claude+Cote&userId=444ed0089012&source=-----118e538cf8c4---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----118e538cf8c4---------------------post_header-----------)
+    发表于 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)
+    ·8 min read·Mar 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F118e538cf8c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&user=Jean-Claude+Cote&userId=444ed0089012&source=-----118e538cf8c4---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F118e538cf8c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&source=-----118e538cf8c4---------------------bookmark_footer-----------)![](../Images/c1af516fa0646ec90967798d864b41ec.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F118e538cf8c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&source=-----118e538cf8c4---------------------bookmark_footer-----------)![](../Images/c1af516fa0646ec90967798d864b41ec.png)'
 - en: Photo by Leora Winter on Unsplash, Shippagan, NB, Canada
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 照片来自Shippagan, NB, Canada的Leora Winter，Unsplash
 - en: This is the 5th article of our series. Refer to [part 1](/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)
     , [part 2](/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f),
     [part 3](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-3-temporal-correlation-using-bloom-filters-a45ffd5e9069)
     and [part 4](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72)
     for some context.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们系列文章的第5篇。请参阅[第1部分](/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)，[第2部分](/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f)，[第3部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-3-temporal-correlation-using-bloom-filters-a45ffd5e9069)和[第4部分](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72)获取一些背景信息。
 - en: In our previous articles, we have demonstrated the performance gains achieved
     by using a bloom filter. We also showed how we leveraged a bloom filter to implement
     temporal proximity correlations, parent/child and ancestor relationships.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们之前的文章中，我们展示了使用布隆过滤器所获得的性能提升。我们还展示了如何利用布隆过滤器实现时间接近相关性、父子和祖先关系。
 - en: So far we have been using a single bloom per host. Eventually the bloom filter
     will be saturated with tags and will issue a lot of false positive. Using this
     [online bloom filter calculator](https://hur.st/bloomfilter/?n=200000&p=0.01&m=&k=),
     we can see the probability of getting a false positive. Notice how the false positive
     rate quickly increases passed 200,000 tags. (This graph is for n=200,000 and p=1%)
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们一直在每个主机上使用一个布隆过滤器。最终，布隆过滤器将被标签填满，并会产生大量假阳性。使用这个[在线布隆过滤器计算器](https://hur.st/bloomfilter/?n=200000&p=0.01&m=&k=)，我们可以看到获得假阳性的概率。注意到假阳性率在超过200,000个标签后迅速增加。（这个图表的n=200,000和p=1%）
 - en: '![](../Images/f78e03cb7d11ad45d15448999ebb2038.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f78e03cb7d11ad45d15448999ebb2038.png)'
 - en: Image by Author
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片由作者提供
 - en: Forgetful Bloom Filter
+  id: totrans-14
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 健忘布隆过滤器
 - en: 'What we need is a way to age off very old tags. We need a forgetful bloom filter.
     As explained in this excellent paper from Redis Labs [Age-Partitioned Bloom Filter](https://arxiv.org/pdf/2001.03147.pdf),
     there are many ways to achieve a forgetful bloom filter. We will use the most
     basic approach:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要一种方法来处理非常旧的标签。我们需要一个健忘的布隆过滤器。正如Redis Labs在这篇优秀论文中解释的[Age-Partitioned Bloom
+    Filter](https://arxiv.org/pdf/2001.03147.pdf)，有许多方法可以实现健忘的布隆过滤器。我们将使用最基本的方法：
 - en: Segmentation based approaches use several disjoint segments which can be individually
     added and retired. The most naïf and several times mentioned approach is a sequence
     of plain BFs, one per generation, adding a new one and retiring the oldest when
     the one in use gets full.
+  id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 基于分段的方法使用几个不相交的分段，这些分段可以单独添加和退役。最简单且多次提到的方法是使用一系列普通的布隆过滤器，每代一个，当使用中的布隆过滤器满了时，添加一个新的并退役最旧的一个。
 - en: We chose to use 10 generations. Thus we use 10 bloom filter per host. Each bloom
     is capable of holding up to 20,000 tags.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们选择使用10代。因此，每台主机使用10个布隆过滤器。每个布隆过滤器最多可以容纳20,000个标签。
 - en: We use an “active” bloom to insert new tags. When the “active” bloom is full,
     we create a new one. When we reach 10 blooms, we discard the oldest bloom.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用“活动”布隆过滤器来插入新标签。当“活动”布隆过滤器满了时，我们创建一个新的。当我们达到10个布隆过滤器时，我们丢弃最旧的布隆过滤器。
 - en: We query for tags by testing the “active” bloom. If the tag is not found we
     test the next (older) bloom until we reach the end.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过测试“活动”布隆过滤器来查询标签。如果没有找到标签，我们测试下一个（更旧的）布隆过滤器，直到到达末尾。
 - en: Notice that for every tag we want to test, we can potentially perform 10 tests
     in 10 different blooms. Each tests has a certain probability of reporting a false
     positive. So by using 10 blooms, we increase our chances by 10\. To reduce the
     chances of getting false positive, we use blooms with a ffp of 1/1000 rather than
     1/100\. In fact, we will show we can even use ffp of 1/10000
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，对于每个我们想要测试的标签，我们可能会在10个不同的布隆过滤器中执行10次测试。每次测试都有一定的概率报告假阳性。因此，通过使用10个布隆过滤器，我们将机会提高了10倍。为了降低假阳性的几率，我们使用了假阳性率为1/1000的布隆过滤器，而不是1/100的。实际上，我们将展示我们甚至可以使用1/10000的假阳性率。
 - en: 'In order to accommodate multiple blooms, we will no longer store a bloom object
     in the state store:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了适应多个布隆过滤器，我们不再在状态存储中保存布隆对象：
 - en: '[PRE0]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Rather, we will persists an FluxState object holding a list of bloom filters:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反，我们将持久化一个FluxState对象，其中包含一个布隆过滤器列表：
 - en: '[PRE1]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'The FluxState has the following fields:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: FluxState包含以下字段：
 - en: '[PRE2]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'For performance reasons, we serialize the bloom filters ourselves. Since we
     know the size of these objects, we can optimize the serialization by pre-allocating
     the serialization buffers. The `serializedBlooms` field holds the serialized blooms.
     The active field keeps track of the index of the active bloom within this list.
     We will explain the use of the version number a bit later. This is how we serialize
     the blooms:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 出于性能原因，我们自己序列化 bloom 过滤器。由于我们知道这些对象的大小，我们可以通过预分配序列化缓冲区来优化序列化。`serializedBlooms`
+    字段保存序列化的 blooms。active 字段跟踪此列表中活动 bloom 的索引。我们稍后会解释版本号的使用。这就是我们序列化 blooms 的方式：
 - en: '[PRE3]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Efficient Checkpointing
+  id: totrans-29
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 高效的检查点
 - en: We segmented our large bloom into 10 smaller ones. Due to the nature of bloom
     filters, the space used by 10 blooms of 20,000 tags is roughly the same as a larger
     200,000 tag bloom, roughly 200KiB.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将大型 bloom 分割成 10 个较小的 bloom。由于 bloom 过滤器的特性，10 个 20,000 标签的 bloom 所占用的空间大致与一个
+    200,000 标签的大 bloom 相同，大约为 200KiB。
 - en: The Spark HDFS state store provider keeps all the FluxState objects in memory.
     If we suppose a fleet of 50,000 hosts, this results in about 10GiB of RAM. In
     fact, the memory usage of the HDFS state store is measured to be 25GiB.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: Spark HDFS 状态存储提供者将所有 FluxState 对象保存在内存中。如果我们假设有一个 50,000 主机的集群，这将导致大约 10GiB
+    的 RAM 实际上，HDFS 状态存储的内存使用量被测量为 25GiB。
 - en: '![](../Images/18ad35de65f2b617351447dadba86bc6.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/18ad35de65f2b617351447dadba86bc6.png)'
 - en: Image by Author
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来源：作者
 - en: The reason why it’s much higher is that the HDFS state store keeps 2 copies
     of the states by default. We can changed it to store a single copy using `spark.sql.streaming.maxBatchesToRetainInMemory`.
     This brings down memory usage to about 12GiB of RAM, which corresponds to our
     estimate.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 它的使用量更高的原因是 HDFS 状态存储默认会保留状态的 2 份副本。我们可以通过 `spark.sql.streaming.maxBatchesToRetainInMemory`
+    将其更改为只存储一份副本。这将内存使用量降低到大约 12GiB 的 RAM，这与我们的估计相符。
 - en: As part of checkpointing, Spark writes out all the states to the data lake and
     it does this after every micro-batch completes. Spark spends a lot of time persisting
     12 GiB of state and does so over and over.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为检查点的一部分，Spark 会将所有状态写入数据湖，并在每个微批处理完成后执行此操作。Spark 花费大量时间来持久化 12 GiB 的状态，并且反复进行此操作。
 - en: However, during every micro-batch, we only modify 1 out of 10 blooms (the active
     bloom). The other 9 blooms might be queried but remain unchanged. The default
     HDFS state store provider is unaware of which bloom is changed, it simply persists
     the FluxState object. If the state store provider knew which bloom is the active
     bloom, it could be more efficient and only checkpoint the modified active bloom.
     It could potentially cut down serialization to 1/10th of the 12GiB.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在每个微批处理中，我们只修改 10 个 blooms 中的 1 个（活动 bloom）。其他 9 个 blooms 可能会被查询但保持不变。默认的
+    HDFS 状态存储提供者并不知晓哪个 bloom 被更改，它只是持久化 FluxState 对象。如果状态存储提供者知道哪个 bloom 是活动 bloom，它可以更高效，只检查点修改过的活动
+    bloom。这可能会将序列化减少到 12GiB 的 1/10。
 - en: Custom State Store Provider
+  id: totrans-37
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自定义状态存储提供者
 - en: The [HDFSBackedStateStoreProvider.scala](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/streaming/state/HDFSBackedStateStoreProvider.scala)
     class handles the put and get state requests. It holds these key/value pairs in
     an in-memory map and persists these key/value to the datalake.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '[HDFSBackedStateStoreProvider.scala](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/streaming/state/HDFSBackedStateStoreProvider.scala)
+    类处理 put 和 get 状态请求。它将这些键/值对保存在内存映射中，并将这些键/值持久化到数据湖中。'
 - en: With some slight modifications to the put and get methods, we can specialize
     the behavior of the [HDFSBackedStateStoreProvider](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/streaming/state/HDFSBackedStateStoreProvider.scala)
     class and make it aware of our forgetful bloom filter strategy.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过对 put 和 get 方法进行一些轻微的修改，我们可以专门化 [HDFSBackedStateStoreProvider](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/streaming/state/HDFSBackedStateStoreProvider.scala)
+    类的行为，使其能够意识到我们遗忘 bloom 过滤器策略。
 - en: The basic idea is to store each bloom segment under a seperate key. Instead
     of storing the entire state under the key “windows_host_abc”, we will store each
     segment under “windows_host_abc_segment1”, “windows_host_abc_segment2”, “windows_host_abc_segment3”,
     etc.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 基本的想法是将每个 bloom 段存储在一个单独的键下。我们不将整个状态存储在键“windows_host_abc”下，而是将每个段存储在“windows_host_abc_segment1”、“windows_host_abc_segment2”、“windows_host_abc_segment3”等下。
 - en: 'The **put** function receives the key and value to store. The key will be a
     host_id and the value will be a FluxState object. Spark encodes both the key and
     value as an UnsafeRow before calling this method:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '**put**函数接收要存储的键和值。键将是主机ID，值将是一个FluxState对象。Spark在调用此方法之前，将键和值都编码为UnsafeRow：'
 - en: '[PRE4]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Our **put** function is exactly the same as the original. The only change we
     make is to the key. We append the “active” bloom index to the original key.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的**put**函数与原始的完全相同。唯一的变化是键。我们将“活跃的”布隆过滤器索引附加到原始键上。
 - en: It’s important to note that we also modified our FluxState class to serialize
     only the “active” bloom, rather than all 10 blooms.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要注意的是，我们还修改了我们的FluxState类，只序列化“活跃的”布隆过滤器，而不是所有10个布隆过滤器。
 - en: '[PRE5]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The original **get** method was like this:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始的**get**方法是这样的：
 - en: '[PRE6]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: We modified the **get** method to gather the 10 blooms segments of a host_id.
     First, we build a list of FluxStates by iterating over the 10 bloom indexes. Then,
     we create a new FluxState which holds all the blooms. We determine which one is
     the active bloom using the version number.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们修改了**get**方法以收集主机ID的10个布隆过滤器段。首先，我们通过迭代10个布隆索引来构建一个FluxState列表。然后，我们创建一个新的FluxState来保存所有的布隆过滤器。我们通过版本号来确定哪个是活跃的布隆过滤器。
 - en: '[PRE7]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Adjusting False Positive Probability
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 调整假阳性概率
 - en: Now that we have segmented the bloom in 10 parts, we can potentially query 10
     blooms and thus have more chances of false positives. To remedy this, we’ve reduce
     the fpp to 1/10000 which results in an overall fpp of 1/1000\. This is ten times
     less chances then in our previous experiments. Nonetheless, because we only serialize
     the “active” bloom, the overall performance is much better.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们将布隆过滤器分成了10部分，我们可以查询10个布隆过滤器，因此可能会有更多的假阳性。为了解决这个问题，我们将假阳性概率降低到1/10000，从而使总体假阳性概率为1/1000。这比我们之前的实验少了十倍的假阳性机会。然而，由于我们只序列化“活跃的”布隆过滤器，总体性能要好得多。
 - en: Results
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结果
 - en: Previously, when we were serializing all segments, we could reach up to a capacity
     of 100,000 tags per host at a rate of 5,000 events per second.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 以前，当我们序列化所有段时，我们可以在每秒5,000个事件的速度下实现每主机100,000个标签的容量。
 - en: 'Using a segmented approach where we only serialize the active bloom, we can
     achieve a capacity of 300,000 tags per host at a rate of 5,000 events per second.
     Alternatively, we can reduce the size of the bloom to accommodate more events
     per seconds: 200,000 tag @ 8,000 events per second'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 采用分段的方法，其中我们只序列化活跃的布隆过滤器，我们可以在每秒5,000个事件的速度下实现每主机300,000个标签的容量。或者，我们可以减小布隆过滤器的大小以容纳更多的事件：200,000个标签
+    @ 8,000个事件每秒。
 - en: '![](../Images/631f1abf3ec0c4c90039164bcad28db1.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/631f1abf3ec0c4c90039164bcad28db1.png)'
 - en: Image by Author
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图片
 - en: In all previous experiments, we have been “seeding” the newly created bloom
     filters with random tags. We did this to prevent the HDFSBackStore from compressing
     the bloom filters while it saves their state to the data lake. An empty bloom
@@ -257,42 +386,60 @@
     was amazing due to incredible compression. It took a very long time to see the
     effect of the tags in the blooms. To fix this, we seeded all blooms at 95% capacity.
     In other words, we have been measuring the worst case scenario.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 在所有以前的实验中，我们一直在用随机标签对新创建的布隆过滤器进行“填充”。我们这样做是为了防止HDFSBackStore在将其状态保存到数据湖时压缩布隆过滤器。一个空的布隆过滤器几乎会压缩到零，而一个容量满的布隆过滤器（具有最大熵）几乎是不可压缩的。当我们首次启动实验时，由于压缩效果惊人，性能表现非常好。要看到标签在布隆过滤器中的效果需要很长时间。为了解决这个问题，我们将所有布隆过滤器填充到95%的容量。换句话说，我们一直在测量最坏情况。
 - en: However, in practice, blooms will fill up slowly. Some blooms will fill up faster
     than others. Statistically, we will never have all 50,000 blooms filled at 95%
     capacity at the exact same time. A more realistic simulation can be performed
     using random seeding.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在实际操作中，布隆过滤器会慢慢填满。一些布隆过滤器的填充速度比其他的快。从统计上讲，我们不可能在同一时间点上所有50,000个布隆过滤器都达到95%的容量。使用随机填充可以进行更现实的模拟。
 - en: '[PRE8]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Benefiting from compressible blooms, we can run this simulation with a rate
     of 10,000 events per seconds and a overall capacity of 400,000 tags per host for
     a total of 20 billion tags on a single Spark worker. This is way more than the
     100 million tags we could achieve with stream-stream join.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于可压缩的布隆过滤器，我们可以以每秒10,000个事件的速度运行该模拟，并且每个主机的总体容量为400,000个标签，总计20亿个标签在单个Spark工作节点上。这远远超过了我们在流流连接中能够实现的1亿个标签。
 - en: Storing and retrieving tags from the blooms is extremely fast. On average, a
     single machine can perform about 200,000 tests a second. Storing tags in the bloom
     is a bit more costly, but a machine can still store 20,000 tags a second. This
     means we can support a lot of Sigma rules simultaneously.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 从bloom中存储和检索标签非常迅速。平均而言，一台机器可以每秒进行约200,000次测试。将标签存储在bloom中成本稍高，但一台机器仍能每秒存储20,000个标签。这意味着我们可以同时支持大量Sigma规则。
 - en: Here’s a summary of the different strategies used in our experiments.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是我们实验中使用的不同策略的总结。
 - en: '![](../Images/52571db56aedf882da762d1edce20464.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/52571db56aedf882da762d1edce20464.png)'
 - en: Image by Author
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提供的图像
 - en: Conclusion
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结论
 - en: The results clearly show the performance improvements of the bloom strategy
     coupled with a custom state store which only saves the “active” bloom segments.
     The bloom strategy is also more generic than the stream-stream join approach since
@@ -300,5 +447,7 @@
     (ordered and un-ordered). The proof of concept can be found here [https://github.com/cccs-jc/flux-capacitor](https://github.com/cccs-jc/flux-capacitor).
     If you have novel use cases for this flux-capacitor function we would love to
     hear about it.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果清晰地显示了与自定义状态存储结合使用的**bloom策略**的性能改进，该存储仅保存“活跃”的bloom段。**bloom策略**还比流-流连接方法更通用，因为它可以处理如“祖先”和[时间接近性](https://github.com/SigmaHQ/sigma-specification/blob/version_2/Sigma_meta_rules.md#temporal-proximity-temporal)（有序和无序）等用例。概念验证可以在这里找到[https://github.com/cccs-jc/flux-capacitor](https://github.com/cccs-jc/flux-capacitor)。如果你对这个flux-capacitor功能有新的用例，我们很乐意听到。
