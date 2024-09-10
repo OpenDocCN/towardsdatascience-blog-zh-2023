@@ -71,6 +71,7 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 4 年里，我发现许多在 2019 年处于早期 alpha 阶段的库已经成熟为实际使用的可靠项目。
 - en: I have spent many years in Data Engineering on Big Data solutions, and one of
     the tasks that we had do regularly was to perform spatial joins of human movement
     data through multiple polygons. It was a great use case that had numerous layers
@@ -79,20 +80,25 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在大数据解决方案的 Data Engineering 领域工作了多年，我们定期进行的任务之一是通过多个多边形执行人类运动数据的空间连接。这是一个具有多个优化层次的很好的用例，但“点在多边形内”测试是所有工作的核心。
 - en: '![](../Images/aa5530ce890f63e4bc4caebe59260699.png)'
   id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/aa5530ce890f63e4bc4caebe59260699.png)'
 - en: '[https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg](https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg)'
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg](https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg)'
 - en: Previously, we explored various methods to accomplish this, including PostGIS,
     Redshift, and BigQuery. We ultimately established pipelines to process 200 billion
     rows daily through approximately 140 million polygons on BigQuery.
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 之前，我们探索了包括 PostGIS、Redshift 和 BigQuery 在内的多种方法来实现这一目标。最终，我们建立了管道，通过大约 1.4 亿个多边形在
+    BigQuery 上处理每日 2000 亿行数据。
 - en: With recent advancements in GPU processing, I was intrigued to re-evaluate this
     task and assess the processing time feasible on a GPU using my laboratory machine.
     This article details the process of conducting this task on a consumer GPU (GeForce
@@ -100,72 +106,87 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着 GPU 处理技术的最新进展，我对重新评估这项任务以及使用我的实验室机器评估 GPU 上的处理时间产生了兴趣。本文详细介绍了在消费者 GPU（GeForce
+    GTX 1060）上执行这项任务的过程和所需时间。
 - en: The setup
   id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 设置
 - en: 'You can read about the setup, data-preprocessing, and the rest here :'
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在这里阅读关于设置、数据预处理和其他内容：
 - en: '[](https://medium.com/@voycey/gpu-data-engineering-csv-to-parquet-orc-using-dask-rapids-ai-2d68f7912458?source=post_page-----c6cb531949ed--------------------------------)
     [## GPU Data Engineering, CSV to Parquet & ORC using Dask & RAPIDS.ai'
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## GPU 数据工程，使用 Dask 和 RAPIDS.ai 将 CSV 转换为 Parquet 和 ORC](https://medium.com/@voycey/gpu-data-engineering-csv-to-parquet-orc-using-dask-rapids-ai-2d68f7912458?source=post_page-----c6cb531949ed--------------------------------)'
 - en: Up until recently the majority of my data engineering work was around designing
     and deploying Data pipelines in either…
   id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 直到最近，我的大部分数据工程工作都集中在设计和部署数据管道上，通常是在…
 - en: medium.com](https://medium.com/@voycey/gpu-data-engineering-csv-to-parquet-orc-using-dask-rapids-ai-2d68f7912458?source=post_page-----c6cb531949ed--------------------------------)
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '[medium.com](https://medium.com/@voycey/gpu-data-engineering-csv-to-parquet-orc-using-dask-rapids-ai-2d68f7912458?source=post_page-----c6cb531949ed--------------------------------)'
 - en: The dataset used in this experiment consists of CSV latitude and longitude points
     and a single polygon representing Las Vegas. The dataset was converted to Parquet
     and ORC to evaluate the performance differences between these formats.
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 该实验使用的数据集包含 CSV 格式的经纬度点和一个表示拉斯维加斯的多边形。数据集被转换为 Parquet 和 ORC 格式，以评估这些格式之间的性能差异。
 - en: CuSpatial, a library built on rapids.ai specialising in geospatial and GIS applications,
     was used for the actual performance test.
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: CuSpatial 是一个基于 rapids.ai 的库，专注于地理空间和 GIS 应用程序，用于实际性能测试。
 - en: '[](https://github.com/rapidsai/cuspatial?source=post_page-----c6cb531949ed--------------------------------)
     [## GitHub - rapidsai/cuspatial: CUDA-accelerated GIS and spatiotemporal algorithms'
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## GitHub - rapidsai/cuspatial: CUDA 加速的 GIS 和时空算法](https://github.com/rapidsai/cuspatial?source=post_page-----c6cb531949ed--------------------------------)'
 - en: cuSpatial accelerates vector geospatial operations through GPU parallelization.
     As part of the RAPIDS libraries…
   id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: cuSpatial 通过 GPU 并行化加速矢量地理空间操作。作为 RAPIDS 库的一部分…
 - en: github.com](https://github.com/rapidsai/cuspatial?source=post_page-----c6cb531949ed--------------------------------)
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '[github.com](https://github.com/rapidsai/cuspatial?source=post_page-----c6cb531949ed--------------------------------)'
 - en: I intentionally avoided utilising any spatial indexing or other methods to enhance
     performance. This experiment should be considered as a baseline performance, which
     can be significantly improved through various techniques.
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我故意避免使用任何空间索引或其他方法来提升性能。这项实验应被视为基线性能，经过各种技术手段可以显著提升。
 - en: The dataset is approximately 400GB uncompressed and contains 2.8 billion rows
     of point data.
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集约 400GB 未压缩，包含 28 亿行点数据。
 - en: The Code
   id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 代码
 - en: The code provided below relies on Rapids.ai and Dask (specifically *dask_cudf*)
     to process the data on a GPU and divide the data to fit the limited GPU memory.
     This process involved a significant amount of tweaking and format-specific error
@@ -308,12 +329,14 @@
   id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 回顾起来，解决方案是使用*map_partitions*来处理* dask_cudf* 框架中的数据。交错需要在 map_partitions 函数内进行，而不是在传递之前，这样只对每个分区进行交错，而不是整个数据框。
 - en: This was not as straightforward as it seemed due to issues with Pickle serialisation
     of the function, ultimately requiring the creation of the “*wrapped_spatial_join*”
     function.
   id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 这并不像看起来那么简单，因为函数的 Pickle 序列化存在问题，最终需要创建“*wrapped_spatial_join*”函数。
 - en: In hindsight it was an obvious solution, I would have to use *map_partitions*
     to chunk through the data in the *dask_cudf* frame, the interleave needed to be
     done within the *map_partitions* function instead of prior to passing it to *map_partitions*
@@ -321,23 +344,27 @@
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 事后看来，这是一个显而易见的解决方案，我本应该使用*map_partitions*来处理*dask_cudf* 框架中的数据，交错需要在*map_partitions*函数内完成，而不是在传递给*map_partitions*之前，这样只对每个块进行交错，而不是整个数据框。
 - en: This also wasn’t as simple as described because *dask* didn’t like having other
     functions inside the *map_partitions* function (it causes problems with Pickle
     serialisation of the function — hence the final “*wrapped_spatial_join*” function.
   id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 这也并不像描述的那样简单，因为*dask* 不喜欢在*map_partitions*函数内包含其他函数（这会导致 Pickle 序列化函数的问题——因此最终有了“*wrapped_spatial_join*”函数）。
 - en: Data size and type challenges
   id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 数据大小和类型挑战
 - en: Another issue encountered was the size limitation of the dataset for *cuDF*,
     which is restricted by the size of *INT_32* (2,147,483,647). My dataset consisted
     of approximately 2.3 billion records, exceeding this limit.
   id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个遇到的问题是*cuDF*的数据集大小限制，由*INT_32*（2,147,483,647）大小限制。我的数据集大约包含 23 亿条记录，超出了这个限制。
 - en: This meant it was impossible to process the entire dataset at once, necessitating
     the completion of all operations on data partitions. One example of this was the
     final count of points within and outside polygons. A straightforward *result.value_counts()*
@@ -346,6 +373,7 @@
   id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着不可能一次性处理整个数据集，因此必须对数据分区完成所有操作。其中一个例子是多边形内外点的最终计数。不能使用简单的*result.value_counts()*，需要对每个分区进行单独计算，然后汇总结果。
 - en: This consideration becomes particularly important for larger or wider datasets
     that require complex calculations across them, as working on the full dataset
     might not be feasible. This was really the main focus of this experiment, as now
@@ -354,11 +382,14 @@
   id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于需要在数据集上进行复杂计算的大型或宽数据集，这一点尤为重要，因为处理整个数据集可能不可行。这实际上是这次实验的主要焦点，因为现在这在小型 GPU 上有效，你可以确信相同的过程可以应用于更大的
+    GPU 和更大的数据集！
 - en: Conclusions
   id: totrans-62
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: In terms of performance, Parquet took longer to convert but was more efficient
     once the conversion was complete. Depending on the workflow, this may be a critical
     factor to consider. Generally, data only needs to be converted once but may be
@@ -366,12 +397,15 @@
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 就性能而言，Parquet 转换所需时间较长，但一旦转换完成，其效率更高。根据工作流程，这可能是一个关键因素。通常，数据只需转换一次，但可能会经历多次分析，使得
+    Parquet 成为更合适的选择。
 - en: On the other hand, ORC conversion was faster but less efficient during calculations.
     For more ad-hoc computations, ORC may be preferable, especially when used with
     a tool like TrinoDB that has a highly efficient ORC engine.
   id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，ORC 转换更快，但在计算时效率较低。对于更多的临时计算，ORC 可能更可取，特别是与具有高效 ORC 引擎的工具如 TrinoDB 一起使用时。
 - en: Both formats exhibited strong performance on limited hardware. With some basic
     optimisations, it is likely that their performance could be further enhanced.
     It is valuable to observe the baseline performance of each format.
@@ -379,11 +413,13 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 两种格式在有限的硬件上表现出强大的性能。通过一些基本优化，它们的性能可能会进一步提高。观察每种格式的基线性能是很有价值的。
 - en: Future Experiments
   id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 未来实验
 - en: In the future, I aim to run the same experiment on multiple polygons and explore
     methods for handling them. For instance, I will perform a spatial join on a dataset
     of zip codes in the Las Vegas area to examine the feasibility of processing multiple
