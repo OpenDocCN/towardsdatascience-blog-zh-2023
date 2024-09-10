@@ -1,13 +1,16 @@
 - en: PyTorch Model Performance Analysis and Optimization — Part 2
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91?source=collection_archive---------4-----------------------#2023-06-19](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91?source=collection_archive---------4-----------------------#2023-06-19)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: How to Identify and Reduce CPU Computation In Your Training Step with PyTorch
     Profiler and TensorBoard
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -15,24 +18,30 @@
     Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----3bc241be91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bc241be91--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3bc241be91--------------------------------)
     [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----3bc241be91--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-2-3bc241be91&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----3bc241be91---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bc241be91--------------------------------)
     ·15 min read·Jun 19, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bc241be91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-2-3bc241be91&user=Chaim+Rand&userId=9440b37e27fe&source=-----3bc241be91---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3bc241be91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-2-3bc241be91&source=-----3bc241be91---------------------bookmark_footer-----------)![](../Images/85e6474e09136c4c08ae6b01094ce27f.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Denise Chan](https://unsplash.com/@denmychan?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: 'This is the second part of a series of posts on the topic of analyzing and
@@ -47,12 +56,19 @@
     performance analyzer. In this post we will share some tips for identifying such
     performance issues when using [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
     and the [PyTorch Profiler TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是关于分析和优化在GPU上运行的PyTorch模型系列帖子的第二部分。在我们的[第一篇文章](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869)中，我们展示了使用[PyTorch
+    Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)和[TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)迭代分析和优化PyTorch模型的过程——以及*显著*的潜力。在这篇文章中，我们将重点关注由于使用急切执行而在PyTorch中尤其普遍的一种特定性能问题：模型执行的某些部分依赖于CPU。识别这些问题的存在和来源可能非常困难，并且通常需要使用专用的性能分析工具。在这篇文章中，我们将分享一些在使用[PyTorch
+    Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)和[PyTorch
+    Profiler TensorBoard插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)时识别此类性能问题的技巧。
 - en: The Pros and Cons of Eager Execution
+  id: totrans-10
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**急切执行的利与弊**'
 - en: One of the main appeals of PyTorch is its eager execution mode. In eager mode,
     each PyTorch operation that forms the model is executed independently as soon
     as it is reached. This is in contrast to graph mode in which the entire model
@@ -65,37 +81,55 @@
     our model more susceptible to (sometimes accidental) insertion of suboptimal blocks
     of code. As we will demonstrate, knowing how to identify and fix such blocks of
     code can have a significant impact on the speed of your model.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: PyTorch的主要吸引力之一是其急切执行模式。在急切模式下，每个PyTorch操作在到达时都会立即独立执行。这与图形模式相对，在图形模式中，整个模型会被预先编译成一个单一的图形，以适合在GPU上运行，并作为一个整体执行。通常，这种预编译会带来更好的性能（例如，见[这里](https://medium.com/towards-data-science/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d)）。在急切模式下，编程上下文在每个操作后返回到应用程序，从而允许我们访问和评估任意张量。这使得构建、分析和调试机器学习模型变得更加容易。另一方面，这也使得我们的模型更容易受到（有时是偶然的）低效代码块的插入。正如我们将展示的那样，知道如何识别和修复这些代码块可以对模型的速度产生显著影响。
 - en: Toy Example
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 玩具示例
 - en: In the following blocks we introduce the toy example we will use for our demonstration.
     The code is very loosely based on the example from our [previous post](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
     and the loss function defined in [this PyTorch tutorial](https://pytorch.org/tutorials/beginner/nn_tutorial.html).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的代码块中，我们介绍了用于演示的玩具示例。代码是非常宽松地基于我们[之前的文章](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869)和[这个PyTorch教程](https://pytorch.org/tutorials/beginner/nn_tutorial.html)中定义的损失函数。
 - en: We start by defining a simple image-patch classification model. Its architecture
     is not significant for this post.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从定义一个简单的图像块分类模型开始。其架构对于本篇文章并不重要。
 - en: '[PRE0]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Next, we define a pretty standard cross-entropy loss function. This loss function
     will be the main focus of our discussion.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们定义一个相当标准的交叉熵损失函数。这个损失函数将是我们讨论的主要焦点。
 - en: '[PRE1]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Last, we define the dataset and the training loop:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们定义数据集和训练循环：
 - en: '[PRE2]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: An experienced PyTorch developer may have already noticed that our example contains
     a number of inefficient lines of code in the loss function. At the same time,
     there is nothing *obviously* wrong with it and these types of inefficiencies are
@@ -104,6 +138,7 @@
     on. In the next sections we will assume that we were *not* able to find these
     issues on our own and show how we can use PyTorch Profiler and its associated
     TensorBoard plugin to identify them.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: As in our [previous post](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869),
@@ -113,6 +148,7 @@
     PyTorch 2.0 Docker image](https://github.com/aws/deep-learning-containers). Our
     choice of training environment was somewhat arbitrary and should **not** be viewed
     as an endorsement of any of its components.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
 - en: In this post we will focus on the Trace View portion of the PyTorch Profiler
@@ -124,19 +160,24 @@
     For the purposes of our blog post we will rely on the step times reported by PyTorch
     Profiler. For some of our experiments we will introduce an artificial synchronization
     event to force host-device alignment.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: Initial Performance Results
+  id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'In the image below we show the Trace View result of the script above:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/2a3d4c3d25181cd54994b70fbd9643b1.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
 - en: Trace View of Baseline Model (Captured by Author)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: As highlighted, the training step takes roughly 9.35 milliseconds, about **a
@@ -148,6 +189,7 @@
     “to”, “copy_”, and “cudaStreamSynchronize”. This combination usually indicates
     that data is being copied from the CPU into the GPU — not something we want to
     be happening in the middle of our loss calculation.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: We now know that we have a performance issue in our loss function and that it
@@ -156,62 +198,80 @@
     the issue. To facilitate our search we will wrap each line of code with a labeled
     [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
     context manager and rerun the profiling analysis.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The addition of the labels help us identify the *weight* definition, or more
     accurately, the copying of the weights into the GPU, as the problematic line of
     code.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/221bdc70575c808f4878212a59a67b9e.png)'
+  id: totrans-31
   prefs: []
   type: TYPE_IMG
 - en: Performance Issue of Weights Definition as Seen in Trace View (Captured by Author)
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: In the loss function, as it is currently defined, we are copying the weight
     vector into the GPU in every training step. Being that our weight vector is constant,
     this seems highly wasteful.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: 'Optimization #1: Remove redundant host-to-GPU copies from the training step'
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Once we have identified our first issue, fixing it is rather trivial. In the
     code block below, we copy our weight vector to the GPU a single time in the loss
     *init* function:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The image below shows the results of the performance analysis following this
     fix:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/54df6aba7a2b6810871608a221bc4a0f.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
 - en: 'Trace View Following Optimization #1 (Captured by Author)'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: While our step time has dropped down to 8.9 milliseconds, we can clearly see
     that we have a new performance issue that we need to address, this time in the
     *weighted_nll* function. As before, we can use [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
     to identify the problematic line of code as the *assert* call.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Note that this issue existed in the base experiment, as well, but was hidden
     by our previous performance issue. It is not uncommon in the course of performance
     optimization for severe issues, that were previously hidden by other issues, to
     suddenly appear in this manner.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: A closer analysis of the call stack shows calls to “item”, “_local_scalar_dense”,
@@ -219,9 +279,11 @@
     the GPU to the host. Indeed, our *assert* call, which is performed on the CPU,
     requires access to the *target* tensor residing on the GPU, thus invoking the
     highly inefficient data copy.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: 'Optimization #2: Remove redundant GPU-to-host copies from the training step'
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -229,6 +291,7 @@
     be done in a way that does not impact our training performance so negatively.
     In our case, fixing the issue is a simple matter of moving the *assert* to the
     data input pipeline, before the labels are copied into the GPU.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: '**Important Note**: Although our goal is usually to attempt to reduce copies
@@ -236,72 +299,112 @@
     either not possible (e.g., if we require a kernel that is not supported by the
     GPU) or undesirable (e.g., if running a particular kernel on the CPU will increase
     performance).'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '**重要提示**：虽然我们的目标通常是尝试减少主机和 GPU 之间的拷贝，但有时这要么不可行（例如，如果我们需要 GPU 不支持的内核），要么不理想（例如，如果在
+    CPU 上运行特定内核会提高性能）。'
 - en: 'Following the removal of the *assert* our step time drops to 8.71 milliseconds
     and a new performance issue surfaces:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在移除 *assert* 后，我们的步骤时间下降到 8.71 毫秒，新的性能问题浮现：
 - en: '![](../Images/f85f0359594735cc6c2cca38e726549f.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f85f0359594735cc6c2cca38e726549f.png)'
 - en: 'Trace View Following Optimization #2 (Captured by Author)'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '优化 #2 之后的跟踪视图（由作者捕获）'
 - en: The indexes into the *pred* tensor in the *weighted_nll* are defined by the
     *r* and *target* tensors. While the *target* tensor already resides on the GPU,
     the *r* tensor, which was defined on the previous line, does not. This, once again,
     triggers an inefficient host-to-GPU data copy.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 *weighted_nll* 中，*pred* 张量的索引由 *r* 和 *target* 张量定义。虽然 *target* 张量已经在 GPU 上，但在前一行中定义的
+    *r* 张量却没有。这再次触发了低效的主机到 GPU 数据拷贝。
 - en: 'Optimization #3: Replace range with [torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html)'
+  id: totrans-51
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '优化 #3：用 [torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html)
+    替换 range'
 - en: 'Python’s *range* function outputs a list on the CPU. The presence of any list
     in your training step should be a red flag. In the code block below, we replace
     the use of *range* with [torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html)
     and configure it to create the output tensor directly on the GPU:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: Python 的 *range* 函数在 CPU 上输出一个列表。在训练步骤中出现任何列表都应该引起警惕。在下面的代码块中，我们将 *range* 替换为
+    [torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html) 并将其配置为直接在
+    GPU 上创建输出张量：
 - en: '[PRE6]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The results of this optimization are shown below:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 该优化的结果如下：
 - en: '![](../Images/c1804eae7c94c5137ccbed54a4939496.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c1804eae7c94c5137ccbed54a4939496.png)'
 - en: 'Trace View Following Optimization #3 (Captured by Author)'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '优化 #3 之后的跟踪视图（由作者捕获）'
 - en: 'Now we’re talking!! Our step time has dropped all the way down to 5.63 milliseconds.
     But if this seems to you to be too good to be true, you are correct. The long
     synchronization event following the last profiler-step indicates that the GPU
     is lagging behind the CPU and that the total step time is somewhat higher. To
     get a more accurate reading, let’s append an artificial synchronization event
     to the end of each training step for the remainder of our experiments:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们谈到的确实令人兴奋！！我们的步骤时间已经下降到 5.63 毫秒。但如果这对你来说好得不真实，那你是对的。最后的 profiler 步骤后出现的长同步事件表明
+    GPU 落后于 CPU，整体步骤时间稍高。为了获得更准确的读数，让我们在实验的其余部分中将一个人工同步事件附加到每个训练步骤的末尾：
 - en: '[PRE7]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: With the addition of the artificial synchronization event, our new *baseline*
     step time is ten milliseconds.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 添加人工同步事件后，我们新的 *基准* 步骤时间是十毫秒。
 - en: To identify further opportunities for optimization, let’s take a closer look
     at the Trace View of the *weighted_nll* function which takes up the majority of
     the loss calculation.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了识别进一步的优化机会，让我们仔细查看 *weighted_nll* 函数的跟踪视图，该函数占据了大部分损失计算。
 - en: '![](../Images/5df7030a1caf95b198a8e6d6b0aa4513.png)'
+  id: totrans-61
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5df7030a1caf95b198a8e6d6b0aa4513.png)'
 - en: Trace View of *weighted_nll Function* (Captured by Author)
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '*weighted_nll 函数* 的跟踪视图（由作者捕获）'
 - en: We can see from the trace that the function is formed from multiple small blocks,
     each of which is ultimately mapped to an individual CUDA kernel which is loaded
     onto the GPU via the *CudaLaunchKernel* call. Ideally, we would like to reduce
@@ -311,92 +414,145 @@
     operators, such as [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss).
     Such functions are presumed to “fuse" together underlying operations, thus requiring
     a lower number of overall kernels.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 从跟踪中我们可以看到，这个函数由多个小块组成，每个小块最终被映射到一个单独的 CUDA 核心，通过*CudaLaunchKernel*调用加载到 GPU
+    上。理想情况下，我们希望减少 GPU 核心的总数。这不仅会减少 CPU 和 GPU 之间的交互，还可能减少 GPU 操作的总数。实现这一目标的一种方法是，尽可能优先使用更高层次的
+    PyTorch 操作符，如 [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)。这些函数被假定为“融合”底层操作，从而减少整体核心的数量。
 - en: 'Optimization #4: Replace custom NLL with [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)'
+  id: totrans-64
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '优化 #4：用 [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    替换自定义的 NLL'
 - en: The code block below contains our updated loss definition, which now uses [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss).
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的代码块包含我们更新后的损失定义，现在使用 [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)。
 - en: '[PRE8]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Here we have taken the liberty of introducing another common error which we
     will proceed to demonstrate.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们擅自引入了另一个常见的错误，并将继续进行演示。
 - en: Using the higher-level function further reduces our step time to 9 milliseconds.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用更高层次的函数进一步将我们的步骤时间缩短到 9 毫秒。
 - en: '![](../Images/5081b62890d478d4e0a02a79dd8dcb8d.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5081b62890d478d4e0a02a79dd8dcb8d.png)'
 - en: 'Trace View Following Optimization #4 (Captured by Author)'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '优化后的跟踪视图 #4（作者拍摄）'
 - en: However, zooming in on the loss function, we can see that a significant amount
     of time is now spent on *initializing* the [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
     object!
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，放大损失函数后，我们可以看到大量时间现在花在*初始化* [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    对象上！
 - en: '![](../Images/e1e0723d509fef638c4165cb77349716.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e1e0723d509fef638c4165cb77349716.png)'
 - en: 'Trace View of the *Loss Function* Following Optimization #4(Captured by Author)'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '优化后的损失函数跟踪视图 #4（作者拍摄）'
 - en: Looking back at our loss function, we can see that we are initializing a new
     [NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
     object in each iteration of the training step! Naturally, object initialization
     occurs on the CPU, and although (in our case) it is relatively fast, it is something
     we would like to avoid doing during our training step.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 回顾我们的损失函数，我们可以看到在每次训练步骤中我们都会初始化一个新的 [NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    对象！自然地，对象初始化发生在 CPU 上，尽管（在我们的情况下）它相对较快，但这是我们希望在训练步骤中避免的。
 - en: 'Optimization #5: Refrain from initializing objects in the train step'
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '优化 #5：避免在训练步骤中初始化对象'
 - en: In the code block below we have modified our loss implementation so that a single
     instance of [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
     is created in the *init* function.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的代码块中，我们修改了我们的损失实现，使得在*init*函数中只创建一个 [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    实例。
 - en: '[PRE9]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: The results show an additional modest improvement.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果显示出额外的适度改进。
 - en: '![](../Images/8ec92226be7726c8bd9a9e967d5d36a5.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8ec92226be7726c8bd9a9e967d5d36a5.png)'
 - en: 'Trace View Following Optimization #5 (Captured by Author)'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '优化后的跟踪视图 #5（作者拍摄）'
 - en: 'Optimization #6: Use [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
     instead of custom loss'
+  id: totrans-81
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '优化 #6：使用 [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
+    替代自定义损失'
 - en: PyTorch includes a built-in [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
     which we now evaluate and compare with our custom loss implementation.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: PyTorch 包含一个内置的 [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)，我们现在评估并与我们自定义的损失实现进行比较。
 - en: '[PRE10]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'The resultant step time is a new low of 8.5 milliseconds, as shown below:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/af85807db4d1d3fa80c40c629029df47.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
 - en: 'Trace View Following Optimization #6 (Captured by Author)'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
 - en: 'Optimization #7: Compile loss function'
+  id: totrans-87
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -407,25 +563,33 @@
     torch.compile will use techniques such as *kernel fusion* and *out-of-order execution*
     to map the loss function into low-level compute kernels in a manner that is optimal
     for the underlying training accelerator.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE11]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: The image below shows the Trace View result of this experiment followed by a
     zoom-in of the loss function.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/bb97709b5851a1226deefe11cfce58ec.png)'
+  id: totrans-91
   prefs: []
   type: TYPE_IMG
 - en: Trace View Following Model Compilation (Captured by Author)
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/f08d43dfb632a714780cdec1cada9bbf.png)'
+  id: totrans-93
   prefs: []
   type: TYPE_IMG
 - en: Trace View of the Loss Function Following Model Compilation (Captured by Author)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: The first thing we can see is the appearance of terms containing “OptimizedModule”
@@ -436,6 +600,7 @@
     caused a slight increase in the time of the forward pass of the loss function.
     It appears that the [CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
     is not meaty enough to benefit from this optimization.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: You may be wondering why we can’t just apply torch compilation to our initial
@@ -450,9 +615,11 @@
     (One way to address this is to call torch.compile with the *fullgraph* flag set
     to *True*.) See [our previous post](/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d)
     for more details on using this option.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: Conclusions
+  id: totrans-97
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -460,13 +627,17 @@
     issues. Although the increase in training speed of our toy model was relatively
     modest (~15% when applying the artificial synchronization event) the potential
     impact of optimizations such as the ones we demonstrated can be very significant.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们展示了发现和解决一些性能问题的过程。尽管应用人工同步事件后，我们的玩具模型的训练速度增加了相对较少的百分比（约15%），但我们展示的优化潜在影响可能非常显著。
 - en: Recall that we started with a pretty innocent looking loss function. Without
     an in-depth analysis of our application’s behavior, we may have never known that
     there was anything wrong with it.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住，我们最初使用的损失函数看起来相当简单。如果没有对我们应用程序行为进行深入分析，我们可能永远不会意识到其中存在问题。
 - en: Let’s summarize some of the things we have learned. We divide the summary into
     two parts. In the first, we describe some coding habits that may impact training
     performance. In the second, we recommend some tips for performance profiling.
@@ -474,102 +645,144 @@
     post and may not apply to your own use case. Machine learning models vary greatly
     in property and behavior. Therefore, you are strongly advised to assess these
     conclusions based on the details of your own project.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们总结一些我们所学到的东西。我们将总结分为两部分。在第一部分中，我们描述了一些可能影响训练性能的编码习惯。在第二部分中，我们推荐了一些性能分析的技巧。请注意，这些结论基于我们在本文中分享的示例，可能不适用于您自己的用例。机器学习模型在属性和行为上有很大的差异。因此，强烈建议您根据您自己项目的细节来评估这些结论。
 - en: Coding Tips
+  id: totrans-101
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 编码提示
 - en: The way in which you implement the forward pass of your model can have a significant
     impact on its performance. Here we list just a few recommendations based on the
     example that we covered in this post.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 您实现模型前向传播的方式可能会显著影响其性能。这里我们仅列出了一些基于我们在本文中涵盖的示例的建议。
 - en: Avoid initializing constant tensors in the forward pass. Do it in the constructor
     instead.
+  id: totrans-103
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 避免在前向传播中初始化常量张量，应在构造函数中进行初始化。
 - en: Avoid using *asserts* on tensors residing on the GPU in the forward pass. Either
     move them to the data input pipeline and/or check if PyTorch has any built-in
     methods for performing the data verification that you need.
+  id: totrans-104
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 避免在前向传播中对驻留在GPU上的张量使用*asserts*。可以将它们移动到数据输入管道，并/或者检查PyTorch是否有任何用于执行所需数据验证的内置方法。
 - en: Avoid the use of lists. Check if using torch.arange to create a tensor directly
     on the device can be a better alternative.
+  id: totrans-105
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 避免使用列表。检查是否可以使用torch.arange直接在设备上创建张量作为更好的替代方案。
 - en: Use PyTorch operators such as [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
     and [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
     rather than creating your own loss implementations.
+  id: totrans-106
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用PyTorch操作符，如[torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)和[torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)，而不是创建自己的损失实现。
 - en: Avoid initializing objects in the forward pass. Do it in the constructor instead.
+  id: totrans-107
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 避免在前向传播中初始化对象，应在构造函数中进行初始化。
 - en: Consider using torch.compile when relevant.
+  id: totrans-108
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在相关情况下考虑使用torch.compile。
 - en: Performance Analysis Tips
+  id: totrans-109
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 性能分析提示
 - en: 'As we demonstrated, the Trace View of the Tensorboard PyTorch Profiler plugin
     was critical in identifying the performance issues in our model. Below we summarize
     some of the primary takeaways from our example:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们展示的那样，Tensorboard PyTorch Profiler插件的Trace View对于识别我们模型中的性能问题至关重要。以下是我们示例中的一些主要收获总结：
 - en: High GPU utilization is NOT necessarily a sign that your code is running optimally.
+  id: totrans-111
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 高GPU利用率并不一定意味着您的代码运行良好。
 - en: Look out for portions of the code that take longer than expected.
+  id: totrans-112
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 注意代码中可能超出预期时间的部分。
 - en: Use [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
     to pinpoint performance issues.
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用[torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)来准确定位性能问题。
 - en: Dips in GPU utilization are not necessarily aligned with the source of the performance
     issue.
+  id: totrans-114
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: GPU利用率的下降并不一定与性能问题的源对齐。
 - en: Look out for unintended data copies from the host to the GPU. These are typically
     identified by calls to “to”, “copy_”, and “cudaStreamSynchronize”, which you can
     search for in the Trace View.
+  id: totrans-115
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 注意防止从主机到GPU的意外数据复制。通常通过“to”、“copy_”和“cudaStreamSynchronize”调用来识别这些操作，您可以在Trace
+    View中搜索这些调用。
 - en: Look out for unintended data copies from the GPU to the host. These are typically
     identified by calls to “item”, and “cudaStreamSynchronize”, which you can search
     for in the Trace View.
+  id: totrans-116
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 注意避免从GPU到主机的无意数据拷贝。这些通常通过“item”和“cudaStreamSynchronize”调用来识别，你可以在Trace View中搜索这些调用。
 - en: Although our demonstration has neared its end, **our optimization work is not
     done**. See our [previous post](https://chaimrand.medium.com/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
     for some ideas on how to proceed from here.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管我们的演示接近尾声，**我们的优化工作还没有完成**。请参见我们的[上一篇文章](https://chaimrand.medium.com/pytorch-model-performance-analysis-and-optimization-10c3c5822869)以获取下一步的建议。
 - en: Summary
+  id: totrans-118
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 摘要
 - en: In this post we have focused on performance issues in training applications
     resulting from redundant interaction between the CPU and GPU during the forward
     pass of the training step. We demonstrated how performance analyzers such as PyTorch
     Profiler and its associated TensorBoard plugin can be used to identify such issues
     and facilitate significant performance improvement.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们重点讨论了训练应用程序中由于CPU和GPU在前向传播阶段之间的冗余交互而导致的性能问题。我们展示了如何使用性能分析工具，如PyTorch
+    Profiler及其关联的TensorBoard插件，来识别这些问题并实现显著的性能提升。
 - en: As in our previous post, we emphasize that the path to successful optimization
     will vary greatly based on the details of the training project, including the
     model architecture and training environment. In practice, reaching your goals
@@ -579,17 +792,23 @@
     in which we chose to apply them, was somewhat arbitrary. You are highly encouraged
     to develop your own tools and techniques for reaching your optimization goals
     based on the specific details of your project.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 与我们之前的文章一样，我们强调成功优化的路径会根据训练项目的细节，包括模型架构和训练环境，差异很大。在实践中，达到你的目标可能比我们这里展示的例子更为困难。我们描述的一些技术可能对你的性能影响甚微，甚至可能使其变差。我们还指出，我们选择的具体优化和应用它们的顺序是有些随意的。强烈建议你根据项目的具体细节开发自己的工具和技术以实现优化目标。
 - en: What Next?
+  id: totrans-121
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 接下来做什么？
 - en: In the [third post](/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2)
     in our series on PyTorch model performance optimization we discuss how to identify
     and reduce cudaMemcpyAsync events and why it’s best to avoid Boolean mask operations.
     We also encourage you to check out our [other posts on medium](https://chaimrand.medium.com/),
     many of which cover different elements of performance optimization of machine
     learning workloads.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们关于PyTorch模型性能优化的[第三篇文章](/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2)中，我们讨论了如何识别和减少cudaMemcpyAsync事件以及为什么最好避免布尔掩码操作。我们也鼓励你查看我们在[Medium上的其他文章](https://chaimrand.medium.com/)，其中许多文章涵盖了机器学习工作负载性能优化的不同方面。
