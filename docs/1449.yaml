@@ -1,12 +1,15 @@
 - en: A Serverless Query Engine from Spare Parts
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27](https://towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '***An open-source implementation of a Data Lake with DuckDB and AWS Lambdas***'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,24 +17,30 @@
     Greco](../Images/4a20e5d435998e8d8ff7aeac1f8ff60d.png)](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)
     [Ciro Greco](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1a8912e69301&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=post_page-1a8912e69301----bd6320f10353---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)
     ·9 min read·Apr 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=-----bd6320f10353---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&source=-----bd6320f10353---------------------bookmark_footer-----------)![](../Images/85ce8738302baf64cec9764042261d18.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: A duck in the cloud. Photo by [László Glatz](https://unsplash.com/ko/@glatz0?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: 'In this post we will show how to build a simple end-to-end application in the
@@ -40,39 +49,50 @@
     of designing and building infrastructure. Plus, we will put together a design
     that minimizes costs compared to modern data warehouses, such as Big Query or
     Snowflake.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: As data practitioners we want (and love) to build applications on top of our
     data as seamlessly as possible. Whether you work in BI, Data Science or ML all
     that matters is the final application and how fast you can see it working end-to-end.
     The infrastructure often gets in the way though.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为数据从业者，我们希望（并且喜欢）尽可能无缝地在我们的数据上构建应用程序。无论你是从事 BI、数据科学还是机器学习，最终的应用程序和你看到它端到端运行的速度才是最重要的。然而，基础设施往往会成为障碍。
 - en: Imagine, as a practical example, that we need to build a new customer-facing
     analytics application for our product team. Because it’s client-facing we have
     performance constraints we need to respect, such as low latency.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下，作为一个实际例子，我们需要为我们的产品团队构建一个新的面向客户的分析应用。因为这是面向客户的，所以我们需要尊重一些性能约束，例如低延迟。
 - en: 'We can start developing it directly in the cloud, but it would immediately
     bring us to some infra questions: where do we run it? How big a machine do we
     need? Because of the low-latency requirement, do we need to build a caching layer?
     If so, how do we do it?'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以直接在云中开始开发，但这会立即引出一些基础设施问题：我们在哪里运行它？我们需要多大的机器？由于低延迟的要求，我们是否需要构建一个缓存层？如果是的话，我们该怎么做？
 - en: Alternatively, we can develop our app locally. It will probably be more intuitive
     from the developer experience point of view but it only postpones the infra questions,
     since in the end we will have to find a way to go from our local project to actual
     pipelines. Moreover, the data will need to leave the cloud env to go on our machine,
     which is not exactly secure and auditable.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，我们可以在本地开发我们的应用。从开发者体验的角度来看，这可能更直观，但这只是推迟了基础设施问题，因为最终我们必须找到一种方法将本地项目转移到实际的管道中。此外，数据需要离开云环境到达我们的机器，这并不完全安全和可审计。
 - en: To make the cloud experience as smooth as possible we designed a data lake architecture
     where data are sitting in a simple cloud storage (AWS S3) and a serverless infrastructure
     that embeds DuckDB works as a query engine. At the end of the cycle, we will have
     an analytics app that can be used to both visualize and query the data in real
     time with virtually no infra costs.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使云体验尽可能顺畅，我们设计了一个数据湖架构，其中数据存储在一个简单的云存储（AWS S3）中，嵌入 DuckDB 的无服务器基础设施作为查询引擎。在周期结束时，我们将拥有一个分析应用，可以实时可视化和查询数据，几乎没有基础设施成本。
 - en: 'Of course, this is a bit of a simplification, as some tweaks would be needed
     to run this project in real production scenarios. What we provide is a general
     blueprint to leverage the separation of storage and compute to build a data lake
@@ -81,36 +101,50 @@
     In our implementation, the final application is a simple [Streamlit](https://streamlit.io/)
     app, but that’s merely for explanatory purposes: you can easily think of plugging
     in your favorite BI tool.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，这有些简化，因为在实际生产场景中运行这个项目还需要一些调整。我们提供的是一个通用蓝图，利用存储和计算的分离来在云端构建数据湖和查询引擎。我们展示了如何通过一个（几乎）免费的云端终端、无需仓库设置以及闪电般的性能来支持一个交互式数据应用。在我们的实现中，最终的应用是一个简单的
+    [Streamlit](https://streamlit.io/) 应用，但这仅仅是为了说明目的：你可以轻松地考虑将其与自己喜欢的 BI 工具连接起来。
 - en: '![](../Images/1b264fdda718c5e216ad75968adfa68a.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1b264fdda718c5e216ad75968adfa68a.png)'
 - en: A lightinign fast analytics app built with our system. Image from the authors.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 用我们的系统构建的闪电般快速的分析应用。图片来自作者。
 - en: '**Ducks go serverless**'
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**鸭子无服务器化**'
 - en: Y’all know DuckDB at this point. It is an open-source in-process SQL OLAP database
     built specifically for analytical queries. It is somewhat still unclear how much
     DuckDB is actually [used in production](https://dlthub.com/docs/blog/duckdb-1M-downloads-users),
     but for us today the killer feature is the possibility of querying parquet files
     directly in S3 with SQL syntax.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 你们现在都知道 DuckDB 了。它是一个开源的内存中 SQL OLAP 数据库，专为分析查询而构建。DuckDB 实际上在 [生产环境中使用](https://dlthub.com/docs/blog/duckdb-1M-downloads-users)
+    的情况还不太清楚，但对我们来说，杀手级功能是可以用 SQL 语法直接查询 S3 中的 parquet 文件。
 - en: So most practitioners seem to be using it right now as a local engine for data
     exploration, *ad hoc* analysis, POCs and prototyping (with some [creative ideas](https://duckdb.org/2022/10/12/modern-data-stack-in-a-box.html)
     on how to extend its initial purpose to cover more surface). People create notebooks
     or small data apps with embedded DuckDB to prototype and experiment with production
     data locally.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
 - en: The cloud is better. And if we often feel it isn’t, it’s because something is
     wrong with the tool chain we use, but there is a very big difference between a
     [bad idea](https://www.facebook.com/CoachBillHart/videos/yep-worst-idea-ever/682926339663235/)
     and a [good idea badly executed](https://www.ebay.com/itm/256040369567).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
 - en: 'If we combine a data lake architecture, a serverless design, DuckDB and a bit
@@ -119,18 +153,22 @@
     standard pricing is $0.023 per GB, AWS Lambda is very fast and scales to zero
     when not in use, so it is a no-fat computation bill, plus AWS gives you 1M calls
     for free.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: Buckle up, [clone the repo](https://github.com/BauplanLabs/quack-reduce/), sing
     along and for more details, please refer to the [README](https://github.com/BauplanLabs/quack-reduce#quack-reduce).
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
 - en: '**Architecture**'
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: This project is pretty self-contained and requires only introductory-level familiarity
     with cloud services and Python.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: The idea is to start from a Data Lake where our data are stored. Once the data
@@ -138,20 +176,25 @@
     a SQL query. At that point, our lambda goes up, spins up a DuckDB instance in
     memory, computes the query and gets back to the user with the results, which can
     be directly rendered as tables in the Terminal.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: 'The architecture has a number of advantages mostly coming from the serverless
     design: speed, proximity to the data and one line deployment are nice; plus, of
     course, the system scales to zero when not used, so we only pay per query.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/71a6d21d82c6f47b8725b63078a62a92.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
 - en: General architecture of our system. Image from the authors
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: '**Your first query engine + data lake from spare parts**'
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -163,6 +206,7 @@
     Once the data are in the data lake we can set up and use our lambda: if you have
     the Serverless CLI setup correctly, deploying the lambda is [one command of Make
     again](https://github.com/BauplanLabs/quack-reduce/blob/74846468fd7b5dd2087691d1bc3d7aaa8417aa39/src/Makefile#L7).'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: 'The lambda can be invoked in any of the usual ways, and accepts a query as
@@ -170,30 +214,38 @@
     start) to execute the query on the data lake. DuckDb does not know anything about
     the data before and after the execution, making the lambda purely stateless as
     far as data semantics is concerned.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: 'For instance, you can use the simple Python script in the project to send this
     query to the lambda, and display the results:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '![](../Images/921e7cc43ed0ce165484df9dbcb1bfcc.png)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
 - en: The results are visualized directly in your terminal. Image from the authors.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: 'Et voilà! You can now query your data lake, securely in the cloud. This very
     simple design addresses directly two of the typical frictions for working in cloud
     data warehouses:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: 'The setup is significantly simplified since all the user needs to do is to
     have her AWS credential. Once the setup is done, the user only needs access to
     the lambda (or any proxy to it!): that is good, as it gives the user full query
     capabilities without access to the underlying storage.'
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -201,10 +253,12 @@
     we always go through the cloud. A snappy cloud experience helps tame the too familiar
     feeling that advantages of working on remote machines is paid in the coin of good
     developer experience.
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: '**(Almost) Free Analytics**'
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -212,6 +266,7 @@
     query data on the fly. Let’s say that we want to build an application on top of
     a table. It’s a very simple app, there is no orchestration and no need to calibrate
     the workload.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: At the same time, let’s say that this application needs to be responsive, it
@@ -219,12 +274,14 @@
     how it is important to provide a fresh responsive experience to the clients who
     want to see their data. The one thing nobody likes is a dashboard that takes minutes
     to load.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: To see how this architecture can bridge the gap between data pipelines and real-time
     querying for analytics, we provide a small dbt DAG to simulate running some offline
     SQL transformations over the original dataset resulting in a new artifact in the
     data lake (the equivalent of a dashboard view).
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: To keep things as self contained as possible, we included a version that you
@@ -232,55 +289,74 @@
     engine behind it matter for this pattern to work). However, you can use a different
     runtime for dbt and export the final artifact as a parquet file, with [Snowflake](https://docs.snowflake.com/en/user-guide/script-data-load-transform-parquet)
     or [BigQuery](https://cloud.google.com/dataflow/docs/guides/templates/provided/bigquery-to-parquet).
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/ba65662b5f905758611fba300eb28d9d.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
 - en: Architecture of our system paired with a dbt project. Image from the authors.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: 'For the time being, we’ll stick to our super simple DAG made of two nodes.
     The first node takes the pickup_location_id from our data lake and order them
     by the number of trips:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'The second that gives as the top 200 pick up locations in our data set:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'We can visualize the DAG with dbt docs:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/f1fd934196a5b64422be3235ad0c551a.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
 - en: 'Once our pipeline is done, the final artifact is uploaded back to our data
     lake in:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'We can then reuse the query engine we built before to query the second (and
     final) node of our DAG to visualize the data in a Streamlit app, simply by running
     in the terminal:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Every time we hit the dashboard, the dashboard hits the lambda behind the scenes.
     If you like this simple architecture, the same pattern can be used in your own
     Streamlit app, or in your favorite BI tool.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '**A few remarks on the “Reasonable Scale”**'
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -298,6 +374,7 @@
     within large — sometimes enormous — organizations and yet have many reasonable
     scale pipelines, often for internal stakeholders, ranging from a few GB to at
     most a TB.'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: Recently, we happily witnessed a growing debate around whether companies need
@@ -308,6 +385,7 @@
     build an entire data stack to support low latency dashboards — maybe you could
     use a Data Warehouse and a caching layer -, but since your resources are limited,
     wouldn’t it be nice to have a simpler and cheaper way?
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
 - en: In this post, we showed that the combination of data-first storage formats,
@@ -318,10 +396,15 @@
     we can combine what is fundamentally right about local (“single node processing
     is all you need”) with what is fundamentally right about the cloud (“data is better
     processed elsewhere”).
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们展示了数据优先存储格式、按需计算和内存OLAP处理的组合如何在合理规模下开辟新的可能性。该系统虽然远未完善，且[还需要许多改进](https://github.com/BauplanLabs/quack-reduce#whats-next)，但它表明，人们可以构建一个无需数据仓库设置、性能极快且几乎无成本的互动数据应用。通过从DuckDB中移除数据库，我们可以将本地（“单节点处理是你所需的一切”）和云端（“数据在其他地方处理效果更好”）的优点结合起来。
 - en: I am spending most of my time thinking about serverless data infra. If you are
     interested, you have feedback on this post or simply want to chat, drop me a line
     at ciro.greco@bauplanlabs.com
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 我大部分时间都在思考无服务器数据基础设施。如果你感兴趣，或者对这篇文章有反馈，或者只是想聊聊，可以通过 ciros.greco@bauplanlabs.com
+    联系我。
