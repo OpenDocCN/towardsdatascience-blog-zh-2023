@@ -251,16 +251,19 @@
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们已经运行并维护了一个系统，我们想提出一些关于Snowflake中查询优化的想法。我们有一种超级简单的技术，通过对现有查询进行轻微调整，能够从系统中提取出大量的性能。
 - en: '**Query optimization**'
   id: totrans-39
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**查询优化**'
 - en: We run a multi-tenant system wherein a single Snowflake instance is responsible
     for the ETL of a lot of customer data. ETL is orchestrated by Airflow.
   id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们运行一个多租户系统，其中单个Snowflake实例负责处理大量客户数据的ETL。ETL由Airflow编排。
 - en: We create a warehouse per customer and run all the ETL & feature engineering
     on that warehouse. There are 100s of SQL queries that are fired against a warehouse
     in sequence and/or in parallel during the entire ETL run for the customer. One
@@ -269,6 +272,7 @@
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们为每个客户创建一个仓库，并在该仓库上运行所有ETL和特征工程。在整个ETL运行期间，对一个仓库会依次和/或并行地执行数百个SQL查询。一次运行可能持续一个小时，并且一天中可能有多次运行。
 - en: Essentially, one warehouse size runs all expensive as well as cheap queries.
     So our objective is to keep warehouse size at a minimum. We define minimums by
     defining SLAs for different ETL runs. Then we modify the warehouse size so that
@@ -277,6 +281,8 @@
   id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 本质上，一个仓库的大小运行所有昂贵的以及便宜的查询。因此我们的目标是将仓库大小保持在最低限度。我们通过为不同的ETL运行定义服务水平协议（SLA）来定义最小值。然后，我们调整仓库大小，以便可以在该大小下满足ETL
+    SLA。像任何工程组织一样，我们希望在满足SLA的情况下将仓库大小保持在最低限度。
 - en: We have dashboards where we monitor query patterns of the most expensive queries.
     These dashboards are at different levels of granularity. We monitor these dashboards
     constantly and keep tweaking the queries. Over time we have identified a few patterns
@@ -287,16 +293,19 @@
   id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有仪表板来监控最昂贵查询的查询模式。这些仪表板有不同的粒度级别。我们不断监控这些仪表板，并不断调整查询。随着时间的推移，我们识别出了一些昂贵查询中的模式，并制定了一本关于如何最小化这些查询运行时间的操作手册。我们将展示三个案例研究，概述查询的问题陈述、最初编写方式、该查询中的瓶颈以及其最终的最佳解决方案。
 - en: Window queries
   id: totrans-44
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 窗口查询
 - en: Scenario
   id: totrans-45
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 情景
 - en: We track users’ profile information from product analytics data. Product Analytics
     systems save multiple data points about their users, e.g., location, device, subscription
     status, etc. Some data points change frequently while others do not so much. Given
@@ -305,28 +314,34 @@
   id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从产品分析数据中跟踪用户的个人资料信息。产品分析系统保存有关用户的多个数据点，例如位置、设备、订阅状态等。一些数据点经常变化，而另一些则不那么频繁。鉴于这些数据的性质，这些信息在数据库中以追加日志的形式表示。
 - en: One of our feature engineering requirements is to capture the users’ latest
     profile info as of the ETL run.
   id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的一个特征工程需求是捕获用户最新的个人资料信息，作为ETL运行的一部分。
 - en: '![](../Images/b758fff47289b6182bb792dbf288cb70.png)'
   id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b758fff47289b6182bb792dbf288cb70.png)'
 - en: The above diagram gives a flowchart of the ETL.
   id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 上图给出了ETL的流程图。
 - en: '**1** is the raw_data from product analytics, **2** is the algorithm that we
     want to apply & **3** is the final result of the ETL.'
   id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1** 是来自产品分析的原始数据，**2** 是我们想要应用的算法，**3** 是ETL的最终结果。'
 - en: 'The SQL query that we have is this:'
   id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们拥有的SQL查询是这样的：
 - en: '[PRE0]'
   id: totrans-52
   prefs: []
@@ -337,40 +352,48 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 瓶颈
 - en: This query is pretty simple to come up with and works great in Snowflake. However,
     the window function in this query is a bottleneck.
   id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个查询很简单，而且在Snowflake中效果很好。然而，这个查询中的窗口函数是一个瓶颈。
 - en: 'Here’s how the query works:'
   id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询的工作原理如下：
 - en: create as many logical buckets as there are `user_ids`
   id: totrans-56
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建与`user_ids`数量相同的逻辑桶
 - en: '`sort` data in every bucket in descending order'
   id: totrans-57
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在每个桶中按降序`排序`数据
 - en: assign `row_numbers` to the arranged data
   id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将`row_numbers`分配给已排列的数据
 - en: '`qualify` the first entry in the bucket'
   id: totrans-59
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`标记`桶中的第一个条目'
 - en: '*discard* the remaining data.'
   id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*丢弃*剩余的数据。'
 - en: Based on the above explanation, we can see that as the data in the table increases,
     the number of buckets and the bucket sizes both will increase. Since we are dealing
     with an append-only dataset, we should be prepared for this eventuality. In Snowflake,
@@ -378,22 +401,27 @@
   id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据上述解释，我们可以看到，随着表中数据的增加，桶的数量和桶的大小都会增加。由于我们处理的是仅追加数据集，我们应该为这种情况做好准备。在 Snowflake
+    中，您会在查询分析器中注意到大小增加的趋势，表现为**字节溢出**。
 - en: Further, we need to understand that based on business requirements, it is expected
     for the number of buckets to increase, but as engineers, we can still keep the
     **size of an individual bucket** to a minimum.
   id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们需要理解，根据业务需求，桶的数量预计会增加，但作为工程师，我们仍然可以将**单个桶的大小**保持到最小。
 - en: Optimal solution
   id: totrans-63
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最优解决方案
 - en: We’ll come up with a technique to keep the entries being bucketed to a minimum
     by using **CTEs** & an **aggregate function**.
   id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将采用一种技术，通过使用**CTE**和**聚合函数**来将桶的数量保持到最小。
 - en: '[PRE1]'
   id: totrans-65
   prefs: []
@@ -409,37 +437,46 @@
   id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将 `descending sort expression` 的窗口查询子句转换为 `max() function`，然后将其与源数据连接以获得过滤器。通过使用此过滤器，我们确保数据不会被
+    `qualify` 子句丢弃，从而一开始就不会被桶化。这大大减少了窗口查询所执行的工作。此外，使用聚合函数的额外成本被减少的成本大大抵消，因此整体查询变得高效。
 - en: Pivot queries
   id: totrans-67
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Pivot 查询
 - en: Scenario
   id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 场景
 - en: We use a feature on event data that requires getting a per-user per-event count.
   id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用事件数据中的一个功能，该功能要求获取每个用户每个事件的计数。
 - en: To obtain this data, we perform a group by query and then transpose this data
     to organize it into columns as shown in the image below.
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了获得这些数据，我们执行一个分组查询，然后将这些数据转置以组织成列，如下图所示。
 - en: '**1** is the raw data & **2** is the output after the transformation.'
   id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1** 是原始数据，**2** 是转换后的输出。'
 - en: '![](../Images/23964d6ab2492da9ff62c5fd92a86fd3.png)'
   id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/23964d6ab2492da9ff62c5fd92a86fd3.png)'
 - en: 'The SQL query that we have is this:'
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的 SQL 查询如下：
 - en: '[PRE2]'
   id: totrans-74
   prefs: []
@@ -450,22 +487,27 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 瓶颈
 - en: Although the sample shows a pivot along 3 elements, our production use case
     generally functions on around a million users for approximately 1000 events.
   id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管示例显示了沿着 3 个元素的 pivot，但我们的生产用例通常在大约 1000 个事件的情况下处理大约一百万用户。
 - en: The pivot function on this query is the slowest step of the query. So we want
     to replace this logic with a manual pivot query. We generate this query by using
     a combination of `Group By` clause & `Filter clause`.
   id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 此查询中的 pivot 函数是查询中最慢的步骤。因此，我们希望用手动 pivot 查询替换此逻辑。我们通过结合使用 `Group By` 子句和 `Filter`
+    子句来生成此查询。
 - en: Optimal solution 1
   id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最优解决方案 1
 - en: '[PRE3]'
   id: totrans-79
   prefs: []
@@ -475,6 +517,7 @@
   id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个查询显著提高了性能。
 - en: We then **reduced** the warehouse size to see if the query remains equally performant.
     We observed that the query slowed down significantly and **byte spillage** was
     significant. However, an advantage of byte spillage is that we have more room
@@ -482,21 +525,25 @@
   id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们**减少**了仓库的大小，以查看查询是否保持同样的性能。我们观察到查询显著变慢，并且**字节溢出**也很严重。然而，字节溢出的一个优点是，我们在减少的仓库大小中有更多的改进空间。
 - en: Optimal Solution 2
   id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最优解决方案 2
 - en: We rewrote this query as per the **Map-Reduce** framework and observed a significant
     improvement in runtime.
   id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们根据**Map-Reduce**框架重写了此查询，并观察到运行时间显著改善。
 - en: 'The objective is to perform the above operation on a smaller set of events
     at a time and join all the data together in one go as follows:'
   id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标是对较小的事件集执行上述操作，然后一次性将所有数据合并在一起，如下所示：
 - en: '[PRE4]'
   id: totrans-85
   prefs: []
@@ -508,20 +555,24 @@
   id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的生产系统将**1000个事件**拆分成**10个块**，每块包含**100个事件**。此查询显著加速，因为它将字节溢出减少到接近 0。
 - en: Also, this optimization is quite intuitive to derive once we replace the Pivot
     function with Optimal Solution 1.
   id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，一旦我们用最优解决方案 1 替换 Pivot 函数，这个优化是非常直观的。
 - en: '*Scroll to the bottom to find some accompaniment code for this article.*'
   id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '*向下滚动以查找本文的配套代码。*'
 - en: Aggregate queries
   id: totrans-89
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 聚合查询
 - en: SQL spec defines a lot of aggregate functions and Snowflake does a great job
     at this. There is a massive repository of aggregate functions in Snowflake as
     well.
@@ -714,11 +765,13 @@
   id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '***将本文作为代码复现：*** 你可以参考[这个 GitHub 链接](https://github.com/prabodh1194/sf-query-benchmarks)来获取与这些查询的基准测试相关的代码。'
 - en: Conclusion
   id: totrans-122
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: The article provides three highly actionable optimization techniques that you
     can apply right away. You might have a suboptimal pattern in your codebase that
     is similar to the case we have presented here. Feel free to use the code examples
@@ -727,12 +780,15 @@
   id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章提供了三种高度可操作的优化技术，你可以立即应用。你可能在代码库中有类似于我们这里展示的情况的次优模式。随时使用这些代码示例来获得即时解决方案。在其他情况下，请动脑筋，我将很高兴了解你的解决方案。
 - en: '[Follow me](https://medium.com/@pbd_94) for more articles on Snowflake, Data,
     and MLOps.'
   id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注我](https://medium.com/@pbd_94)以获取更多关于 Snowflake、数据和 MLOps 的文章。'
 - en: P.S. All the images unless noted otherwise are from the author
   id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 附言：除非另有说明，否则所有图片均来自作者。
