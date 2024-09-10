@@ -83,6 +83,11 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 任何新的 AI 开发框架、AI 加速器或 AI 计算平台的发布，都可能带来运行时优化和成本降低，从而改善我们的 AI 开发生命周期。最近发布的 PyTorch
+    2.0 也不例外。PyTorch 2.x 的亮点之一是引入了[torch.compile](https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html)，据报道，PyTorch
+    2.x 可以[显著加速](https://pytorch.org/get-started/pytorch-2.0/)训练和推理过程。与我们熟悉的 PyTorch
+    逐步执行模式不同，在该模式下每个 PyTorch 操作都是“急切地”运行，[compile](https://pytorch.org/docs/stable/generated/torch.compile.html)
+    API 将你的模型转换为中间计算图（FX 图），然后将其编译成适合底层训练加速器的低级计算内核，使用如 *内核融合* 和 *乱序执行* 等技术（有关更多详细信息，请参见[这里](https://pytorch.org/docs/stable/torch.compiler_faq.html#how-are-you-speeding-up-my-code)）。
 - en: In this post we will demonstrate the use of this exciting new feature as well
     as some of the issues and behaviors you might encounter when using it. You may
     have already come across some posts that highlight how easy it is to use torch
@@ -97,6 +102,8 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将展示这一令人兴奋的新特性及使用过程中可能遇到的一些问题和行为。你可能已经看到一些帖子，突出了使用 torch 编译的便捷性或性能提升效果。或者（像我一样），你可能在过去的两周里一直在与新
+    API 作斗争，试图让其在你的模型上良好运作。实际上，对于许多公共模型，只需用 torch.compile 调用包裹它们即可（如[这里](https://pytorch.org/docs/stable/generated/torch.compile.html)所报道）。然而，正如我们将看到的那样，有许多因素可能干扰图的编译和/或达成期望的性能改进。调整你的模型和/或成功达到最佳性能可能需要你重新设计项目或修改一些编码习惯。
 - en: A few things we should mention before we get started. Our intention in this
     post is to share just a few examples of the issues that we encountered while adapting
     the torch.compile API. The examples we will share are by no means comprehensive.
@@ -107,6 +114,8 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在开始之前，我们应该提到几件事。我们在这篇文章中的意图是分享一些我们在适应 torch.compile API 过程中遇到的问题示例。这些示例绝非全面。你可能会遇到本文未提及的问题。还要记住，torch.compile
+    仍在积极开发中。我们所写的内容可能在你阅读时已经不再适用。务必保持最新，关注最新的发布和文档。
 - en: There are a number of innovative technologies underlying torch compilation,
     including [TorchDynamo](https://github.com/pytorch/torchdynamo/tree/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd),
     [FX Graph](https://pytorch.org/docs/stable/fx.html), [TorchInductor](https://dev-discuss.pytorch.org/t/torchinductor-a-pytorch-native-compiler-with-define-by-run-ir-and-symbolic-shapes/747),
@@ -175,11 +184,16 @@
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '**观察 2**：AI 开发是一项时尚的业务。与时尚行业类似，流行的 AI 模型、模型架构、学习算法、**训练框架**等都会随季节变化而变化。与时尚行业一样，AI
+    也有自己的出版物和会议，你可以通过这些途径跟上最新的趋势。直到几年前，我们大多数工作的模型都是用 TensorFlow 编写的。而人们对此不满。他们主要的两点抱怨是高层的
+    model.fit API 限制了他们的开发灵活性，以及图模式使他们无法进行调试。他们说：“我们必须转到 PyTorch”，因为“我们可以按照自己的方式构建模型并轻松调试”。几年的时间过去了，同样的人现在却在说：“我们必须适应
+    PyTorch Lightning（或其他高层 API），并且必须通过 torch.compile 加速训练”。要明确的是……我不是在评判。我只是想说，也许我们应该更加自我觉察。'
 - en: Back to the Real Stuff
   id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 回到实际内容
 - en: The rest of the post is organized as a collection of tips for getting started
     with the PyTorch 2 compile API as well as some of the potential issues you might
     face. Depending on the specific details of your project, adapting your model to
@@ -189,11 +203,14 @@
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文的其余部分组织成一系列关于如何开始使用 PyTorch 2 编译 API 的技巧以及你可能遇到的一些潜在问题。根据你项目的具体细节，将模型适配到 PyTorch
+    的图模式可能需要非同小可的努力。我们的希望是这篇文章能帮助你更好地评估这一努力，并决定采取最佳的步骤。
 - en: Installing PyTorch 2
   id: totrans-21
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 安装 PyTorch 2
 - en: From the [PyTorch installation documentation](https://pytorch.org/), it would
     seem that installing PyTorch 2 is no different than installing any other PyTorch
     version. In practice there are some issues you may encounter. For one, PyTorch
@@ -210,6 +227,11 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 从 [PyTorch 安装文档](https://pytorch.org/) 来看，安装 PyTorch 2 与安装其他版本的 PyTorch 没有什么不同。实际上，你可能会遇到一些问题。首先，PyTorch
+    2.0（截至本文撰写时）似乎需要 Python 3.8 或更高版本（见 [这里](https://pytorch.org/blog/pytorch-2.0-release/#deprecation-of-cuda-116-and-python-37-support-for-pytorch-20)）。希望你已经更新到最新的
+    Python 版本，这不会成为问题，但在不太可能（且不幸）的情况下你没有更新，这可能会成为你升级的另一个动机。此外，PyTorch 2 包含了一些之前版本中不存在的包依赖（最显著的是
+    [pytorch-triton](https://pypi.org/project/pytorch-triton/)），这可能引入新的冲突。更有甚者，即使你成功构建了
+    PyTorch 2 环境，你可能会发现调用 torch.compile 会导致严重且完全无法解释的 [段错误](https://discuss.pytorch.org/t/segmentation-fault-core-dumped-with-torch-compile/167835)。
 - en: One way to save yourself a lot of trouble is to take a pre-built and pre-validated
     PyTorch 2.0 Docker image. In the examples below, we will use an official [AWS
     Deep Learning Container](https://github.com/aws/deep-learning-containers) with
@@ -514,6 +536,9 @@
   id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '在下面的代码块中，我们展示了一个简单的[分布式](https://pytorch.org/tutorials/beginner/dist_overview.html)模型，该模型包括对[torch.distributed.all_reduce](https://pytorch.org/docs/stable/distributed.html)的调用。该模型在急切模式下按预期运行，但在图编译过程中（截至本文撰写时）失败，出现“属性错误”（*torch.classes.c10d.ProcessGroup
+    没有名为 ‘shape’ 的字段*）。通过将日志级别提高到*INFO*，我们发现错误发生在计算的“步骤 #3”中，即 TorchInductor。我们可以通过验证“急切”模式和“aot_eager”后端的编译成功来确认这一点。最后，我们可以创建一个最小的代码示例，使用[PyTorch
+    Minifier](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#minifying-torchinductor-errors)重现该错误。'
 - en: '[PRE4]'
   id: totrans-58
   prefs: []
@@ -526,6 +551,7 @@
   id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 遗憾的是，在我们的示例中，运行生成的 `minifier_launcher.py` 脚本会导致一个不同的属性错误（‘Repro’ 对象没有属性 ‘_tensor_constant0’），尽管整个过程很有趣，但记录的调试步骤在解决我们演示的编译问题时并没有太大帮助。
 - en: 'Obviously, we hope that you do not run into any compilation issues. In case
     you do, know that: 1\. you are not alone :), and 2\. although they are likely
     to be different than the one demonstrated here, following the same steps described
@@ -534,11 +560,13 @@
   id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，我们希望你不会遇到任何编译问题。如果你遇到了，请知道：1\. 你并不孤单 :)，2\. 尽管它们可能与这里演示的问题不同，但按照[故障排除指南](https://pytorch.org/docs/stable/dynamo/troubleshooting.html)中描述的步骤，可能会对它们的来源有所指示。
 - en: Common Graph Breaks
   id: totrans-61
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 常见的图断裂
 - en: One of the most touted advantages of Pytorch eager mode is the ability to interleave
     pure Pythonic code with your PyTorch operations. Unfortunately, this freedom (as
     of the time of this writing) is significantly restricted when using torch.compile.
@@ -558,12 +586,19 @@
   id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: PyTorch 急切模式最受推崇的优势之一是能够将纯 Python 代码与 PyTorch 操作交错使用。不幸的是，（截至目前）当使用 torch.compile
+    时，这种自由度被显著限制。原因在于，某些 Python 操作会导致 TorchDynamo 将计算图拆分成多个组件，从而阻碍潜在的性能提升。你的目标应该是尽可能地减少[*图断裂*](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#graph-breaks)。作为最佳实践，你可能会考虑在将模型迁移到
+    PyTorch 2 时使用[*fullgraph*](https://pytorch.org/docs/stable/generated/torch.compile.html#torch-compile)标志进行编译。这不仅会促使你移除任何导致图断裂的代码，还会教会你如何最佳地调整
+    PyTorch 开发习惯以适应图模式。然而，请注意，你需要禁用此标志以运行[分布式](https://pytorch.org/tutorials/beginner/dist_overview.html)代码，因为当前
+    GPU 之间的通信方式需要图断裂（例如，请参见[此处](https://pytorch.org/get-started/pytorch-2.0/#distributed)）。或者，你可以使用*torch._dynamo.explain*
+    工具来分析图断裂，详细说明请参见[这里](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#identifying-the-cause-of-a-graph-break)。
 - en: The following code block demonstrates a simple model with four potential graph
     breaks in its forward pass (as of the time of this writing). It is not uncommon
     to see any one of these kinds of operations in a typical PyTorch model.
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下代码块展示了一个简单的模型，在其前向传递过程中有四个潜在的图断裂（截至目前）。在一个典型的 PyTorch 模型中，看到这些操作中的任何一个都不罕见。
 - en: '[PRE5]'
   id: totrans-64
   prefs: []
@@ -576,11 +611,13 @@
   id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 重要的是要强调，图断裂*不会*导致编译失败（除非设置了 *fullgraph* 标志）。因此，完全有可能你的模型在编译和运行时实际包含多个图断裂，这会导致性能下降。
 - en: Troubleshooting Training Issues
   id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练问题排查
 - en: While succeeding in compiling your model is a worthy achievement, it is not
     a guarantee that training will succeed. As noted above, the low-level kernels
     that run on the GPU will differ between eager mode and graph mode. Consequently,
@@ -592,6 +629,8 @@
   id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管成功编译模型是一项值得庆祝的成就，但这并不能保证训练一定成功。如上所述，运行在 GPU 上的低级内核在急切模式和图模式之间会有所不同。因此，某些高级操作可能会表现出不同的行为。特别是，你可能会发现急切模式下运行的操作在图模式下会失败（例如，我们遇到的[这个
+    torch.argmin 失败](https://github.com/pytorch/pytorch/issues/99879)）。或者，你可能会发现计算中的数值差异对你的训练产生影响。
 - en: To make matters worse, debugging in graph mode is much more difficult than in
     eager mode. In eager mode each line of code is executed independently, allowing
     us to place a breakpoint at any point in our code and evaluate the current tensor
@@ -601,6 +640,7 @@
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 更糟的是，图模式下的调试比急切模式下要困难得多。在急切模式中，每一行代码都是独立执行的，这使我们可以在代码的任何位置设置断点并评估当前张量值。另一方面，在图模式中，我们代码定义的模型在处理之前会经历多个转换，因此，您的断点可能不会被触发。
 - en: In the past, [we expanded on the difficulties of debugging](/debugging-in-tensorflow-392b193d0b8)
     in graph mode in TensorFlow and proposed a few ways to address them. Here is a
     two-step approach you could try when you encounter an issue. First, revert back
@@ -619,17 +659,20 @@
   id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 过去，[我们扩展了图模式下调试的难点](/debugging-in-tensorflow-392b193d0b8)并提出了几种解决方法。当您遇到问题时，可以尝试以下两步方法。首先，恢复到急切模式，那里调试较少困难，并祈祷问题能够重现。如果没有，尝试在编译的计算图中评估感兴趣的中间张量，通过故意在模型中插入图断点来实现。您可以通过将模型明确地分成两个（或更多）部分并分别应用torch.compile，或通过插入*print*和/或[Tensor.numpy](https://pytorch.org/docs/stable/generated/torch.Tensor.numpy.html)调用来生成图断点。根据您的操作方式，您甚至可能成功触发代码中的断点。然而，请记住，以这种方式拆分图形可能会修改低级操作的顺序，因此可能无法准确重现完全编译的图形执行。但它确实给您提供了更多的灵活性，以便深入探究问题。
 - en: See the [accuracy-debugging](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#accuracy-debugging)
     portion of the [troubleshooting guide](https://pytorch.org/docs/stable/dynamo/troubleshooting.html)
     if you encounter discrepancies between compile mode and eager mode that are unexpected.
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您遇到编译模式和急切模式之间意外的差异，请参见[准确性调试](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#accuracy-debugging)部分以及[故障排除指南](https://pytorch.org/docs/stable/dynamo/troubleshooting.html)。
 - en: Including the Loss Function in the Graph
   id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 将损失函数包含在图中
 - en: As we demonstrated in the examples above, graph execution mode is enabled by
     wrapping a PyTorch model (or function) with a torch.compile invocation. You may
     have observed that the loss function is not part of the compilation call and,
@@ -644,6 +687,7 @@
   id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在上面的示例中所演示的，通过用torch.compile调用包装PyTorch模型（或函数）可以启用图执行模式。您可能已经观察到损失函数不在编译调用中，因此不在生成的图中。在许多情况下，包括我们展示的那些，损失函数是训练步骤中的一个相对小的部分，急切运行不会造成太多开销。然而，如果您有一个特别重的损失函数，您可以通过将其包含在编译的计算图中来进一步提升性能。例如，在下面的代码块中，我们定义了一个损失函数，用于（天真地）从一个大型ViT模型（具有24个ViT块）到一个较小的ViT模型（具有12个ViT块）进行[模型蒸馏](https://en.wikipedia.org/wiki/Knowledge_distillation)。
 - en: '[PRE6]'
   id: totrans-73
   prefs: []
