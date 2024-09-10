@@ -1,13 +1,16 @@
 - en: Train Image Segmentation Models to Accept User Feedback via Voronoi Tiling,
     Part 1
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29?source=collection_archive---------6-----------------------#2023-05-05](https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29?source=collection_archive---------6-----------------------#2023-05-05)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: How to train an off-the-shelf image segmentation model to respond to user feedback
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -15,23 +18,29 @@
     Andrei](../Images/372ac3e80dbc03cbd20295ec1df5fa6f.png)](https://florin-andrei.medium.com/?source=post_page-----8ab85d410d29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ab85d410d29--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ab85d410d29--------------------------------)
     [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----8ab85d410d29--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----8ab85d410d29---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ab85d410d29--------------------------------)
     ·13 min read·May 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8ab85d410d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----8ab85d410d29---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8ab85d410d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29&source=-----8ab85d410d29---------------------bookmark_footer-----------)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: (The second part of this series is [here](/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9).)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: '[Image segmentation](https://en.wikipedia.org/wiki/Image_segmentation) is a
@@ -43,8 +52,10 @@
     nearby: pedestrians, stop signs, the road, other cars, etc. Another application
     is in the field of medicine (radiology), where models could be trained to identify
     malignant tumors in ultrasound images. And the examples could continue.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[图像分割](https://en.wikipedia.org/wiki/Image_segmentation)是机器学习中的一个热门话题，具有许多实际应用。视觉模型可以根据某些标准对图像进行分割，通常是沿着熟悉类型对象的轮廓进行。当模型不仅可以分割图像，还能区分不同类型的对象时，这被称为语义分割。自动驾驶汽车使用语义分割来识别附近的对象：行人、停车标志、道路、其他汽车等。另一个应用领域是在医学（放射学）中，其中模型可以被训练以识别超声图像中的恶性肿瘤。还有更多的例子。'
 - en: This article assumes you’re familiar with the basic concepts of image segmentation,
     and with optimization algorithms such as [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing).
     To keep the total size reasonable, no code is quoted in the article — but see
@@ -52,15 +63,21 @@
     also linked in the final section, for all the project’s code. I’ve also placed
     links to code in relevant places throughout the text. [This is the main notebook
     with the code used to generate images for this article](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/article.ipynb).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文假设您对图像分割的基本概念以及[模拟退火](https://en.wikipedia.org/wiki/Simulated_annealing)等优化算法有所了解。为了保持总大小合理，文章中没有引用代码——但请参阅[我的GitHub仓库](https://github.com/FlorinAndrei/segmentation_click_train)，也在最后部分提供了链接，获取项目的所有代码。我还在文本中的相关位置放置了代码链接。[这是生成本文图像所使用的主要笔记本](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/article.ipynb)。
 - en: The Goals of the Project
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 项目的目标
 - en: 'A bit of background first:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先提供一些背景信息：
 - en: In December 2022 I’ve completed the final semester of my MS in Data Science
     study at the University of Wisconsin-La Crosse. [My capstone project](https://github.com/FlorinAndrei/datascience_capstone_project),
     under the supervision of Dr. Jeff Baggett of UWLAX, aimed to build semantic segmentation
@@ -72,18 +89,27 @@
     from the model indicating whether a lesion is present in the scanned area, where
     it is located, what is its shape, and optionally hints about its nature (malignant
     or benign).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在2022年12月，我完成了威斯康星大学拉克罗斯分校（University of Wisconsin-La Crosse）数据科学硕士学位的最后一个学期。[我的毕业项目](https://github.com/FlorinAndrei/datascience_capstone_project)在UWLAX的Jeff
+    Baggett博士的监督下，旨在构建能够检测乳腺超声图像中组织病变的语义分割模型。这些病变中有些是恶性的，因此拥有良好的诊断工具以在早期阶段发现疾病非常重要。预先在大规模通用数据集（如ImageNet）上训练的分割模型，可以在医学超声图像数据上进行微调。通过将超声扫描仪的图像输入到这样的模型中，我们可以得到模型的预测，指示扫描区域内是否存在病变，病变的位置、形状以及可选的性质提示（恶性或良性）。
 - en: 'Here’s an example of an image segmentation model performing a prediction on
     an ultrasound image taken from the [Dataset of Breast Ultrasound Images](https://www.sciencedirect.com/science/article/pii/S2352340919312181):'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一个图像分割模型对来自[乳腺超声图像数据集](https://www.sciencedirect.com/science/article/pii/S2352340919312181)的超声图像进行预测的示例：
 - en: '![](../Images/5d425a8e0cfb06b241ce07217a779b17.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5d425a8e0cfb06b241ce07217a779b17.png)'
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 来源：乳腺超声图像数据集
 - en: The frame on the left is the ultrasound image from the dataset; it contains
     what appears to be a lesion that may or may not be malignant (the dark area).
     The frame in the center is the ground-truth label, also part of the dataset; a
@@ -92,35 +118,45 @@
     The frame on the right is my model’s prediction, which in this case is close to
     the ground-truth label. In this case, the model is not set to distinguish between
     malignant and benign lesions, they are all shown in yellow tones here.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 左侧的框是数据集中超声图像；它包含一个可能是恶性或良性的病变（黑暗区域）。中间的框是地面真实标签，同样是数据集的一部分；一位人类专家在感兴趣区域（病变）周围绘制了轮廓；这些标签用于训练模型，并在训练后评估其性能。右侧的框是我的模型预测，在这种情况下接近地面真实标签。在此情况下，模型未设置区分恶性和良性病变，它们都以黄色调显示。
 - en: 'Building on top of the capstone described above, this project (also part of
     [the CADBUSI project at UWLAX](https://datascienceuwl.github.io/CADBUSI/) just
     like the capstone) starts with this key observation:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于上述描述的顶点项目，本项目（同样是[UWLAX的CADBUSI项目](https://datascienceuwl.github.io/CADBUSI/)的一部分，如同顶点项目）从这个关键观察开始：
 - en: Medical imaging is somewhat different from other segmentation applications,
     in that the user (radiologist) looking at the model’s output has significant expertise
     in the field. The user is not completely passive, like in most other applications.
     And the question is not whether the model outperforms the human operator in how
     well it identifies a lesion, but it’s rather how to combine what the model can
     do, and what the user knows, in order to get better results overall.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 医学影像与其他分割应用有所不同，因为观察模型输出的用户（放射科医师）在该领域具有显著的专业知识。用户并不像大多数其他应用那样完全被动。问题不在于模型在识别病变方面是否优于人类操作员，而在于如何将模型的能力与用户的知识结合起来，以获得更好的整体结果。
 - en: The user may agree with the model’s prediction in every way. Or there may be
     disagreement between the model and the user. Also, the user may possess knowledge
     about the patient that the model does not have. It would be useful if the user
     could provide hints or feedback to the model, extra input data as far as the model
     is concerned, in order to arrive at a higher quality prediction that combines
     the strengths of both model and user.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 用户可能在各个方面都同意模型的预测。或者模型和用户之间可能存在分歧。此外，用户可能拥有模型所没有的患者知识。如果用户能够向模型提供提示或反馈作为额外输入数据，将有助于得到更高质量的预测，结合模型和用户的优点。
 - en: Additionally, the user should be able to provide feedback to the model in a
     simple way — e.g. by clicking the image with their mouse to highlight important
     areas. The coordinates of the user-generated mouse clicks become additional input
     to the model, which should then adjust its predictions accordingly.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，用户应该能够以简单的方式向模型提供反馈——例如，通过点击图像以突出显示重要区域。用户生成的鼠标点击的坐标成为模型的额外输入，模型应根据这些坐标调整其预测。
 - en: If you’re building the model from scratch, you can design the input any way
     you want, to include various kinds of data. But in that case you need to do the
     full pre-training cycle (e.g. using ImageNet), which takes significant compute
@@ -128,41 +164,55 @@
     that saves a lot of time and effort, but it may seem like there is no room in
     the model’s input for the user feedback — these models are designed to take an
     image as the input and nothing else.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你从头开始构建模型，你可以设计任何你想要的输入，以包含各种数据。但在这种情况下，你需要进行完整的预训练周期（例如使用ImageNet），这需要大量的计算和时间资源。如果你使用一个在ImageNet上预训练的现成模型，这可以节省大量时间和精力，但模型的输入中可能没有为用户反馈留出空间——这些模型设计为仅接收图像作为输入。
 - en: 'Unless, of course, you could identify redundancies in the input of an off-the-shelf
     model. That would mean there are redundant channels in the input that could be
     re-purposed to provide user feedback to the model, in addition to the usual imaging
     data. This series of articles will describe how to:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 除非你能够识别出现成模型输入中的冗余部分。这意味着输入中存在可以重新利用的冗余通道，以便向模型提供用户反馈，除了常规的影像数据。这一系列文章将描述如何：
 - en: identify input redundancies in off-the-shelf image segmentation models
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 识别现成图像分割模型中的输入冗余。
 - en: use redundant input channels to provide user feedback
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用冗余的输入通道来提供用户反馈。
 - en: train the models to recognize the user feedback correctly
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: automate the whole process as much as possible
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: When Models Are Wrong
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'Let’s consider this case:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/df010196dc9b67941aaa0ad4819a8673.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: There seems to be a region of interest (RoI) on the left-hand side of the image
@@ -170,25 +220,31 @@
     the model’s prediction is the null set — there are no yellow pixels in the prediction
     frame. The model does not appear to believe there is an RoI in this image. We,
     playing the role of the human expert here, disagree.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: 'Or this case:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/1adc58e59d3d60a789e21cb2180237e1.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: The human expert (the author of the label) believes there is only one true RoI
     in the image. The model, however, identifies two separate RoIs.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: In cases like these, where the predictions are quite marginal, and the human
     expert may have reason to disagree with the model’s predictions, it would be useful
     to allow feedback from the user to steer or guide the model’s predictions based
     on information or knowledge that the user has but the model doesn’t.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: Ideally, the user should be able to provide feedback via a very simple method,
@@ -196,6 +252,7 @@
     click coordinates should then be taken into account by the model to adjust its
     predictions. The click coordinates become part of the model input. This could
     be accomplished in a number of different ways.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: 'The PseudoClick paper by Liu et al. (2022) describes a model architecture where
@@ -203,13 +260,16 @@
     an input for the actual image, and a different input for the clicks. If you build
     your model from scratch, you can design it any way you like, and you could take
     suggestions from the PseudoClick architecture.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: But if you use an off-the-shelf model, you have to use the existing input. This
     is described in the next section.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: Using the Color Channels to Provide Feedback
+  id: totrans-41
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -219,17 +279,21 @@
     which is the case for ultrasound images, the same information (pure luminance)
     is distributed the same way across all color channels. In other words, having
     three separate channels for the same information seems redundant.'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: Would the model work the same if only one color channel was used for monochrome
     images? Let’s say we zero out two color channels (R and G), and we keep the image
     information only in the B channel.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/a37d1dfe1a2c2533e2117f76cce104c7.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: Testing this idea with a pre-trained image segmentation model such as the SegFormer
@@ -240,25 +304,30 @@
     does not change. The model works essentially the same. The redundancy from the
     color channels does not help, nor does it harm, when doing predictions on monochrome
     images.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: That means we could keep the image data only in the B channel, and use the R
     and G channels for the additional input — the user-generated clicks. Not just
     that, but we have two separate channels, R and G, which could provide different
     kinds of input to the model.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: 'That’s exactly what we need: one kind of click should be “activating” or “positive”,
     telling the model *“this is a region of interest, focus here”*, while the other
     kind should be “inhibitory” or “negative”, telling the model *“nothing is happening
     here, avoid this area”*.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: The question is, what is the best way to place the clicks in the training data
     to make the models responsive to user input? This is described in the next section.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: True Positives, False Positives, False Negatives
+  id: totrans-50
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -266,18 +335,22 @@
     are marked in some way — e.g. by a non-zero value. When the predicted area matches
     closely the ground-truth label for that image, we say the model performs well.
     The predicted pixels that match the label are called true positives (TP).
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: 'Where the model makes non-zero predictions but the pixels in the label are
     zero, those pixels are false positives (FP). Where the pixels in the label are
     non-zero, but the model’s predictions are zero, those are false negatives (FN).
     Here’s an example:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/775921ac2983817bdef629c4ebaf270d.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: 'The left-hand frame is the label. The center frame is the model’s prediction.
@@ -286,12 +359,14 @@
     prediction pixels that are zero in the label, and are marked green. The false
     negatives (FN) are the zero-value prediction pixels where there are non-zero pixels
     in the label, and are marked red.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: If we knew the image areas where the models tend to be wrong and make false
     predictions (FP, FN), we could add clicks to the original dataset, marking the
     FP and FN areas. Since we’ve moved all the image information to the Blue channel,
     we could use the Red and Green channels for these clicks.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: 'For example, we could mark the False Positive areas with clicks in the Red
@@ -299,18 +374,23 @@
     steer the model away from making predictions there. The False Negative areas could
     be marked with clicks in the Green channel, which will become “activating” or
     “positive” clicks and guide the model to focus more on those areas. Examples:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/5e1d8d17f4481965a6f75aad3f46bb87.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/8a8ae7bf47de6111503eb31dd631d71e.png)'
+  id: totrans-60
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
 - en: In the images shown above, we’ve placed Red channel clicks (negative clicks)
@@ -319,37 +399,45 @@
     areas (where the model predicts nothing but there is an actual RoI). For good
     measure, we place a few more Green channel clicks in the True Positive areas,
     to “anchor” the prediction and make sure the TP areas remain stable.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
 - en: The complete training procedure using the clicks is described below.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
 - en: How to Train Models With Clicks
+  id: totrans-64
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'These are the main steps involved in training models to become responsive to
     user input:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
 - en: decide on a particular off-the-shelf image segmentation model, such as SegFormer
     MiT-b3 pre-trained with ImageNet
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: process all your monochrome images such that the image data only exists in the
     B channel; the R and G channels will be made blank
+  id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: split the image dataset into 5 folds; fine-tune a model for each fold; this
     will create 5 models, each fine-tuned for a different fold in the dataset; let’s
     call these **the baseline models**
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: use each one of the 5 baseline models to make predictions on the images it has
     not seen in training; this will generate predictions for all images in the dataset
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -357,6 +445,7 @@
     TP areas with R and G clicks as described above; small areas receive one click
     each; large areas receive multiple clicks; for now, assume that the click coordinates
     are generated manually (more on this later)
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -364,11 +453,13 @@
     untouched; each click will be a 3x3 pixels area in the R or G channels where we
     set the pixel values to the maximum value for that channel (e.g. 255 for the uint8
     dtype)
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: using the same 5 folds, train 5 new models on the dataset with the clicks added
     to the R and G channels; let’s call these **the click-trained models**
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -377,22 +468,28 @@
     models (**click-trained models**) with the clicks added to the dataset. We hope
     that the click-trained models will become responsive to clicks provided via the
     R and G channels. [The full code is shown here](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/train_models.ipynb).
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
 - en: 'For clarity, this is what the images will look like, after all processing,
     with the clicks added:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/cea79304fcb931c1efe9288e8105ef2a.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/5cf078da733a15cbe82ffbd083419b39.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
 - en: 'source: Dataset of Breast Ultrasound Images'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: The left-hand frame is the ground-truth label we’re trying to match. The center
@@ -400,12 +497,14 @@
     processed images used to train the click-trained models — all image data has been
     moved to the B channel, and clicks have been added to the R and G channels as
     needed to modify predictions.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
 - en: You don’t need to actually modify the dataset to add the R and G clicks. You
     could simply register the click coordinates, and modify the dataloader to apply
     the clicks dynamically when the models are trained. This variant is far more flexible
     if you need to re-generate click coordinates for whatever reason.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
 - en: Also, you could take a hint from image augmentation techniques, and apply the
@@ -413,17 +512,21 @@
     input, but only in some fraction of cases, randomly. I’ve used a probability of
     0.9 with good results. The idea is to not make the models over-dependent on clicks.
     Fine-tuning this parameter may require further exploration.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: Results
+  id: totrans-82
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: Does it work?
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
 - en: 'It sure does. Here is a click-trained model making predictions, then responding
     to user feedback in real time:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
 - en: We ask the model to make predictions, and it covers the two dark areas in the
@@ -431,6 +534,7 @@
     left is not a region of interest, so we place an inhibitory (red) click on it.
     We also place an activating (green) click on the area to the right. Now the model’s
     predictions follow the additional information that we have.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
 - en: 'It should be noted that a single click, about 3x3 pixels in size, influences
@@ -438,6 +542,7 @@
     the model takes into account both the presence of the click, and the features
     visible in the image: placing a click in an RoI makes the model fill that whole
     region with a prediction mask, following the contour visible in the image.'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
 - en: There are cases where the model follows the user feedback quite easily — this
@@ -445,9 +550,11 @@
     output. There are other cases where the model’s predictions will resist being
     “evicted” from an RoI by a negative click — this is when there is low ambiguity
     / high confidence in the model’s own output.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
 - en: Scalability
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -456,6 +563,7 @@
     needs to literally sift through all images, compare ground-truth labels with predictions,
     decide where to place the clicks, and how many clicks to place, and record all
     click coordinates.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
 - en: This obviously doesn’t scale. It is already tedious and time-consuming, but
@@ -463,6 +571,7 @@
     hundreds of images. If the dataset contains thousands of images or more, or especially
     if the set of clicks needs to be re-generated as the baseline models change, the
     task becomes impossible. Some kind of automation is needed.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
 - en: '[That will be the topic of Part 2 of this series](/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9).
@@ -470,49 +579,61 @@
     the training process could run completely unsupervised. [Part 2](/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9)
     will describe an algorithm that generates the clicks in a way that is very similar
     to the decisions that a human operator would make.'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
 - en: Links, Citations, Comments
+  id: totrans-92
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'This project is an extension of my capstone project from the final semester
     of my MS in Data Science studies: [https://github.com/FlorinAndrei/datascience_capstone_project](https://github.com/FlorinAndrei/datascience_capstone_project)'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: Both the capstone and this work were done within the Computer Aided Diagnosis
     for Breast Ultrasound Imagery (CADBUSI) project at the University of Wisconsin-La
     Crosse, under the supervision of Dr. Jeff Baggett. [https://datascienceuwl.github.io/CADBUSI/](https://datascienceuwl.github.io/CADBUSI/)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: 'The GitHub repository with code for this article: [https://github.com/FlorinAndrei/segmentation_click_train](https://github.com/FlorinAndrei/segmentation_click_train)'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: 'All ultrasound images used in this article are part of the Dataset of Breast
     Ultrasound Images, available under the CC BY 4.0 license. Citation link:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: Al-Dhabyani, W., Gomaa, M., Khaled, H., & Fahmy, A. (2019). Dataset of Breast
     Ultrasound Images. *ResearchGate*. Retrieved May 1, 2023 from [https://www.sciencedirect.com/science/article/pii/S2352340919312181](https://www.sciencedirect.com/science/article/pii/S2352340919312181)
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
 - en: 'Other links, citations and comments:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
 - en: 'Liu, Q., Zheng, M., Planche, B., Karanam, S., Chen, T., Niethammer, M., & Wu,
     Z. (2022). PseudoClick: Interactive Image Segmentation with Click Imitation. *arXiv.org*.
     Retrieved May 1, 2023, from [https://arxiv.org/abs/2207.05282](https://arxiv.org/abs/2207.05282)'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
 - en: 'Xie, E., Wang, W., Yu, Z., Anandkumar, A., Alvarez, J. M., & Luo. P. (2021).
     SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers.
     arXiv.org. Retrieved May 1, 2023, from [https://arxiv.org/abs/2105.15203](https://arxiv.org/abs/2105.15203)'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: 'Pretrained SegFormer models at HuggingFace: [https://huggingface.co/docs/transformers/model_doc/segformer](https://huggingface.co/docs/transformers/model_doc/segformer)'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
 - en: Images in this article that are not part of the Dataset of Breast Ultrasound
     Images are created by the author.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
