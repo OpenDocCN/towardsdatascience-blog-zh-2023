@@ -1,0 +1,1158 @@
+- en: Topic Modelling in production
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/topic-modelling-in-production-e3b3e99e4fca?source=collection_archive---------0-----------------------#2023-10-30](https://towardsdatascience.com/topic-modelling-in-production-e3b3e99e4fca?source=collection_archive---------0-----------------------#2023-10-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Leveraging LangChain to move from ad-hoc Jupyter Notebooks to production modular
+    service
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)[![Mariya
+    Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------)
+    [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----e3b3e99e4fca--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----e3b3e99e4fca---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3b3e99e4fca--------------------------------)
+    ·22 min read·Oct 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3b3e99e4fca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----e3b3e99e4fca---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3b3e99e4fca&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftopic-modelling-in-production-e3b3e99e4fca&source=-----e3b3e99e4fca---------------------bookmark_footer-----------)![](../Images/afdbbe895f01c14cdde29dadbd785120.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by DALL-E 3
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [the previous article](/topic-modelling-using-chatgpt-api-8775b0891d16),
+    we discussed how to do Topic Modelling using ChatGPT and got excellent results.
+    The task was to look at customer reviews for hotel chains and define the main
+    topics mentioned in the reviews.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous iteration, we used standard [ChatGPT completions API](https://platform.openai.com/docs/guides/gpt/chat-completions-api)
+    and sent raw prompts ourselves. Such an approach works well when we are doing
+    some ad-hoc analytical research.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if your team is actively using and monitoring customer reviews, it’s
+    worth considering some automatisation. A good automatisation will not only help
+    you build an autonomous pipeline, but it will also be more convenient (even team
+    members unfamiliar with LLMs and coding will be able to access this data) and
+    more cost-effective (you will send all texts to LLM and pay only once).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose we are building a sustainable production-ready service. In that case,
+    it’s worth leveraging existing frameworks to reduce the amount of glue code and
+    have a more modular solution (so that we could easily switch, for example, from
+    one LLM to another).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I would like to tell you about one of the most popular frameworks
+    for LLM applications — [LangChain](https://www.langchain.com). Also, we will understand
+    in detail how to evaluate your model’s performance since it’s a crucial step for
+    business applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nuances of production process
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Revising initial approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, let’s revise our previous approach for ad-hoc Topic Modelling with ChatGPT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1: Get a representative sample.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want to determine the list of topics we will use for our markup. The most
+    straightforward way is to send all reviews and ask LLM to define the list of 20–30
+    topics mentioned in our reviews. Unfortunately, we won’t be able to do it since
+    it won’t fit the context size. We could use a map-reduce approach, but it could
+    be costly. That’s why we would like to define a representative sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this, we [built](/topic-modelling-using-chatgpt-api-8775b0891d16) a [BERTopic](https://maartengr.github.io/BERTopic/getting_started/quickstart/quickstart.html)
+    topic model and got the most representative reviews for each topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2: Determine the list of topics we will use for markup.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is to pass all the selected texts to ChatGPT and ask it to define
+    a list of topics mentioned in these reviews. Then, we can use these topics for
+    later markup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3: Doing topics’ markup in batches.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last step is the most straightforward — we can send customer reviews in
+    batches that fit the context size and ask LLM to return topics for each customer
+    review.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, with these three steps, we could determine the list of relevant topics
+    for our texts and classify them all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It works perfectly for one-time research. However, we are missing some bits
+    for an excellent production-ready solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From ad-hoc to production
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s discuss what improvements we could make to our initial ad-hoc approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous approach, we have a static list of topics. But in real-life
+    examples, new topics might arise over time, for example, if you launch a new feature.
+    So, we need a feedback loop to update the list of topics we are using. The easiest
+    way to do it is to capture the list of reviews without any assigned topics and
+    regularly run topic modelling on them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we are doing one-time research, we can validate the results of the topics’
+    assignments manually. But for the process that is running in production, we need
+    to think about a continuous evaluation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we are building a pipeline for customer review analysis, we should consider
+    more potential use cases and store other related information we might need. For
+    example, it’s helpful to store translated versions of customer reviews so that
+    our colleagues don’t have to use Google Translate all the time. Also, sentiment
+    and other features (for example, products mentioned in the customer review) might
+    be valuable for analysis and filtering.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The LLM industry is progressing quite quickly right now, and everything is changing
+    all the time. It’s worth considering a modular approach where we can quickly iterate
+    and try new approaches over time without rewriting the whole service from scratch.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/3a85e2f56aeca48465378a421f27fb2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scheme of the service by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have a lot of ideas on what to do with our topic modelling service. But
+    let’s focus on the main parts: modular approach instead of API calls and evaluation.
+    The LangChain framework will help us with both topics, so let’s learn more about
+    it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain Basics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[LangChain](https://python.langchain.com/docs/get_started/introduction) is
+    a framework for building applications powered by Language Models. Here are the
+    main [components](https://docs.langchain.com/docs/category/components) of LangChain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Schema** is the most basic classes like Documents, Chat Messages and Texts.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Models**. LangChain provides access to LLMs, Chat Models and Text Embedding
+    models that you could easily use in your applications and switch between them
+    if needed. It goes without saying it supports such popular models like ChatGPT,
+    Anthropic and Llama.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Prompts** is a functionality to help work with prompts, including prompt
+    templates, output parsers and example selectors for few-shot prompting.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Chains** are the core of LangChain (as you might guess by the name). Chains
+    help you to build a sequence of blocks that will be executed. You can truly appreciate
+    this functionality if you’re building a complex application.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Indexes**: document loaders, text splitters, vector stores and retrievers.
+    This module provides tools that help LLMs to interact with your documents. This
+    functionality would be valuable if you’re building a Q&A use case. We won’t be
+    using this functionality much in our example today.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LangChain provides a whole set of methods to manage and limit **memory**. This
+    functionality is primarily needed for ChatBot scenarios.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One of the latest and most powerful features is **agents**. If you are a heavy
+    ChatGPT user, you must have heard about the plugins. It’s the same idea that you
+    can empower LLM with a set of custom or predefined tools (like Google Search or
+    Wikipedia), and then the agent can use them while answering your questions. In
+    this setup, LLM is acting like a reasoning agent and decides what it needs to
+    do to achieve the result and when it gets the final answer that it could share.
+    It’s exciting functionality, so it’s definitely worth a separate discussion.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So, LangChain can help us build modular applications and be able to switch between
+    different components (for example, from ChatGPT to Anthropic or from CSV as data
+    input to Snowflake DB). LangChain has more than [190 integrations](https://python.langchain.com/docs/integrations/providers),
+    so that it can save you quite a lot of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, we could reuse ready-made chains for [some use cases](https://python.langchain.com/docs/use_cases)
+    instead of starting from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When calling ChatGPT API manually, we have to manage quite a lot of Python glue
+    code to make it work. It’s not a problem when you’re working on a small, straightforward
+    task, but it might become unmanageable when you need to build something more complex
+    and convoluted. In such cases, LangChain may help you eliminate this glue code
+    and create more easy-to-maintain modular code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, LangChain has its own limitations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s primarily focused on OpenAI models, so it might not work so smoothly with
+    on-premise open-source models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The flip side of convenience is that it’s not easy to understand what’s going
+    on under the hood and when and how the ChatGPT API you’re paying for is executed.
+    You can use debug mode, but you need to specify it and go through the complete
+    logs for a clearer view.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Despite pretty good documentation, I struggle from time to time to find answers
+    to my questions. There are not so many other tutorials and resources on the internet
+    apart from the official documentation, quite frequently you can see only official
+    pages in Google.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Langchain library is progressing a lot, and the team constantly ship new
+    features. So, the library is not mature, and you might have to switch from the
+    functionality you’re using. For example, the `SequentialChain` class is considered
+    legacy now and might be deprecated in the future since they’ve introduced [LCEL](https://python.langchain.com/docs/expression_language/)
+    — we will talk about it in more detail later on.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We’ve gotten a birds-eye overview of LangChain functionality, but practice makes
+    perfect. Let’s start using LangChain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enhancing topics’ assignment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s refactor the topic assignment since it will be the most common operation
+    in our regular process, and it will help us understand how to use LangChain in
+    practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, we need to install the package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading documents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To work with the customers’ reviews, we first need to load them. For that, we
+    could use [Document Loaders](https://python.langchain.com/docs/modules/data_connection/document_loaders/).
+    In our case, customer reviews are stored as a set of .txt files in a Directory,
+    but you can effortlessly load docs from third-party tools. For example, there’s
+    an [integration](https://python.langchain.com/docs/integrations/document_loaders/snowflake)
+    with Snowflake.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use `DirectoryLoader` to load all files in the directory since we have
+    separate files from hotels. For each file, we will specify `TextLoader` as a loader
+    (by default, a loader for unstructured documents is used). Our files are encoded
+    in `ISO-8859–1`, so the default call returns an error. However, LangChain can
+    automatically detect used encoding. With such a setup, it works ok.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Splitting documents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, we would like to split our documents. We know that each file consists of
+    a set of customer comments delimited by `\n`. Since our case is very straightforward,
+    we will use the most basic `CharacterTextSplitter` that splits documents by character.
+    When working with real documents (whole long texts instead of independent short
+    comments), it’s better to use [Recursive split by character](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/recursive_text_splitter)
+    since it allows you to split documents into chunks smarter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, LangChain is more suited for fuzzy text splitting. So, I had to hack
+    it a bit to make it work the way I wanted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How it works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You specify `chunk_size` and `chunk_overlap`, and it tries to make the minimal
+    number of splits so that each chunk is smaller than `chunk_size`. If it fails
+    to create a small enough chunk, it prints a message to the Jupyter Notebook output.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you specify too big `chunk_size`, not all comments will be separated.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you specify too small `chunk_size`, you will have print statements for each
+    comment in your output, leading to the Notebook reloading. Unfortunately, I couldn’t
+    find any parameters to switch it off.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To overcome this problem, I specified `length_function` as a constant equal
+    to `chunk_size`. Then I got just a standard split by character. LangChain provides
+    enough flexibility to do what you want, but only in a somewhat hacky way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Also, let’s add the document ID to the metadata — we will use it later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The advantage of using Documents is that we now have automatic data sources
+    and can filter data by it. For example, we can filter only comments related to
+    Travelodge Hotel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we need a model. As we discussed earlier in LangChain, there are LLMs
+    and Chat Models. The main difference is that LLMs take texts and return texts,
+    while Chat Models are more suitable for conversational use cases and can get a
+    set of messages as input. In our case, we will use the ChatModel for OpenAI since
+    we would like to pass system messages as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Prompts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s move on to the most important part — our prompt. In LangChain, there’s
+    a concept of Prompt Templates. They help to reuse prompts parametrised by variables.
+    It’s helpful since, in real-life applications, prompts might be very detailed
+    and sophisticated. So, prompt templates can be a useful high-level abstraction
+    that would help you to manage your code effectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are going to use the Chat Model, we will need [ChatPromptTemplate.](https://python.langchain.com/docs/modules/model_io/prompts/prompt_templates/#chatprompttemplate)
+  prefs: []
+  type: TYPE_NORMAL
+- en: But before jumping into prompts, let’s briefly discuss a helpful feature — an
+    output parser. Surprisingly, they can help us to create an effective prompt. We
+    can define the desired output, generate an output parser and then use the parser
+    to create instructions for the prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s define what we would like to see in the output. First, we would like
+    to be able to pass a list of customer reviews to the prompt to process them in
+    batches, so in the result, we would like to get a list with the following parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: id to identify documents,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: list of topics from the predefined list (we will be using the list from our
+    previous iteration),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sentiment (negative, neutral or positive).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s specify our output parser. Since we need a pretty complex JSON structure,
+    we will use [Pydantic Output Parser](https://python.langchain.com/docs/modules/model_io/output_parsers/pydantic)
+    instead of the most commonly used [Structured Output Parser](https://python.langchain.com/docs/modules/model_io/output_parsers/structured).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For that, we need to create a class inherited from `BaseModel` and specify all
+    fields we need with names and descriptions (so that LLM could understand what
+    we expect in the response).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we could use this parser to generate formatting instructions for our prompt.
+    That’s a fantastic case when you could use prompting best practices and spend
+    less time on prompt engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/223f83dd83f0e516f1a09c0acbc47478.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then, it’s time to move on to our prompt. We took a batch of comments and formatted
+    them into the expected format. Then, we created a prompt message with a bunch
+    of variables: `topics_descr_list`, `format_instructions` and `input_data`. After
+    that, we created chat prompt messages consisting of a constant system message
+    and a prompt message. The last step is to format chat prompt messages with actual
+    values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{input_data}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can pass these formatted messages to LLM and see a response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/19c75f5b1930416d6db2123198a6c974.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We got the response as a string object, but we could leverage our parser and
+    get the list of `CustomerCommentData` class objects as a result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/39bbe90b0978935dfefd2f9ffe552981.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, we’ve leveraged LangChain and some of its features and have already built
+    a bit smarter solution that could assign topics to the comments in batches (it
+    would save us some costs) and started to define not only topics but also sentiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding more logic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far, we’ve built only single LLM calls without any relations and sequencing.
+    However, in real life, we often want to split our tasks into multiple steps. For
+    that, we can use Chains. Chain is the fundamental building block for LangChain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLMChain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The most basic type of chain is an LLMChain. It is a combination of LLM and
+    prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we can rewrite our logic into a chain. This code will give us absolutely
+    the same result as before, but it’s pretty convenient to have one method that
+    defines it all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sequential Chains
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: LLM chain is very basic. The power of chains is in building more complex logic.
+    Let’s try to create something more advanced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea of [sequential chains](https://python.langchain.com/docs/modules/chains/foundational/sequential_chains)
+    is to use the output of one chain as the input for another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For defining chains, we will be using [LCEL](https://python.langchain.com/docs/expression_language)
+    (LangChain Expression Language). This new language was introduced just a couple
+    of months ago, and now all the old approaches with `SimpleSequentialChain` or
+    `SequentialChain` are considered legacy. So, it’s worth spending some time understanding
+    the LCEL concept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s rewrite the previous chain in LCEL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you want to learn it first-hand, I suggest you watch [this video](https://www.youtube.com/watch?v=9M8x485j_lU)
+    about LCEL from the LangChain team.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using sequential chains
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In some cases, it might be helpful to have [several sequential calls](https://python.langchain.com/docs/expression_language/cookbook/multiple_chains)
+    so that the output of one chain is used in the other ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, we can first translate reviews into English and then do topic modelling
+    and sentiment analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/685f59a665a81ef918b94ae53fa56394.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{input_data}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{translated_data}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We similarly defined prompt templates for translation and topic assignment.
+    Then, we determined the translation chain. The only new thing here is the usage
+    of `StrOutputParser()`, which converts response objects into strings (no rocket
+    science).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we defined the full chain, specifying the input parameters, prompt template
+    and LLM. For input parameters, we took `translated_data` from the output of `translate_chain`
+    while other parameters from the invoke input using the `itemgetter` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in our case, such an approach with a combined chain might not be so
+    convenient since we would like to save the output of the first chain as well to
+    have translated values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With chains, everything becomes a bit more convoluted so that we might need
+    some debugging capabilities. There are two options for debugging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first one is that you can switch on debugging locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: The other option is to use the LangChain platform — [LangSmith](https://blog.langchain.dev/announcing-langsmith/).
+    However, it’s still in beta-tester mode, so you might need to wait to get access.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Routing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the most complex cases of chains is [routing](https://python.langchain.com/docs/expression_language/how_to/routing)
+    when you use different prompts for different use cases. For example, we could
+    save different customer review parameters depending on the sentiment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the comment is negative, we will store the list of problems mentioned by
+    the customer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Otherwise, we will get the list of good points from the review.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To use a routing chain, we will need to pass comments one by one instead of
+    batching them as we did before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So our chain on a high level will look like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99a869839ba12e1e401eca16ab094b04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First, we need to define the main chain that determines the sentiment. This
+    chain consists of prompt, LLM and already familiar `StrOutputParser()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{input_data}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: For positive reviews, we will ask the model to extract good points, while for
+    negative ones — problems. So, we will need two different chains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will use the same Pydantic output parsers as before to specify the intended
+    output format and generate instructions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We used `partial_variables` on top of the general topic assignment prompt message
+    to specify different format instructions for positive and negative cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please, analyse the provided review and identify the main topics and sentiment.
+    Include only topics from the provided below list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'List of topics with descriptions (delimited with ":"):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '{topics_descr_list}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Output format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '{format_instructions}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Customer reviews:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: ''''''''
+  prefs: []
+  type: TYPE_NORMAL
+- en: defining prompt templates
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: positive_topic_assignment_template = ChatPromptTemplate(
+  prefs: []
+  type: TYPE_NORMAL
+- en: messages=[
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: SystemMessagePromptTemplate.from_template("You're a helpful assistant. Your
+    task is to analyse hotel reviews."),
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: HumanMessagePromptTemplate.from_template(general_topic_assignment_msg)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '],'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: input_variables=["topics_descr_list", "input_data"],
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'partial_variables={"format_instructions": positive_format_instructions} )'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: negative_topic_assignment_template = ChatPromptTemplate(
+  prefs: []
+  type: TYPE_NORMAL
+- en: messages=[
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: SystemMessagePromptTemplate.from_template("You're a helpful assistant. Your
+    task is to analyse hotel reviews."),
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: HumanMessagePromptTemplate.from_template(general_topic_assignment_msg)
+  prefs:
+  - PREF_IND
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '],'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: input_variables=["topics_descr_list", "input_data"],
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'partial_variables={"format_instructions": negative_format_instructions} )'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: from langchain.schema.runnable import RunnableBranch
+  prefs: []
+  type: TYPE_NORMAL
+- en: branch = RunnableBranch(
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(lambda x: "negative" in x["sentiment"].lower(), negative_chain),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: positive_chain
+  prefs: []
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: full_route_chain = {
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"sentiment": sentiment_chain,'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"input_data": lambda x: x["input_data"],'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"topics_descr_list": lambda x: x["topics_descr_list"]'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '} | branch'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'full_route_chain.invoke({''input_data'': review,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '''topics_descr_list'': topics_list})'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: from langchain.evaluation import ExactMatchStringEvaluator
+  prefs: []
+  type: TYPE_NORMAL
+- en: evaluator = ExactMatchStringEvaluator(
+  prefs: []
+  type: TYPE_NORMAL
+- en: ignore_case=True,
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ignore_numbers=True,
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ignore_punctuation=True,
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: evaluator.evaluate_strings(
+  prefs: []
+  type: TYPE_NORMAL
+- en: prediction="positive.",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: reference="Positive"
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '{''score'': 1}'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: evaluator.evaluate_strings(
+  prefs: []
+  type: TYPE_NORMAL
+- en: prediction="negative",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: reference="Positive"
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '{''score'': 0}'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: from langchain.evaluation import load_evaluator
+  prefs: []
+  type: TYPE_NORMAL
+- en: from langchain.evaluation import EmbeddingDistance
+  prefs: []
+  type: TYPE_NORMAL
+- en: evaluator = load_evaluator(
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"embedding_distance", distance_metric=EmbeddingDistance.EUCLIDEAN'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: evaluator.evaluate_strings(
+  prefs: []
+  type: TYPE_NORMAL
+- en: prediction="well designed rooms, clean, great location",
+  prefs: []
+  type: TYPE_NORMAL
+- en: reference="well designed rooms, clean, great location, good atmosphere"
+  prefs: []
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '{''score'': 0.20732719121627757}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: from langchain.evaluation import Criteria
+  prefs: []
+  type: TYPE_NORMAL
+- en: list(Criteria)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[<Criteria.CONCISENESS: ''conciseness''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.RELEVANCE: ''relevance''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.CORRECTNESS: ''correctness''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.COHERENCE: ''coherence''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.HARMFULNESS: ''harmfulness''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.MALICIOUSNESS: ''maliciousness''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.HELPFULNESS: ''helpfulness''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.CONTROVERSIALITY: ''controversiality''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.MISOGYNY: ''misogyny''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.CRIMINALITY: ''criminality''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.INSENSITIVITY: ''insensitivity''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.DEPTH: ''depth''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.CREATIVITY: ''creativity''>,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '<Criteria.DETAIL: ''detail''>]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: evaluator = load_evaluator("criteria", criteria="conciseness")
+  prefs: []
+  type: TYPE_NORMAL
+- en: eval_result = evaluator.evaluate_strings(
+  prefs: []
+  type: TYPE_NORMAL
+- en: prediction="well designed rooms, clean, great location",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: input="List the good points that customer mentioned",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: evaluator = load_evaluator("labeled_criteria", criteria="correctness")
+  prefs: []
+  type: TYPE_NORMAL
+- en: eval_result = evaluator.evaluate_strings(
+  prefs: []
+  type: TYPE_NORMAL
+- en: prediction="well designed rooms, clean, great location",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: input="List the good points that customer mentioned",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: reference="well designed rooms, clean, great location, good atmosphere",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'custom_criterion = {"multiple": "Does the output contain multiple points?"}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: evaluator = load_evaluator("criteria", criteria=custom_criterion)
+  prefs: []
+  type: TYPE_NORMAL
+- en: eval_result = evaluator.evaluate_strings(
+  prefs: []
+  type: TYPE_NORMAL
+- en: prediction="well designed rooms, clean, great location",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: input="List the good points that customer mentioned",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: from langchain.chat_models import ChatOpenAI
+  prefs: []
+  type: TYPE_NORMAL
+- en: accuracy_criteria = {
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"accuracy": """'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Score 1: The answer doesn''t mention any relevant points.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Score 3: The answer mentions only few of relevant points but have major inaccuracies
+    or includes several not relevant options.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Score 5: The answer has moderate quantity of relevant options but might have
+    inaccuracies or wrong points.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Score 7: The answer aligns with the reference and shows most of relevant points
+    and don''t have completely wrong options mentioned.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Score 10: The answer is completely accurate and aligns perfectly with the reference."""'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: evaluator = load_evaluator(
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"labeled_score_string",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: criteria=accuracy_criteria,
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: llm=ChatOpenAI(model="gpt-4"),
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: eval_result = evaluator.evaluate_strings(
+  prefs: []
+  type: TYPE_NORMAL
+- en: prediction="well designed rooms, clean, great location",
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: input="""Below is a customer review delimited by [PRE30]
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Small but well designed rooms, clean, great location, good atmosphere. I would
+    stay there again. Continental breakfast is weak but ok.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '![](../Images/9a85f3ea6a6ec65b20ef73b036dec829.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We got seven as a score, which looks pretty valid. Let’s look at the actual
+    prompt used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95be175868f753919929dd772eed5abe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, I would treat scores from LLMs with a pinch of salt. Remember, it’s
+    not a regression function, and scores might be pretty subjective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve been using the scoring model with the reference. But in many cases, we
+    might not have the correct answers, or it could be expensive for us to get them.
+    You can use the scoring evaluator even without reference scores asking the model
+    to assess the answer. It’s worth using GPT-4 to be more confident in the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]. Provide the list the good points that customer mentioned in the customer
+    review.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Customer review:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: '"""'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: )
+  prefs: []
+  type: TYPE_NORMAL
+- en: '```'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1afcfe80ddb39f4c0a6255e0ef3a574a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We got a pretty close score to the previous one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve looked at quite a lot of possible ways to validate your output, so I hope
+    you are now ready to test your models’ results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we’ve discussed some nuances we need to take into account if
+    we want to use LLMs for production processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve looked at the use of the LangChain framework to make our solution more
+    modular so that we could easily iterate and use new approaches (for example, switching
+    from one LLM to another). Also, frameworks usually help to make our code easier
+    to maintain.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The other big topic we’ve discussed is the different tools we have to assess
+    the model’s performance. If we are using LLMs in production, we need to have some
+    constant monitoring in place to ensure the quality of our service, and it’s worth
+    spending some time to create an evaluation pipeline based on LLMs or human-in-the-loop.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thank you a lot for reading this article. I hope it was insightful to you. If
+    you have any follow-up questions or comments, please leave them in the comments
+    section.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Ganesan, Kavita and Zhai, ChengXiang. (2011). OpinRank Review Dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: UCI Machine Learning Repository.* [*https://doi.org/10.24432/C5QW4W*](https://doi.org/10.24432/C5QW4W.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article is based on information from the course [“LangChain for LLM Application
+    Development”](https://www.deeplearning.ai/short-courses/langchain-for-llm-application-development/)
+    by DeepLearning.AI and LangChain.
+  prefs: []
+  type: TYPE_NORMAL

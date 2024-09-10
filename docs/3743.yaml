@@ -1,0 +1,475 @@
+- en: Building A Graph Convolutional Network for Molecular Property Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4?source=collection_archive---------2-----------------------#2023-12-23](https://towardsdatascience.com/building-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4?source=collection_archive---------2-----------------------#2023-12-23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Artificial Intelligence
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Tutorial to make molecular graphs and develop a simple PyTorch-based GCN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)[![Gaurav
+    Deshmukh](../Images/98433b1a256f160792a7b2b0874a2081.png)](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------)
+    [Gaurav Deshmukh](https://medium.com/@ChemAndCode?source=post_page-----978b0ae10ec4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5a75283b2c71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=post_page-5a75283b2c71----978b0ae10ec4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----978b0ae10ec4--------------------------------)
+    ·17 min read·Dec 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F978b0ae10ec4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&user=Gaurav+Deshmukh&userId=5a75283b2c71&source=-----978b0ae10ec4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F978b0ae10ec4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-graph-convolutional-network-for-molecular-property-prediction-978b0ae10ec4&source=-----978b0ae10ec4---------------------bookmark_footer-----------)![](../Images/44e7eb3195c6626cd9fc39e340695ed7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [BoliviaInteligente](https://unsplash.com/@boliviainteligente?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Artificial intelligence has taken the world by storm. Every week, new models,
+    tools, and applications emerge that promise to push the boundaries of human endeavor.
+    The availability of open-source tools that enable users to train and employ complex
+    machine learning models in a modest number of lines of code have truly democratized
+    AI; at the same time, while many of these off-the-shelf models may provide excellent
+    predictive capabilities, their usage as black box models may deprive inquisitive
+    students of AI of a deeper understanding of how they work and why they were developed
+    in the first place. This understanding is particularly important in the natural
+    sciences, where knowing that a model is accurate is not enough — it is also essential
+    to know its connection to other physical theories, its limitations, and its generalizability
+    to other systems. In this article, we will explore the basics of one particular
+    ML model — a graph convolutional network — through the lens of chemistry. This
+    is not meant to be a mathematically rigorous exploration; instead, we will try
+    to compare features of the network with traditional models in the natural sciences
+    and think about why it works as well as it does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. The need for graphs and graph neural networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A model in chemistry or physics is usually a continuous function, say *y=f(x₁,
+    x₂, x₃, …, xₙ)*, in which *x₁, x₂, x₃, …, xₙ* are the inputs and *y* is the output.
+    An example of such a model is the equation that determines the electrostatic interaction
+    (or force) between two point charges *q₁* and *q₂* separated by a distance *r*
+    present in a medium with relative permittivity *εᵣ*, commonly termed as Coulomb’s
+    law.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d08adea00f1d9c05c260a7dd4b77855.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: The Coulomb equation as a model for electrostatic interactions between
+    point charges (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we did not know this relationship but, hypothetically, had multiple datapoints
+    each including the interaction between point charges (the output) and the corresponding
+    inputs, we could fit an artificial neural network to predict the interaction for
+    any given point charges for any given separation in a medium with a specified
+    permittivity. In the case of this problem, admittedly ignoring some important
+    caveats, creating a data-driven model for a physical problem is relatively straightforward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now consider the problem of prediction of a particular property, say solubility
+    in water, from the structure of a molecule. First, there is no obvious set of
+    inputs to describe a molecule. You could use various features, such as bond lengths,
+    bond angles, number of different types of elements, number of rings, and so forth.
+    However, there is no guarantee that any such arbitrary set is bound to work well
+    for all molecules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, unlike the example of the point charges, the inputs may not necessarily
+    reside in a continuous space. For example, we can think of methanol, ethanol,
+    and propanol as a set of molecules with increasing chain lengths; there is no
+    notion, however, of anything between them — chain length is a discrete parameter
+    and there is no way to interpolate between methanol and ethanol to get other molecules.
+    Having a continuous space of inputs is essential to calculate derivatives of the
+    model, which can then be used for optimization of the chosen property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To overcome these problems, various methods for encoding molecules have been
+    proposed. One such method is textual representation using schemes such as SMILES
+    and SELFIES. There is a large body of literature on this representation, and I
+    direct the interested reader to this [helpful review](https://www.cell.com/patterns/pdf/S2666-3899(22)00206-9.pdf).
+    The second method involves representing molecules as graphs. While each method
+    has its advantages and shortcomings, graph representations feel more intuitive
+    for chemistry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A graph is a mathematical structure consisting of nodes connected by edges that
+    represent relationships between nodes. Molecules fit naturally into this structure
+    — atoms become nodes, and bonds become edges. Each node in the graph is represented
+    by a vector that encodes properties of the corresponding atom. Usually, a one-hot
+    encoding scheme suffices (more on this in the next section). These vectors can
+    be stacked to create a *node matrix.* Relationships between nodes — denoted by
+    edges — can be delineated through a square *adjacency matrix,* wherein every element
+    *aᵢⱼ* is either 1 or 0 depending on whether the two nodes *i* and *j* are connected
+    by an edge or not respectively. The diagonal elements are set to 1, indicating
+    a self-connection, which makes the matrix amenable to convolutions (as you will
+    see in the next section). More complex graph representations can be developed,
+    in which edge properties are also one-hot encoded in a separate matrix, but we
+    shall leave that for another article. These node and adjacency matrices will serve
+    as inputs to our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1bb2c8b159493c6a4b83f4cae619305c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Representation of an acetamide molecule as a graph with one-hot encodings
+    of atomic numbers of nodes (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, artificial neural network models accept a 1-dimensional vector of
+    inputs. For multidimensional inputs, such as images, a class of models called
+    convolutional neural networks was developed. In our case too we have 2-dimensional
+    matrices as inputs, and therefore, need a modified network that can accept these
+    as inputs. Graph neural networks were developed to operate on such node and adjacency
+    matrices to convert them into appropriate 1-dimensional vectors that can then
+    be passed through hidden layers of a vanilla artificial neural network to generate
+    outputs. There are many types of graph neural networks, such as graph convolutional
+    networks, message passing networks, graph attention networks, and so forth, which
+    primarily differ in terms of the functions that exchange information between the
+    nodes and edges in the graph. We shall take a closer look at graph convolutional
+    networks due to their relative simplicity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Graph convolution and pooling layers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Consider the initial state of your inputs. The node matrix represents the one-hot
+    encoding of each atom in each row. For the sake of simplicity, let us consider
+    a one-hot encoding of atomic numbers, wherein an atom with atomic number *n* will
+    have a 1 at the *nᵗʰ* index and 0s everywhere else. The adjacency matrix represents
+    the connections between the nodes. In its current state, the node matrix cannot
+    be used as an input to an artificial neural network for the following reasons:
+    (1) it is 2-dimensional, (2) it is not permutation-invariant, and (3) it is not
+    unique. Permutation-invariance in this case implies that the input should remain
+    the same no matter how you order the nodes; currently, the same molecule can be
+    represented by multiple permutations of the same node matrix (assuming an appropriate
+    permutation in the adjacency matrix as well). This is a problem since the network
+    would treat different permutations as different inputs, when they should be treated
+    as the same.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is an easy solution to the first two issues — pooling. If the node matrix
+    is pooled along the column dimension, then it will be reduced to a 1-dimensional
+    vector that is permutation-invariant. Typically, this pooling is a simple mean
+    pooling, which means that the final pooled vector contains the means of every
+    column in the node matrix. However, this still does not solve the third problem
+    — pooling the node matrices of two isomers, such as n-pentane and neo-pentane,
+    will produce the same pooled vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make the final pooled vectors unique, we need to incorporate some neighbor
+    information in the node matrix. In the case of isomers, while their chemical formula
+    is the same, their structure is not. A simple way to incorporate neighbor information
+    is to perform some operation, such as a sum, for each node with its neighbors.
+    This can be represented as the multiplication of the node and adjacency matrices
+    (try it out on paper: *the adjacency matrix times the node matrix produces an
+    updated node matrix with each node vector equal to the sum of its neighbor node
+    vectors with itself*). Often, this sum is normalized by the degree (or number
+    of neighbors) of each node by pre-multiplying with the inverse of the diagonal
+    degree matrix, making this a mean over neighbors. Lastly, this product is post-multiplied
+    by a weight matrix to make this operation parameterizable. This whole operation
+    is termed as a graph convolution. An intuitive and simple form of a graph convolution
+    is shown in **Figure 3\.** Amore mathematically rigorous and numerically stable
+    form was provided in [Thomas Kipf and Max Welling’s work](https://arxiv.org/abs/1609.02907),
+    with a modified normalization of the adjacency matrix. The combination of convolution
+    and pooling operations can also be interpreted as a *non-linear form of an empirical
+    group contribution method.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4f86992af1c3ad7b47d228fe44ebdb4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Graph convolution for an acetamide molecule (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final structure of the graph convolutional network is as follows — first,
+    node and adjacency matrices are calculated for a given molecule. Multiple graph
+    convolutions are then applied to these followed by pooling to produce a single
+    vector containing all the information regarding the molecule. This is then passed
+    through the hidden layers of a standard artificial neural network to produce an
+    output. The weights of the hidden layers, pooling layer, and convolution layers
+    are simultaneously determined through backpropagation applied to a regression-based
+    loss function like mean-squared loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Implementation in code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having discussed all the key ideas related to graph convolutional networks,
+    we are ready to start building one using PyTorch. While there exists a flexible,
+    high-performance framework for GNNs called PyTorch Geometric, we shall not make
+    use of it, since our goal is to look under the hood and develop our understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tutorial is split into four major subsections — (1) creating graphs in an
+    automated fashion using RDKit, (2) packaging the graphs into a PyTorch Dataset,
+    (3) building the graph convolutional network architecture, and (4) training the
+    network. The complete code, along with instructions to install and import the
+    required packages, is provided in a GitHub repository with a link at the end of
+    the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.1\. Creating graphs using RDKit
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: RDKit is a cheminformatics library that allows high-throughput access to properties
+    of small molecules. We will need it for two tasks — getting the atomic number
+    of each atom in a molecule to one-hot encode the node matrix and getting the adjacency
+    matrix. We assume that molecules are provided in terms of their SMILES strings
+    (which is true for most cheminformatics data). Additionally, to ensure that the
+    sizes of node and adjacency matrices are uniform across all molecules — which
+    they would not be by default, since the sizes of both are dependent on the number
+    of atoms in a molecule — we pad the matrices with 0s. Finally, we shall try a
+    small modification to the convolution that we have proposed above — we will replace
+    the “1”s in the adjacency matrix with the reciprocals of the corresponding bond
+    lengths. This way, the network will have more information regarding the geometry
+    of the molecule, and it will also weight the convolutions around each node based
+    on the bond lengths of the neighbors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3.2\. Packaging graphs in a Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'PyTorch provides a handy *Dataset* class to store and access various kinds
+    of data. We will use that to store the node and adjacency matrices and output
+    for each molecule. Note that it is not mandatory to use this *Dataset* interface
+    to handle data; nonetheless, using this abstraction makes subsequent steps simpler.
+    We need to define two main methods for our class *GraphData* that inherits from
+    the *Dataset* class: a *__len__* method to get the size of the dataset and crucially
+    a *__getitem__* method to fetch the input and output for a given index.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since we have defined our own customized manner of returning the node and adjacency
+    matrices, outputs, and SMILES strings, we need to define a custom function to
+    collate the data, that is, package it into a batch, which is then passed on to
+    the network. This ability to train neural networks by passing batches of data,
+    rather than individual datapoints, and using mini-batch gradient descent provides
+    a delicate balance between accuracy and compute efficiency. The collate function
+    that we will define below will essentially collect all the data objects, stratify
+    them into their categories, stack them in lists, convert them into PyTorch Tensors,
+    and recombine these tensors such that they are returned in the same manner as
+    that of our *GraphData* class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3.3\. Building the graph convolutional network architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Having completed the data processing aspects of the code, we now turn towards
+    building the model itself. We shall build our own convolution and pooling layers
+    for the sake of perspicuity, but more advanced developers among you can easily
+    swap these out with more complex, pre-defined layers from the PyTorch Geometric
+    module. The *ConvolutionLayer* essentially does three things — (1) calculation
+    of the inverse diagonal degree matrix from the adjacency matrix, (2) multiplication
+    of the four matrices (D⁻¹ANW), and (3) application of a non-linear activation
+    function to the layer output. As with other PyTorch classes, we will inherit from
+    the *Module* base class that already has definitions for methods like *forward.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, let us construct the *PoolingLayer*. This layer only performs one operation,
+    that is, a mean along the second dimension (number of nodes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we shall define create the *ChemGCN* class containing the definitions
+    of convolutional, pooling, and hidden layers. Typically, this class should have
+    a constructor that defines the structure and ordering of each of these layers,
+    and a *forward* method that accepts the input (in our case, the node and adjacency
+    matrices) and produces the output. We will apply the *LeakyReLU* activation function
+    to all of the layer outputs. Also, we shall use dropout to minimize overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3.4\. Training the network
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have built the tools required to train our model and make predictions. In
+    this section, we shall write helper functions to train and test our model, and
+    a write script to run a workflow that makes graphs, builds the network, and trains
+    the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we shall define a *Standardizer* class to standardize our outputs. Neural
+    networks like to deal with relatively small numbers that do not vary wildly from
+    each other. Standardization helps with that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Second, we define a function to perform the following steps per epoch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unpack inputs and outputs from the data loader and transfer them to the GPU
+    (if available).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pass the inputs through the network and get predictions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculate the mean-squared loss between the predictions and outputs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Perform backpropagation and update the weights of the network.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Repeat the above steps for other batches.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The function returns the batch-averaged loss and mean absolute error that can
+    be used to plot a loss curve. A similar function without the backpropagation is
+    written to test the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, let us write the overall workflow. This script will call everything
+    we have defined above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s it! Running this script should output the training and test losses and
+    errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A network with the given architecture and hyperparameters was trained on the
+    solubility dataset from the open-source [DeepChem repository](https://github.com/deepchem/deepchem)
+    containing water solubilities of ~1000 small molecules. The figure below shows
+    the training loss curve and parity plot for the test set for one particular train-test
+    stratification. The mean absolute errors on the training and test sets are 0.59
+    and 0.58 respectively (in log mol/l), lower than the 0.69 log mol/l for a linear
+    model (based on predictions present in the dataset). It is no surprise that a
+    neural network performs better than a linear regression model; nonetheless, this
+    cursory comparison reassures us that the predictions made by our model are reasonable.
+    Further, we accomplished this by only incorporating basic structural descriptors
+    in the graphs — atomic numbers and bond lengths — and letting the convolutions
+    and pooling functions build more complex relationships between these that led
+    to the most accurate predictions of the molecular property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/054b6b47d1d5ed507bd28da3eceef4e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: Training loss curve (left) and parity plot (right) for the test set
+    (Image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Final remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This is by no means a definitive model for the chosen problem. There are many
+    ways to improve the model including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: optimizing the hyperparameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: using an early-stopping strategy to find a model with the lowest validation
+    loss
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: using more complex convolution and pooling functions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: collecting more data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Nevertheless, the goal of this tutorial was to expound on the fundamentals of
+    graph convolutional networks for chemistry through a simple example. Having acquainted
+    yourself with the basics, the sky is the limit in your GCN model-building journey.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Repository and helpful references
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The complete code (including scripts to create figures) is provided in a [GitHub
+    repository](https://github.com/gauravsdeshmukh/ChemGCN). Instructions to install
+    requisite modules are also provided there. The dataset used to train the model
+    is from the open-source [DeepChem repository](https://github.com/deepchem/deepchem)
+    that is under the MIT license (commercial use permitted). The raw dataset filename
+    in the repository is delaney_processed.csv.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Review](https://www.cell.com/patterns/pdf/S2666-3899(22)00206-9.pdf) on string
+    representations of molecules.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Research article](https://arxiv.org/abs/1609.02907) on graph convolutional
+    networks. The convolution function presented in this article is a simpler and
+    more intuitive form of the function given in this article.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Research article](https://arxiv.org/abs/1704.01212) on message passing neural
+    networks. These are more generalized and expressive graph neural networks. It
+    can be shown that a graph convolutional network is a message passing neural network
+    with a specific type of message function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Online book](https://dmol.pub/) on deep learning for molecules. This is a
+    great resource to learn the basics of deep learning for chemistry and apply your
+    learnings through hands-on coding exercises.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you have any questions, comments, or suggestions, please feel free to [email
+    me](mailto:gauravsdeshmukh@outlook.com) or [contact me on X](https://twitter.com/ChemAndCode).
+  prefs: []
+  type: TYPE_NORMAL

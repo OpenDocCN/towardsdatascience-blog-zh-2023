@@ -1,0 +1,337 @@
+- en: Deep Reinforcement Learning improved sorting algorithms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deep-reinforcement-learning-improved-sorting-algorithms-2f6a1969e3af?source=collection_archive---------13-----------------------#2023-06-13](https://towardsdatascience.com/deep-reinforcement-learning-improved-sorting-algorithms-2f6a1969e3af?source=collection_archive---------13-----------------------#2023-06-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How Google DeepMind created a more efficient sorting algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jonathanbogerd?source=post_page-----2f6a1969e3af--------------------------------)[![Jonathan
+    Bogerd](../Images/e844961c6ea9766476d3d520dd993ae2.png)](https://medium.com/@jonathanbogerd?source=post_page-----2f6a1969e3af--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2f6a1969e3af--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2f6a1969e3af--------------------------------)
+    [Jonathan Bogerd](https://medium.com/@jonathanbogerd?source=post_page-----2f6a1969e3af--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3863776b2716&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-reinforcement-learning-improved-sorting-algorithms-2f6a1969e3af&user=Jonathan+Bogerd&userId=3863776b2716&source=post_page-3863776b2716----2f6a1969e3af---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2f6a1969e3af--------------------------------)
+    ·8 min read·Jun 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2f6a1969e3af&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-reinforcement-learning-improved-sorting-algorithms-2f6a1969e3af&user=Jonathan+Bogerd&userId=3863776b2716&source=-----2f6a1969e3af---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2f6a1969e3af&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-reinforcement-learning-improved-sorting-algorithms-2f6a1969e3af&source=-----2f6a1969e3af---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Last week, Google DeepMind published a paper in the journal Nature in which
+    they claimed to have found a more efficient sorting algorithm by using Deep Reinforcement
+    Learning (DLR). DeepMind is known for pushing the boundaries in Reinforcement
+    Learning (RL). A few years ago, they beat the best player in the game of Go with
+    their agent AlphaGo, after using a similar program to crush existing chess engines.
+    In 2022 DeepMind introduced AlphaTensor, a program that found a more efficient
+    matrix multiplication algorithm with DLR. The techniques used are similar to DeepMind’s
+    newest achievement: improving a standard sorting algorithm. In this article, I
+    will discuss how they achieved this by introducing Reinforcement Learning, Monte
+    Carlo Tree Search, and the details of DeepMind’s approach and agent AlphaDev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cc34c7da927bcebedd0a2ae41751b25.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [AltumCode](https://unsplash.com/@altumcode?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sorting**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Writing a sorting algorithm is simple: compare all values one by one to find
+    the lowest (or highest) value, save this value at the first element of your return
+    list, and continue to the next value until no more value is left. Although this
+    algorithm will work, it is far from efficient. Because sorting is very common
+    in computer programs, efficient sorting algorithms are subject to intensive research.
+    DeepMind focused on two variants of sorting: Fixed sorting and variable sorting.
+    Fixed sorting involves sorting a sequence of values with a fixed, predefined length.
+    In variable sorting, the size of the list of values is not defined in advance.
+    Only the maximum size of the list is provided. Both variants of sorting are used
+    extensively in state-of-the-art sorting algorithms. Often, a large list is sorted
+    by repeatedly sorting small sections of the list.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Current state-of-the-art algorithms use so-called sorting networks in both fixed
+    and variable sorting. In this article, I will not discuss the details of sorting
+    networks. You can find more information [here](https://dl.acm.org/doi/pdf/10.1145/1468075.1468121).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reinforcement Learning**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this section, I will introduce the main concepts of Reinforcement Learning.
+    Reinforcement Learning is a branch of Machine Learning, in which an agent is tasked
+    with finding the best actions in an environment, given the current state. The
+    state of an environment contains all relevant aspects of an environment that can
+    or should influence the action to be taken. The best action is defined as the
+    action that maximizes the (discounted) cumulative reward. Actions are taken sequentially,
+    and after each action, the obtained reward and the new state are recorded. Usually,
+    an environment has some termination criteria after which the next episode starts.
+    Early versions of RL used tables to keep track of the value of certain states
+    and actions with the idea of always taking the action with the highest value.
+    Deep neural networks often replace these tables because they can generalize better
+    and enumerating all states is often impossible. When deep neural networks are
+    used for Reinforcement Learning, the term Deep Reinforcement Learning is used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Monte Carlo Tree Search**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: AlphaDev is trained using Deep Reinforcement Learning and Monte Carlo Tree Search,
+    which is a search algorithm to find the best action given some initial state.
+    It is often combined with DRL, for instance in AlphaZero and AlphaGo. It deserves
+    its own article, but a summary is provided here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Monte Carlo Tree Search (MCTS) builds a tree of possible outcome states where
+    the current state is the root node. For a given number of simulations, this tree
+    will be explored to find the consequences of taking certain actions. In each simulation,
+    a rollout (sometimes called playout) is used to expand one node into child nodes
+    if the game is not terminated at that point. Which action to take is based on
+    selection criteria. In our case, the probability of selecting an action is given
+    by the policy network which will be discussed below. The value of a node is a
+    measure of how good the state of that node is. It is determined by the value network,
+    which is also discussed in a future section. If a terminal state is reached, the
+    value is replaced by the true reward value of the environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The values are propagated up the search tree. In this way, the value of the
+    current state depends on the value of the states that can be reached from the
+    current state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DeepMind’s Approach**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The DRL agent of DeepMind that is trained to improve the sorting algorithm implementation
+    is called AlphaDev. The task of AlphaDev is to write a more efficient sorting
+    algorithm in Assembly. Assembly is the bridge between high-level languages such
+    as C++, Java, and Python and machine code. If you use sort in C++, the compiler
+    compiles your program into assembly code. The assembler then converts this code
+    to machine code. AlphaDev is tasked with selecting a series of assembly instructions
+    to create a sorting algorithm that is both correct and fast. This is a difficult
+    task because adding one instruction can make the program completely wrong, even
+    if it was correct before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AlphaDev finds an efficient sorting algorithm by creating and solving the AssemblyGame.
+    In each turn, it has to select one action corresponding to a CPU instruction.
+    By formulating this problem as a game, it can easily fit the standard Reinforcement
+    Learning framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reinforcement Learning Formulation**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A standard RL formulation contains states, actions, rewards, and a termination
+    criterium.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**State**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The state of the AssemblyGame consists of two parts. First, a representation
+    of the current program. AlphaDev uses the output of a Transformer, a neural network
+    architecture, to represent the current algorithm. Transformers have had much success
+    with large language models recently and are a suitable choice for encoding the
+    current algorithm because it is text-based. The second part of the state is a
+    representation of the state of the memory and registers after running the current
+    algorithm. This is done by a conventional deep neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Action**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The actions of the AssemblyGame are appending a legal assembly instruction
+    to the program. AlphaDev can choose to append any instruction as long as it is
+    legal. DeepMind created the following six rules for legal actions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Memory locations are always read in incremental order
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Registers are allocated in incremental order
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Read and write to each memory location once
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: No consecutive compare instructions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: No comparison or conditional moves to memory
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Non-initialized registers cannot be used
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The last two actions are illegal from a programming standpoint, the others are
+    enforced because they will not change the program. By removing these actions the
+    search space is limited without affecting the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reward**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The reward of the AssemblyGame is a combination of two parts. The first element
+    of the reward is a correctness score. Based on a series of test sequences, the
+    provided algorithm is evaluated. The closer the algorithm gets to properly sorting
+    the test sequence, the higher the reward for correctness. The second element of
+    the reward is the speed or latency of the program. This is measured by the number
+    of lines of the program, if there are no conditional branches. In practice, this
+    means that the length of the program is used for fixed sorting because no conditions
+    are required for that program. For variable sorting, the algorithm has to condition
+    on the actual length of the sequence. Because not all parts of the algorithm are
+    used when sorting, the actual latency of the program is measured instead of the
+    number of lines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Termination and Goal**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: According to the paper released by DeepMind, they terminate the AssemblyGame
+    after “a limited number of steps”. What this exactly means is unclear, but I assume
+    they limit the number of steps based on the current human benchmark. The goal
+    of the game is to find a correct and fast algorithm. If either an incorrect or
+    a slow algorithm is provided by AlphaDev, the game is lost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Policy and Value Networks**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To use Monte Carlo Tree Search a policy and a value network are required. The
+    policy network sets the probability for each action and the value network is trained
+    to evaluate a state. The policy network is updated based on the number of visits
+    of a certain state. This creates an iterative procedure, where the policy is used
+    to perform MCTS and the policy network is updated with the number of visits of
+    a state in MCTS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The value network outputs two values, one for the correctness of the algorithm
+    and one for the latency of the algorithm. According to DeepMind, this yields better
+    results than combining these values in one score by the network. The value network
+    is updated based on the obtained rewards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Results**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After training AlphaDev, it found shorter algorithms for fixed sorting with
+    sequence lengths 3 and 5\. For fixed sorting with length 4, it found the current
+    implementation, so no improvement was made there. AlphaDev achieved these results
+    for fixed sorting by applying two new ideas. These new ideas, called the swap
+    and the copy move, result in fewer comparisons between values and therefore a
+    faster algorithm. For fixed sorting with length 3, DeepMind proved that no shorter
+    program exists by brute forcing through all options with a shorter program length.
+    For longer programs, this approach is infeasible, as the search space grows exponentially.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For variable sorting, AlphaDev came up with a new design of the algorithm. For
+    instance for variable sorting a sequence with a length at most 4, AlphaDev suggested
+    to first sort 3 values and then perform a simplified version of sort for the last
+    remaining element. The figure below shows the algorithm design for Varsort(4)
+    given by AlphaDev.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/520282b71fa09dc24538b67782345e34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by D. Mankowitz et al. , Faster sorting algorithms discovered using deep
+    reinforcement learning (2023), Nature
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, faster algorithms were found for fixed and variable sorting, proving
+    that DRL can be used to implement efficient algorithms. The sorting implementation
+    in C++ has been updated to use these new algorithms. Details on the performance
+    gains achieved by AlphaDev can be found in the table below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9479b578df767dabbd6b0cc9cfe887d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table by D. Mankowitz et al. , Faster sorting algorithms discovered using deep
+    reinforcement learning (2023), Nature
+  prefs: []
+  type: TYPE_NORMAL
+- en: To test if this approach generalizes to other programming implementations, DeepMind
+    also tested AlphaDev on a competitive coding challenge and a protocol buffer used
+    by Google. In both cases, AlphaDev was able to come up with more efficient implementations,
+    proving that DLR with Monte Carlo Tree Search is a valid approach to finding efficient
+    implementations for common algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Deep Reinforcement Learning has shown to be successful in many different environments,
+    from games like Go and Chess to algorithm implementation as seen here. Although
+    the domain is challenging, often dependent on low-level implementation details,
+    and hyperparameter choices, these successes show the results that can be achieved
+    by this powerful concept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article gave you an insight into the latest achievement in RL. If
+    you want a more detailed explanation of Monte Carlo Tree Search or other algorithms
+    that I discussed, please let me know!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sources**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] K. Batcher, Sorting networks and their applications (1968), Proceedings
+    of the April 30 — May 2, 1968, spring joint computer conference (pp. 307–314)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] D. Mankowitz et al., Faster sorting algorithms discovered using deep reinforcement
+    learning (2023), Nature 618.7964: 257–263'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] D. Silver et al., Mastering chess and shogi by self-play with a general
+    reinforcement learning algorithm (2017), arXiv preprint arXiv:1712.01815'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] D. Silver et al., Mastering the game of Go with deep neural networks and
+    tree search (2016), Nature 529.7587: 484–489'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] A. Fawzi et al., Discovering faster matrix multiplication algorithms with
+    reinforcement learning (2022), Nature 610.7930: 47–53'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] C. Browne et al., A survey of monte carlo tree search methods (2012), IEEE
+    Transactions on Computational Intelligence and AI in games 4.1: 1–43.'
+  prefs: []
+  type: TYPE_NORMAL

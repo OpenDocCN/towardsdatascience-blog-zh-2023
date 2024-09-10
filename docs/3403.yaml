@@ -1,0 +1,348 @@
+- en: Type-Hinting DataFrames for Static Analysis and Runtime Validation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/type-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d?source=collection_archive---------3-----------------------#2023-11-16](https://towardsdatascience.com/type-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d?source=collection_archive---------3-----------------------#2023-11-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How StaticFrame Enables Comprehensive DataFrame Type Hints
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)[![Christopher
+    Ariza](../Images/35208ace15080724e4cd6690e43d6502.png)](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------)
+    [Christopher Ariza](https://medium.com/@flexatone?source=post_page-----3dedd2df481d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a4f500b1e4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d&user=Christopher+Ariza&userId=6a4f500b1e4f&source=post_page-6a4f500b1e4f----3dedd2df481d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3dedd2df481d--------------------------------)
+    ·9 min read·Nov 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3dedd2df481d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d&user=Christopher+Ariza&userId=6a4f500b1e4f&source=-----3dedd2df481d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3dedd2df481d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftype-hinting-dataframes-for-static-analysis-and-runtime-validation-3dedd2df481d&source=-----3dedd2df481d---------------------bookmark_footer-----------)![](../Images/fcedb934dd797193272db95f8b6f913b.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since the advent of type hints in Python 3.5, statically typing a DataFrame
+    has generally been limited to specifying just the type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is inadequate, as it ignores the types contained within the container.
+    A DataFrame might have string column labels and three columns of integer, string,
+    and floating-point values; these characteristics define the type. A function argument
+    with such type hints provides developers, static analyzers, and runtime checkers
+    with all the information needed to understand the expectations of the interface.
+    [StaticFrame](https://github.com/static-frame/static-frame) 2 (an open-source
+    project of which I am lead developer) now permits this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: All core StaticFrame containers now support generic specifications. While statically
+    checkable, a new decorator, `[@CallGuard](http://twitter.com/CallGuard).check`,
+    permits runtime validation of these type hints on function interfaces. Further,
+    using `Annotated` generics, the new `Require` class defines a family of powerful
+    runtime validators, permitting per-column or per-row data checks. Finally, each
+    container exposes a new `via_type_clinic` interface to derive and validate type
+    hints. Together, these tools offer a cohesive approach to type-hinting and validating
+    DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Requirements of a Generic DataFrame
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Python’s built-in generic types (e.g., `tuple` or `dict`) require specification
+    of component types (e.g., `tuple[int, str, bool]` or `dict[str, int]`). Defining
+    component types permits more accurate static analysis. While the same is true
+    for DataFrames, there have been few attempts to define comprehensive type hints
+    for DataFrames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pandas, even with the `pandas-stubs` package, does not permit specifying the
+    types of a DataFrame’s components. The Pandas DataFrame, permitting extensive
+    in-place mutation, may not be sensible to type statically. Fortunately, immutable
+    DataFrames are available in StaticFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further, Python’s tools for defining generics, until recently, have not been
+    well-suited for DataFrames. That a DataFrame has a variable number of heterogeneous
+    columnar types poses a challenge for generic specification. Typing such a structure
+    became easier with the new `TypeVarTuple`, introduced in Python 3.11 (and back-ported
+    in the `typing_extensions` package).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A `TypeVarTuple` permits defining generics that accept a variable number of
+    types. (See [PEP 646](https://peps.python.org/pep-0646) for details.) With this
+    new type variable, StaticFrame can define a generic `Frame` with a `TypeVar` for
+    the index, a `TypeVar` for the columns, and a `TypeVarTuple` for zero or more
+    columnar types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A generic `Series` is defined with a `TypeVar` for the index and a `TypeVar`
+    for the values. The StaticFrame `Index` and `IndexHierarchy` are also generic,
+    the latter again taking advantage of `TypeVarTuple` to define a variable number
+    of component `Index` for each depth level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: StaticFrame uses NumPy types to define the columnar types of a `Frame`, or the
+    values of a `Series` or `Index`. This permits narrowly specifying sized numerical
+    types, such as `np.uint8` or `np.complex128`; or broadly specifying categories
+    of types, such as `np.integer` or `np.inexact`. As StaticFrame supports all NumPy
+    types, the correspondence is direct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interfaces Defined with Generic DataFrames
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Extending the example above, the function interface below shows a `Frame` with
+    three columns transformed into a dictionary of `Series`. With so much more information
+    provided by component type hints, the function’s purpose is almost obvious.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This function processes a signal table from an [Open Source Asset Pricing](https://www.openassetpricing.com)
+    (OSAP) dataset (Firm Level Characteristics / Individual / Predictors). Each table
+    has three columns: security identifier (labeled “permno”), year and month (labeled
+    “yyyymm”), and the signal (with a name specific to the signal).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The function ignores the index of the provided `Frame` (typed as `Any`) and
+    creates groups defined by the first column “permno” `np.int_` values. A dictionary
+    keyed by “permno” is returned, where each value is a `Series` of `np.float64`
+    values for that “permno”; the index is an `IndexYearMonth` created from the `np.str_`
+    “yyyymm” column. (StaticFrame uses NumPy `datetime64` values to define unit-typed
+    indices: `IndexYearMonth` stores `datetime64[M]` labels.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rather than returning a `dict`, the function below returns a `Series` with a
+    hierarchical index. The `IndexHierarchy` generic specifies a component `Index`
+    for each depth level; here, the outer depth is an `Index[np.int_]` (derived from
+    the “permno” column), the inner depth an `IndexYearMonth` (derived from the “yyyymm”
+    column).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Rich type hints provide a self-documenting interface that makes functionality
+    explicit. Even better, these type hints can be used for static analysis with Pyright
+    (now) and Mypy (pending full `TypeVarTuple` support). For example, calling this
+    function with a `Frame` of two columns of `np.float64` will fail a static analysis
+    type check or deliver a warning in an editor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Runtime Type Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Static type checking may not be enough: runtime evaluation provides even stronger
+    constraints, particularly for dynamic or incompletely (or incorrectly) type-hinted
+    values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building on a new runtime type checker named `TypeClinic`, StaticFrame 2 introduces
+    `[@CallGuard](http://twitter.com/CallGuard).check`, a decorator for runtime validation
+    of type-hinted interfaces. All StaticFrame and NumPy generics are supported, and
+    most built-in Python types are supported, even when deeply nested. The function
+    below adds the `[@CallGuard](http://twitter.com/CallGuard).check` decorator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now decorated with `[@CallGuard](http://twitter.com/CallGuard).check`, if the
+    function above is called with an unlabelled `Frame` of two columns of `np.float64`,
+    a `ClinicError` exception will be raised, illustrating that, where three columns
+    were expected, two were provided, and where string column labels were expected,
+    integer labels were provided. (To issue warnings instead of raising exceptions,
+    use the `[@CallGuard](http://twitter.com/CallGuard).warn` decorator.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Runtime Data Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Other characteristics can be validated at runtime. For example, the `shape`
+    or `name` attributes, or the sequence of labels on the index or columns. The StaticFrame
+    `Require` class provides a family of configurable validators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Require.Name`: Validate the ``name`` attribute of the container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Require.Len`: Validate the length of the container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Require.Shape`: Validate the ``shape`` attribute of the container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Require.LabelsOrder`: Validate the ordering of the labels.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Require.LabelsMatch`: Validate inclusion of labels independent of order.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Require.Apply`: Apply a Boolean-returning function to the container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Aligning with a growing trend, these objects are provided within type hints
+    as one or more additional arguments to an `Annotated` generic. (See [PEP 593](https://peps.python.org/pep-0593)
+    for details.) The type referenced by the first `Annotated` argument is the target
+    of subsequent-argument validators. For example, if a `Index[np.str_]` type hint
+    is replaced with an `Annotated[Index[np.str_], Require.Len(20)]` type hint, the
+    runtime length validation is applied to the index associated with the first argument.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Extending the example of processing an OSAP signal table, we might validate
+    our expectation of column labels. The `Require.LabelsOrder` validator can define
+    a sequence of labels, optionally using `…` for contiguous regions of zero or more
+    unspecified labels. To specify that the first two columns of the table are labeled
+    “permno” and “yyyymm”, while the third label is variable (depending on the signal),
+    the following `Require.LabelsOrder` can be defined within an `Annotated` generic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If the interface expects a small collection of OSAP signal tables, we can validate
+    the third column with the `Require.LabelsMatch` validator. This validator can
+    specify required labels, sets of labels (from which at least one must match),
+    and regular expression patterns. If tables from only three files are expected
+    (i.e., “Mom12m.csv”, “Mom6m.csv”, and “LRreversal.csv”), we can validate the labels
+    of the third column by defining `Require.LabelsMatch` with a set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Both `Require.LabelsOrder` and `Require.LabelsMatch` can associate functions
+    with label specifiers to validate data values. If the validator is applied to
+    column labels, a `Series` of column values will be provided to the function; if
+    the validator is applied to index labels, a `Series` of row values will be provided
+    to the function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similar to the usage of `Annotated`, the label specifier is replaced with a
+    list, where the first item is the label specifier, and the remaining items are
+    row- or column-processing functions that return a Boolean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To extend the example above, we might validate that all “permno” values are
+    greater than zero and that all signal values (“Mom12m”, “Mom6m”, “LRreversal”)
+    are greater than or equal to -1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If a validation fails, `[@CallGuard](http://twitter.com/CallGuard).check` will
+    raise an exception. For example, if the above function is called with a `Frame`
+    that has an unexpected third-column label, the following exception will be raised:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Expressive Power of `TypeVarTuple`
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As shown above, `TypeVarTuple` permits specifying `Frame` with zero or more
+    heterogeneous columnar types. For example, we can provide type hints for a `Frame`
+    of two float or six mixed types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'While this accommodates diverse DataFrames, type-hinting wide DataFrames, such
+    as those with hundreds of columns, would be unwieldy. Python 3.11 introduces a
+    new syntax to provide a variable range of types in `TypeVarTuple` generics: star
+    expressions of `tuple` generic aliases. For example, to type-hint a `Frame` with
+    a date index, string column labels, and any configuration of columnar types, we
+    can star-unpack a `tuple` of zero or more `All`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `tuple` star expression can go anywhere in a list of types, but there can
+    be only one. For example, the type hint below defines a `Frame` that must start
+    with Boolean and string columns but has a flexible specification for any number
+    of subsequent `np.float64` columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Utilities for Type Hinting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Working with such detailed type hints can be challenging. To aid users, StaticFrame
+    provides convenient utilities for runtime type hinting and checking. All StaticFrame
+    2 containers now feature a `via_type_clinic` interface, permitting access to `TypeClinic`
+    functionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, utilities are provided to translate a container, such as a complete `Frame`,
+    into a type hint. The string representation of the `via_type_clinic` interface
+    provides a string representation of the container’s type hint; alternatively,
+    the `to_hint()` method returns a complete generic alias object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Second, utilities are provided for runtime-type-hint testing. The `via_type_clinic.check()`
+    function permits validating the container against a provided type hint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: To support gradual typing, StaticFrame defines several generic aliases configured
+    with `Any` for every component type. For example, `TFrameAny` can be used for
+    any `Frame`, and `TSeriesAny` for any `Series`. As expected, `TFrameAny` will
+    validate the `Frame` created above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Better type hinting for DataFrames is overdue. With modern Python typing tools
+    and a DataFrame built on an immutable data model, StaticFrame 2 meets this need,
+    providing powerful resources for engineers prioritizing maintainability and verifiability.
+  prefs: []
+  type: TYPE_NORMAL

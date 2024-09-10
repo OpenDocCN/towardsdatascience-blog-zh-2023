@@ -1,0 +1,434 @@
+- en: 'Transformers can generate NFL plays : introducing QB-GPT'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/transformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb?source=collection_archive---------14-----------------------#2023-11-07](https://towardsdatascience.com/transformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb?source=collection_archive---------14-----------------------#2023-11-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Bridging the gap between GenAI and sports analytics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)[![Samuel
+    Chaineau](../Images/53523a7fb804971410841d38a47457c7.png)](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------)
+    [Samuel Chaineau](https://medium.com/@sam.chaineau?source=post_page-----2d40f16a03eb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F71edae854a7f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&user=Samuel+Chaineau&userId=71edae854a7f&source=post_page-71edae854a7f----2d40f16a03eb---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d40f16a03eb--------------------------------)
+    ·10 min read·Nov 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d40f16a03eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&user=Samuel+Chaineau&userId=71edae854a7f&source=-----2d40f16a03eb---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d40f16a03eb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-can-generate-nfl-plays-introducing-qb-gpt-2d40f16a03eb&source=-----2d40f16a03eb---------------------bookmark_footer-----------)![](../Images/c8da7b29154888dc16655b0835a0b189.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Zetong Li](https://unsplash.com/@zetong?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Since my first article about* [*StratFormer*](https://medium.com/better-programming/transformers-will-guess-nfl-playbooks-f90e7420835b)*,
+    I received a relatively great amount of feedbacks and ideas (so first thank you
+    !). This pushed me to deepen my work an try an extra step :* ***building a football
+    plays’ generator****. In this article I present* ***QB-GPT****, a model that can
+    effectively generate football plays once provided with some elements. A dedicated
+    HuggingFace space can be found* [*here*](https://huggingface.co/spaces/samchain/QB-GPT)
+    *to play with it. I will later in the month share my work and findings on how
+    to better predict NFL plays using this kind of generative models as backbone.
+    The industryy is also watching this field as* [*DeepMind Safety Research*](https://medium.com/u/55e08ddea42e?source=post_page-----2d40f16a03eb--------------------------------)
+    *is currently doing research on soccer with Liverpool on understanding how players
+    move on the field.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9191405f2c4641d82bf08476efed5054.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generated trajectory by QB-GPT
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b845679a6346a8d6a7cc8c3e4ab33570.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: True trajectory
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Stratformer**](https://medium.com/better-programming/transformers-will-guess-nfl-playbooks-f90e7420835b),
+    my first idea that I started in Oct 2021, was an encoder-only model which took
+    a trajectory as input, tried to complete it and predicted some contextual elements
+    associated with it (team, positions and plays). While this model showed interesting
+    patterns (such as understanding what makes truly different a RB and a WR), it
+    relied on a “a posteriori” look on the play. What could be even more interesting
+    is to deeply understand how the set up of players, with some contextual elements,
+    effectively affect the paths of the team. In other words, when the teams are facing
+    each others at the scrimmage line, what is going to happen ?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By building such an algorithm, we are now able to build a model that “really”
+    understands the football game, as it is basically trying to recreate plays from
+    few elements. This is the goal of **QB-GPT**. GPT is here because it relies on
+    the same concepts of decoding that use any GPT model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will cover the model and the few necessary tricks that I had to
+    implement to make it “ok”. An attached HuggingFace space is available [here](https://huggingface.co/spaces/samchain/QB-GPT)
+    to generate some plays if you wish, I will keep it open a limited time depending
+    on the cost. While I recognized it is limited and prone to a range of improvements,
+    I think such application deserves to be shared with a broader audience. If interested
+    to discuss it or deepen some aspects, my contacts are on the app and at the end
+    of the article. Once again, I did this work on my own, with the data I could find
+    and the imperfections related to it (If someone working at the NFL/NGS team reads
+    this, DMs more than open)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Part 1 : The data**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The data required to perform such task is very very hard to find. I rely on
+    a specific data type provided only by the **Next Gen Stats (NGS)** tool of the
+    NFL, where, for any given play, I can track up to the 22 players present on the
+    field. The problem is that this data is not accessible via a classic API request.
+    However, since 2019, the NFL is offering a wide range of data competition on Kaggle,
+    often provided with datasets from the NGS. Also, some people on GitHub have scrapped
+    back in the days the NGS browser. I did not try to do it and only relied on available
+    data that had a usable format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An extensive time has been spent on merging data between themselves (around
+    200 hours). The most important tasks were to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the players on the field using nflVerse
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Associate their positions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Define the scrimmage line using the play by play data of nflVerse
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Normalizing the trajectory by subtracting the original position of the player
+    to each instance of the trajectory. Hence each element of the trajectory is a
+    distance between time i and time 0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Converting the distances to indices (like building a vocabulary for a BERT)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Apply some sanity checks (for instance removing players that are not on the
+    pitch)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Convert the data in arrays and dict format for TensorFlow
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'I used **Polars during all the process.** I strongly recommend to any data
+    scientist, ML engineer, data engineer or people working with large volume of tabular
+    data to quickly add this impressive package into their toolkit. *TLDR: Polars
+    is better than pandas on small dataset and better than pypsark on large ones*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All in all, I compiled **47,991 different plays** representing **870,559 different
+    players’ trajectories** on the field (18 players monitored per play on average,
+    unfortunately never one OL…).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I monitor each player’s position at a 0.2 second frame rate, representing **28,147,112
+    positions on the field in total**. I limit the data to the first 10 seconds as
+    the trajectories tend to be more and more chaotic after, and hence difficult to
+    model from a probabilistic point of view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My dataset starts in 2018 to 2022 and covers **3,190 unique players.** The data
+    is not perfect but gives a good sample and may be enough to assess whether transformers
+    are helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To summarize, my data sources are :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The NFL Big Data Bowl of 2021 [link](https://www.kaggle.com/competitions/nfl-big-data-bowl-2021/data)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The NFL Big Data Bowl of 2022 [link](https://www.kaggle.com/competitions/nfl-big-data-bowl-2022/data)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The NFL Big Data Bowl of 2023 [link](https://www.kaggle.com/competitions/nfl-big-data-bowl-2023/data)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Public git repo NGS Highlights [link](https://github.com/asonty/ngs_highlights)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here under you have a scheme representing the input input embedding for a single
+    player:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df7540caf17fae50eb5087db156cd23b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Then the eleven players are concatenated per play and then truncated by frames
+    to always have a number of token equal to 256\. I limited the number of frames
+    for one player at 21 (max = 21*11 = 231) to make sure the we have consistently
+    the same number of frames per player. Hence, I had to create new trajectories
+    starting directly at a given moment of a play as most of my plays have more than
+    21 frames. I created a padding step of 12 frames, meaning the trajectory is now
+    divided in sub trajectories, each time shifted by 12 frames. This process tends
+    to make harder the task of prediction for the frames 12, 24, 36 and 48 as we will
+    see later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e7ae7ecea369218fa4f514c12181dea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Elements can be discussed. For instance the relevance of dicing the field with
+    a 1 yard basis or why using a 0.2 second frame rate. I think the model (so its
+    training data) is a start and I want to acknowledge that not everything is perfect.
+    Feedbacks and opinions are welcome as long as they are relevant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 2 : The model'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The model is completely inspired from the OpenAI GPT architecture. It relies
+    on a embedding layer adding different contextual elements to the input tokens.
+    The embeddings are then fed to a single transformers module using multi-head attention
+    with 3 heads. In the Large model, a second transformers module is applied. The
+    output is then fed into a dense layer with a “relu” activation. To obtain the
+    predictions, we apply a soft-max activation on logits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Two tricks were needed to adapt the architecture and training :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multi-temporal Causal Masks** : In a classic GPT, the embedding’s attention
+    at position i can only attend to the tokens from position 0 to i-1\. In our case,
+    as I am decoding the team **completely** I need the tokens at time i to attend
+    to every tokens available between time 0 and i-1\. Instead of having the so-called
+    “lower triangular mask”, you end up with a multi triangular mask.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5af61ad139a1017cd0cefe0aaeb132e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Attention masks
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2236dd3b9ce207f1d2382c1e1305a0f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Raw attention scores and after attention masks subtractions
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7eae47de8f4a51ded66bf92c18af574c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Attention scores with different vmax scale
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-Layer Normalization:** Inspired by the work of [Sik-Ho Tsang](https://medium.com/u/aff72a0c1243?source=post_page-----2d40f16a03eb--------------------------------),
+    I implemented its proposed Transformers module where normalization is done before
+    multi-head attention and before FFN.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The model does not require a high number of attention layers as the underlying
+    patterns to model are quite simple. I trained 4 different models’ architectures
+    using the same settings. Results show that embeddings’ dimensions plays a crucial
+    roles in the level of accuracy that we can reach while number of attention modules
+    does not significantly improve accuracy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Tiny :*** embedding dimension of 64, representing **1,539,452** **parameters**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Small*** : embedding dimension of 128, representing **3,182,716 parameters**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Medium*** : embedding dimension of 256, representing **6,813,308 parameters**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Large*** : embedding dimension of 128 but with two attention modules, representing
+    **7,666,556 parameters**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I think the large one could reach a better performance with an in-depth review
+    of the scheduler.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (For comparison, GPT3 has 175 billion parameters)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The charts here under show a comparison of accuracy and loss during training
+    between the different models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0352c1ed1fed7fa5a95e05dd4ac38f8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss and Accuracy across the four models
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 3: The training'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The train set is made of 80% of the trajectories, representing **205,851** examples.
+    The test set is made of 20% of the trajectories, representing **51,463** examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Models are trained using a simple callback scheduler on 9 epochs where the learning
+    rate start at 1e-3 and ends at 5e-4, with a batch size of 32.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The loss is a categorical cross-entropy with class weights designed by occurrences’
+    thresholds on the train set (integers that occur more often weight less in the
+    loss). Labels set at -100 do not count into the loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The metrics used are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Accuracy** : Is the next team movement predicted exactly the same that the
+    one labeled ?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Top 3 accuracy** : Is the next labeled movement in the top 3 predictions
+    ?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Top 5 accuracy** : Is the next labeled movement in the top 5 predictions
+    ?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/9c29b03acaafbc50978382c019d188b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 3 and top 5 accuracies across the four models
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eventually, a RMSE check has been performed on the x, y coordinates associated
+    with every movements. This check enables us to monitor that beside not predicting
+    accurately, it does not fall to far from the truth (predicting a 1 yard squared
+    trajectory might be difficult).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 4: The results'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Overall, the different models still learn underlying dynamic patterns and perform
+    relatively good on my dataset. We can see that increasing embeddings’ dimensions
+    brings increases in the accuracy of the models. The task of guessing a 1-yard
+    squared is definitely challenging as movements on a football field are not driven
+    with such a tiny range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I decided to slice those predictions in 3 categories : time, play types and
+    positions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e6997c9489e5ef9220a740a64359825.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Accuracy and RMSE over time (frames)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first 5 frames are relatively easy to predict for the model as often players
+    are starting with similar movements. There is a drop in accuracy of 40–50% between
+    frame 5 and 10\. This is the moment where plays tend to be different and have
+    their own paths. Among the four models, the tiny one struggles the most especially
+    at the end of the trajectory. The medium one shows a very good performance even
+    on long term (more than 20 frames). The peaks are related to the starts of padded
+    trajectories as these are fed in without any past knowledge of the trajectory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73ffae52dc35c5994bf1536ff488e289.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Accuracy and RMSE over play types
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plays that are relatively static are (without surprise) the easier to predict.
+    Runs, passes, kick-offs and punts are (without surprise) the hardest to guess
+    as players move a lot more and with possibly chaotic patterns. No significant
+    differences among models are seen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff1363859b77dc66ea07fa772feba2d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Accuracy and RMSE over positions
+  prefs: []
+  type: TYPE_NORMAL
+- en: Position is a very discriminant factor with positions having difference between
+    10 to 20% in accuracy. Overall, the positions that move a lot are also the toughest
+    to predict. The tiny and small models tend to be less accurate than the rest in
+    general.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Part 5: What I’ve seen so far by playing with it**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The model’s ideal temperature seems to be between 1.5 and 2.5\. I tested a selection
+    of 10, 20 and 50\. The more you push the temperature and selection, the more it
+    tends to get crazy and yield strange patterns (players getting off the field,
+    changing directions, big gaps between two frames).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it seems to give interesting patterns that could be used for simulations
+    and play books recognition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s next ?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This model is raw. It can be used later to explore opponents strategy, define
+    new ones and even use it to enhance the player scouting system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the core idea is to see if this model can effectively predict play
+    results effectively aka yard gains. I will soon share my work about a predicting
+    framework for NFL plays which is based on findings in QBGPT. By using the generative
+    abilities of such model, you can draw a great number of scenarios from which predicting
+    plays is an easier task ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the meantime you can play with QB-GPT at this hugging face space, if you
+    liked this article, the work and the findings don’t forget to share and like !
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Unless otherwise noted, every images are by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Samuel Chaineau : [Linkedin](https://www.linkedin.com/feed/)'
+  prefs: []
+  type: TYPE_NORMAL

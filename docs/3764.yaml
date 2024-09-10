@@ -1,0 +1,340 @@
+- en: Debugging and Tuning Amazon SageMaker Training Jobs with SageMaker SSH Helper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/debugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be?source=collection_archive---------6-----------------------#2023-12-27](https://towardsdatascience.com/debugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be?source=collection_archive---------6-----------------------#2023-12-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A new tool that increases the debuggability of managed training workloads
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)[](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----51efeb4d03be--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----51efeb4d03be---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----51efeb4d03be--------------------------------)
+    ·10 min read·Dec 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F51efeb4d03be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&user=Chaim+Rand&userId=9440b37e27fe&source=-----51efeb4d03be---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F51efeb4d03be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdebugging-and-tuning-amazon-sagemaker-training-jobs-with-sagemaker-ssh-helper-51efeb4d03be&source=-----51efeb4d03be---------------------bookmark_footer-----------)![](../Images/480849dada98f2550913adfd745d3ba9.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [James Wainscoat](https://unsplash.com/@tumbao1949?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering all the new Amazon SageMaker features announced over the past year
+    (2023), including at the most recent [AWS re:invent](https://press.aboutamazon.com/2023/11/aws-announces-five-new-amazon-sagemaker-capabilities-for-scaling-with-models),
+    it would have been easy to have overlooked [SageMaker SSH Helper](https://github.com/aws-samples/sagemaker-ssh-helper)
+    — a new utility for connecting to remote SageMaker training environments. But
+    **sometimes it is the quiet enhancements that have the potential to make the greatest
+    impact on your daily development.** In this post we will review [SageMaker SSH
+    Helper](https://github.com/aws-samples/sagemaker-ssh-helper) and demonstrate how
+    it can increase your ability to 1) investigate and solve errors that arise in
+    your training applications and 2) optimize their runtime performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [previous posts](/6-steps-to-migrating-your-machine-learning-project-to-the-cloud-6d9b6e4f18e0),
+    we discussed at length the benefits of training in the cloud. Cloud-based managed
+    training services, such as [Amazon SageMaker](https://aws.amazon.com/sagemaker/),
+    have simplified many of the complexities surrounding AI model development and
+    greatly increased accessibility to both AI-specific machinery and [pretrained
+    AI models](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jumpstart.html).
+    To train in Amazon SageMaker, all you need to do is define a training environment
+    (including an instance type) and point to the code you wish to run, and the training
+    service will 1) set up the requested environment, 2) deliver your code to the
+    training machine, 3) run your training script, 4) copy the training output to
+    persistent storage, and 5) tear everything down when the training completes (so
+    that you pay only for what you need). Sounds easy… right? However, managed training
+    is not without its flaws, one of which — the limited access it enables to the
+    training environment — will be discussed in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disclaimers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Please do not interpret our use of Amazon SageMaker, [SageMaker SSH Helper](https://github.com/aws-samples/sagemaker-ssh-helper),
+    or any other framework or utility we should mention as an endorsement for their
+    use. There are many different methodologies for developing AI models. The best
+    solution for you will depend on the details of your project.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Please be sure to verify the contents of this post, particularly the code samples,
+    against the most up to date SW and documentation available at the time that you
+    read this. The landscape of AI development tools is in constant flux and it is
+    likely that some of the APIs we refer to will change over time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Disadvantage of Managed Training — Inaccessibility of the Training Environment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As seasoned developers are well aware, a significant chunk of the application
+    development-time is actually spent on debugging. Rarely do our programs work “out
+    of the box”; More often than not, they require hours of laborious debugging to
+    get them to run as desired. Of course, to be able to debug effectively, you need
+    to have direct access to your application environment. Trying to debug an application
+    without access to its environment is like trying to fix a faucet without a wrench.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another important step in AI model development is to tune the runtime performance
+    of the training application. Training AI models can be expensive and our ability
+    to maximize the utilization of our compute resources can have a decisive cost
+    on training. In a [previous post](/cloud-ml-performance-checklist-caa51e798002)
+    we described the iterative process of analyzing and optimizing training performance.
+    Similar to debugging, direct access to the runtime environment will greatly increase
+    and accelerate our ability to reach the best results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, one of the side-effects of the “fire and forget” nature of training
+    in SageMaker, is the lack of ability to freely connect to the training environment.
+    Of course, you could always debug and optimize performance using the training
+    job output logs and debug prints (i.e., add prints, study the output logs, modify
+    your code, and repeat until you’ve solved all your bugs and reached the desired
+    performance) but this would be a very primitive and time-consuming solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of best practices that address the problem of debugging managed
+    training workloads, each with its own advantages and disadvantages. We will review
+    three of these, discuss their limitations, and then demonstrate how the new [SageMaker
+    SSH Helper](https://github.com/aws-samples/sagemaker-ssh-helper) completely alters
+    the playing field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debug in Your Local Environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is recommended that you run a few training steps in your local environment
+    before launching your job to the cloud. Although this may require a few modifications
+    to your code (e.g., to enable training on a CPU device), it is usually worth the
+    effort as it enables you to identify and fix silly coding errors. It is certainly
+    more cost effective than discovering them on an expensive GPU machine in the cloud.
+    Ideally, your local environment would be as similar to the SageMaker training
+    environment (e.g., using the same versions of Python and Python packages) but
+    in most cases there is a limit to the extent that this is possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debug Locally within the SageMaker Docker Container
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The second option is to pull the [deep learning container (DLC) image](https://docs.aws.amazon.com/deep-learning-containers/latest/devguide/deep-learning-containers-images.html)
+    that SageMaker uses and run your training script within the container on your
+    local PC. This method allows you to get a good understanding of the SageMaker
+    training environment including the packages (and package versions) that are installed.
+    It is extremely useful in identifying missing dependencies and addressing dependency
+    conflicts. Please see [the documentation](https://github.com/aws/deep-learning-containers/blob/master/available_images.md)
+    for details on how to login and pull the appropriate image. Note that the SageMaker
+    APIs support pulling and training within a DLC via its [local mode](https://sagemaker.readthedocs.io/en/stable/overview.html#local-mode)
+    feature. However, running the image on your own will enable you to explore and
+    study the image more freely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debug in the Cloud on an Unmanaged Instance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another option is to train on an unmanaged [Amazon EC2](https://aws.amazon.com/ec2/)
+    instance in the cloud. The advantage to this option is the ability to run on the
+    same instance type that you use in SageMaker. This will enable you to reproduce
+    issues that you may not be able to reproduce in your local environment, e.g.,
+    issues related to your use of the GPU resources. The easiest way to do this would
+    be to run your instance with a [machine image](https://aws.amazon.com/machine-learning/amis/)
+    that is most similar to your SageMaker environment (e.g., the same OS, Python,
+    and Python package versions). Alternatively, you could pull the SageMaker DLC
+    and run it on the remote instance. However, keep in mind that although this also
+    runs in the cloud, the runtime environment may still be significantly different
+    than SageMaker’s environment. SageMaker configures a whole bunch of system settings
+    during initialization. Trying to reproduce the same environment may require quite
+    a bit of effort. Given that debugging in the cloud is more costly than the previous
+    two methods, our goal should be to try to clean up our code as much as possible
+    before resorting to this option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debugging Limitations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although each of the above options are useful for solving for certain types
+    of bugs, none of them offer a way to perfectly replicate the SageMaker environment.
+    Consequently, you may run into issues when running in SageMaker that you are not
+    able to reproduce, and thus not able to correct, when using these methods. In
+    particular, there are a number of features that are supported *only* when running
+    in the SageMaker environment (e.g., SageMaker’s [Pipe input](https://aws.amazon.com/blogs/machine-learning/using-pipe-input-mode-for-amazon-sagemaker-algorithms/)
+    and [Fast File](https://aws.amazon.com/about-aws/whats-new/2021/10/amazon-sagemaker-fast-file-mode/)
+    modes for accessing data from Amazon S3). If your issue is related to one of those
+    features, you will *not* be able to reproduce it outside of SageMaker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tuning Limitations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In addition, the options above do not provide an effective solution for performance
+    tuning. Runtime performance can be extremely susceptible to even the slightest
+    changes in the environment. While a simulated environment might provide some general
+    optimization hints (e.g., the comparative performance overhead of different data
+    augmentations), an accurate profiling analysis can be performed only in the SageMaker
+    runtime environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SageMaker SSH Helper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[SageMaker SSH Helper](https://github.com/aws-samples/sagemaker-ssh-helper)
+    introduces that ability to connect to the remote SageMaker training environment.
+    This is enabled via an SSH connection over [AWS SSM](https://docs.aws.amazon.com/systems-manager/latest/userguide/ssm-agent.html).
+    As we will demonstrate, the steps required to set this up are quite simple and
+    very well worth the effort. The [official documentation](https://github.com/aws-samples/sagemaker-ssh-helper/tree/v2.1.0)
+    includes comprehensive details on the value of this utility and how it can be
+    used.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the code block below we demonstrate how to enable remote connection to a
+    SageMaker training job using [sagemaker-ssh-helper](https://pypi.org/project/sagemaker-ssh-helper/)
+    (version 2.1.0). We pass in our full code source directory but replace our usual
+    *entry_point* (*train.py*)with a new *run_ssh.py* script that we place in the
+    root of the *source_dir*. Note that we add the *SSHEstimatorWrapper* to the list
+    of project dependencies since our *start_ssh.py* script will require it. Alternatively,
+    we could have added [sagemaker-ssh-helper](https://pypi.org/project/sagemaker-ssh-helper/)
+    to our *requirements.txt* file. Here we have set the *connection_wait_time_seconds*
+    setting to two minutes. As we will see, this will impact the behavior of our training
+    script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As usual, the SageMaker service will allocate a machine instance, build the
+    requested environment, download and unpack our source code, and install the requested
+    dependencies. At that point, the runtime environment will be identical to the
+    one in which we usually run our training script. Only now, instead of training
+    we will run our *start_ssh.py* script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The [*setup_and_start_ssh*](https://github.com/aws-samples/sagemaker-ssh-helper/blob/main/sagemaker_ssh_helper/__init__.py#L10)
+    function will start the SSH service, then block for the allotted time we defined
+    above (*connection_wait_time_seconds*) to allow an SSH client to connect, and
+    then proceed with the rest of the script. In our case it will sleep for two hours
+    and then exit the training job. During that time we can connect to the machine
+    using the [*aws ssm start-session*](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html)
+    command and the instance-id that was returned by the *ssh_wrapper* (which typically
+    starts with an “*mi-”* prefix for “*managed instance*”) and play to our hearts
+    desire. In particular, we can explicitly run our original training script (which
+    was uploaded as part of the *source_dir*) and monitor the training behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method we have described, enables us to run our training script iteratively
+    while we identify and fix bugs. It also provides an ideal setting for optimizing
+    performance — one in which we can 1) run a few training steps, 2) identify performance
+    bottlenecks (e.g., using [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)),
+    3) tune our code to address them, and 4) repeat, until we achieve the desired
+    runtime performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importantly, keep in mind that the instance will be terminated as soon as the
+    *start_ssh.py* script completes. Make sure to copy all important files (e.g.,
+    code modifications, profile traces, etc.) to persistent storage before it is too
+    late.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Port Forwarding Over AWS SSM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can extend our *aws ssm start-session* command to enable [port forwarding](https://aws.amazon.com/blogs/aws/new-port-forwarding-using-aws-system-manager-sessions-manager/).
+    This allows you to securely connect to server applications running on your cloud
+    instance. This is particularly exciting for developers who are accustomed to using
+    the [TensorBoard Profiler](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    plugin for analyzing runtime performance (as [we are](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)).
+    The command below demonstrates how to set up port forwarding over AWS SSM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additional Modes of Use
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The [SageMaker SSH Helper documentation](https://github.com/aws-samples/sagemaker-ssh-helper/tree/v2.1.0)
+    describes several different ways of using the SSH functionality. In the [basic
+    example](https://github.com/aws-samples/sagemaker-ssh-helper/tree/v2.1.0#step-3-modify-your-training-script)
+    the *setup_and_start_ssh* command is added to the top of the existing training
+    script (instead of defining a dedicated script). This allows you time (as defined
+    by the *connection_wait_time_seconds* setting) to connect to the machine before
+    the training begins so that you can monitor its behavior (from a separate process)
+    as it runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The more [advanced examples](https://github.com/aws-samples/sagemaker-ssh-helper/tree/v2.1.0#pycharm-debug-server)
+    include different methods for using SageMaker SSH Helper to debug the training
+    script running in the SageMaker environment from an IDE running in our local environment.
+    The setup is more complicated but may very well be worth the reward of being able
+    to perform line-by-line debugging from a local IDE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional use cases cover [training in a VPC](https://github.com/aws-samples/sagemaker-ssh-helper/blob/v2.1.0/FAQ.md#im-running-sagemaker-in-a-vpc-do-i-need-to-make-extra-configuration),
+    integration with [SageMaker Studio](https://github.com/aws-samples/sagemaker-ssh-helper/tree/v2.1.0#studio),
+    [connecting to SageMaker inference endpoints](https://github.com/aws-samples/sagemaker-ssh-helper/tree/v2.1.0#connecting-to-sagemaker-inference-endpoints-with-ssm),
+    and more. Please be sure to see the documentation for details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to Use SageMaker SSH Helper
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given the advantages of debugging with SageMaker SSH Helper, you might wonder
+    if there is any reason to use the three debugging methods we described above.
+    We would argue that, despite the fact that you *could* perform all of your debugging
+    in the cloud, it is still highly recommended that you perform your initial development
+    and experimentation phase — to the extent possible — in your local environment
+    (using the first two methods we described). Only once you have exhausted your
+    ability to debug locally, should you move to debugging in the cloud using SageMaker
+    SSH Helper. The last thing you would want would be to spend hours cleaning up
+    silly syntax errors on a super expensive cloud-based GPU machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contrary to debugging, analyzing and optimizing performance has little value
+    *unless* it is performed directly on the target training environment. Thus, it
+    *would* be advised to perform your optimization efforts on the SageMaker instance
+    using SageMaker SSH Helper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Until now, one of the most painful side effects of training on Amazon SageMaker
+    has been the loss of direct access to the training environment. This restricted
+    our ability to debug and tune our training workloads in an effective manner. The
+    recent release of SageMaker SSH Helper and its support for unmediated access to
+    the training environment opens up a wealth of new opportunities for developing,
+    debugging, and tuning. These can have a distinctive impact on the efficiency and
+    speed of your ML development life cycle. It is for this reason that SageMaker
+    SSH Helper is one of our favorite new cloud-ML features of 2023.
+  prefs: []
+  type: TYPE_NORMAL

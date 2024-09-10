@@ -1,0 +1,477 @@
+- en: Nine Rules for SIMD Acceleration of your Rust Code (Part 2)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3?source=collection_archive---------7-----------------------#2023-12-15](https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3?source=collection_archive---------7-----------------------#2023-12-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: General Lessons from Boosting Data Ingestion in the `range-set-blaze` Crate
+    by 7x
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----6a104b3be6f3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)
+    ·9 min read·Dec 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a104b3be6f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----6a104b3be6f3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a104b3be6f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&source=-----6a104b3be6f3---------------------bookmark_footer-----------)![](../Images/7c6265c7eac5b0a502b4d8cecf7e15f3.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A crab delegating calculations to little crabs — Source: [https://openai.com/dall-e-2/](https://openai.com/dall-e-2/).
+    All other figures from the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to Ben Lichtman (B3NNY) at the Seattle Rust Meetup for pointing me in
+    the right direction on SIMD.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'This is Part 2 of an article about creating SIMD code in Rust. (See [Part 1](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21).)
+    We will look at rules 7 to 9:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Use Criterion benchmarking to pick an algorithm and to discover that LANES
+    should (almost) always be 32 or 64.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 8\. Integrate your best SIMD algorithm into your project with `as_simd`, special
+    code for `i128`/`u128`, and additional in-context benchmarking.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 9\. Extricate your best SIMD algorithm from your project (for now) with an optional
+    cargo feature.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Recall rules 1 to 6:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use nightly Rust and `core::simd`, Rust’s experimental standard SIMD module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'CCC: Check, Control, and Choose your computer’s SIMD capabilities.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Learn `core::simd`, but selectively.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Brainstorm candidate algorithms.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Godbolt and AI to understand your code’s assembly, even if you don’t know
+    assembly language.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Generalize to all types and LANES with in-lined generics, (and when that doesn’t
+    work) macros, and (when that doesn’t work) traits.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These rules are informed by my experience trying to speed up `[range-set-blaze](https://crates.io/crates/range-set-blaze)`,
+    a Rust crate for manipulating sets of “clumpy” integers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall that Rule 6, from [Part 1](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21),
+    shows how to make Rust SIMD algorithms fully generic across type and LANES. We
+    next need to pick our algorithm and set LANES.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 7: Use Criterion benchmarking to pick an algorithm and to discover that
+    LANES should (almost) always be 32 or 64.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this rule, we’ll see how to use the popular [criterion](https://docs.rs/criterion/latest/criterion/)
+    crate to benchmark and evaluate our algorithms and options. In the context of
+    `range-set-blaze`, we’ll evaluate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5 algorithms — Regular, Splat0, Splat1, Splat2, Rotate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3 SIMD extension levels — `sse2` (128 bit), `avx2` (256 bit), `avx512f` (512
+    bit)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 10 element types — `i8`, `u8`, `i16`, `u16`, `i32`, `u32`, `i64`, `u64`, `isize`,
+    `usize`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 5 lane numbers — 4, 8, 16, 32, 64
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4 input lengths — 1024; 10,240; 102,400; 1,024,000
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2 CPUs — AMD 7950X with `avx512f`, Intel i5–8250U with `avx2`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The benchmark measures the average time to run each combination. We then compute
+    throughput in Mbytes/sec.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See this [new companion article](https://medium.com/towards-data-science/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb)
+    on getting started with Criterion. That article also shows how to push (abuse?)
+    Criterion to measure the effects of compiler settings, such as SIMD extension
+    level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Running the benchmarks results in a 5000-line `*.csv` file that starts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This file is suitable for analysis via [spreadsheet pivot tables](https://support.microsoft.com/en-us/office/create-a-pivotchart-c1b1e057-6990-4c38-b52b-8255538e7b1c)
+    or data frame tools such as [Polars](https://pola-rs.github.io/polars/user-guide/transformations/pivot/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithms and Lanes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here is an Excel pivot table showing — for each algorithm — throughput (MBytes/sec)
+    vs. SIMD Lanes. The table averages throughput across SIMD extension levels, element
+    types, and input length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On my AMD desktop machine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b595995d889d6a23cec98a2ee457591b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On an Intel laptop machine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/452fad0ef42294b0bd627b3fcd3f3457.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The tables show Splat1 and Splat2 doing best. They also show more lanes always
+    being better up to 32 or 64.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can, for example,`*sse2*` (128-bits wide) process 64 lanes of `*i64*` (4096-bits
+    wide)? The Rust `*core::simd*` module makes this magic possible by automatically
+    and efficiently dividing the 4096-bits into 32 chunks of 128-bits each. Processing
+    the 32 128-bit chunks together (apparently) enables optimizations beyond processing
+    the 128-bit chunks independently.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**SIMD Extension Levels**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s set LANES to 64 and compare different SIMD extension levels on the AMD
+    machine. The table averages throughput across element type and input length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/36e4721f810d3f192895ebc927c8ac2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: On my AMD machine, when using 64-lanes, `sse2` is slowest. Comparing`avx2` to
+    `avx512f`, the results are mixed. Again, algorithm Splat1 and Splat2 do best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Element Types
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s next set our SIMD extension level to `avx512f` and compare different element
+    types. We keep `LANES` at 64 and average throughput across input length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09c769e64b33873ba8ecf223b6c45005.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see the bit-per-bit, 32-bit and 64-bit elements are processed fastest. (However,
+    per element, smaller types are faster.) Splat1 and Splat2 are the fastest algorithms,
+    with Splat1 being slightly better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input Length
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, let’s set our element type to `i32` and see input length vs. throughput.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d4945fd8fb6a7d6c7bcd9222857b69d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see all the SIMD algorithms doing about the same at 1 million inputs. Splat1
+    apparently does better than other algorithms on short inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It also looks like shorter is faster than longer. This could be the result of
+    caching, or it could be an artifact of the benchmarks throwing away un-aligned
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmark Conclusions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Based on these benchmarks, we’ll use the Splat1 algorithm. For now, we’ll set
+    LANES to 32 or 64, but see the next rule for a complication. Finally, we’ll advise
+    users to set their SIMD extension level to at least `avx2`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 8: Integrate your best SIMD algorithm into your project with `as_simd`,
+    special code for `i128`/`u128`, and additional in-context benchmarking.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`as_simd`'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before adding SIMD support, `RangeSetBlaze`’s main constructor was `from_iter`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'SIMD operations, however, work best on arrays, not iterators. Moreover, constructing
+    a `RangeSetBlaze` from an array is often a natural thing to do, so I added a new
+    `from_slice` constructor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The new constructor does an in-line call to each integer’s own `from_slice`
+    method. For all the integer types, except `i128`/`u128`, this next calls:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Rust’s nightly `as_simd` method safely and quickly transmutes the slice into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: an unaligned `prefix` — which we process with `from_iter`, as before.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`middle`, an aligned array of `Simd` struct chunks'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: An unaligned `suffix` — which we process with `from_iter`, as before.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Think of `middle` as chunking our input integers into size-16 chunks (or whatever
+    size LANES is set to). We then iterate the chunks through our `is_consecutive`
+    function, looking for runs of `true`. Each run becomes a single range. For example,
+    a run of 160 individual, consecutive integers from 1000 to 1159 (inclusive) would
+    be identified and replaced with a single Rust `RangeInclusive` `1000..=1159`.
+    This range is then processed by `from_iter` much faster than `from_iter` would
+    have processed the 160 individual integers. When `is_consecutive` returns `false`,
+    we fall back to processing the chunk’s individual integers with `from_iter`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`i128`/`u128`'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How to we handle arrays of types that `core::simd` doesn't handle, namely`i128`/`u128`?
+    For now, I just process them with the slower `from_iter`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In-Context Benchmarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As a final step, benchmark your SIMD code in the context of your main code,
+    ideally on representative data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `range-set-blaze` crate already includes [benchmarks](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md).
+    One benchmark measures performance ingesting 1,000,000 integers with various levels
+    of clumpiness. Average clump size ranges from 1 (no clump) to 100,000 clumps.
+    Let’s run that benchmark with LANES set at 4, 8, 16, 32, and 64\. We’ll use algorithm
+    Splat1 and SIMD extension level `avx512f`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each clump size, the bars show the relative speed of ingesting 1,000,000
+    integers. For each clump size, the fastest `LANES` is set to 100%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/074b373e7a1c5bb4cda1d0ebb52c46e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see that for clumps of size 10 and 100, `LANES`=4 is best. With clumps of
+    size 100,000, however, `LANES`=4 is 4 times worse than the best. At the other
+    extreme, LANES=64 looks good with clumps of size 100,000, but it is 1.8 and 1.5
+    times worse than the best at 100 and 1000, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I decided to set `LANES` to 16\. It is the best for clumps of size 1000\. Moreover,
+    it is never more than 1.25 times worse than the best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this setting, we can run other benchmarks. The chart below shows various
+    range set libraries (including `range-set-blaze`) working on the same task — ingesting
+    1,000,000 integers of varying clumpiness. The `y`-axis is milliseconds with lower
+    being better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f21111be1939935d2862b1b6c41bb6b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With clumps of size 1000, the existing `RangeSetBlaze::into_iter` method (red)
+    was already 30 times faster than HashSet (orange). Note the scale is logarithmic.
+    With `avx512f`, the new SIMD-powered `RangeSetBlaze::into_slice` algorithm (light
+    blue) is 230 times faster than HashSet. With `sse2` (dark blue), it is 220 times
+    faster. With `avx2` (yellow), it is 180 times faster. On this benchmark, compared
+    to `RangeSetBlaze::into_iter`, `avx512f` `RangeSetBlaze::into_slice` is 7 times
+    faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should also consider the worst case, namely, ingesting data with no clumps.
+    [I ran that benchmark](https://github.com/CarlKCarlK/range-set-blaze/blob/dec23/docs/bench.md).
+    It showed the existing `RangeSetBlaze::into_iter` is about 2.2 times slower than
+    HashSet. The new `RangeSetBlaze::into_slice` is 2.4 times slower than HashSet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, on balance, the new SIMD code offers a huge upside for data that is assumed
+    to be clumpy. If the assumption is wrong, it is slower, but not catastrophically
+    so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the SIMD code integrated into our project, we’re ready to ship, right?
+    Sadly, no. Because our code depends on Rust nightly, we should make it optional.
+    We’ll see how to do that in the next rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 9: Extricate your best SIMD algorithm from your project (for now) with
+    an optional cargo feature.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our beautiful new SIMD code depends on Rust nightly which can and does change
+    nightly. Requiring users to depend on Rust nightly would be cruel. (Also, getting
+    complaints when things break would be annoying.) The solution is to hide the SIMD
+    code behind a cargo feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature, Feature, Feature — In the context of working with SIMD and Rust, the
+    word “feature” is used three different ways. First, “CPU/target features” — these
+    describe a CPU’s capabilities, including which SIMD extensions it supports. See
+    `[*target-feature*](https://doc.rust-lang.org/std/arch/index.html)` [and](https://doc.rust-lang.org/std/arch/index.html)
+    `[*is_x86_feature_detected!*](https://doc.rust-lang.org/std/arch/index.html)`.
+    Second, “nightly feature gates” — Rust controls the visibility of new language
+    features in Rust nightly with [feature gates](https://prev.rust-lang.org/en-US/faq.html#what-are-feature-gates).
+    For example, `[*#![feature(portable_simd)]*](https://github.com/rust-lang/portable-simd)`.
+    Third, “[cargo features](https://doc.rust-lang.org/cargo/reference/features.html)”—
+    these let any Rust crate or library offer/limit access to part of their capabilities.
+    You see these in your `*Cargo.toml*` when you, for example, add a dependency to
+    `*itertools/use_std*`.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Here are the steps that the `range-set-blaze` crate takes to make the nightly-dependent
+    SIMD code optional:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In `Cargo.toml`, define a cargo feature related to the SIMD code:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'At the top `lib.rs` file, make the nightly `portable_simd` feature gate, depend
+    on the `from_slice`, cargo feature:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Use the conditional compilation attribute, for example, `#[cfg(feature = “from_slice”)]`,
+    to include the SIMD code selectively. This includes tests.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]bash'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ///  cargo add range-set-blaze --features "from_slice"
+  prefs: []
+  type: TYPE_NORMAL
+- en: /// [PRE7]
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in the docs above, add warnings and cautions to the documentation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use `--features from_slice` to check or test your SIMD code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Use `--all-features` to run all tests, generate all documentation, and publish
+    all cargo features:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'So, there you have it: nine rules for adding SIMD operations to your Rust code.
+    The ease of this process reflects the `core::simd` library’s excellent design.
+    Should you always use SIMD where applicable? Eventually, yes, when the library
+    moves from Rust nightly to stable. For now, use SIMD where its performance benefits
+    are crucial, or make its use optional.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideas for improving the SIMD experience in Rust? The quality of `core::simd`
+    is already high; the main need is to stabilize it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for joining me for this journey into SIMD programming. I hope that
+    if you have a SIMD-appropriate problem, these steps will help you accelerate it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please* [*follow Carl on Medium*](https://medium.com/@carlmkadie)*. I write
+    on scientific programming in Rust and Python, machine learning, and statistics.
+    I tend to write about one article per month.*'
+  prefs: []
+  type: TYPE_NORMAL

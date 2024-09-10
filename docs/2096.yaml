@@ -1,0 +1,399 @@
+- en: 'Tiny Audio Diffusion: Waveform Diffusion That Doesn’t Require Cloud Computing'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tiny-audio-diffusion-ddc19e90af9b?source=collection_archive---------3-----------------------#2023-06-29](https://towardsdatascience.com/tiny-audio-diffusion-ddc19e90af9b?source=collection_archive---------3-----------------------#2023-06-29)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/cb135c405e7b88027dfc7c37b2d82f30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generated with Stable Diffusion
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring how to train models and generate sounds with audio waveform diffusion
+    on a consumer laptop and GPU with less than 2GB VRAM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@crlandschoot?source=post_page-----ddc19e90af9b--------------------------------)[![Christopher
+    Landschoot](../Images/99a2569f5a6a3a99fd1f72553aa3d634.png)](https://medium.com/@crlandschoot?source=post_page-----ddc19e90af9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ddc19e90af9b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ddc19e90af9b--------------------------------)
+    [Christopher Landschoot](https://medium.com/@crlandschoot?source=post_page-----ddc19e90af9b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb64548f914a5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftiny-audio-diffusion-ddc19e90af9b&user=Christopher+Landschoot&userId=b64548f914a5&source=post_page-b64548f914a5----ddc19e90af9b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ddc19e90af9b--------------------------------)
+    ·11 min read·Jun 29, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fddc19e90af9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftiny-audio-diffusion-ddc19e90af9b&user=Christopher+Landschoot&userId=b64548f914a5&source=-----ddc19e90af9b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fddc19e90af9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftiny-audio-diffusion-ddc19e90af9b&source=-----ddc19e90af9b---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Diffusion models are all the rage currently, especially since [Stable Diffusion](https://stability.ai/blog/stable-diffusion-public-release)
+    took the world by storm this past summer. Since then, countless variations and
+    new diffusion models have been published in a wide variety of contexts. And while
+    the stunning visuals have stolen the spotlight, there has been significant development
+    with diffusion related to generative audio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fueled by diffusion and other methods, generative music has seen many recent
+    triumphs, as new models are published all the time. OpenAI wowed the world with
+    the capabilities of [Jukebox](https://openai.com/research/jukebox) when it was
+    released in 2020\. But Google said “Hold my model” when it produced the remarkable
+    [MusicLM](https://google-research.github.io/seanet/musiclm/examples/) at the beginning
+    of this year. Meta was not far behind when they released and open-sourced [MusicGen](https://ai.honu.io/papers/musicgen/)
+    this past month. But large institutions are not the only ones joining in, as there
+    have been very interesting contributions from independent researchers such as
+    [Riffusion](https://www.riffusion.com/) (Forsgren & Martiros) and [Moûsai](https://arxiv.org/abs/2301.11757)
+    (Schneider, et al.). On top of these, numerous other models have been released
+    within the last few years, all having their benefits and drawbacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Diffusion models have captivated so many due to their remarkable creative ability;
+    something that many other genres of machine learning (ML) lack. Most ML models
+    are trained to perform a task and their success can be measured by being correct
+    vs incorrect. But when we enter the realm of art and music, how can a model be
+    optimized to what might be considered best? It could of course learn to reproduce
+    famous art or music, but without novelty, there is no point. So how can this problem
+    be solved — to inject creativity into a machine that only knows 1s and 0s? Diffusion
+    is one method that offers an elegant solution to this quandary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Diffusion — From 10,000 feet
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At its core, diffusion in ML is simply the process of adding or removing noise
+    from a signal (think of static from an old TV). *Forward diffusion* adds noise
+    to a signal and *reverse diffusion* removes noise. The process we are most familiar
+    with is the reverse diffusion process, where the model takes in noise and then
+    “denoises” it into something that humans recognize (art, music, speech, etc.).
+    This process can be manipulated in a myriad of ways to serve different purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “creativity” in diffusion comes from the random noise that initiates the
+    denoising process. If you are providing the model with a different starting point
+    every time to denoise into some form of art or music, this simulates creativity
+    as the outputs will always be unique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d390fdb920543ffc647552be467be026.png)![](../Images/da2a9802ace0b07cb4c850129bfa1f1e.png)![](../Images/69ab8f107bc959b1047d3b3e17dc73a3.png)![](../Images/6cfa650cde2b0f07f713f37780def651.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Images Generated with Stable Diffusion
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method of teaching a model to perform this denoising process may actually
+    be a bit counter-intuitive from an initial thought. The model actually learns
+    to denoise a signal by doing the exact opposite — adding noise to a clean signal
+    over and over again until only noise remains. The idea is that if the model can
+    learn how to predict the noise added to a signal at each step, then it can also
+    predict the noise removed at each step for the reverse process. The critical element
+    to make this possible is that the noise being added/removed needs to be of a defined
+    probabilistic distribution (typically Gaussian) so that the noising/denoising
+    steps are predictable and repeatable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is far more detail that goes into this process, but this should provide
+    a sound conceptual understanding of what is happening under the hood. If you are
+    interested in learning more about diffusion models (mathematical formulations,
+    scheduling, latent space, etc.), I recommend reading this [blog post](https://www.assemblyai.com/blog/diffusion-models-for-machine-learning-introduction/)
+    by AssemblyAI and these papers ([DDPM](https://arxiv.org/abs/2006.11239), [Improving
+    DDPM](https://arxiv.org/abs/2102.09672), [DDIM](https://arxiv.org/abs/2010.02502),
+    [Stable Diffusion](https://arxiv.org/abs/2112.10752)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tiny Audio Diffusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Understanding Audio for Machine Learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: My interest in diffusion stems from the potential that it has shown with generative
+    audio. Traditionally, to train ML algorithms, audio was converted into a spectrogram,
+    which is basically a heatmap of sound energy over time. This was because a spectrogram
+    representation was similar to an image, which computers are exceptional at working
+    with, and it was a significant reduction in data size compared to a raw waveform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6658a340cb4dbb4904b280d3dd4bd78c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example Spectrogram of a Vocalist
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, with this transformation come some tradeoffs, including a reduction
+    of resolution and a loss of *phase* information. The phase of an audio signal
+    represents the position of multiple waveforms relative to one another. This can
+    be demonstrated in the difference between a sine and a cosine function. They represent
+    the same exact signal regarding amplitude, the only difference is a 90° (π/2 radians)
+    phase shift between the two. For a more in-depth explanation of phase, check out
+    this [video](https://www.youtube.com/watch?v=0XdJTipTnjM&t=318s) by [Akash Murthy](https://www.youtube.com/@akashmurthy).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7b7cb84b9dd5d4946d07ff57a005a8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 90° phase shift between *sin* and cos
+  prefs: []
+  type: TYPE_NORMAL
+- en: Phase is a perpetually challenging concept to grasp, even for those who work
+    in audio, but it plays a critical role in creating the timbral qualities of sound.
+    Suffice it to say that it should not be discarded so easily. Phase information
+    can also technically be represented in spectrogram form (the complex portion of
+    the transform), just like magnitude. However, the result is noisy and visually
+    appears random, making it challenging for a model to learn any useful information
+    from it. Because of this drawback, there has been recent interest in refraining
+    from transforming audio into spectrograms and rather leaving it as a raw waveform
+    to train models. While this brings its own set of challenges, both the amplitude
+    and phase information are contained within the single signal of a waveform, providing
+    a model with a more holistic picture of sound to learn from.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a041d57a2a78ae32cc291324b9302d9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example Waveform of a Vocalist
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a key piece of my interest in waveform diffusion, and it has shown promise
+    in yielding high-quality results for generative audio. Waveforms, however, are
+    very dense signals requiring a significant amount of data to represent the range
+    of frequencies humans can hear. For example, the music industry standard sampling
+    rate is 44.1kHz, which means that 44,100 samples are required to represent just
+    1 second of mono audio. Now double that for stereo playback. Because of this,
+    most waveform diffusion models (that don’t leverage latent diffusion or other
+    compression methods) require high GPU capacity (usually at least 16GB+ VRAM) to
+    store all of the information while being trained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Many people do not have access to high-powered, high-capacity GPUs, or do not
+    want to pay the fee to rent cloud GPUs for personal projects. Finding myself in
+    this position, but still wanting to explore waveform diffusion models, I decided
+    to develop a waveform diffusion system that could run on my meager local hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hardware Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I was equipped with an HP Spectre laptop from 2017 with an 8th Gen i7 processor
+    and GeForce MX150 graphics card with 2GB VRAM — not what you would call a powerhouse
+    for training ML models. My goal was to be able to create a model that could train
+    and produce high-quality (44.1kHz) stereo outputs on this system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I leveraged Archinet’s [audio-diffusion-pytorch](https://github.com/archinetai/audio-diffusion-pytorch)
+    library to build this model — thank you to [Flavio Schneider](https://github.com/flavioschneider)
+    for his help working with this library that he largely built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attention U-Net
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The base model architecture consists of a U-Net with attention blocks which
+    is standard for modern diffusion models. A U-Net is a neural network that was
+    originally developed for image (2D) segmentation but has been adapted to audio
+    (1D) for our uses with waveform diffusion. The U-Net architecture gets its name
+    from its U-shaped design.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/342f2c88bc2f14bea027a44026df8a50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'U-Net (Source: [*U-Net: Convolutional Networks for Biomedical Image Segmentation
+    (Ronneberger, et. al)*](https://arxiv.org/abs/1505.04597v1)*)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Very similar to an autoencoder, consisting of an encoder and a decoder, a U-Net
+    also contains skip connections at each level of the network. These skip connections
+    are direct connections between corresponding layers of the encoder and decoder,
+    facilitating the transfer of fine-grained details from the encoder to the decoder.
+    The encoder is responsible for capturing the important features of the input signal,
+    while the decoder is responsible for generating the new audio sample. The encoder
+    gradually reduces the resolution of the input audio, extracting features at different
+    levels of abstraction. The decoder then takes these features and upsamples them,
+    gradually increasing the resolution to generate the final audio sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1711cafeee3a27e21db179a32bc624f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Attention U-Net (Source: [Attention U-Net: Learning Where to Look for the Pancreas
+    (](https://arxiv.org/abs/1804.03999v3)[Oktay, et al.)](https://arxiv.org/search/cs?searchtype=author&query=Oktay%2C+O))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This U-Net also contains self-attention blocks at the lower levels which help
+    maintain the temporal consistency of the output. It is critical for the audio
+    to be downsampled sufficiently to maintain efficiency for sampling during the
+    diffusion process as well as avoid overloading the attention blocks. The model
+    leverages [V-Diffusion](https://arxiv.org/abs/2202.00512) which is a diffusion
+    technique inspired by [DDIM](https://arxiv.org/abs/2010.02502v4) sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To avoid running out of GPU VRAM, the length of the data that the base model
+    was to be trained on needed to be short. Because of this, I decided to train one-shot
+    drum samples due to their inherently short context lengths. After many iterations,
+    the base model length was determined to be 32,768 samples @ 44.1kHz in stereo,
+    which results in approximately 0.75 seconds. This may seem particularly short,
+    but it is plenty of time for most drum samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transforms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To downsample the audio enough for the attention blocks, several pre-processing
+    transforms were attempted. The hope was that if the audio data could be downsampled
+    without losing significant information prior to training the model, then the number
+    of nodes (neurons) and layers could be maximized without increasing the GPU memory
+    load.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first transform attempted was a version of “patching”. Originally proposed
+    for [images](https://arxiv.org/abs/2207.04316v1), this process was adapted to
+    audio for our purposes. The input audio sample is grouped by sequential time steps
+    into chunks that are then transposed into channels. This process could then be
+    reversed at the output of the U-Net to un-chunk the audio back to its full length.
+    The un-chunking process created aliasing issues, however, resulting in undesirable
+    high frequency artifacts in the generated audio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second transform attempted, proposed by [Schneider](https://arxiv.org/abs/2301.13267),
+    is called a “Learned Transform” which consists of single convolutional blocks
+    with large kernel sizes and strides at the start and end of the U-Net. Multiple
+    kernel sizes and strides were attempted (16, 32, 64) coupled with accompanying
+    model variations to appropriately downsample the audio. Again, however, this resulted
+    in aliasing issues in the generated audio, though not as prevalent as the patching
+    transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because of this, I decided that the model architecture would need to be adjusted
+    to accommodate the raw audio with no pre-processing transforms to produce sufficient
+    quality outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This required extending the number of layers within the U-Net to avoid downsampling
+    too quickly and losing important features along the way. After multiple iterations,
+    the best architecture resulted in downsampling by only 2 at each layer. While
+    this required a reduction in the number of nodes per layer, it ultimately produced
+    the best results. Detailed information about the exact number of U-Net levels,
+    layers, nodes, attention features, etc. can be found in the [configuration file](https://github.com/crlandsc/tiny-audio-diffusion/blob/main/exp/drum_diffusion.yaml)
+    in the [tiny-audio-diffusion](https://github.com/crlandsc/tiny-audio-diffusion)
+    repository on GitHub.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Pre-Trained Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I trained 4 separate unconditional models to produce kicks, snare drums, hi-hats,
+    and percussion (all drum sounds). The datasets used for training were small free
+    one-shot samples that I had collected for my music production workflows (all open-source).
+    Larger, more varied datasets would improve the quality and diversity of each model’s
+    generated outputs. The models were trained for a various number of steps and epochs
+    depending on the size of each dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pre-trained models are available for download on [Hugging Face](https://huggingface.co/crlandsc).
+    See the training progress and output samples logged at [Weights & Biases](https://wandb.ai/crlandsc/unconditional-drum-diffusion?workspace=user-crlandsc).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Overall, the quality of the output is quite high in spite of the reduced size
+    of the models. However, there is still some slight high frequency “hiss” remaining,
+    which is likely due to the limited size of the model. This can be seen in the
+    small amount of noise remaining in the waveforms below. Most samples generated
+    are crisp, maintaining transients and broadband timbral characteristics. Sometimes
+    the models add extra noise toward the end of the sample, and this is likely a
+    cost of the limit of layers and nodes of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Listen to some output samples from the models [here](https://github.com/crlandsc/tiny-audio-diffusion/tree/main/samples).
+    Example outputs from each model are shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a245362428366e2fbeed7762e42cd95f.png)![](../Images/4904fb3abcd46cc221d80e835efb218a.png)![](../Images/fc39d4bcbd5ee7c8edf2c314b011e0e5.png)![](../Images/91ce2a034476c2b4afcf0ef16e6c2abd.png)![](../Images/8fb1eb610bebfa2703540c9a8d89086d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Discussion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Along with exploring waveform diffusion models on my local hardware, an important
+    goal for this project was to be able to share that same opportunity with others.
+    I wanted to offer an easy entry point for those with limited resources that were
+    looking to experiment with audio waveform diffusion. Because of this, I structured
+    the project repository to offer step-by-step instructions on how to train or fine-tune
+    your own models as well as generate new samples from the [Inference.ipynb](https://github.com/crlandsc/tiny-audio-diffusion/blob/main/Inference.ipynb)
+    notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, I recorded a [Tutorial Video](https://youtu.be/m6Eh2srtTro) that
+    walks through setting up an Anaconda environment and demonstrates ways to generate
+    unique samples with the pre-trained models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is an exciting time for generative audio, especially with diffusion. I have
+    learned an immense amount through building this project and have further expanded
+    my optimism about what is to come in audio AI. I hope that this project can be
+    of use to others looking to explore the world of audio AI as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images, unless otherwise noted, are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**tiny-audio-diffusion code found here:** [**https://github.com/crlandsc/tiny-
+    audio-diffusion**](https://github.com/crlandsc/tiny-audio-diffusion)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tutorial video on setting up your environment to generate samples with tiny-audio-diffusion:
+    [https://youtu.be/m6Eh2srtTro](https://youtu.be/m6Eh2srtTro)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am an audio scientist with a focus on AI/ML and spatial audio as well as a
+    lifelong musician. If you are interested in more audio AI applications, see my
+    recent article on [Music Demixing](https://medium.com/rock-nheavy/the-music-demixing-ai-revolution-9d1528c6ef7c).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Find me on [LinkedIn](https://www.linkedin.com/in/christopher-landschoot/)
+    & [GitHub](https://github.com/crlandsc) and keep up to date with my current work
+    and research here: [www.chrislandschoot.com](https://www.chrislandschoot.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find my music on [Spotify](https://open.spotify.com/artist/2i6noWJnJQPXPsudoiJuMS?si=fvLOxUPqTAWKB894WXMz5Q),
+    [Apple Music](https://music.apple.com/us/artist/after-august/259370281), [YouTube](https://www.youtube.com/AfterAugust),
+    [SoundCloud](https://soundcloud.com/after-august), and other streaming platforms
+    as [After August](https://www.instagram.com/the_after_august/).
+  prefs: []
+  type: TYPE_NORMAL

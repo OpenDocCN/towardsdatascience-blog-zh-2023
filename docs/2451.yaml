@@ -1,0 +1,270 @@
+- en: Enhancing CSV File Query Performance in ChatGPT
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/enhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867?source=collection_archive---------1-----------------------#2023-07-31](https://towardsdatascience.com/enhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867?source=collection_archive---------1-----------------------#2023-07-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: with LangChain’s Self-Querying based on a customized CSV Loader
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)[![Shuyang
+    Xiang](../Images/36a5fd18fd9b7b88cb41094f09b83882.png)](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------)
+    [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----3e2b67a5f867--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----3e2b67a5f867---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e2b67a5f867--------------------------------)
+    ·9 min read·Jul 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e2b67a5f867&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----3e2b67a5f867---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3e2b67a5f867&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenhancing-csv-file-query-performance-in-chatgpt-3e2b67a5f867&source=-----3e2b67a5f867---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advent of sophisticated language models, like ChatGPT, has brought a novel
+    and promising approach to querying tabular data. However, due to token limitations,
+    directly executing a query becomes challenging without the assistance of APIs
+    like retriever. Consequently, the accuracy of queries heavily relies on the query’s
+    quality, and it is not uncommon for standard retrievers to fall short in returning
+    the exact information required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will delve into the reasons behind the failure of conventional
+    retriever methods in certain use cases. Furthermore, we propose a revolutionary
+    solution in the form of a customized CSV data loader that incorporates metadata
+    information. By leveraging [LangChain](https://python.langchain.com/docs/get_started/introduction.html)’s
+    Self-Querying API alongside the new CSV data loader, we can extract information
+    with significantly improved performance and precision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For detailed code used in this article, please take a look of the notebook [here](https://github.com/ShuyangenFrance/ChatGPTCSV/blob/main/self-querying.ipynb).
+    I would like to highlight the fact that this notebook illustrates the possibility
+    that **querying big tabular data with an LLM can achieve a remarkable accuracy.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieval on Disease Population Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We would like to query the following synthetic SIR dataset created by the author:
+    we simulate the three different groups of the population during 90 days of disease
+    in 10 cities based on a simple [SIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology).
+    For the case of simplicity, we suppose that the population of each city ranges
+    from 5e3 to 2e4 and there is no population movement between cities. Moreover,
+    we generate ten random integers between 500 to 2000 as the original infectious
+    number of people.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07fc21dc197c3e04df872fb527f72224.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: Disease population in 10 cities'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The tabular has the following form with five columns: “time” indicating the
+    time when the population was measured, “city” the city where the data was measured
+    and “susceptible”, “infectious”, and “removed” the three groups of the population.
+    For simplicity, the data has been saved locally as a CSV file.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We would like to ask ChatGPT questions relevant to the dataset. To let ChatGPT
+    interact with such tabular data, we follow the following standard steps using
+    LangChain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the CSVLoader to load the data,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a vectorstore (we use Chroma here) to store the embed data with OpenAI
+    embeddings,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use retrievers to return documents relevant to a given unstructured query.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You can use the following code to realize the steps above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now define a *ConversationalRetriverChain* to query the SIR dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code above, I have defined a conversation chain that will search the
+    relevant information of the query in the SIR dataset using the defined retriever
+    in the previous step and give an answer based on the retrieved information. To
+    give clearer instructions to ChatGPT, I have also given a prompt clarifying the
+    definition of all the columns in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us now ask one simple question: “Which city has the most infectious people
+    on 2018–02–03?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Surprisingly, our chatbot said: “The dataset provided does not include data
+    for the date 2018–02–03.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How could it be possible?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why retrieval failed?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To investigate why the chatbot failed to answer a question whose answer is
+    nowhere but in the provided dataset, I took a look at the relevant document it
+    retrieved with the question “Which city has the most infectious people on 2018–02–03?”.
+    I got the following lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Surprisingly, even though I specified that I wanted to know what happened on
+    the date 2018–02–03, no line of that date was returned. Since no information on
+    that date was ever sent to ChatGPT, there is of course no doubt that it cannot
+    answer such a question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Diving into the [source code](https://github.com/langchain-ai/langchain/blob/df40cd233f0690c1fc82d6fc0a1d25afdd7fdd42/langchain/vectorstores/base.py#L393-L398)
+    of the retriever, we can see that the *get_relevant_dcouments* calls *similarity_search*
+    by default. The method returns the top n chunks (4 by default but I set the number
+    as 20 in my code) based on the computed distance metric ([cosine distance](https://en.wikipedia.org/wiki/Cosine_similarity)
+    by default) ranging from 0 to 1 which measures the ‘similarity’ between the vector
+    of the query and the vector of the document chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Back to the SIR dataset, we notice that **each line tells almost the same story**:
+    on which date, in which city, and how many people are marked as which group. There
+    is no surprise the vectors representing these lines are similar to each other.
+    A quick check of the similarity score gives us the fact that lots of lines end
+    up with a score around 0.29.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, a similarity score is not strong enough to distinguish lines of
+    how they are relevant to the query: This is always the case in tabular data where
+    lines do not have a significant differences between each other. **We need stronger
+    filters that can work on the metadata.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CSVLoader with Customized MetaData
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It seems evident that the improvement of the chatbot’s performance depends largely
+    on the efficiency of the retriever. To do so, we start by defining a customized
+    CSVLoader with can communicate the metadata information with the retriever.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We write the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To save space, I have omitted the code that is the same as the original API
+    and only included the additional few lines which are mainly used to add certain
+    columns that require special attention to the metadata. Indeed, in the printed
+    data above, you can notice two parts: page contents and metadata. The standard
+    CSVLoader writes all the columns of the table to page contents and only data resources
+    and line numbers into the metadata. The defined “MetaDataCSVLoader” allows us
+    to write other columns into the metadata.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We re-create the vector store now, with the same steps as the section above,
+    except for the data loader in which we add two metadata_columns “time” and “city”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: SelfQuerying on MetaData Informed Vectorstore
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now we are ready to use the [SelfQuerying API](https://js.langchain.com/docs/modules/data_connection/retrievers/how_to/self_query/)
+    of LangChain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'According to LangChain’s documentation: A self-querying retriever is one that,
+    as the name suggests, can query itself. … This allows the retriever to not only
+    use the user-input query for semantic similarity comparison with the contents
+    of stored documents, but to also extract filters from the user query on the metadata
+    of stored documents and to execute those filters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c80238ccb42251d10b5d1c3e53533d3c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by LangChain: Self-Querying illustration'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can understand now why I emphasize the metadata in the last chapter: it
+    is based on which the ChatGPT or other LLMs can build on the filter to get the
+    most relevant information from the dataset. We use the following code to build
+    such a self-querying retriever by describing metadata and the document content
+    description based on which a well-performed filter can be built to extract the
+    accurate information. In particular, we give a *metadata_field_info* to the retriever,
+    specifying the type and description of the two columns that we want the retriever
+    to pay more attention to.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now define a similar *ConversationalRetriverChain* to query the SIR
+    dataset, but this time, with the *SelfQueryRetriever.* Let us see what will happen
+    now when we ask the same question: “Which city has the most infectious people
+    on2018–02–03?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chatbot said::” The city with the maximum infectious people on 2018–02–03
+    is the city3 with 1413 infectious people.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ladies and gentlemen, it is correct! The chatbot is doing its job with a better
+    retriever!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is no harm to see which relevant documents the retiever returns this
+    time and it gives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: You might notice at once that there are “time” and “city” in “metadata” in the
+    retrieved documents now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this blog post, I have explored the limitations of ChatGPT when querying
+    CSV format datasets, using the SIR dataset from 10 cities over a 90-day period
+    as an example. To address these limitations, I have proposed a novel approach:
+    **a metadata-aware CSV data loader that enables us to leverage the self-querying
+    API, significantly improving the accuracy and performance of the Chatbot.**'
+  prefs: []
+  type: TYPE_NORMAL

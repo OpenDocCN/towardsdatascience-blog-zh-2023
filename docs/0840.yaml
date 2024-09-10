@@ -1,0 +1,451 @@
+- en: Creating a Data Pipeline with Spark, Google Cloud Storage and Big Query
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/creating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c?source=collection_archive---------7-----------------------#2023-03-06](https://towardsdatascience.com/creating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c?source=collection_archive---------7-----------------------#2023-03-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: On-premise and cloud working together to deliver a data product
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)[![João
+    Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------)
+    [João Pedro](https://joaopedro214.medium.com/?source=post_page-----a72ede294f4c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----a72ede294f4c---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a72ede294f4c--------------------------------)
+    ·10 min read·Mar 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa72ede294f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----a72ede294f4c---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa72ede294f4c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c&source=-----a72ede294f4c---------------------bookmark_footer-----------)![](../Images/43f50bf401c4c19245d3fab8b7acb67f.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Toro Tseleng](https://unsplash.com/@crayon__artworks?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Developing a data pipeline is somewhat similar to playing with lego, you mentalize
+    what needs to be achieved (the data requirements), choose the pieces (software,
+    tools, platforms), and fit them together. And, like in lego, the complexity of
+    the building process is determined by the complexity of the final goal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s possible to go from simple ETL pipelines built with python to move data
+    between two databases to very complex structures, using Kafka to stream real-time
+    messages between all sorts of cloud structures to serve multiple end applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, the reality is that the current data scenario is more like those fancy
+    expensive professional lego sets, with all sorts of pieces to solve specific needs
+    with new ones popping up on every corner. You probably already saw [Matt Turck’s
+    2021 Machine Learning, AI and Data (MAD) Landscape](https://mattturck.com/data2021/).
+    And the bad part — the instructions manual is not included.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many open-source data-related tools have been developed in the last decade,
+    like Spark, Hadoop, and Kafka, without mention all the tooling available in the
+    Python libraries. And that’s are the tools I like to cover in my posts, they’re
+    free, they have well-maintained docker images and I can develop self-contained
+    apps with docker that anyone can run anywhere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, as the data landscape matures, all the arrows seem to point in the same
+    direction — Cloud computing. And this is, by no means, a surprise. Companies targeting
+    specifically data applications like Databricks, DBT, and Snowflake are exploding
+    in popularity while the classic players (AWS, Azure, and GCP) are also investing
+    heavily in their data products.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s the target of today’s post — We’ll be developing a data pipeline
+    using Apache Spark, Google Cloud Storage, and Google Big Query (using the free
+    tier)
+  prefs: []
+  type: TYPE_NORMAL
+- en: not sponsored.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The tools
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Spark** is an all-purpose distributed memory-based data processing framework
+    geared towards processing extremely large amounts of data. I covered Spark in
+    many other posts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Google Cloud Storage (GCS)**is Google’s blob storage. The idea is simple:
+    create a bucket and store files in it. Read them later using their “path”. Folders
+    are a lie and the objects are immutable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Google Big Query (GBQ)** is Google’s cloud data warehouse solution. An OLAP-focused
+    database with a serverless SQL query execution capable of processing large amounts
+    of data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We’re going to build a data pipeline to process and store data from the Brazilian
+    “higher education” (literal translation) census. This census yearly collects many
+    statistics about Brazilian higher education institutions (basically the universities)
+    from many perspectives: institutional, social & demographic, geographic, and so
+    on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll be dealing with the *courses report*, which contains statistics about
+    every Brazilian superior course (graduation, post-graduation, doctorate, etc).
+    This data is publically available [CC BY-ND 3.0] in CSV files (one per year).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The pipeline idea is simple, download the CSV files to the local machine, convert
+    them into a Delta-Lake table stored in a GCS bucket, do the transformations needed
+    over this delta table, and save the results in a Big Query Table that can be easily
+    consumed by other downstream tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11b2045ad52ab8651da0058becf8be49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The proposed pipeline. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The bucket will function as a raw file storage that aggregates all the reports
+    in a single place. The BigQuery table will store our service-ready data, already
+    filtered, aggregated, and containing only the useful columns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned before, the census collects a lot of statistics from all the higher
+    education institutes which includes, but is not limited to, universities. To simulate
+    a “real situation”, let’s suppose we need to create a table to answer various
+    social/demographic questions about the new students that ingress universities
+    every year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 0\. Setting up the environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All the code is available on this [GitHub repository](https://github.com/jaumpedro214/posts).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will need docker installed on your local machine to create the Spark cluster
+    and python to download the files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The docker-compose file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The spark Dockerfile:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The docker images are already configured to automatically create a new environment
+    from the scratch, so we can focus more on the implementation rather than on the
+    configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, you’ll need to create a Google Cloud Platform account. Even though
+    we are going to use only the free quota, your credit card information is needed.
+    GCP states that it will not charge you unless you explicitly end your free-trial
+    period, but be careful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you’ve created the account follow the steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1.** Access the GCP console and **create a new project**. I’ve named my “BigQueryFirstSteps”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/340a6e94c035fa53ebee52c1e841bf79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**2\.** Authorize the APIs for Google Cloud Storage and BigQuery in the API
+    & Services tab.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.** Create a new bucket in the Google Cloud Storage named **censo-ensino-superior**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e4a3538dcef2ce5700fafe7d899a1da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**4\.** Create a new dataset in Google Big Query named **censo-ensino-superior**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f597a457047d711e3130624f7ea308b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**5\.** Create a new service account in the *service account* item inside IAM
+    & Administrator tab with the appropriate roles to read, write and create GCP buckets
+    and GBQ tables (I’ve used *BigQuery administrator* and *Storage administrator*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**6\.** Still on this page, generate a new access key (JSON) to the newly created
+    account. The key will be downloaded to your local machine.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to the local environment, execute the *prepare_env.sh* script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It creates a few folders with specific authorizations (so the spark containers
+    can read and write from them) and downloads the GCS connector for spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, rename your JSON credentials file to **gcp-credentials.json** and put it
+    inside the ./src/credentials folder (along with the bucket_name.txt file).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, start the containers with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 1\. Downloading data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Just run the script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the CSV files will be downloaded to the ./data folder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab9e4c5614c78d5b9c0878bef020a285.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2\. Converting CSV to Delta Lake in GCS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first thing to do is instantiate a Spark Session and configure it with the
+    Delta-Lake dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Reading the downloaded CSV files is quite easy, just specify the options and
+    give the path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To write fewer data in the GCP bucket I’ve also selected just the columns that
+    are useful to the final table: year of the census; course’s identification; area
+    of knowledge; location and type; the number of new students by gender, age and
+    skin color.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Writing data to a GCP Bucket is just like writing to the file system but, instead
+    of passing a local path, we need to specify the bucket path with its own syntax:
+    “gs://<bucket_name>/<filepath_to_be_create>”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code above creates a new Delta Table inside the **censo-ensino-superior**
+    bucket named **censo_cursos.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t need to handle authentication in the code because the credentials were
+    properly configured during the docker build phase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To execute this script, access the spark container’s terminal (master or worker)
+    and execute:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: After a minute or so, the script will finish and the data will be available
+    in your GCS bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8fdf35dee751871fa131a082a03d7e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3\. Processing Delta Table from GCS to GBQ
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Again, the first thing to do is instantiate a Spark Session, the same way did
+    before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading data from a bucket also follows the same logic as writing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the data in hand, we can make some transformations as usual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The query above first filters only the bachelor and degree courses (using their
+    codes) and groups the result by year, detailed area, and state, summing up the
+    number of new students (“QT_ING_XYZ”) of each category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To write data to a BigQuery table we need to use the format “bigquery” along
+    with a few options. Obviously, we need to pass the table and database that we’re
+    writing to. As this table still does not exist, the option “createDisposition”
+    needs to be set to“CREATE_IF_NEEDED”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The standard [GBQ-Spark connector](https://cloud.google.com/dataproc/docs/tutorials/bigquery-connector-spark-example)
+    uses a GCS bucket as an intermediate buffer to move the data from/to GBQ. So,
+    we need to pass a “temporaryGcsBucket” option with a bucket name. For simplicity,
+    I’ve used the same bucket created previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Also, be aware that this writing is running on mode=“overwrite”, it will erase
+    any previous data if the table already exists. If you only want to add new rows,
+    use the “append” mode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To run this job, just type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the table will be created and populated, let’s have a look:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b1928a2eb05013d0322edeadf2be961.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Just to exemplify, let’s run a query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The query below calculates the percentages of men and women in each area of
+    knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/921969adee7c397d481691898cd1a103.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results with commented translations. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we learned how to develop a data pipeline using Apache Spark (on-premise)
+    as the data processing tool and the pair Google Cloud Storage (for raw file storage)
+    and Google Big Query (to serve the processed data to analytical queries) as the
+    storage solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Interacting with data from the cloud using spark is not so special. The harder
+    part is configuring the environment: finding the right connectors, putting them
+    in the correct place, and using the correct formats. Confession: I struggle a
+    lot to learn how to properly configure the docker images with the credentials.
+    But once this process is mastered, querying and manipulating data flows just as
+    usual.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s one of the things I most like about Apache Spark —It separates the
+    processing logic from the connection logic. If, for example, we change our blob
+    storage solution from GCS to Amazon’s S3, all that we need to do is reconfigure
+    the environment with new AWS credentials and change the read and write commands.
+    All the query/transformation logic remains the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, besides not being “so special”, learning how to interact with the cloud
+    storage components is an extremely important skill, and I hope that this post
+    helped you in having a better understanding of this process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, I’m not an expert in any of the subjects addressed in the post, and
+    I strongly recommend further reading, see the references below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading! ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*All the code is available in* [*this GitHub repository*](https://github.com/jaumpedro214/posts)*.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data used —* [*Microdados do Censo da Educação Superior*](https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/censo-da-educacao-superior)*,
+    [CC BY-ND 3.0], INEP-Brazilian Gov.*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[1] Chambers, B., & Zaharia, M. (2018). Spark: The definitive guide: Big data
+    processing made simple. “ O’Reilly Media, Inc.”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] What is BigQuery? (n.d.). *Google Cloud*. [Link](https://cloud.google.com/bigquery/docs/introduction).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] *Delta Lake Official Page*. (n.d.). Delta Lake. [https://delta.io/](https://delta.io/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Databricks. (2020c, September 15). *Making Apache SparkTM Better with Delta
+    Lake* [[Video](https://www.youtube.com/watch?v=LJtShrQqYZY)]. YouTube.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5]*Use the BigQuery connector with Spark*. (n.d.). Google Cloud. [Link](https://cloud.google.com/dataproc/docs/tutorials/bigquery-connector-spark-example).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Sohail, K. (2021, December 15). *Read files from Google Cloud Storage Bucket
+    using local PySpark and Jupyter Notebooks*. Medium. [Link](https://kashif-sohail.medium.com/read-files-from-google-cloud-storage-bucket-using-local-pyspark-and-jupyter-notebooks-f8bd43f4b42e).'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,849 @@
+- en: Deploying Falcon-7B Into Production
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploying-falcon-7b-into-production-6dd28bb79373?source=collection_archive---------1-----------------------#2023-07-07](https://towardsdatascience.com/deploying-falcon-7b-into-production-6dd28bb79373?source=collection_archive---------1-----------------------#2023-07-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A step-by-step tutorial
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Running Falcon-7B in the cloud as a microservice
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)[![Het
+    Trivedi](../Images/f6f11a66f60cacc6b553c7d1682b2fc6.png)](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------)
+    [Het Trivedi](https://medium.com/@het.trivedi05?source=post_page-----6dd28bb79373--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce8ebd0c262c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&user=Het+Trivedi&userId=ce8ebd0c262c&source=post_page-ce8ebd0c262c----6dd28bb79373---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dd28bb79373--------------------------------)
+    ·16 min read·Jul 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6dd28bb79373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&user=Het+Trivedi&userId=ce8ebd0c262c&source=-----6dd28bb79373---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6dd28bb79373&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploying-falcon-7b-into-production-6dd28bb79373&source=-----6dd28bb79373---------------------bookmark_footer-----------)![](../Images/10a0800c6f473b08d7985ccc8c5969f9.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author-Created using Midjourney
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By now, we’ve seen the capabilities of ChatGPT and what it has to offer. However,
+    for enterprise use, closed-source models like ChatGPT may pose a risk as enterprises
+    have no control over their data. OpenAI claims that user data is not stored or
+    used for training models, but there is no guarantee that data will not be leaked
+    in some way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To combat some of the issues related to closed-source models, researchers are
+    rushing to build open-source LLMs that rival models like ChatGPT. With open-source
+    models, enterprises can host the models themselves in a secure cloud environment,
+    mitigating the risk of data leakage. On top of that, you get full transparency
+    in the inner workings of the model, which helps build more trust with AI in general.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the recent advancements in open-source LLMs, it’s tempting to try out new
+    models and see how they stack up against closed-source models like ChatGPT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, running open-source models today poses significant barriers. It’s so
+    much easier to call the ChatGPT API than to figure out how to run an open-source
+    LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, my goal is to break these barriers by showing how you can run
+    open-source models like the Falcon-7B model in the cloud in a production-like
+    setting. We will be able to access these models via an API endpoint similar to
+    ChatGPT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Challenges
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the significant challenges to running open-source models is the lack
+    of computing resources. Even a “small” model like the Falcon 7B requires a GPU
+    to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To solve this problem, we can leverage the GPUs in the cloud. But this poses
+    another challenge. How do we containerize our LLM? How do we enable GPU support?
+    Enabling GPU support can be tricky because it requires knowledge of CUDA. Working
+    with CUDA can be a pain in the neck because you have to figure out how to install
+    the proper CUDA dependencies and which versions are compatible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, to avoid the CUDA death trap, many companies have created solutions to easily
+    containerize models while enabling GPU support. For this blog post, we’ll be using
+    an open-source tool called [Truss](https://github.com/basetenlabs/truss) to help
+    us easily containerize our LLM without much hassle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Truss allows developers to easily containerize models built using any framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why use Truss?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/994154aab9fb051480824ccacfa116e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Truss — [https://truss.baseten.co/e2e](https://truss.baseten.co/e2e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Truss has a lot of useful features right out of the box such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Turning your Python model into a microservice with a production-ready API endpoint
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Freezing dependencies via Docker
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Supporting inference on GPUs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Simple pre-processing and post-processing for the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Easy and secure secrets management
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’ve used Truss before to deploy machine learning models and the process is
+    quite smooth and simple. Truss automatically creates your dockerfile and manages
+    Python dependencies. All we have to do is provide the code for our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53e388d9c34388bef656ff02ad0db9d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The main reason we want to use a tool like Truss is that it becomes much easier
+    to deploy our model with GPU support.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: I have not received any sponsorship from Baseten to promote their content
+    nor am I associated with them in any way. I’m under no influence in any way from
+    Baseten or Truss to write this article. I simply found their open source project
+    to be cool and useful.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The plan
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here’s what I’ll be covering in this blog post:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Set up Falcon 7B locally using Truss
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run the model locally if you have a GPU(I have an RTX 3080)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Containerize the model and run it using docker
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a GPU-enabled kubernetes cluster in Google Cloud to run our model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Don’t worry if you don’t have a GPU for step 2, you will still be able to run
+    the model in the cloud.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the Github repo containing the code if you want to follow along:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/htrivedi99/falcon-7b-truss?source=post_page-----6dd28bb79373--------------------------------)
+    [## GitHub - htrivedi99/falcon-7b-truss'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contribute to htrivedi99/falcon-7b-truss development by creating an account
+    on GitHub.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/htrivedi99/falcon-7b-truss?source=post_page-----6dd28bb79373--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Falcon 7B local setup using Truss'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we’ll need to create a project with Python version ≥ 3.8
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll be downloading the model from hugging face and packaging it using Truss.
+    Here are the dependencies we’ll need to install:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Inside your Python project create a script called `main.py` . This is a temporary
+    script we’ll be using to work with truss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we’ll set up our Truss package by running the following command in the
+    terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you’re prompted to create a new truss, press ‘y’. Once that’s complete,
+    you should see a new directory called `falcon_7b_truss` . Inside that directory,
+    there will be some autogenerated files and folders. There are a couple of things
+    we need to fill out: `model.py` which is nested under the package `model` and
+    `config.yaml` .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: As I mentioned previously, Truss only needs our model’s code, it takes care
+    of all the other things automatically. We’ll be writing the code inside `model.py`
+    , but it has to be written in a specific format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Truss expects each model to support at least three functions: `__init__` ,
+    `load` , and `predict` .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`__init__` is primarily used for creating class variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`load` is where we’ll download the model from hugging face'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`predict` is where we’ll call our model'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here’s the full code for `model.py` :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What’s happening here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MODEL_NAME` is the model we’ll be using which in our case is the `falcon-7b-instruct`
+    model'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Inside `load`, we download the model from hugging face in 8bit. The reason we
+    want 8bit is that the model uses significantly less memory on our GPU when quantized.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, loading the model in 8-bit is necessary if you want to run the model locally
+    on a GPU with less than 13GB VRAM.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `predict` function accepts a JSON request as a parameter and calls the model
+    using `self.pipeline` . The `torch.no_grad` tells Pytorch that we are in inference
+    mode, not training mode.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cool! That’s all we need to setup our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Running the model locally (Optional)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you have an Nvidia GPU with more than 8GB of VRAM you will be able to run
+    this model locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If not, feel free to move on to the next step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll need to download some more dependencies to run the model locally. Before
+    you download the dependencies you need to make sure you have CUDA and the right
+    CUDA drivers installed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because we’re trying to run the model locally, Truss won’t be able to help us
+    manage the CUDA madness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, inside `main.py` the script we created outside of the `falcon_7b_truss`
+    directory, we need to load our truss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the code for `main.py` :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What’s happening here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you recall, the `falcon_7b_truss` directory was created by truss. We can
+    load that entire package, including the model and dependencies using `truss.load`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once, we’ve loaded our package we can simply call the `predict` method to get
+    the models output
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Run `main.py` to get the output from the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This model files are ~15 GB in size so it might take 5–10 minutes to download
+    the model. After running the script you should see an output like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 3: Containerizing the model using docker'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Usually, when people containerize a model, they take the model binary and the
+    Python dependencies and wrap it all up using a Flask or Fast API server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A lot of this is boilerplate and we don’t want to do it ourselves. Truss will
+    take care of it. We’ve already provided the model, Truss will create the server,
+    so the only thing left to do is provide the Python dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `config.yaml` holds the configuration for our model. This is where we can
+    add the dependencies for our model. The config file already comes with most of
+    the things we need, but we’ll need to add a few things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is what you need to add to `config.yaml`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: So the main thing we added is the `requirements` . All of the dependencies listed
+    are required to download and run the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The other important thing we added is the `resources` . The `use_gpu: true`
+    is essential, because this tells Truss to create a Dockerfile for us with GPU
+    support enabled.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it for the configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next up, we’ll containerize our model. If you don’t know how to containerize
+    a model using Docker, don’t worry Truss has got you covered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside the `main.py` file, we’ll tell Truss to package everything together.
+    Here is the code you need:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What’s happening:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we load our `falcon_7b_truss`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next, the `docker_build_setup` function handles all of the complicated stuff
+    like creating the Dockerfile and setting up the Fast API server.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you take a look at your `falcon_7b_truss` directory, you’ll see that many
+    more files got generated. We don’t need to worry about how these files work because
+    it will all get managed behind the scene.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'At the end of the run, we get a docker command to build our docker image: `docker
+    build falcon_7b_truss -t falcon-7b-model:latest`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/beb90d0e1302c0c426824fa199948d4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'If you want to build the docker image go ahead and run the build command. The
+    image is ~ 9 GB in size , so it might take a while to build. If you don’t want
+    to build it but want to follow along you can use my image: `htrivedi05/truss-falcon-7b:latest`
+    .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you’re building the image yourself, you will need to tag it and push it
+    to docker hub so that our containers in the cloud can pull the image. Here are
+    the commands you will need to run once the image is built:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Awesome! We are ready to run our model in the cloud!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(Optional steps below for running the image locally with a GPU)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have an Nvidia GPU and want to run your containerized model **locally**
+    with GPU support, you need to ensure docker is configured to use your GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Open up a terminal and run the following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that your docker has been configured to access your GPU, here is how to
+    run your container:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Again, it will take a while to download the model. To make sure everything
+    is working correctly you can check the container logs and you should see “THE
+    DEVICE INFERENCE IS RUNNING ON IS: cuda”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can call the model via an API endpoint like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 4: Deploying the model into production'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I’m using the word “production” quite loosely here. We’re going to run our model
+    in kubernetes where it can easily scale and handle variable amounts of traffic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that being said, there are a **TON** of configurations kubernetes has such
+    as network policies, storage, config maps, load balancing, secrets management,
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though kubernetes is built to “scale” and run “production” workloads, a
+    lot of the production-level configurations you need don’t come out of the box.
+    Covering those advanced kubernetes topics is out of the scope of this article
+    and takes away from what we’re trying to accomplish here. So for this blog post,
+    we’ll create a minimal cluster without all the bells and whistles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without further ado, let’s create our cluster!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Prerequisites:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Have a Google Cloud Account with a project
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Have the **gcloud** CLI installed on your machine
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make sure you have enough quota to run a GPU enabled machine. You can check
+    your quotas under **IAM & Admin**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/0b5f428850fadcfa0cc0346b2f5ab4a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating our GKE cluster
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’ll be using Google’s kubernetes engine to create and manage our cluster.
+    Ok, time for some **IMPORTANT** information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google’s kubernetes engine is **NOT** free. Google will not allow us to use
+    a powerful GPU free of charge. With that being said, we are creating a single-node
+    cluster with a less powerful GPU. It should not cost you more than $1–$2 for this
+    experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s the configuration for the kubernetes cluster we’ll be running:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 node, standard kubernetes cluster (not autopilot)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1 Nvidia T4 GPU
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: n1-standard-4 machine (4 vCPU, 15 GB memory)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All of this will run on a spot instance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: If you’re in another region and don’t have access to the exact same resources,
+    feel free to make modifications.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Steps for creating the cluster:**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Head over to [google cloud console](https://console.cloud.google.com/) and search
+    for the service called *Kubernetes Engine*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/09cff563a680d73a6527f4901dd44a00.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2\. Click the *CREATE* button
+  prefs: []
+  type: TYPE_NORMAL
+- en: Make sure you are creating a standard cluster, not an autopilot cluster. It
+    should say *Create a kubernetes cluster* at the top.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3\. Cluster basics
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inside the cluster basics tab, we don’t want to change much. Just give your
+    cluster a name. You don’t need to change the zone or control plane.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a55be1fba664346c690ba7d0ec344ece.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 4\. Click on the **default-pool** tab and change the number of nodes to 1
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca67dee00ace8d272e0b9815bec29c55.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 5\. Under default-pool click the **Nodes** tab in the left-hand sidebar
+  prefs: []
+  type: TYPE_NORMAL
+- en: Change the **Machine Configuration** from **General Purpose** to **GPU**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select the **Nvidia T4** as the **GPU type** and set **1** for the quantity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Enable GPU timeshare (even though we won’t be using this feature)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Set the **Max shared clients per GPU** to 8
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the **Machine Type**, select the **n1-standard-4 (4 vCPU, 15 GB memory)**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Change the **Boot disk size** to 50
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Scroll down to the very bottom and check-mark where it says: **Enable nodes
+    on spot VMs**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e26291a6c9e431d53f272eed05ba76ae.png)![](../Images/a23583fdadf90654922793c10114f036.png)![](../Images/210268f2273132cf85b94e48e7d4bfb4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here is a screen-shot of the estimated price I got for this cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d1d9c07e0380efa2b3be818df060653.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once you’ve configured the cluster go ahead and create it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’ll take a few minutes for Google to set everything up. After your cluster
+    is up and running, we need to connect to it. Open up your terminal and run the
+    following commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you used a different zone of cluster name, update those accordingly. To
+    check that we’re connected run this command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see 1 node appear in your terminal. Even though our cluster has
+    a GPU, it’s missing some Nvidia drivers which we’ll have to install. Thankfully,
+    installing them is easy. Run the following command to install the drivers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sweet! We are finally ready to deploy our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying the model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To deploy our model onto our cluster we need to create a **kubernetes deployment**.
+    A kubernetes deployment allows us to manage instances of our containerized model.
+    I won’t go too deep into kubernetes or how to write yaml files as it’s out of
+    scope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You need to create a file called `truss-falcon-deployment.yaml` . Open that
+    file and paste in the following contents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What’s happening:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We are telling kubernetes that we want to create pods with our `falcon-7b-model`
+    image. Make sure you replace `<your_docker_id>` with your actual id. If you didn’t
+    create your own docker image and want to use mine instead, replace it with the
+    following: `htrivedi05/truss-falcon-7b:latest`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We are enabling GPU access for our container by setting a resource limit `nvidia.com/gpu:
+    1` . This tells kubernetes to request only one GPU for our container'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To interact with our model, we need to create a kubernetes service that will
+    run on port 8080
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Create the deployment by running the following command in your terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run the command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You should see something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It will take a few minutes for the deployment to change to the ready state.
+    Remember the model has to get downloaded from hugging face each time the container
+    restarts. You can check the progress of your container by running the following
+    command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: Change the pod name accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are a few things you want to look for in the logs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Look for the print statement **THE DEVICE INFERENCE IS RUNNING ON IS: cuda**.
+    This confirms that our container is properly connected to the GPU.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next, you should see some print statements regarding the model files being downloaded
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once the model is downloaded and Truss has created the microservice you should
+    see the following output at the end of your logs:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: From this message, we can confirm the model is loaded and ready for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can’t call the model directly, instead, we have to call the model’s service
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Run the following command to get the name of your service:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `truss-falcon-7b-service` is the one we want to call. To make the service
+    accessible we need to port-forward it using the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Sweet, our model is available as a REST API endpoint at `127.0.0.1:8080` .
+    Open up any python script such as `main.py` and run the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Whoo-hoo! We have successfully containerized our Falcon 7B model and deployed
+    it as a microservice in production!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to play with different prompts to see what the model returns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Winding down the cluster
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once you’ve had your fun messing with Falcon 7B you can delete your deployment
+    by running this command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, head over to the kubernetes engine in google cloud and delete the kubernetes
+    cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: All images unless otherwise noted are by the author'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Running and managing a production-grade model like ChatGPT is not easy. However,
+    with time the tooling will get better for developers to deploy their own model
+    into the cloud.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, we touched upon all the things needed to deploy an LLM into
+    production at a basic level. We packaged the model using Truss, containerized
+    it using Docker, and deployed it in the cloud using kubernetes. I know it’s a
+    lot to unpack and it wasn’t the easiest thing to do in the world, but we did it
+    anyway.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you learned something interesting from this blog post. Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Peace.
+  prefs: []
+  type: TYPE_NORMAL

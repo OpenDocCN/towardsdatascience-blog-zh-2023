@@ -1,0 +1,803 @@
+- en: Nine Rules for Running Rust on the Web and on Embedded
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/nine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2?source=collection_archive---------3-----------------------#2023-07-05](https://towardsdatascience.com/nine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2?source=collection_archive---------3-----------------------#2023-07-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Practical Lessons from Porting `range-set-blaze` to no_std and WASM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----94462ef249a2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----94462ef249a2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----94462ef249a2--------------------------------)
+    ·17 min read·Jul 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F94462ef249a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----94462ef249a2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F94462ef249a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-running-rust-on-the-web-and-on-embedded-94462ef249a2&source=-----94462ef249a2---------------------bookmark_footer-----------)![](../Images/59da1d54d5821d92e578ab92da9a5abb.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Crab running on a microcontroller — Source: [https://openai.com/dall-e-2/](https://openai.com/dall-e-2/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I recommend Rust when you want the speed of C++ and the memory-safety of Python.
+    On top of that, with Rust you can build on more than 100,000 [software libraries](https://crates.io/).
+    In addition, Rust offers the potential of running your code not just on a conventional
+    computer, but also inside a web page or even on a robot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running “almost everywhere”, however, comes with complications. This article
+    is for Rust programmers who want to mitigate these complications. (It may also
+    be of interest to those who want to see Rust’s “run almost everywhere” story.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First complication: Web pages and the embedded processors of robots don’t support
+    general file IO. If your project is mostly about reading and writing files, it’s
+    not a good candidate for running on a robot, other embedded processor, or a web
+    page.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Second complication: Porting code to run almost everywhere requires many steps
+    and choices. Navigating these choices can be time consuming. Missing a step can
+    lead to failure. This article aims to reduce this second complication by offering
+    these nine rules, which we’ll later explore in detail:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mark your lib.rs or main.rs as no_std.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the built-in “crate alloc” if you can.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Switch to “no std” dependences.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create std and alloc features and make your std-only functions optional.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Build your project for WASM. Use cargo tree to get it working.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create WASM tests and a WASM demo.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Optional] Build your project for embedded.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Optional] Create a single embedded test and an embedded demo.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finish up with CI testing, Cargo.toml metadata, and an updated README.md.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Following these rules will help you create very fast and memory-safe code that
+    runs everywhere from a PC, to a smart phone web page ([demo](https://carlkcarlk.github.io/range-set-blaze/wasm-demo/)),
+    to a robot. The code can be very tiny and can leverage the huge Rust crate library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To illustrate the rules, we’ll port the `[range-set-blaze](https://github.com/CarlKCarlK/range-set-blaze)`
+    crate to run inside web pages — WASM — and on microcontrollers — embedded. (This
+    crate manipulates sets of “clumpy” integers. A user of the crate requested the
+    port.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A port to WASM and embedded requires that you avoid using Rust’s standard library,
+    “std”. Converting to “no std” was both easier and harder than I expected. Easier
+    because you can still use `Vec` and `String.` Harder, mostly because of testing.
+    Based on my experience with `range-set-blaze`, here are the decisions, described
+    one at a time, that I recommend. To avoid wishy-washiness, I’ll express these
+    recommendations as rules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 1: Mark your lib.rs or main.rs as no_std.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Aside 1: First, use Git to create a new branch for your project. That way,
+    if things don’t work out, you can easily undo all changes.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Aside 2: *Actually*, [WASM partially supports std](https://github.com/paritytech/substrate/issues/4043).
+    For example, it supports `vec`, `String`, and `HashSet`. It does not support File
+    IO. If you only want WASM support, you may be able to skip all the “no_std” work
+    in this article.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Aside 3: A tip from [Reddit](https://www.reddit.com/r/rust/comments/14rc70l/)
+    that I haven’t tested yet: “You really don’t need to set anything to `no_std`
+    for Wasm. If you use anything like `wasm-opt` or `wasm-gc` or even just a full
+    integrated pipeline with `trunk` you won''t see a difference in the binary size
+    since anything you don''t use will be stripped away. No need to set up `no_std`
+    and look for `no_std` dependencies.”'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Mark the top of `lib.rs` with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`#![cfg_attr(not(test), no_std)]`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This tells the Rust compiler not to include the standard library, except when
+    testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside 1: My project is a library project with a `lib.rs`. I believe the steps
+    for a binary project with a `main.rs` are about the same, but I haven’t tested
+    them.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Aside 2: We’ll talk much more about code testing in later rules.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Adding the “no_std” line to `range-set-blaze`’s `lib.rs`, causes 40 compiler
+    problems, most of this form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cd34403675a277899925aa81efd0278e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fix some of these by changing, “std::” to “core::” in your main code (not in
+    test code). For `range-set-blaze`, this reduces the number of problems from 40
+    to 12\. This fix helps because many items, such as `std::cmp::max`, are also available
+    as `core::cmp::max`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sadly, items such as `Vec` and `Box` cannot be in `core` because they need to
+    allocate memory. Happily, if you’re willing to support memory allocation, you
+    can still use them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 2: Use the built-in “crate alloc” if you can.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Should you allow your crate to allocate memory? For WASM you should. For many
+    embedded applications, you also should. For some embedded applications, however,
+    you should not. If you decide to allow memory allocation, then at the top of `lib.rs`
+    add:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`extern crate alloc;`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can now add lines such as these to get access to many memory-allocated
+    items:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: With `range-set-blaze`, this reduces the number of problems from 12 to two.
+    We’ll fix these in Rule 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: What if you are writing for an embedded environment that can’t use memory
+    allocation and are having problems with, for example, `Vec`. You may be able to
+    re-write. For example, you may be able to use an array in place of a vector. If
+    that doesn’t work, take a look at the other rules. If nothing works, you may not
+    be able to port your crate to `no_std`.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Rule 3: Switch to “no std” dependences.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Rust compiler complains if your project used a crate that puts “std” functions
+    in your code. Sometimes, you can search [crates.io](https://crates.io/search?q=thiserror+no_std)
+    and find alternative “no_std” crates. For example, the popular `thiserror` crate
+    injects “std” into your code. However, the community has created [alternatives
+    that do not](https://crates.io/search?q=thiserror+no_std).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of `range-set-blaze`, the two remaining problems relate to crate
+    `[gen_ops](https://crates.io/crates/gen_ops)` — a wonderful crate for defining
+    operators such as “+” and “&” conveniently. Version 0.3.0 of `gen_ops` did not
+    fully support “no std”. Version 0.4.0, however, does. I updated my dependencies
+    in `Cargo.toml` and improved my “no std” compatibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I can now run these commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The command `cargo check` confirms that my crate isn’t directly using the standard
+    library. The command `cargo test` confirms that my tests (which still use the
+    standard library) continue to pass. If your crate still doesn’t compile, take
+    a look at the next rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 4: Create std and alloc features and make your std-only functions optional.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Embedded processors generally don’t support reading and writing files. Likewise,
+    WASM doesn’t yet fully support files. While you can find some file-related “no
+    std” crates, none seem comprehensive. So, if file IO is central to your crate,
+    porting to WASM and embedded may not be practical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, if file IO — or any other std-only function — is merely incidental
+    to your crate, you can make that function optional via a “std” feature. Here is
+    how:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Add this section to your `Cargo.toml`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says that your crate now has two features, “std” and “alloc”. By default,
+    the compiler should use “std”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At the top of your `lib.rs`, replace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says that if you do not apply the “std” feature, the compiler should compile
+    without the standard library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the line before any code that is std-only, placed `#[cfg(feature = "std")]`.
+    For example, here we define a function that creates a `RangeSetBlaze` struct based
+    on the contents of a file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To check the “std” and “alloc” features, do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can test “std” with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Aside: Surprisingly, `cargo test --features alloc --no-default-features` does
+    not test "alloc”. That is because tests [require threads, allocation, and other
+    things](https://github.com/rust-lang/wg-cargo-std-aware/issues/72) that may not
+    be available​ in `no_std` so cargo always runs regular tests as “std”.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: At this point we’re checking both "std” and “alloc”, so can we assume that our
+    library will work with WASM and embedded. No! Generally, **Nothing works without
+    being tested.** Specifically, we might be depending on crates that use “std” code
+    internally. To find these issues, we must test in the WASM and embedded environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 5: Build your project for WASM. Use cargo tree to get it working.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Install the WASM cross compiler and check your project with these commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When I do this on `range-set-blaze`, it complains that the `getrandom` crate
+    doesn’t work with WASM. On the one hand, I’m not surprised that WASM does not
+    fully support random numbers. On the other hand, I am surprised because my project
+    doesn’t *directly* depend on `getrandom`. To find the *indirect* dependency, I
+    use `cargo tree`. I discover that my project depends on crate `rand` which depends
+    on `getrandom`. Here is the `cargo tree` command to use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The command outputs both crates and the features they use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The output shows that `range-set-blaze` depends on `rand`. Also, it shows that
+    `rand` depends on `getrandom` with its “std” feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I read the `getrandom` [documentation](https://docs.rs/getrandom/latest/getrandom/#webassembly-support)
+    and learn that its “js” feature supports WASM. So, how do we tell `rand` to use
+    `getrandom/js`, but only when we compile with our "alloc” feature? We update our
+    `Cargo.toml` like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says that our “std” feature depends on `getrandom`’s “std" feature. Our
+    “alloc” feature, however, should use the `js` feature of `getrandom`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This now works:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, we have WASM compiling, but what about testing WASM?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 6: Create WASM tests and a WASM demo.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s put the WASM version to work, first with tests and then with a demo web
+    page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create WASM tests in `tests/wasm.rs`
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can test on WASM almost as easily as you can test natively. We do this
+    by having the original tests only run natively while an almost duplicate set of
+    tests run on WASM. Here are the steps based on [The](https://rustwasm.github.io/wasm-bindgen/wasm-bindgen-test/index.html)
+    `[wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/wasm-bindgen-test/index.html)`
+    [Guide](https://rustwasm.github.io/wasm-bindgen/wasm-bindgen-test/index.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do `cargo install wasm-bindgen-cli`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Copy your current integration tests from, for example, `tests/integration_tests.rs`
+    to `tests/wasm.rs`. (Recall that in Rust, integration tests are tests that live
+    outside the `src` directory and that see only the public methods of a project.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: At the top of `tests/wasm.rs`, remove `#![cfg(test)]` and add
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`#![cfg(target_arch = "wasm32")]`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '`use wasm_bindgen_test::*; wasm_bindgen_test_configure!(run_in_browser);`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: In `wasm.rs`, replace all`#[test]`’s to `#[wasm_bindgen_test]`’s.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Everywhere you have `#![cfg(test)]` (typically, in`tests/integration_tests.rs`
+    and `src/tests.rs`) add the additional line: `#![cfg(not(target_arch = "wasm32"))]`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In your, `Cargo.toml`, change your`[dev-dependencies]` (if any) to `[target.'cfg(not(target_arch
+    = "wasm32"))'.dev-dependencies]`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In your, `Cargo.toml`, add a section:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With all this set up, native tests, `cargo test`, should still work. If you
+    don’t have the Chrome browser installed, install it. Now try to run the WASM tests
+    with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It will likely fail because your WASM tests use dependencies that haven’t or
+    can’t be put in `Cargo.toml`. Go through each issue and either:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Add the needed dependencies to `Cargo.toml’`s `[target.'cfg(target_arch = "wasm32")'.dev-dependencies]`section,
+    or
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Remove the tests from `tests/wasm.rs`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For `range-set-blaze`, I removed all WASM tests related to testing the package’s
+    benchmarking framework. These tests will still be run on the native side. Some
+    useful tests in `tests\wasm.rs` needed crate `syntactic-for`, so I added it to
+    `Cargo.toml`, under `[target.'cfg(target_arch = "wasm32")'.dev-dependencies]`.
+    With this fixed, all 59 WASM tests run and pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: If your project includes an [examples folde](http://xion.io/post/code/rust-examples.html)r,
+    you may need create a `native` module inside your example and a `wasm` module.
+    See this `range-set-blaze` file for an [“example” example](https://github.com/CarlKCarlK/range-set-blaze/commit/444b9b65f0a36281d5f02067cb690108e30f77fe?diff=split#diff-37c9e138e5ec0636c73b0b74bfe4c82663f180de02c51a29055d52603f30d4b7)
+    of how to do this.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Create a WASM demo in `tests/wasm-demo`
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Part of the fun of supporting WASM is that you can demo your Rust code in a
+    web page. Here is a web [demo of](http://carlkcarlk.github.io/range-set-blaze/wasm-demo/)
+    `[range-set-blaze](http://carlkcarlk.github.io/range-set-blaze/wasm-demo/)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Follow these steps to create your own web demo:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In your project’s main `Cargo.toml` file, define a workspace and add `tests/wasm-demo`
+    to it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: In your tests folder, create a `test/wasm-demo` subfolder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It should contain a new `Cargo.toml` like this (change `range-set-blaze` to
+    the name of your project):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Also, create a file `tests/wasm-demo/src/lib.rs`. Here is mine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: This file defines a function called `disjoint_intervals` that takes a vector
+    of integers as input, for example, `100,103,101,102,-3,-4`. Using the `range-set-blaze`
+    package, the function returns a string of the integers as sorted, disjoint ranges,
+    for example, `-4..=-3, 100..=103`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As your final step, create file `tests/wasm-demo/index.html.` Mine uses a little
+    JavaScript to accept a list of integers and then call the Rust WASM function `disjoint_intervals`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To run the demo locally, first move your terminal to `tests/wasm-demo`. Then
+    do:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, start a local web server and view the page. I use the [Live Preview](https://marketplace.visualstudio.com/items?itemName=ms-vscode.live-server)
+    extension to VS Code. Many people use `python -m http.server`. The `range-set-blaze`
+    demo looks like this (also available, [live on GitHub](https://carlkcarlk.github.io/range-set-blaze/wasm-demo/)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0413748bafff879c803c0c63b28d809b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I find watching my Rust project run in a web page very gratifying. If WASM-compatibility
+    is all you are looking for, you can skip to Rule 9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 7: Build your project for embedded.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you want to take your project a step beyond WASM, follow this rule and the
+    next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Be sure you move your terminal back to your project’s home directory. Then,
+    install `thumbv7m-none-eabi`, a popular embedded processor, and check your project
+    with these commands:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When I do this on `range-set-blaze`, I get errors related to four sets of dependencies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`thiserror` — My project depended on this crate but didn’t actually use it.
+    I removed the dependency.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`rand` and `getrandom` — My project only needs random numbers for native testing,
+    so I moved the dependency to `[target.''cfg(not(target_arch = "wasm32"))''.dev-dependencies]`.
+    I also updated my main and testing code.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`itertools`, `num-traits`, and `num-integer` — These crates offer features
+    for “std” and “alloc”. I updated `Cargo.toml` like so:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: How did I know which feature of which dependancies to use? Understanding the
+    features of a crate such as `itertools` requires reading [its documentation](https://docs.rs/itertools/latest/itertools/#crate-features)
+    and (often) going to [its GitHub repository](https://github.com/rust-itertools/itertools/blob/master/Cargo.toml)
+    and reading its `Cargo.toml`. You should also use `cargo tree` to check that you
+    are getting the desire feature from each dependency. For example, this use of
+    `cargo tree` shows that for a default compile, I get the “std” features of `range-set-blaze`,
+    `num-integer`, and `num-traits` and the “use-std” features of `itertools` and
+    `either:`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And this shows that for a `--features alloc --no-default-feature` compile,
+    I get the desired “use_alloc” feature of `itertools` and “no default” version
+    of the other dependences:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When you think you have everything working, use these commands to check/test
+    native, WASM, and embedded:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: These *check* embedded, but what about *testing* embedded?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 8: Create a single embedded test and an embedded demo.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s put our embedded feature to work by creating a combined test and demo.
+    We will run it on an emulator called QEMU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing native Rust is easy. Testing WASM Rust is OK. Testing embedded Rust
+    is hard. We will do only a single, simple test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside 1: For more, about running and emulating embedded Rust see: [The Embedded
+    Rust Book](https://docs.rust-embedded.org/book/start/index.html).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Aside 2: For ideas on a more complete test framework for embedded Rust, see
+    [defmt-test](https://github.com/knurling-rs/defmt/tree/main/firmware/defmt-test).
+    Sadly, I couldn’t figure out how to get it to run under emulation. The [cortex-m/testsuite](https://github.com/rust-embedded/cortex-m/tree/master/testsuite)
+    project uses a fork of defmt-test and can run under emulation but doesn’t offer
+    a stand-alone testing crate and requires three additional (sub)projects.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Aside 3: One embedded test is infinitely better than no tests. We’ll do the
+    rest of our testing at the native and WASM level.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We will create the embedded test and demo inside our current `tests` folder.
+    The files will be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here are the steps to creating the files and setting things up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install the [QEMU emulator](https://www.qemu.org/). On Windows, this involves
+    running an installer and then manually adding `"C:\Program Files\qemu\"` to your
+    path.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '2\. Create a `tests/embedded/Cargo.toml` that depends on your local project
+    with “no default features” and “alloc”. Here is mine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '3\. Create a file `tests/embedded/src/main.rs`. Put your test code after the
+    “test goes here” comment. Here is my file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. Copy `build.rs` and `memory.x` from `[cortex-m-quickstart](https://github.com/rust-embedded/cortex-m-quickstart/tree/master)`’s
+    GitHub to `tests/embedded/`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '5\. Create a `tests/embedded/.cargo/config.toml` containing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '6\. Update your project’s main `Cargo.toml` by adding `tests/embedded` to your
+    workspace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With this setup, you are almost ready to run emulated embedded. Next, get your
+    terminal in position and the compiler set to nightly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can now use `cargo check`, `cargo build`, and `cargo run` on the demo app.
+    For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: When you get this working, you will have successfully run your project on an
+    (emulated) microcontroller! If you have problems with the setup, double check
+    these instructions. If that doesn’t work, take a look at [The Embedded Rust Book](https://docs.rust-embedded.org/book/start/qemu.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you are done, be sure to set your compiler back to stable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Rule 9: Finish up with CI testing, Cargo.toml metadata, and an updated README.md.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: CI Testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’re almost done, but we must make sure that everything that works today will
+    work tomorrow. That’s the job of CI (continuous integration) testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I set my CI tests to run every check in and once every month. If on GitHub,
+    create a file `.github/workflows/tests.yml`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you are only doing WASM, you can leave off the last two steps that relate
+    to embedded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: Why does the last test say `timeout-minutes: 3`? Because a failed embedded
+    test doesn’t return with failure. Instead, it goes into an endless loop. We catch
+    this with the timeout.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Metadata
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Rust allows you to mark your code as working on particular architectures and
+    environments. The convention is to use keyword and category metadata. Specifically,
+    add these keywords and [categories](https://crates.io/category_slugs) to your
+    `Cargo.toml` as appropriate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**README.md**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You should also update your `README.md` to tell people that you support WASM
+    and embedded. Here is what I added:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]toml'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[dependencies]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: range-set-blaze = { features = ["alloc"], default-features = false, version=VERSION
+    }
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, there you have it: nine rules for WASM and no_std ports in Rust. Rust is
+    a great language for native, WASM, and embedded programming. It offers speed,
+    safety, and access to thousands of useful crates. Follow these nine rules to run
+    your own Rust code almost everywhere.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: If you’re interested in future articles, please [follow me on Medium](https://medium.com/@carlmkadie).
+    I write on scientific programming in Rust and Python, machine learning, and statistics.
+    I tend to write about one article per month.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

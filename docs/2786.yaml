@@ -1,0 +1,397 @@
+- en: Quantize Llama models with GGUF and llama.cpp
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/quantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172?source=collection_archive---------0-----------------------#2023-09-04](https://towardsdatascience.com/quantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172?source=collection_archive---------0-----------------------#2023-09-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: GGML vs. GPTQ vs. NF4
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)[![Maxime
+    Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------)
+    [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----3612dfbcc172--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----3612dfbcc172---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3612dfbcc172--------------------------------)
+    ·9 min read·Sep 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3612dfbcc172&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&user=Maxime+Labonne&userId=dc89da634938&source=-----3612dfbcc172---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3612dfbcc172&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fquantize-llama-models-with-ggml-and-llama-cpp-3612dfbcc172&source=-----3612dfbcc172---------------------bookmark_footer-----------)![](../Images/ccb4e06ca80fad8db1f16998deaf34be.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to the massive size of Large Language Models (LLMs), quantization has become
+    an essential technique to run them efficiently. By reducing the precision of their
+    weights, you can save memory and speed up inference while preserving most of the
+    model’s performance. Recently, 8-bit and 4-bit quantization unlocked the possibility
+    of **running LLMs on consumer hardware**. Coupled with the release of Llama models
+    and parameter-efficient techniques to fine-tune them (LoRA, QLoRA), this created
+    a rich ecosystem of local LLMs that are now competing with OpenAI’s GPT-3.5 and
+    GPT-4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Besides the naive approach covered [in this article](https://medium.com/towards-data-science/introduction-to-weight-quantization-2494701b9c0c),
+    there are three main quantization techniques: NF4, GPTQ, and GGML. [NF4](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
+    is a static method used by QLoRA to load a model in 4-bit precision to perform
+    fine-tuning. [In a previous article](https://medium.com/towards-data-science/4-bit-quantization-with-gptq-36b0f4f02c34),
+    we explored the GPTQ method and quantized our own model to run it on a consumer
+    GPU. In this article, we will introduce the GGML technique, see how to quantize
+    Llama models, and provide tips and tricks to achieve the best results.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the code on [Google Colab](https://colab.research.google.com/drive/1pL8k7m04mgE5jo2NrjGi8atB0j_37aDD?usp=sharing)
+    and [GitHub](https://github.com/mlabonne/llm-course).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is GGML?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: GGML is a C library focused on machine learning. It was created by Georgi Gerganov,
+    which is what the initials “GG” stand for. This library not only provides foundational
+    elements for machine learning, such as tensors, but also a **unique binary format**
+    to distribute LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This format recently changed to **GGUF**. This new format is designed to be
+    extensible, so that new features shouldn’t break compatibility with existing models.
+    It also centralizes all the metadata in one file, such as special tokens, RoPE
+    scaling parameters, etc. In short, it answers a few historical pain points and
+    should be future-proof. For more information, you can read the specification [at
+    this address](https://github.com/philpax/ggml/blob/gguf-spec/docs/gguf.md). In
+    the rest of the article, we will call “GGML models” all models that either use
+    GGUF or previous formats.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GGML was designed to be used in conjunction with the [llama.cpp](https://github.com/ggerganov/llama.cpp)
+    library, also created by Georgi Gerganov. The library is written in C/C++ for
+    efficient inference of Llama models. It can load GGML models and **run them on
+    a CPU**. Originally, this was the main difference with GPTQ models, which are
+    loaded and run on a GPU. However, you can now offload some layers of your LLM
+    to the GPU with llama.cpp. To give you an example, there are 35 layers for a 7b
+    parameter model. This drastically speeds up inference and allows you to run LLMs
+    that don’t fit in your VRAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1839d4c1f226033fd5cef2957dfb7170.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If command-line tools are your thing, llama.cpp and GGUF support have been integrated
+    into many GUIs, like oobabooga’s [text-generation-web-ui](https://github.com/oobabooga/text-generation-webui),
+    [koboldcpp](https://github.com/LostRuins/koboldcpp), [LM Studio](https://lmstudio.ai/),
+    or [ctransformers](https://github.com/marella/ctransformers). You can simply load
+    your GGML models with these tools and interact with them in a ChatGPT-like way.
+    Fortunately, many quantized models are directly available on the [Hugging Face
+    Hub](https://huggingface.co/models?search=gg). You’ll quickly notice that most
+    of them are quantized by [TheBloke](https://huggingface.co/TheBloke), a popular
+    figure in the LLM community.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we will see how to quantize our own models and run them
+    on a consumer GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to quantize LLMs with GGML?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s look at the files inside of [TheBloke/Llama-2–13B-chat-GGML](https://huggingface.co/TheBloke/Llama-2-13B-chat-GGML/tree/main)
+    repo. We can see **14 different GGML models**, corresponding to different types
+    of quantization. They follow a particular naming convention: “q” + the number
+    of bits used to store the weights (precision) + a particular variant. Here is
+    a list of all the possible quant methods and their corresponding use cases, based
+    on model cards made by TheBloke:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`q2_k`: Uses Q4_K for the attention.vw and feed_forward.w2 tensors, Q2_K for
+    the other tensors.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q3_k_l`: Uses Q5_K for the attention.wv, attention.wo, and feed_forward.w2
+    tensors, else Q3_K'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q3_k_m`: Uses Q4_K for the attention.wv, attention.wo, and feed_forward.w2
+    tensors, else Q3_K'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q3_k_s`: Uses Q3_K for all tensors'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q4_0`: Original quant method, 4-bit.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q4_1`: Higher accuracy than q4_0 but not as high as q5_0\. However has quicker
+    inference than q5 models.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q4_k_m`: Uses Q6_K for half of the attention.wv and feed_forward.w2 tensors,
+    else Q4_K'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q4_k_s`: Uses Q4_K for all tensors'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q5_0`: Higher accuracy, higher resource usage and slower inference.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q5_1`: Even higher accuracy, resource usage and slower inference.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q5_k_m`: Uses Q6_K for half of the attention.wv and feed_forward.w2 tensors,
+    else Q5_K'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q5_k_s`: Uses Q5_K for all tensors'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q6_k`: Uses Q8_K for all tensors'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`q8_0`: Almost indistinguishable from float16\. High resource use and slow.
+    Not recommended for most users.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a rule of thumb, **I recommend using Q5_K_M** as it preserves most of the
+    model’s performance. Alternatively, you can use Q4_K_M if you want to save some
+    memory. In general, K_M versions are better than K_S versions. I cannot recommend
+    Q2 or Q3 versions, as they drastically decrease model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we know more about the quantization types available, let’s see how
+    to use them on a real model. You can execute the following code on a **free T4
+    GPU** on [Google Colab](https://colab.research.google.com/drive/1pL8k7m04mgE5jo2NrjGi8atB0j_37aDD?usp=sharing).
+    The first step consists of compiling llama.cpp and installing the required libraries
+    in our Python environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can download our model. We will use the model we fine-tuned [in the previous
+    article](https://medium.com/towards-data-science/a-beginners-guide-to-llm-fine-tuning-4bae7d4da672),
+    `[mlabonne/EvolCodeLlama-7b](https://huggingface.co/mlabonne/EvolCodeLlama-7b)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This step can take a while. Once it’s done, we need to convert our weight to
+    GGML FP16 format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we can quantize the model using one or several methods. In this case,
+    we will use the Q4_K_M and Q5_K_M methods I recommended earlier. This is the only
+    step that actually requires a GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our two quantized models are now **ready for inference**. We can check the size
+    of the bin files to see how much we compressed them. The FP16 model takes up 13.5
+    GB, while the Q4_K_M model takes up 4.08 GB (3.3 times smaller) and the Q5_K_M
+    model takes up 4.78 GB (2.8 times smaller).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use llama.cpp to efficiently run them. Since we’re using a GPU with 16
+    GB of VRAM, we can offload every layer to the GPU. In this case, it represents
+    35 layers (7b parameter model), so we’ll use the `-ngl 35` parameter. In the following
+    code block, we'll also input a prompt and the quantization method we want to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s ask the model “Write a Python function to print the nth Fibonacci numbers”
+    using the Q5_K_M method. If we look at the logs, we can confirm that we successfully
+    offloaded our layers thanks to the line “llm_load_tensors: offloaded 35/35 layers
+    to GPU”. Here is the code the model generated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This wasn’t a very complex prompt, but it successfully produced a working piece
+    of code in no time. With llama.cpp, you can use your local LLM as an assistant
+    in a terminal using the interactive mode (`-i` flag). Note that this also works
+    on Macbooks with Apple's Metal Performance Shaders (MPS), which is an excellent
+    option to run LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we can push our quantized model to a new repo on the Hugging Face Hub
+    with the “-GGUF” suffix. First, let’s log in and modify the following code block
+    to match your username.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we can push our quantized model to a new repo on the Hugging Face Hub
+    with the "-GGUF" suffix. First, let's log in and modify the following code block
+    to match your username. You can enter your Hugging Face token ([https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens))
+    in Google Colab's "Secrets" tab. We use the `allow_patterns` parameter to only
+    upload GGUF models and not the entirety of the directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have successfully quantized, run, and pushed GGML models to the Hugging Face
+    Hub! In the next section, we will explore how GGML actually quantize these models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization with GGML
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The way GGML quantizes weights is not as sophisticated as GPTQ’s. Basically,
+    it groups blocks of values and rounds them to a lower precision. Some techniques,
+    like Q4_K_M and Q5_K_M, implement a **higher precision for critical layers**.
+    In this case, every weight is stored in 4-bit precision, with the exception of
+    half of the attention.wv and feed_forward.w2 tensors. Experimentally, this mixed
+    precision proves to be a good tradeoff between accuracy and resource usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we look into the [ggml.c file](https://github.com/ggerganov/ggml/blob/master/src/ggml.c),
+    we can see how the blocks are defined. For example, the `block_q4_0` structure
+    is defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: In GGML, weights are processed in blocks, each consisting of 32 values. For
+    each block, a scale factor (delta) is derived from the largest weight value. All
+    weights in the block are then scaled, quantized, and packed efficiently for storage
+    (nibbles). This approach significantly reduces the storage requirements while
+    allowing for a relatively simple and deterministic conversion between the original
+    and quantized weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we know more about the quantization process, we can compare the results
+    with NF4 and GPTQ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NF4 vs. GGML vs. GPTQ
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Which technique is better for 4-bit quantization? To answer this question,
+    we need to introduce the different backends that run these quantized LLMs. For
+    GGML models, llama.cpp with Q4_K_M models is the way to go. For GPTQ models, we
+    have two options: [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ) or [ExLlama](https://github.com/turboderp/exllama).
+    Finally, NF4 models can directly be run in transformers with the `--load-in-4bit`
+    flag.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Oobabooga ran multiple experiments in an excellent [blog post](https://oobabooga.github.io/blog/posts/perplexities/)
+    that compare different models in terms of perplexity (lower is better):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5148511b4f0101b11c4ccb8546403ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Based on these results, we can say that GGML models have a slight advantage
+    in terms of perplexity. The difference is not particularly significant, which
+    is why it is better to focus on the generation speed in terms of tokens/second.
+    The best technique depends on your GPU: if you have enough VRAM to fit the entire
+    quantized model, **GPTQ with ExLlama** will be the fastest. If that’s not the
+    case, you can offload some layers and use **GGML models with llama.cpp** to run
+    your LLM.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we introduced the GGML library and the new GGUF format to efficiently
+    store these quantized models. We used it to **quantize our own Llama model** in
+    different formats (Q4_K_M and Q5_K_M). We then ran the GGML model and pushed our
+    bin files to the Hugging Face Hub. Finally, we delved deeper into GGML’s code
+    to understand how it actually quantizes the weights and compared it to NF4 and
+    GPTQ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization is a formidable vector to democratize LLMs by lowering the cost
+    of running them. In the future, mixed precision and other techniques will keep
+    improving the performance we can achieve with quantized weights. Until then, I
+    hope you enjoyed reading this article and learned something new.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in more technical content around LLMs, [follow me on Medium](https://medium.com/@mlabonne).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Articles about quantization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----3612dfbcc172--------------------------------)
+    [## Part 1: Introduction to Weight Quantization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing the size of Large Language Models with 8-bit quantization
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----3612dfbcc172--------------------------------)
+    [](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----3612dfbcc172--------------------------------)
+    [## Part 2: 4-bit Quantization with GPTQ'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantize your own LLMs using AutoGPTQ
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----3612dfbcc172--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Learn more about machine learning and support my work with one click — become
+    a Medium member here:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne/membership?source=post_page-----3612dfbcc172--------------------------------)
+    [## Join Medium with my referral link — Maxime Labonne'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@mlabonne/membership?source=post_page-----3612dfbcc172--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,481 @@
+- en: 'Similarity Search, Part 1: kNN & Inverted File Index'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/similarity-search-knn-inverted-file-index-7cab80cc0e79?source=collection_archive---------1-----------------------#2023-04-28](https://towardsdatascience.com/similarity-search-knn-inverted-file-index-7cab80cc0e79?source=collection_archive---------1-----------------------#2023-04-28)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Introduction to similarity search with kNN and its acceleration with inverted
+    file.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----7cab80cc0e79--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----7cab80cc0e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cab80cc0e79--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7cab80cc0e79--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----7cab80cc0e79--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-knn-inverted-file-index-7cab80cc0e79&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----7cab80cc0e79---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cab80cc0e79--------------------------------)
+    ·9 min read·Apr 28, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cab80cc0e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-knn-inverted-file-index-7cab80cc0e79&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----7cab80cc0e79---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7cab80cc0e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-knn-inverted-file-index-7cab80cc0e79&source=-----7cab80cc0e79---------------------bookmark_footer-----------)![](../Images/451ba5a7aab8a570f7a67d387bf5fc3d.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: S**imilarity search** is a problem where given a query the goal is to find the
+    most similar documents to it among all the database documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In data science, similarity search often appears in the NLP domain, search engines
+    or recommender systems where the most relevant documents or items need to be retrieved
+    for a query. Normally, documents or items are represented in the form of texts
+    or images. However, machine learning algorithms cannot directly work with raw
+    texts or images, which is why documents and items are usually preprocessed and
+    stored as **vectors** of numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes each component of a vector can store a semantic meaning. In this case,
+    these representations are also called **embeddings**. Such embeddings can have
+    hundreds of dimensions and their quantity can reach up to millions! Because of
+    such huge numbers, any information retrieval system must be capable of rapidly
+    detecting relevant documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In machine learning, a vector is also referred to as an **object** or **point**.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Index
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To accelerate the search performance, a special data structure is built on top
+    of dataset embeddings. Such a data structure is called **index**. There has been
+    a lot of research in this field and many types of indexes have been evolved. Before
+    choosing an index to apply for a certain task, it is necessary to understand how
+    it operates under the hood since each index serves a different purpose and comes
+    with its own pros and cons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will have a look at the most naive approach — **kNN**. Based
+    on kNN, we will switch to **inverted file** — an index used for a more scalable
+    search that can accelerate the search procedure several times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: kNN
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**kNN** is the simplest and the most naive algorithm for similarity search.
+    Consider a dataset of vectors and a new query vector *Q*. We would like to find
+    the top *k* dataset vectors which are the most similar to *Q*. The first aspect
+    to think about is how to measure a similarity (distance) between two vectors.
+    In fact, there are several similarity metrics to do it. Some of them are illustrated
+    in the figure below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4205e53775ecd0632f4afe4c159b7868.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Similarity metrics
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: kNN is one of the few algorithms in machine learning that does not require a
+    training phase. After choosing an appropriate metric, we can directly make predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For a new object, the algorithm exhaustively calculates distances to all the
+    other objects. After that, it finds *k* objects with the smallest distances and
+    returns them as a response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17b2fd6c8e14a87f9829ebcfaca17bd2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: kNN workflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously, by checking distances to all the dataset vectors, kNN guarantees
+    100% accurate results. However, such brute force approach is very inefficient
+    in terms of time performance. If a dataset consists of *n* vectors with *m* dimensions,
+    then for each of *n* vectors *O(m)* time is required to calculate the distance
+    to it from a query *Q* which results in *O(mn)* total time complexity. As we will
+    see later, there exist more efficient methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, there is no compression mechanism for the original vectors. Imagine
+    a dataset with a billions of objects. It would probably be impossible to store
+    all of them in RAM!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29a705c831ea8e2a323f7552749caa1b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'kNN performance. Having 100% accuracy and no training phase results in exhaustive
+    search during the inference and no-memory compression of vectors. Note: this type
+    of diagram shows relative comparison of different algorithms. Depending on a situation
+    and chosen hyperparameters, the performance may vary.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Application
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'kNN has a limited application scope and should be used only in one of the following
+    scenarios:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset size or embedding dimensionality is relatively small. This aspect
+    makes sure that the algorithm still performs fast.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The required accuracy of the algorithm must be 100%. In terms of accuracy, there
+    is no other nearest neighbours algorithm which can outperform kNN.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detection of a person based on his or her fingerprints is an example of a problem
+    where 100% accuracy is required. If the person has committed a crime and left
+    his fingerprints, it is vital to retrieve only the correct results. Otherwise,
+    if the system is not 100% reliable, then another person can be found guilty of
+    a crime which is a very critical error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Basically, there are two main ways to improve kNN (which we will discuss later):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reduce the search scope.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reduce the vectors’ dimensionality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When using one of these two approaches, we will not be performing an exhaustive
+    search again. Such algorithms are called **approximate nearest neighbours (ANN)**
+    because they do not guarantee 100% accurate results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inverted File Index
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**“Inverted index** (also referred to as a **postings list**, **postings file**,
+    or **inverted file**) is a database index storing a mapping from content, such
+    as words or numbers, to its locations in a table, or in a document or a set of
+    documents” — Wikipedia'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: When performing a query, the hash function of the query is computed and mapped
+    values from the hash table are taken. Each of these mapped values contains its
+    own set of potential candidates which then are fully checked on a condition to
+    be the nearest neighbour for the query. By doing so, the search scope of all database
+    vectors is reduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51ba64fc16fa1491e565d610b242d177.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inverted file index workflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are different implementations of this index depending on how hash functions
+    are computed. The implementation we are going to look at is the one that uses
+    **Voronoi diagrams** (or **Dirichlet tessellation**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The idea of the algorithm is to create several non-intersecting regions to which
+    each dataset point will belong. Each region has its own centroid which points
+    to the center of that region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes **Voronoi regions** are referred to as **cells** or **partitions**.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/48380f868bba90119ee7108e5ff65b08.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a Voronoi diagram. White points are centers of respective partitions
+    which contain a set of candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main property of Voronoi diagrams is that the distance from a centroid to
+    any point of its region is less than the distance from that point to another centroid.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When given a new object, distances to all the centroids of Voronoi partitions
+    are calculated. Then the centroid with the lowest distance is chosen and vectors
+    contained in this partition are then taken as candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fce8e2a887cf3367fc3eb36fa88ca718.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: By a given query we search for the nearest centroid (located in the green zone)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ultimately, by computing the distances to the candidates and choosing the top
+    *k* nearest of them, the final answer is returned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75d38fc65edd40656193b2f1a8040ec4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finding the nearest neighbour in the selected region
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, this approach is much faster than the previous one as we do
+    not have to look through all the dataset vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edge problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With the increase in search speed, inverted file comes with a downside: it
+    does not guarantee that the found object will always be the nearest.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the figure below we can see such a scenario: the actual nearest neighbour
+    is located in the red region but we are selecting candidates only from the green
+    zone. Such a situation is called the **edge problem**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1f1b2a0a2066e904df3b7b357469704.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Edge problem
+  prefs: []
+  type: TYPE_NORMAL
+- en: This case typically occurs when the queried object is located near the border
+    with another region. To reduce the number of errors in such cases, we can increase
+    the search scope and choose several regions to search for candidates based on
+    the top *m* closest centroids to the object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a4ccefb2576c2eb6f79749b89d4df8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Searching for nearest neighbours within several regions (m = 3)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The more regions are explored, the more accurate results are and the more time
+    it takes to compute them.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Application
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Despite the edge problem, inverted file shows decent results in practice. It
+    is perfect to utilize in cases where we want to trade-off a little decrease in
+    the accuracy for achieving speed growth several times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the use-case examples is a content-based recommender system. Imagine
+    it recommends a movie to a user based on other movies he watched in the past.
+    The database contains a million movies to choose from.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By using kNN, the system indeed chooses the most relevant movie for a user and
+    recommends it. However, the time required to perform the query is very long.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let us assume that with inverted file index, the system recommends the 5-th
+    most relevant movie which is probably the case in real life. The search time is
+    20 times faster than kNN.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'From the user experience, it will be very hard to distinguish between the quality
+    result of these two recommendations: the 1-st and the 5-th most relevant results
+    are both good recommendations from a million of possible movies. The user will
+    probably be happy with any of these recommendations. From the time perspective,
+    inverted file is, obviously, the winner. That is why in this situation it is better
+    to use the latter approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2511a8d8682cf99383f3d628ccc4f4ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inverted file index performance. Here we slightly reduce the accuracy for achieving
+    a higher speed during the inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Faiss implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[**Faiss**](https://github.com/facebookresearch/faiss) (Facebook AI Search
+    Similarity) is a Python library written in C++ used for optimised similarity search.
+    This library presents different types of indexes which are data structures used
+    to efficiently store the data and perform queries.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Based on the information from the [Faiss documentation](https://faiss.ai), we
+    will see how indexes are created and parametrized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: kNN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Indexes implementing the kNN approach are referred to as **flat** in Faiss
+    because that they do not compress any information. They are the only indexes that
+    guarantee the correct search result. Actually there exist two types of flat indexes
+    in Faiss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*IndexFlatL2*. The similarity is calculated as Euclidean distance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*IndexFlatIP*. The similarity is calculated as an inner product.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Both of these indexes require a single parameter **d** in their constructors:
+    the data dimension. These indexes do not have any tunable parameters.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7c95b54cdc224f68c942727d7552b88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Faiss implementation of IndexFlatL2 and IndexFlatIP
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4 bytes are required to store a single component of a vector. Therefore, to
+    store a single vector of dimensionality *d, 4 * d* bytes are required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf6a38cc71459bd1317b705373914496.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inverted file index
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For described inverted file, Faiss implements the class *IndexIVFFlat*. As in
+    the case with kNN, the word “*Flat*” indicates that there is no decompression
+    of original vectors and they are fully stored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To create this index, we first need to pass a quantizer — an object that will
+    determine how database vectors will be stored and compared.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*IndexIVFFlat* has 2 important parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**nlist**: defines a number of regions (Voronoi cells) to create during training.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**nprobe**: determines how many regions to take for the search of candidates.
+    Changing nprobe parameter does not require retraining.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e689102761b3812784f4ca933ed7c552.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Faiss implementation of IndexIVFFlat
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As in the previous case, we need *4 * d* bytes to store a single vector. But
+    now we also have to store information about Voronoi regions to which dataset vectors
+    belong to. In Faiss implementation, this information takes 8 bytes per vector.
+    Therefore, the memory required to store a single vector is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6584546fe377cd8f1a1faef2a7b5cca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have gone through two base algorithms in similarity search. Effectively naive
+    kNN should almost be never used for machine learning applications because of its
+    bad scalability except for specific cases. On the other hand, inverted file provides
+    good heuristics for accelerated search whose quality can be improved by tuning
+    its hyperparameters. The search performance can still be enhanced from different
+    perspectives. In the next part of this article series, we will have a look at
+    one of such methods designed to compress dataset vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/similarity-search-product-quantization-b2a1a6397701?source=post_page-----7cab80cc0e79--------------------------------)
+    [## Similarity Search, Part 2: Product Quantization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn a powerful technique to effectively compress large data
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/similarity-search-product-quantization-b2a1a6397701?source=post_page-----7cab80cc0e79--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Inverted Index | Wikipedia](https://en.wikipedia.org/wiki/Inverted_index)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss documentation](https://faiss.ai)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss repository](https://github.com/facebookresearch/faiss)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Summary of Faiss indexes](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Guideline for choosing an index](https://github.com/facebookresearch/faiss/wiki/Guidelines-to-choose-an-index)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

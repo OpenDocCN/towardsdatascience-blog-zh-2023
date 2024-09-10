@@ -1,0 +1,273 @@
+- en: An Accessible Derivation of Linear Regression
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/an-accessible-derivation-of-linear-regression-69fa6aefbd93?source=collection_archive---------8-----------------------#2023-08-23](https://towardsdatascience.com/an-accessible-derivation-of-linear-regression-69fa6aefbd93?source=collection_archive---------8-----------------------#2023-08-23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The math behind the model, from additive assumptions to pseudoinverse matrices
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://william-caicedo.medium.com/?source=post_page-----69fa6aefbd93--------------------------------)[![William
+    Caicedo-Torres, PhD](../Images/06123561570e6a998e8d1c47808fc6e2.png)](https://william-caicedo.medium.com/?source=post_page-----69fa6aefbd93--------------------------------)[](https://towardsdatascience.com/?source=post_page-----69fa6aefbd93--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----69fa6aefbd93--------------------------------)
+    [William Caicedo-Torres, PhD](https://william-caicedo.medium.com/?source=post_page-----69fa6aefbd93--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7a925ed40bb4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-accessible-derivation-of-linear-regression-69fa6aefbd93&user=William+Caicedo-Torres%2C+PhD&userId=7a925ed40bb4&source=post_page-7a925ed40bb4----69fa6aefbd93---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----69fa6aefbd93--------------------------------)
+    ·9 min read·Aug 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F69fa6aefbd93&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-accessible-derivation-of-linear-regression-69fa6aefbd93&user=William+Caicedo-Torres%2C+PhD&userId=7a925ed40bb4&source=-----69fa6aefbd93---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F69fa6aefbd93&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fan-accessible-derivation-of-linear-regression-69fa6aefbd93&source=-----69fa6aefbd93---------------------bookmark_footer-----------)![](../Images/e5a0163271c749e55718fb68f4f0f088.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Saad Ahmad](https://unsplash.com/@saadahmad_umn?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Technical disclaimer****: It is possible to derive a model without normality
+    assumptions. We’ll go down this route because it’s straightforward enough to understand
+    and by assuming normality of the model’s output, we can reason about the uncertainty
+    of our predictions.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post is intended for people who are already aware of what linear regression
+    is (and maybe have used it once or twice) and want a more principled understanding
+    of the math behind it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some background in basic probability (probability distributions, joint probability,
+    mutually exclusive events), linear algebra, and stats is probably required to
+    make the most of what follows. Without further ado, here we go:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The machine learning world is full of amazing connections: the exponential
+    family, regularization and prior beliefs, KNN and SVMs, Maximum Likelihood and
+    Information Theory — it’s all connected! (I love [Dark](https://www.themoviedb.org/tv/70523-dark)).
+    This time we’ll discuss how to derive another one of the members of the exponential
+    family: the Linear Regression model, and in the process we’ll see that the Mean
+    Squared Error loss is theoretically well motivated. As with any regression model,
+    we’ll be able to use it to predict numerical, continuous targets. It’s a simple
+    yet powerful model that happens to be one of the workhorses of statistical inference
+    and experimental design. However we will be concerned only with its usage as a
+    predictive tool. No pesky inference (and God forbid, causal) stuff here.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alright, let us begin. We want to predict something based on something else.
+    We’ll call the ***predicted*** thing y and the ***something******else*** x. As
+    a concrete example, I offer the following toy situation: You are a credit analyst
+    working in a bank and you’re interested in automatically finding out the right
+    credit limit for a bank customer. You also happen to have a dataset pertaining
+    to past clients and what credit limit (the ***predicted*** thing) was approved
+    for them, together with some of their features such as demographic info, past
+    credit performance, income, etc. (the ***something else***).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So we have a great idea and write down a model that explains the credit limit
+    in terms of those features available to you, with the model’s main assumption
+    being that each feature contributes something to the observed output in an additive
+    manner. Since the credit stuff was just a motivating (and contrived) example,
+    let’s go back to our pure math world of spherical cows, with our model turning
+    into something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48fafb4f29622acec9fdb9e608c789db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We still have the predicted stuff (y) and the something else we use to predict
+    it (x). We concede that some sort of noise is unavoidable (be it by virtue of
+    imperfect measuring or our own blindness) and the best we can do is to assume
+    that the model behind the data we observe is stochastic. The consequence of this
+    is that we might see slightly different outputs for the same input, so instead
+    of neat point estimates we are “stuck” with a probability distribution over the
+    outputs (y) conditioned on the inputs (x):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/524edb479fcf4dda6233d7a024390d13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Every data point in y is replaced by a little bell curve, whose mean lies in
+    the observed values of y, and has some variance which we don’t care about at the
+    moment. Then our little model will take the place of the distribution mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assuming all those bell curves are actually normal distributions and their means
+    (data points in y) are independent from each other, the (joint) probability of
+    observing the dataset is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab47a367efd762543f8daa2199a634c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Logarithms and some algebra to the rescue:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3e255bf5869558a0fb27f75dcec3f5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Logarithms are cool, aren’t they? Logs transform multiplication into sum, division
+    into subtraction, and powers into multiplication. Quite handy from both algebraic
+    and numerical standpoints. Getting rid of constant stuff, which is irrelevant
+    in this case, we arrive to the following maximum likelihood problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e917197b615317260addf6c89c1dd5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Well, that’s the same as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c32bb978408caf4f0cae950f0144b883.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The expression we are about to minimize is something very close to the famous
+    **Mean Square Error** loss. In fact, for optimization purposes they’re equivalent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what now? This minimization problem can be solved exactly using derivatives.
+    We’ll take advantage of the fact that the loss is quadratic, which means convex,
+    which means one global minima; allowing us to take its derivative, set it to zero
+    and solve for theta. Doing this we’ll find the value of the parameters theta that
+    makes the derivative of the loss zero. And why? because it is precisely at the
+    point where the derivative is zero, that the loss is at its minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To make everything somewhat simpler, let’s express the loss in vector notation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e9f4d49f8aaa407c62dc74d2ccc4667.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, X is an *NxM* matrix representing our whole dataset of N examples and
+    M features and y is a vector containing the expected responses per training example.
+    Taking the derivative and setting it to zero we get
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/287c5728c06bbd5fbe61a029794a0c3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There you have it, the solution to the optimization problem we have cast our
+    original machine learning problem into. If you go ahead and plug those parameter
+    values into your model, you’ll have a trained ML model ready to be evaluated using
+    some holdout dataset (or maybe through cross-validation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you think that final expression looks an awful lot like the solution of a
+    linear system,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e60393dc618d09b9412c625b72840dde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: it’s because it does. The extra stuff comes from the fact that for our problem
+    to be equivalent to a vanilla linear system, we’d need an equal number of features
+    and training examples so we can invert X. Since that’s seldom the case we can
+    only hope for a “best fit” solution — in some sense of best — resorting to the
+    Moore-Penrose Pseudoinverse of X, which is a generalization of the good ol’ inverse
+    matrix. The associated [*wikipedia*](https://en.wikipedia.org/wiki/Moore–Penrose_inverse#Definition)
+    entry makes for a fun reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Small Incursion into Regularization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'From now on I’ll assume you may have heard the term “regularization” somewhere
+    and maybe you know what it means. In any case I’ll tell you how I understand it:
+    regularization is anything you do to a model that makes its out-of-sample performance
+    better at the expense of a worse in-sample performance. Why is this even a thing?
+    because in the end, out of sample (i.e. real life) performance is what matters
+    — no one is gonna care how low your training error is, or how amazing your AUC
+    is on the training set unless your model performs comparatively well in production.
+    And we have found that if we are not careful we will run into something called
+    overfitting, where your model memorizes the training set all the way down to the
+    noise, becoming potentially useless for out of sample predictions. We also know
+    that there is a trade-off between model complexity and out of sample performance
+    (Vapnik’s statistical learning theory) and regularization can be seen as an attempt
+    to keep model complexity under control in the hope of achieving better generalization
+    abilities (here generalization is another name for out of sample performance).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Regularization can take many forms, but for the purposes of this article we’ll
+    only discuss one approach that is often used for linear regression models. Remember
+    I said that with regularization we are trying to keep complexity under control,
+    right? Well, unwanted complexity can creep in mainly via two ways: 1\. too many
+    input features and 2\. large values for their corresponding theta values. It turns
+    out that something called L2 regularization can help with both. Remember our loss?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/89c6726caace2f5db0163487734d7b21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'we were only concerned to minimize the squared differences between predicted
+    and observed values of y, without regard for anything else. Such myopic focus
+    could be a problem because you could in principle game the system and keep adding
+    in features till the error is minuscule, even if those extra features have nothing
+    to do with the signal we are trying to learn. If we had perfect knowledge about
+    the things that are relevant for our problem, we wouldn’t include useless features!
+    (to be fair we wouldn’t be using machine learning on the first place but i digress).
+    To compensate for our ignorance and mitigate the risk of introducing said unwanted
+    complexity, we’ll add an extra term to the loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0060ad42cb1aafd84f30553538c2a73d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What does that do, you might ask. I’ll tell you — we’ve just introduced an
+    incentive to keep the magnitude of the parameters as close to zero as possible.
+    In other words we want to keep complexity at a minimum. Now instead of having
+    just one objective (the minimization of prediction errors), we’ve got one more
+    (minimization of complexity), and the solution for the overall problem will have
+    to balance both. We do have a say in how that balance looks like, through that
+    shiny new lambda coefficient: the larger it is, the more importance we give to
+    the low complexity target.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s a lot of talk. Let’s see what the extra term does to the optimal theta.
+    The new loss in vectorized form is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b7bcdcf0721cc6a4002890b98aa5a45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'taking its derivative, setting it to zero and solving for theta:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63ad7a2d5ae456ee7c203fe6acc9a825.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'It turns out that the new solution is not too different from the previous one.
+    We’ve got an extra diagonal matrix which is going to take care of any rank issues
+    that would prevent us from inverting the XTX matrix, by adding some “jitter” into
+    the mix. That illuminates another way in which unnecessary complexity might be
+    introduced: collinear features, that is, features that are linear transformations
+    (scaled and shifted versions) of other features. As far as linear regression cares,
+    two collinear features are the same feature, count as only one column, and the
+    extra feature doesn’t add any new information to help train our model; rendering
+    the XTX matrix rank-deficient, i.e. impossible to invert. With regularization,
+    in every row of XTX, a different column is affected by lambda, the jitter — stopping
+    any possible collinearity and making it full-rank. We see that adding random crap
+    as predictors could actually ruin the whole learning process. Thankfully regularization
+    is here to save the day (please don’t misconstrue my praise of regularization
+    as an invitation to be careless when selecting your predictors — it’s not).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So there you have it, a regularized linear regression model ready to use. Where
+    do we go from here? well, you could expand on the idea that regularization encodes
+    a prior belief about the parameter space, revealing its connection with Bayesian
+    inference. Or you could double down on its connection with Support Vector Machines
+    and eventually with non-parametric models like KNN. Also, you could ponder about
+    the fact that all those fancy gradients from linear and logistic regression look
+    suspiciously similar. Rest assured I’ll be touching on those subjects in a future
+    post!
+  prefs: []
+  type: TYPE_NORMAL

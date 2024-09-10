@@ -1,0 +1,422 @@
+- en: A Site-Search Engineer’s Journal Approaching Relevance Challenges in Elasticsearch
+    Query Construction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5?source=collection_archive---------17-----------------------#2023-06-13](https://towardsdatascience.com/a-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5?source=collection_archive---------17-----------------------#2023-06-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Working with Elasticsearch is like playing Lego
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)[![Quý
+    Đinh](../Images/40c7da5cfcc56d79d2b6f45ea70a26ee.png)](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------)
+    [Quý Đinh](https://medium.com/@quy.dinh3195?source=post_page-----1eca29283da5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F44a47bf76e4e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&user=Qu%C3%BD+%C4%90inh&userId=44a47bf76e4e&source=post_page-44a47bf76e4e----1eca29283da5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1eca29283da5--------------------------------)
+    ·15 min read·Jun 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1eca29283da5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&user=Qu%C3%BD+%C4%90inh&userId=44a47bf76e4e&source=-----1eca29283da5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1eca29283da5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-site-search-engineers-journal-approaching-relevance-challenges-in-elasticsearch-query-1eca29283da5&source=-----1eca29283da5---------------------bookmark_footer-----------)![](../Images/f943af89e64f6e075864489a6e3eb919.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Mourizal Zativa](https://unsplash.com/@mourimoto?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intro
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Over the last 22 months I have been working as a site-search engineer who uses
+    Elasticsearch to help improve relevance in our restaurant platform. I have deployed
+    in total 83 releases including 3 major versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With roughly one release per week, I can say that not only our search engine
+    is much better than it was 2 years ago, but I have also learned quite a lot. Though
+    still far from a great search engine, here are some things worth sharing in my
+    opinion. More importantly, I really want to get feedback about them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This blog post is to provide an approach to design the Elasticsearch query template
+    to deal with common site-search problems including searching for matches across
+    different fields, boosting results and testing. Together we will identify issues
+    with the default approach and then gradually come up with a new one to address
+    the issues altogether.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This Github repo: [https://github.com/dvquy13/elasticsearch-sharing](https://github.com/dvquy13/elasticsearch-sharing)
+    contains the examples and code discussed in this post.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Main
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now play the role of a search engineer for a restaurant platform, which allows
+    diners to discover and make reservation for their next meals. We haven’t had much
+    experience, but luckily the app does not require accuracy level of Google from
+    the start. The key is to make gradual visible progresses!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alright, let’s dive into it. First off, we make sure user can search for restaurant
+    by name. Here we can rely on the simple default `query-match` to get the job done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above snippet can be run at Kibana’s Dev Tools > Console, which will be
+    available at your `localhost:5601` if you follow the repo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code is self-explained. We ask Elasticsearch to return restaurants whose
+    name contains `vietnamese`. And we get back one result for `Vietnamese Pho Noodle`.
+    No problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But we quickly find out that name is not the only place we want to look for
+    when user submit a query. Given keyword`vietnamese` we should also return the
+    restaurant `Sa Bi Chuong`, because it’s a Vietnamese restaurant as tagged in the
+    `cuisine`. A `multi_match` query allows us to do exactly that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Problems with the default TFIDF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Notice the above scores. The first one is like 4 times higher than the second,
+    indicating that it’s much more relevant given query `vietnamese`. One might have
+    an assumption that because matching at multiple fields will make the score higher.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whenever we have doubts, we can use Elasticsearch `explain` to get a detailed
+    breakdown of its scoring components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Above we can see that Vietnamese Pho Noodle is on top because of the default
+    implementation of TFIDF that penalizes the matching at cuisine field because there
+    are multiple restaurants with `cuisine=Vietnamese` while there are only one restaurant
+    with `name=Vietnamese`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Diving into the `_explanation` block, we realize that score difference originates
+    from the TFIDF matching output for `restaurant_name`. This is expected as the
+    algorithm assumes that a keyword is a better signal if it is not common and usually
+    found in a lot of documents (sort of a solution to automatically handle stopwords).
+    In our examples, both the restaurants have cuisine `Vietnamese` so according to
+    TFIDF, that match does not say much about the relevance of the documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whether we should encourage this behavior is a question. Is it true that having
+    Vietnamese in the name make one restaurant more “Vietnamese” than the other?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another problem with TFIDF is that it takes into account the length of the field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can find the detailed and lengthy result in Appendix #1 at the end of the
+    post. In short, we see that the result ranks restaurant Vietnamese Pho first and
+    then Vietnamese Pho Noodle. Analyzing the component scores indicates that the
+    key difference is that Vietnamese Pho has `length=2` (words) while Vietnamese
+    Pho Noodle has `length=3`. It feels unintuitive since we know that the second
+    restaurant has higher rating, given that both, in practice, are equally matching
+    to user’s keyword.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reranking (boosting) with function_score
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we talk about `rating`, we can wrap our query with`function_score` to incorporate
+    that information to modify our matching scores, hence have a better control over
+    our ranking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The higher rating restaurant is on top now. But how about restaurant `Sa Bi
+    Chuong` with `rating=5`? It being the last result seems like we haven’t boosted
+    “enough”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We might start tinkering a bit more with `function_score` to make that happen.
+    Here is one of the implementation which models the boosting in a non-linear manner
+    to effectively apply a strong boost on documents with `rating=5`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We might ponder that: “Isn’t the function boosting now looking too arbitrary?
+    Will it work for other cases?”. Indeed, that’s the question we should ask ourselves.
+    Overtime, with more and more requirements, our query template will grow in complexity,
+    leading to conflicts between the modifications we make.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s move to the next example to illustrate what I mean by “conflict”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The complexity comes with fuzzy matching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While not vital, the ability to handle user’s typo is always a nice-to-have
+    feature, especially when they are now familiar with smart search engine like Google’s.
+    Elasticsearch has a built-in mechanism called `fuzzy matching`, which is configurable
+    with the option `fuzziness`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice that we just created a query template instead of running a query. We
+    can now invoke the query with paramaters, which is a nice feature Elasticsearch
+    introduces to make our code look less overwhelming. Like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above query returns our expected Vietnamese restaurant given a typo keyword
+    `vietnames`. Under the hood, fuzzy matching uses [Levenshtein edit distance](https://www.elastic.co/guide/en/elasticsearch/reference/8.7/query-dsl-fuzzy-query.html),
+    which measures similarity between strings by the number of modifications one make
+    to make one become another. In our example, we just need to add one letter `e`
+    at the end to make `vietnames` become `vietnamese`. Quite an easy task for the
+    algorithm. One might also argue that it’s quite easy for our developers as well.
+    2 lines of code and a new beautiful feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, the interesting bit lies elsewhere. One day, our sales team suddenly comes
+    to us with a complaint that search result is wrong. People are getting Japanese
+    BBQ restaurants over Korean ones even when they explicitly search for `kbbq` (which
+    is a common acronym for `korean bbq`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the restaurants:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To understand what is happening, we need to enable `explain=true` to see what
+    contributes to the final scores. As this time the output is too verbose, here
+    are the findings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The keyword matching score (before boosting) for the `Best BBQ in town` restaurant
+    is 0.8, less than the 1.2 of `Park Hang-seo's KBBQ`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So if no boosting applied, we will see `Park Hang-seo's KBBQ` restaurant ranks
+    at the first position
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But then the boosting from `rating` modifies the score, leading to the ordering
+    as we can see
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One way to frame the issue is that we have imperfect boosting. Say we have a
+    better formula that strikes the right balances, then the problem should be solved.
+    But it’s close to impossible to guarantee that the new formula will not cause
+    any other issues. We don’t want these kinds of issue creep into the system without
+    any notice and then some day being flagged out by stakeholders. We want to be
+    the first to be aware of those issues, especially whenever we make any changes.
+    Therefore, before discussing potential solutions, I hope we all agree that the
+    very next important thing we should do is (yes, you are probably thinking about
+    the same thing as I am) setting up a testing/evaluation mechanism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How should we create test cases for this search application?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: IMHO, the first challenge is about moving data. The queries and the documents
+    can both grow over time, so a static mock dataset might not be a very good representative
+    of the search relevance anymore after a month. The next bit is related to our
+    mindset. Sometimes we might need to think about whether we need 100% passed test
+    cases in order to fix this new very urgent issue. For example, there are cases
+    where if you fix some issues then the search result orderings of the other test
+    cases might alter a bit. If we hard-code the rankings, then we might sweat ourselves
+    trying to tweak our query template. But in practice a lot of the times we neither
+    don’t need the ranking to be exactly pre-defined nor we are perfectly sure about
+    which ordering is actually optimal. We should consider using a soft mechanism
+    where we quantify the relevance of the system and using threshold instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we look at how we can use Elasticsearch Ranking Evaluation API to implement
+    such evaluation scheme:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try to better our search by introducing changes that move the evaluation
+    score closer to the perfect 1.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our revised search model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before start designing a new query template, we can take a step back and really
+    think about how we should model the search engine. Below are the essentials:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exact matching will always surface on top of not-exact ones like fuzzy matching;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Exact matches does not take into account field length or word/document frequencies.
+    If two documents have the same exact match in a field, they should have the same
+    keyword matching score;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Within the same level of matching (whether exact or fuzzy), while the initial
+    keyword matching scores should be the same, they can be reranked by certain modifiers
+    such as distance, popularity, … However, the modified scores should not make the
+    final score to exceed the base score of the upper level, e.g. modifed fuzzy score
+    should not be greater than exact base score. This is to ensure the essential #1.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If you watch football, this resembles how the leagues such as Premiere League
+    rank their teams. No matter how much more goals the team L has scored compared
+    to team M’s or their head-to-head results, if team M has more points than team
+    M has a higher ranking. The other measures are for tie-breaker only.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This understanding can be then transferred to how we use Elasticsearch to express
+    our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One approach is to use `dis_max` query combined with `constant_score` query.
+    The idea is to categorize each type of matching into different levels of score
+    where one level will have twice the score of the below level. The documents fall
+    into one level of matching (tie) will be reranked by modifiers but eventually
+    the new scores will not exceed the upper base score. Here is the new query template:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we re-run the evaluation, we can observe that the normalized DCG metric
+    now has score equal to 1.0, denoting a perfect accuracy!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This blog post focuses on putting you in the shoe of an Elasticsearch engineer
+    who has to derive query templates that fit the needs of a site-search enginer.
+    We have briefly coverred the following topics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keyword matching with multiple fields
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understanding default Elasticsearch scoring
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Problems with the default TFIDF
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Boosting search results by attributes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fuzzy matching
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Elasticsearch query templateEvaluation with Rank Evaluation API
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Constructing query with `dis_max`and `constant_score`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Though definitely not optimal, I hope that parts of the blog post help you come
+    closer to utilize Elasticsearch to help solve your own problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I also much appreciate any comments or feedbacks. If you want to discuss more,
+    please comment on this post or open an issue in the Github repo: [https://github.com/dvquy13/elasticsearch-sharing](https://github.com/dvquy13/elasticsearch-sharing).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks all!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '#1: Detailed breakdown of default TFIDF matching where length of the field
+    value affect overall matching score'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE

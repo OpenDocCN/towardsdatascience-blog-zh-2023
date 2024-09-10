@@ -1,0 +1,395 @@
+- en: 'Mixed Effects Machine Learning for High-Cardinality Categorical Variables —
+    Part I: An Empirical Comparison of Different Methods'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-i-an-empirical-df0a43dce059?source=collection_archive---------11-----------------------#2023-07-07](https://towardsdatascience.com/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-i-an-empirical-df0a43dce059?source=collection_archive---------11-----------------------#2023-07-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why random effects are useful for machine learning models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@fabsig?source=post_page-----df0a43dce059--------------------------------)[![Fabio
+    Sigrist](../Images/f7bc2adc17255ae1efd0886a19ec202c.png)](https://medium.com/@fabsig?source=post_page-----df0a43dce059--------------------------------)[](https://towardsdatascience.com/?source=post_page-----df0a43dce059--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----df0a43dce059--------------------------------)
+    [Fabio Sigrist](https://medium.com/@fabsig?source=post_page-----df0a43dce059--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5b503a0c329&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-i-an-empirical-df0a43dce059&user=Fabio+Sigrist&userId=b5b503a0c329&source=post_page-b5b503a0c329----df0a43dce059---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----df0a43dce059--------------------------------)
+    ·10 min read·Jul 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdf0a43dce059&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-i-an-empirical-df0a43dce059&user=Fabio+Sigrist&userId=b5b503a0c329&source=-----df0a43dce059---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdf0a43dce059&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-i-an-empirical-df0a43dce059&source=-----df0a43dce059---------------------bookmark_footer-----------)![](../Images/e27c9e777e29c1064a414d99ae363e3b.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 1: Comparison of tree-boosting with and without random effects (“GPBoost”
+    vs. “LogitBoost”) for binary data and a categorical variable with varying cardinality.
+    **The higher the cardinality (= lower number of samples per level), the larger
+    is the outperformance (=decrease in test error) of a model with random effects**
+    — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: High-cardinality categorical variables are variables for which the number of
+    different levels is large relative to the sample size of a data set, or in other
+    words, there are few data points per level of a categorical variable. Machine
+    learning methods can have difficulties with high-cardinality variables. In this
+    article, we argue that random effects are an effective tool for modeling high-cardinality
+    categorical variables in machine learning models. In particular, we empirically
+    compare several versions of two of the most successful machine learning methods,
+    tree-boosting and deep neural networks, as well as linear mixed effects models
+    using multiple tabular data sets with high-cardinality categorical variables.
+    Our results show that, first, machine learning models with random effects perform
+    better than their counterparts without random effects, and, second, tree-boosting
+    with random effects outperforms deep neural networks with random effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Table of contents**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: · [1 Introduction](#1986)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [2 Random effects for modeling high-cardinality categorical variables](#9ecd)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [3 Comparison of different methods using real-world data sets](#ab90)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [4 Conclusion](#9bfc)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [References](#9aca)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A simple strategy for dealing with categorical variables is to use one-hot encoding
+    or dummy variables. But this approach often does not work well for high-cardinality
+    categorical variables due to the reasons described below. For neural networks,
+    a frequently adopted solution is entity embeddings [Guo and Berkhahn, 2016] which
+    map every level of a categorical variable into a low-dimensional Euclidean space.
+    For tree-boosting, a simple approach is to assign a number to every level of a
+    categorical variable, and then consider this as a one-dimensional numeric variable.
+    An alternative solution implemented in the `LightGBM` boosting library [Ke et
+    al., 2017] works by partitioning all levels into two subsets using an approximate
+    approach [Fisher, 1958] when finding splits in the tree-building algorithm. Further,
+    the `CatBoost` boosting library [Prokhorenkova et al., 2018] implements an approach
+    based on ordered target statistics calculated using random partitions of the training
+    data for handling categorical predictor variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2 Random effects for modeling high-cardinality categorical variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Random effects can be used as an effective tool for modeling high-cardinality
+    categorical variables. In the regression case with a single high-cardinality categorical
+    variable, a random effects model can be written as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba900ba4edc62246b80da8f488ab0c40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where j=1,…,ni is the sample index within level i with ni being the number of
+    samples for which the categorical variable attains level i, and i denotes the
+    level with q being the total number of levels of the categorical variable. The
+    total number of samples is thus n = n0 + n1 + … + nq. Such a model is also called
+    mixed effects model since it contains both fixed effects F(xij) and random effects
+    bi. xij are the fixed effects predictor variables or features. Mixed effects models
+    can be extended to other response variable distributions (e.g., classification)
+    and multiple categorical variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditionally, random effects were used in linear models in which it is assumed
+    that F is a linear function. In the last years, linear mixed effects models have
+    been extended to non-linear ones using random forest [Hajjem et al., 2014], tree-boosting
+    [Sigrist, [2022](https://www.jmlr.org/papers/v23/20-322.html), [2023a](https://ieeexplore.ieee.org/document/9759834)],
+    and most recently (in terms of first public preprint) deep neural networks [Simchoni
+    and Rosset, [2021](https://proceedings.neurips.cc/paper/2021/hash/d35b05a832e2bb91f110d54e34e2da79-Abstract.html),
+    [2023](https://www.jmlr.org/papers/v24/22-0501.html)]. In contrast to classical
+    independent machine learning models, the random effects introduce dependence among
+    samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why are random effects useful for high-cardinality categorical variables?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For high-cardinality categorical variables, there is little data for every level.
+    Intuitively, if the response variable has a different (conditional) mean for many
+    levels, traditional machine learning models (with, e.g., one-hot encoding, embeddings,
+    or simply one-dimensional numeric variables) may have problems with over- or underfitting
+    for such data. From the point of view of a classical bias-variance trade-off,
+    independent machine learning models may have difficulties balancing this trade-off
+    and finding an appropriate amount of regularization. For instance, overfitting
+    may occur which means that a model has a low bias but high variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Broadly speaking, random effects act as a prior, or regularizer, which models
+    the difficult part of a function, i.e., the part whose “dimension” is similar
+    to the total sample size, and, in doing so, provide an effective way for finding
+    a balance between over- and underfitting or bias and variance. For instance, for
+    a single categorical variable, random effects models will shrink estimates of
+    group intercept effects towards the global mean. This process is sometimes also
+    called “information pooling”. It represents a trade-off between completely ignoring
+    the categorical variable (= underfitting / high bias and low variance) and giving
+    every level in the categorical variable “complete freedom” in estimation (= overfitting
+    / low bias and high variance). Importantly, the amount of regularization, which
+    is determined by the variance parameters of the model, is learned from the data.
+    Specifically, in the above single-level random effects model, a (point) prediction
+    for the response variable for a sample with predictor variables xp and categorical
+    variable having level i is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a222d8c7f356c47b699dc508e821c912.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where F(xp) is the trained function evaluated at xp, σ²_1 and σ² are variance
+    estimates, and yi and Fi are sample means of yij and F(xij), respectively, for
+    level i. Ignoring the categorical variable would give the prediction yp = F(xp),
+    and a fully flexible model without regularization gives yp = F(xp) + ( yi — Fi).
+    I.e., the difference between these two extreme cases and the random effects model
+    is the shrinkage factor σ²_1 / (σ²/ni + σ²_1) (which goes to zero if the number
+    of samples ni for level i is large). Related to this, random effects models allow
+    for more efficient (i.e., lower variance) estimation of the fixed effects function
+    F(.) [Sigrist, 2022].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In line with this argumentation, Sigrist [2023a, Section 4.1] find in empirical
+    experiments that tree-boosting combined with random effects (“GPBoost”) outperforms
+    classical independent tree-boosting (“LogitBoost”) more, the lower the number
+    of samples per level of a categorical variable, i.e., the higher the cardinality
+    of a categorical variable. The results are reproduced above in Figure 1\. These
+    results are obtained by simulating binary classification data with 5000 samples,
+    a non-linear predictor function, and a categorical variable with successively
+    more levels, i.e., fewer samples per level; see Sigrist [2023a] for more details.
+    The results show that the difference in the test error of GPBoost and LogitBoost
+    is the larger, the fewer samples there are per level of the categorical variable
+    (= the higher the number of levels).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 Comparison of different methods using real-world data sets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the following, we compare several methods using multiple real-world data
+    sets with high-cardinality categorical variables. We use all the publicly available
+    tabular data sets from Simchoni and Rosset [2021, 2023] and also the same experimental
+    setting as in Simchoni and Rosset [2021, 2023]. In addition, we include the Wages
+    data set analyzed in Sigrist [2022].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We consider the following methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Linear’: linear mixed effects models'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`NN Embed’: deep neural networks with embeddings'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`LMMNN’: combining deep neural networks and random effects [Simchoni and Rosset,
+    2021, 2023]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`LGBM_Num’: tree-boosting by assigning a number to every level of categorical
+    variables and considering these as one-dimensional numeric variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`LGBM_Cat’: tree-boosting with the approach of `LightGBM` [Ke et al., 2017]
+    for categorical variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`CatBoost’: tree-boosting with the approach of `CatBoost` [Prokhorenkova et
+    al., 2018] for categorical variables'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`GPBoost’: combining tree-boosting and random effects [Sigrist, 2022, 2023a]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that, recently (version 1.6 and later), the `XGBoost` library [Chen and
+    Guestrin, 2016] has also implemented the same approach as `LightGBM` for handling
+    categorical variables. We do not consider this as a separate approach here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use the following data sets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/788213f92c9b8a0af74ff7efe79da785.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Table 1: Summary of data sets. n is the number of samples, p is the number
+    of predictor variables (excl. high-cardinality categorical variables), K is the
+    number of high-cardinality categorical variables, and ‘Cat. var.’ describes the
+    categorical variable(s) — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For all methods with random effects, we include random effects for every categorical
+    variable mentioned in Table 1 with no prior correlation among random effects.
+    The Rossmann, AUImport, and Wages data sets are longitudinal data sets. For these,
+    we also include linear and quadratic random slopes; see [Part III](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc)
+    of this series. See Simchoni and Rosset [2021, 2023] and Sigrist [2023b] for more
+    details on the data sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We perform 5-fold cross-validation (CV) on every data set with the test mean
+    squared error (MSE) to measure prediction accuracy. See Sigrist [2023b] for detailed
+    information on the experimental setting. Code for pre-processing the data with
+    instructions on how to download the data and code for running the experiments
+    can be found [here](https://github.com/fabsig/Compare_ML_HighCardinality_Categorical_Variables).
+    Pre-processed data for modeling can also be found on the above webpage for data
+    sets for which the license of the original source permits it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e70115790a2114b16bdc770634c2be48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Average relative difference to the lowest test MSE. The Wages data
+    set is not included for calculating this since not all methods were run on it
+    — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results are summarized in Figure 2 which shows average relative differences
+    to the lowest test MSE. This is obtained by first calculating the relative difference
+    of a test MSE of a method compared to the lowest MSE for every data set, and then
+    taking the average over all data sets. Detailed results can be found in [Sigrist
+    [2023b]](https://arxiv.org/abs/2307.02071). We observe that combined tree-boosting
+    and random effects (GPBoost) has the highest prediction accuracy with an average
+    relative difference to the best results of approx. 7%. The second best results
+    are obtained by the categorical variables approach of `LightGBM` (LGMB_Cat) and
+    neural networks with random effects (LMMNN) both having an average relative difference
+    to the best method of approx. 17%. CatBoost and linear mixed effects models perform
+    substantially worse having an average relative difference to the best method of
+    almost 50%. Given that [CatBoost is specifically designed to handle categorical
+    features](https://proceedings.neurips.cc/paper/2018/hash/14491b756b3a51daac41c24863285549-Abstract.html),
+    this is somewhat sobering. Overall worst perform neural networks with embeddings
+    having an average relative difference to the best result of more than 150%. Tree-boosting
+    with the categorical variables transformed to one-dimensional numeric variables
+    (LGBM_Num) performs slightly better with an average relative difference to the
+    best result of approximately 100%. In their online documentation, `LightGBM` recommends
+    [*“For a categorical feature with high cardinality, it often works best to treat
+    the feature as numeric” (as of July 6, 2023)*](https://lightgbm.readthedocs.io/en/latest/Advanced-Topics.html#categorical-feature-support).
+    We clearly come to a different conclusion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4 Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have empirically compared several methods on tabular data with high-cardinality
+    categorical variables. Our results show that, first, machine learning models with
+    random effects perform better than their counterparts without random effects,
+    and, second, tree-boosting with random effects outperforms deep neural networks
+    with random effects. While there may be several possible reasons for the latter
+    finding, this is in line with the recent work of Grinsztajn et al. [2022] who
+    find that tree-boosting outperforms deep neural networks (and also random forest)
+    on tabular data without high-cardinality categorical variables. Similarly, Shwartz-Ziv
+    and Armon [2022] conclude that tree-boosting “outperforms deep models on tabular
+    data.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [Part II](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492)
+    of this series, we will show how to apply the `[GPBoost](https://github.com/fabsig/GPBoost)`
+    [library](https://github.com/fabsig/GPBoost) with a demo using on one of the above-mentioned
+    real-world data sets. In [Part III](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc),
+    we will show how longitudinal, aka panel, data can be modeled with the `GPBoost`
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'T. Chen and C. Guestrin. XGBoost: A scalable tree boosting system. In Proceedings
+    of the 22nd acm sigkdd international conference on knowledge discovery and data
+    mining, pages 785–794\. ACM, 2016.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: W. D. Fisher. On grouping for maximum homogeneity. Journal of the American statistical
+    Association, 53(284):789–798, 1958.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: L. Grinsztajn, E. Oyallon, and G. Varoquaux. Why do tree-based models still
+    outperform deep learning on typical tabular data? In S. Koyejo, S. Mohamed, A.
+    Agarwal, D. Belgrave, K. Cho, and A. Oh, editors, Advances in Neural Information
+    Processing Systems, volume 35, pages 507–520\. Curran Associates, Inc., 2022.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: C. Guo and F. Berkhahn. Entity embeddings of categorical variables. arXiv preprint
+    arXiv:1604.06737, 2016.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A. Hajjem, F. Bellavance, and D. Larocque. Mixed-effects random forest for clustered
+    data. Journal of Statistical Computation and Simulation, 84(6):1313–1328, 2014.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'G. Ke, Q. Meng, T. Finley, T. Wang, W. Chen, W. Ma, Q. Ye, and T.-Y. Liu. LightGBM:
+    A highly efficient gradient boosting decision tree. In Advances in Neural Information
+    Processing Systems, pages 3149–3157, 2017.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'L. Prokhorenkova, G. Gusev, A. Vorobev, A. V. Dorogush, and A. Gulin. CatBoost:
+    unbiased boosting with categorical features. In Advances in Neural Information
+    Processing Systems, pages 6638–6648, 2018.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'R. Shwartz-Ziv and A. Armon. Tabular data: Deep learning is not all you need.
+    Information Fusion, 81:84–90, 2022.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: F. Sigrist. Gaussian Process Boosting. The Journal of Machine Learning Research,
+    23(1):10565–10610, 2022.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: F. Sigrist. Latent Gaussian Model Boosting. IEEE Transactions on Pattern Analysis
+    and Machine Intelligence, 45(2):1894–1905, 2023a.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: F. Sigrist. A Comparison of Machine Learning Methods for Data with High-Cardinality
+    Categorical Variables. arXiv preprint arXiv::2307.02071 2023b.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: G. Simchoni and S. Rosset. Using random effects to account for high-cardinality
+    categorical features and repeated measures in deep neural networks. Advances in
+    Neural Information Processing Systems, 34:25111–25122, 2021.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: G. Simchoni and S. Rosset. Integrating Random Effects in Deep Neural Networks.
+    Journal of Machine Learning Research, 24(156):1–57, 2023.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/fabsig/Compare_ML_HighCardinality_Categorical_Variables](https://github.com/fabsig/Compare_ML_HighCardinality_Categorical_Variables)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

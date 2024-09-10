@@ -1,0 +1,254 @@
+- en: Deep Dive into pandas Copy-on-Write Mode—Part II
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334?source=collection_archive---------6-----------------------#2023-08-17](https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334?source=collection_archive---------6-----------------------#2023-08-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Explaining how Copy-on-Write optimizes performance*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)[![Patrick
+    Hoefler](../Images/35ca9ef1100d8c93dbadd374f0569fe1.png)](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b023432a5334--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b023432a5334--------------------------------)
+    [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----b023432a5334--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----b023432a5334---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b023432a5334--------------------------------)
+    ·6 min read·Aug 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb023432a5334&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----b023432a5334---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb023432a5334&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334&source=-----b023432a5334---------------------bookmark_footer-----------)![](../Images/8a8f28224bd638244c9aa1f1dc06d8fa.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Joshua Brown](https://unsplash.com/@joshbrown?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/73YJpOGgi4E?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The [first post](https://medium.com/towards-data-science/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6)
+    explained how the Copy-on-Write mechanism works. It highlights some areas where
+    copies are introduced into the workflow. This post will focus on optimizations
+    that ensure that this won’t slow the average workflow down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We utilize a technique that pandas internals use to avoid copying the whole
+    DataFrame when it’s not necessary and thus, increase performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am part of the pandas core team and was heavily involved in implementing and
+    improving CoW so far. I am an open source engineer for [Coiled](https://www.coiled.io)
+    where I work on Dask, including improving the pandas integration and ensuring
+    that Dask is compliant with CoW.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removal of defensive copies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with the most impactful improvement. Many pandas methods performed
+    defensive copies to avoid side effects to protect against inplace modifications
+    later on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: There is no need to copy the data in `reset_index`, but returning a view would
+    introduce side effects when modifying the result, e.g. `df` would be updated as
+    well. Hence, a defensive copy is performed in `reset_index`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All these defensive copies are no longer there when Copy-on-Write is enabled.
+    This affects many methods. A full list can be found [here](https://pandas.pydata.org/docs/user_guide/copy_on_write.html#copy-on-write-optimizations).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, selecting a columnar subset of a DataFrame will now always return
+    a view instead of a copy as before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s look at what this means performance-wise when we combine some of these
+    methods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This creates a DataFrame with 30 columns, 3 different dtypes and 2 million
+    rows. Let’s execute the following method chain on this DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: All of these methods perform a defensive copy without CoW enabled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Performance without CoW:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Performance with CoW enabled:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: An improvement by roughly a factor of 200\. I chose this example explicitly
+    to illustrate the potential benefits of CoW. Not every method will get that much
+    faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimizing copies triggered by inplace modifications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The previous section illustrated many methods where a defensive copy is no longer
+    necessary. CoW guarantees that you can’t modify two objects at once. This means
+    that we have to introduce a copy when the same data is referenced by two DataFrames.
+    Let’s look at techniques to make these copies as efficient as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The previous post showed that the following might trigger a copy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The copy is triggered if the data that is backing `df` is referenced by another
+    DataFrame. We assume that our DataFrame has `n` integer columns, e.g. is backed
+    by a single Block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e2de64195cd07a4883634f1138e1222a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our Reference tracking object is also referencing another Block, so we can not
+    modify the DataFrame inplace without modifying another object. A naive approach
+    would be to copy the whole block and be done with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69fb3fd0bb66248feeba2d1b65cc1e49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This would set up a new reference tracking object and create a new Block that
+    is backed by a fresh NumPy array. This Block doesn’t have any more references,
+    so another operation would be able to modify it inplace again. This approach copies
+    `n-1` columns that we don't necessarily have to copy. We utilize a technique we
+    call Block splitting to avoid this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fea5468f7a06f4cd2ded2b07c4123a8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Internally, only the first column is copied. All other columns are taken as
+    views on the previous array. The new Block does not share any references with
+    other columns. The old Block still shares references with other objects since
+    it is only a view on the previous values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is one disadvantage to this technique. The initial array has `n` columns.
+    We created a view on columns `2` till `n`, but this keeps the whole array alive.
+    We also added a new array with one column for the first column. This will keep
+    a bit more memory alive than necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This system directly translates to DataFrames with different dtypes. All Blocks
+    that are not modified at all are returned as is and only Blocks that are modified
+    inplace are split.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6dd047068c1106ef8515075eac181bcf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now set a new value into column `n+1` the float Block to create a view on
+    columns `n+2` to `m`. The new Block will only back column `n+1`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c1d38d72ade02a84f7c3f81aed84bc2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methods that can operate inplace
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The indexing operations we looked at don’t generally create a new object; they
+    modify the existing object inplace, including the data of said object. Another
+    group of pandas methods does not touch the data of the DataFrame at all. One prominent
+    example is `rename`. Rename only changes the labels. These methods can utilize
+    the lazy-copy mechanism mentioned above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is another third group of methods that can actually be done inplace, like
+    `replace` or `fillna`. These will always trigger a copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Modifying the data inplace without triggering a copy would modify `df` and `df2`,
+    which violates CoW rules. This is one of the reasons why we consider keeping the
+    `inplace` keyword for these methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This would get rid of this problem. It’s still an open proposal and might go
+    into a different direction. That said, this only pertains to columns that are
+    actually changed; all other columns are returned as views anyway. This means that
+    only one column is copied if your value is only found in one column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We investigate how CoW changes pandas internal behavior and how this will translate
+    to improvements in your code. Many methods will get faster with CoW, while we
+    will see a slowdown in a couple of indexing related operations. Previously, these
+    operations always operated inplace, which might have produced side effects. These
+    side effects are gone with CoW and a modification on one DataFrame object will
+    never impact another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next post in this series will explain how you can update your code to be
+    compliant with CoW. Also, we will explain which patterns to avoid in the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading. Feel free to reach out to share your thoughts and feedback
+    about Copy-on-Write.
+  prefs: []
+  type: TYPE_NORMAL

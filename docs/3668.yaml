@@ -1,0 +1,249 @@
+- en: 'Mixtral-8x7B: Understanding and Running the Sparse Mixture of Experts'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818?source=collection_archive---------2-----------------------#2023-12-15](https://towardsdatascience.com/mixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818?source=collection_archive---------2-----------------------#2023-12-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to efficiently outperform GPT-3.5 and Llama 2 70B
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----0e3fc7fde818--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----0e3fc7fde818---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0e3fc7fde818--------------------------------)
+    ·6 min read·Dec 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0e3fc7fde818&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&user=Benjamin+Marie&userId=ad2a414578b3&source=-----0e3fc7fde818---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F0e3fc7fde818&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixtral-8x7b-understanding-and-running-the-sparse-mixture-of-experts-0e3fc7fde818&source=-----0e3fc7fde818---------------------bookmark_footer-----------)![](../Images/938838a6e7257e33be2de06cb5ee0283.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by [8385](https://pixabay.com/users/8385-8385/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2147790)
+    from [Pixabay](https://pixabay.com//?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=2147790)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of the recent large language models (LLMs) use very similar neural architectures.
+    For instance, the Falcon, Mistral, and Llama 2 models use a similar combination
+    of self-attention and MLP modules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In contrast, Mistral AI, which also created Mistral 7B, just released a new
+    LLM with a significantly different architecture: [Mixtral-8x7B](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1),
+    a sparse mixture of 8 expert models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In total, Mixtral contains 46.7B parameters. Yet, thanks to its architecture,
+    Mixtral-8x7B can efficiently run on consumer hardware. Inference with Mixtral-8x7B
+    is indeed significantly faster than other models of similar size while outperforming
+    them in most tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I explain what a sparse mixture of experts is and why it is
+    faster for inference than a standard model. Then, we will see how to use and fine-tune
+    Mixtral-8x7B on consumer hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have implemented a notebook demonstrating QLoRA fine-tuning and inference
+    with Mixtral-8x7B here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Get the notebook (#32)](https://colab.research.google.com/drive/1VDa0lIfqiwm16hBlIlEaabGVTNB3dN1A?usp=sharing)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Sparse Mixture of Experts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/5ee6f895406c035bc0d9f83f707709ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A sparse mixture of experts (SMoE) is a type of neural network architecture
+    designed to improve the efficiency and scalability of traditional models. The
+    concept of a mixture of experts was introduced to allow a model to learn different
+    parts of the input space using specialized “expert” sub-networks. In Mixtral,
+    there are 8 expert sub-networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the “8x7B” in the name of the model is slightly misleading. The model
+    has a total of 46.7B parameters which is almost 10B parameters less than what
+    8x7B parameters would yield. Indeed, Mixtral-8x7b is not a 56B parameter model
+    since several modules, such as the ones for self-attention, are shared with the
+    8 expert sub-networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you load and print the model with Transformers, the structure of the model
+    is easier to understand:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see that the MoE blocks are separated from the self-attention blocks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each expert sub-network is responsible for handling a specific region or aspect
+    of the input data, and a gating (or router) network determines how much each expert
+    contributes to the final prediction. In the case of Mixtral, only 2 experts are
+    activated at the same time. Only 13B parameters are used during inference, hence
+    the more efficient inference compared to other models of similar size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To sum up, this sparse activation can be beneficial for several reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. Computational Efficiency: Activating only a subset of experts reduces the
+    computational cost of evaluating the entire expert pool for every input.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2\. Parameter Efficiency: By allowing only a few experts to be active for a
+    given input, the model can allocate its parameters more efficiently.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3\. Generalization: Sparse activation can encourage the model to learn more
+    specialized and fine-grained features for different regions of the input space.
+    This can lead to better generalization and performance on diverse inputs. For
+    instance, Mistral AI claims that Mixtral has been trained in Italian, German,
+    French, Spanish, and also for coding. We can imagine that they may have trained
+    some of the 8 experts to be especially better for these languages and tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While SMoEs are faster than standard models of a similar size, they still occupy
+    the same amount of memory. Quantization is one way to reduce the memory consumption.
+    Offloading some experts to a slower memory, e.g., the CPU RAM, may also be a good
+    alternative when we know in advance which experts will be the most solicited for
+    a given task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What We Know about Mixtral
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Most of the details we know were published in this post by Mistral AI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Mixtral of experts](https://mistral.ai/news/mixtral-of-experts/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixtral is a model with 8 sub-networks acting as experts. At each layer and
+    for each token, only 2 of these sub-networks are activated. Another set of parameters,
+    the router network, decides on which ones to activate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As for the training data, Mistral AI doesn''t give much information about it.
+    We only know that it is Web data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Mixtral is pre-trained on data extracted from the open Web*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I wonder what the “open Web” is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: They have evaluated the model on various public benchmarks to demonstrate that
+    Mixtral is outperforming Llama 2 70B and GPT-3.5 on most of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s all we know so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running Mixtral on Your Computer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Mixtral is already supported by Hugging Face Transformers (from version 4.36.0)
+    and bitsandbytes. We can quantize the model to fine-tune or run it on consumer
+    hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It also supports [FlashAttention 2 which helps to reduce the memory consumption](https://kaitchup.substack.com/p/use-flashattention-2-for-faster-fine)
+    for inference and fine-tuning with long sequences (up to 32k tokens).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[In the model card](https://huggingface.co/mistralai/Mixtral-8x7B-v0.1), Mistral
+    AI proposes a code sample to run the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In a Google Colab notebook, it only works with the A100 GPU (you need Google
+    Colab Pro). The model has 46.7B parameters. Since the parameters are bfloat16,
+    we need 2 bytes of memory per parameter, i.e., almost 100 GB free on your hard
+    drive to download the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model is available in the safetensors format. It is divided into 20 shards
+    of around 4.95 GB. Once downloaded, it can take up to 7 minutes to load the model
+    on the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When quantized to 4-bit, the model occupies 23 GB of VRAM. To run it smoothly
+    on your computer, you will need at least two GPUs with 16 GB of VRAM each, for
+    instance, 2 NVIDIA RTX 4060 16 GB, or even better, 2 NVIDIA RTX 4080 16 GB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning Mixtral on Your Computer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Mixtral also supports QLoRA fine-tuning. Here is a code sample for loading
+    the model and preparing it for fine-tuning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Or you can simply follow my [previous tutorials fine-tuning Mistral 7B](https://kaitchup.substack.com/p/mistral-7b-recipes-for-fine-tuning).
+    It would work the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You could also try to fine-tune it with IPO to make a strong Mixtral chat model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kaitchup.substack.com/p/fine-tune-better-chat-models-with?source=post_page-----0e3fc7fde818--------------------------------)
+    [## Fine-tune Better Chat Models with Distilled Identity Preference Optimization
+    (IPO)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mistral 7B aligned with IPO
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kaitchup.substack.com](https://kaitchup.substack.com/p/fine-tune-better-chat-models-with?source=post_page-----0e3fc7fde818--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The sparse mixture of experts is an efficient model architecture that allows
+    faster inference than standard models of similar size. Nonetheless, while Mixtral
+    only uses around 1/4 of its parameters at inference time, it still requires to
+    have all the parameters loaded in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to reduce the memory footprint of LLM is quantization. For instance,
+    we can use bitsandbytes NF4 to quantize Mixtral to 4-bit. It’s then possible to
+    run or fine-tune Mixtral on consumer hardware but you’ll need at least two GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hopefully, Mistral AI will publish a technical paper disclosing more information
+    about the method used to train the 8 experts of Mixtral.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,894 @@
+- en: 'Efficient Image Segmentation Using PyTorch: Part 1'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-1-89e8297a0923?source=collection_archive---------1-----------------------#2023-06-27](https://towardsdatascience.com/efficient-image-segmentation-using-pytorch-part-1-89e8297a0923?source=collection_archive---------1-----------------------#2023-06-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Concepts and Ideas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)[![Dhruv
+    Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------)
+    [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----89e8297a0923--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-1-89e8297a0923&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----89e8297a0923---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89e8297a0923--------------------------------)
+    ·18 min read·Jun 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89e8297a0923&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-1-89e8297a0923&user=Dhruv+Matani&userId=63f5d5495279&source=-----89e8297a0923---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89e8297a0923&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-image-segmentation-using-pytorch-part-1-89e8297a0923&source=-----89e8297a0923---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this 4-part series, we’ll implement image segmentation step by step from
+    scratch using deep learning techniques in PyTorch. We’ll start the series with
+    the basic concepts and ideas needed for image segmentation in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbca4847fd8e7d2bf8725818e1f76773.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Pet images and their segmentation masks (Source: [The Oxford-IIIT
+    Pet Dataset](https://www.robots.ox.ac.uk/~vgg/data/pets/))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Co-authored with** [**Naresh Singh**](https://medium.com/@brocolishbroxoli)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Image Segmentation](https://en.wikipedia.org/wiki/Image_segmentation) is a
+    technique to isolate pixels belonging to specific objects in an image. Isolation
+    of object pixels opens doors to interesting applications. For example, in Figure
+    1, the images on the right are the masks corresponding to the pet images on the
+    left where the yellow pixels belong to the pet. Once the pixels are identified,
+    we could easily make the pet bigger or change the image backgrounds. This technique
+    is widely used in face filter features in several social media applications.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our goal at the end of this article series is to give the reader a sense of
+    all the steps it takes to build a vision AI model and run experiments with different
+    settings using PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Articles in this series
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This series is for readers at all experience levels with deep learning. If
+    you want to learn about the practice of deep learning and vision AI along with
+    some solid theory and hands-on experience, you’ve come to the right place! This
+    is expected to be a 4-part series with the following articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Concepts and Ideas (this article)**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A CNN-based model](https://medium.com/p/bed68cadd7c7/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Depthwise separable convolutions](https://medium.com/p/3534cf04fb89/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A Vision Transformer-based model](https://medium.com/p/6c86da083432/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Introduction to Image Segmentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Image segmentation](https://en.wikipedia.org/wiki/Image_segmentation) partitions
+    or segments an image into regions that correspond to objects, backgrounds, and
+    boundaries. Take a look at Figure 2 which shows a city scene. It marks regions
+    corresponding to cars, motorcycles, trees, buildings, sidewalks, and other interesting
+    objects with different color masks. These regions are identified through image
+    segmentation techniques.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Historically, we have used [specialized image processing tools and pipelines](https://www.v7labs.com/blog/image-segmentation-guide#h4)
+    to break down an image into regions. However, due to the incredible growth of
+    visual data in the last two decades, deep learning has emerged as a go-to solution
+    to the image segmentation task. It significantly reduces the reliance on an expert
+    to build a domain-specific image segmentation strategy as was done in the past.
+    A deep learning practitioner can train an image segmentation model if enough training
+    data is available for the task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a397ef2a4ba2c4df9565de6196fe194.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: A segmented scene from the [a2d2 dataset (CC BY-ND 4.0)](https://aev-autonomous-driving-dataset.s3.eu-central-1.amazonaws.com/LICENSE.txt)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the applications of image segmentation?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Image Segmentation has applications in diverse fields such as communication,
+    agriculture, transportation, healthcare, and more. Moreover, its applications
+    are growing with the growth of visual data. Here are a few examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In **self-driving cars**, a deep learning model constantly processes the video
+    feed from the car cameras to segment the scene into objects such as cars, pedestrians,
+    and traffic lights which is essential for the car to operate safely.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In **medical imaging**, image segmentation assists doctors to identify areas
+    in the medical scans that correspond to tumors, lesions, and other abnormalities.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In **Zoom video calls**, it is used to preserve an individual’s privacy by replacing
+    the background with virtual scenes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In **agriculture**, the information about weed and crop regions identified using
+    image segmentation is used to [maintain healthy crop yields](https://www.sciencedirect.com/science/article/pii/S2214317323000112).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can read more details about the practical applications of image segmentation
+    on this [page by v7labs](https://www.v7labs.com/blog/image-segmentation-guide#h6).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the different types of image segmentation tasks?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many different types of image segmentation tasks, each with its advantages
+    and disadvantages. The 2 most common types of image segmentation tasks are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Class or Semantic segmentation**: Class Segmentation assigns a semantic class
+    such as *background*, *road*, *car,* or *person* to each image pixel. If the image
+    has 2 cars in it, then the pixels corresponding to both cars will be tagged as
+    car pixels. It is often used for tasks such as autonomous driving and [scene understanding](https://ps.is.mpg.de/research_fields/semantic-scene-understanding).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Object or Instance segmentation**: Object segmentation identifies objects
+    and assigns a mask to each unique object in an image. If the image has 2 cars
+    in it, then the pixels corresponding to each car will be identified as belonging
+    to separate objects. Object segmentation is often used for tracking individual
+    objects, such as a self-driving car programmed to follow a specific car ahead
+    of it'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/9cd15779082c7c510647f283d7f03af8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Object and class segmentations (Source: [MS Coco — Creative Commons
+    Attribution license](https://cocodataset.org/#home))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this series, we’ll focus on class segmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decisions needed to implement efficient image segmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Efficiently training your model for speed and accuracy involves making numerous
+    important decisions during the lifecycle of your project. This includes (but is
+    not limited to):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choice of your deep learning framework
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choosing a good model architecture
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Selecting an effective loss function that optimizes the aspect you care about
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Avoiding overfitting and underfitting
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluating the model’s accuracy
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the rest of this article, we’ll dive deeper into each of the aspects mentioned
+    above and provide numerous links to articles that discuss each topic in a lot
+    more detail that can be covered here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyTorch for efficient image segmentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What is PyTorch?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*“*[*PyTorch*](https://pytorch.org/) *is an open source deep learning framework
+    built to be flexible and modular for research, with the stability and support
+    needed for production deployment. PyTorch provides a Python package for high-level
+    features like tensor computation (like NumPy) with strong GPU acceleration and
+    TorchScript for an easy transition between eager mode and graph mode. With the
+    latest release of PyTorch, the framework provides graph-based execution, distributed
+    training, mobile deployment, and quantization.”* (source: [Meta AI page on PyTorch](https://ai.facebook.com/tools/pytorch/))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyTorch is written in Python and C++, which makes it easy to use and learn as
+    well as efficient to run. It supports a wide range of hardware platforms, including
+    (server and mobile) CPUs, GPUs, and TPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is PyTorch a good choice for image segmentation?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'PyTorch is a popular choice for deep learning research and development, as
+    it provides a flexible and powerful environment for creating and training neural
+    networks. It is a great choice of framework for implementing deep learning-based
+    image segmentation due to the following features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Flexibility**: PyTorch is a flexible framework that allows you to create
+    and train neural networks in a variety of ways. You can use pre-trained models,
+    or you can create your own from scratch very easily'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Backend support**: PyTorch supports multiple backends such as GPU/TPU hardware'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Domain libraries**: PyTorch has a rich set of domain libraries that make
+    working with specific data verticals very easy. For example, for vision (image/video)
+    related AI, PyTorch provides a library called [torchvision](https://pytorch.org/vision/main/index.html)
+    that we’ll use extensively throughout this series'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Ease of use and community adoption**: PyTorch is an easy-to-use framework
+    that is well-documented and has a large [community](https://dev-discuss.pytorch.org/)
+    of users and developers. Many researchers use PyTorch for their experiments, and
+    the results in their published papers have an implementation of the model in PyTorch
+    freely available'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Choice of dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We’re going to use the [Oxford IIIT Pet dataset](https://www.robots.ox.ac.uk/~vgg/data/pets/)
+    (licensed under CC BY-SA 4.0) for class segmentation. This dataset has 3680 images
+    in the training set, and each image has a segmentation trimap associated with
+    it. The trimap is one of 3 pixels classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pet
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Border
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We choose this dataset since it is sufficiently diverse to provide us with a
+    non-trivial class segmentation task. Additionally, it’s not so complex that we
+    end up spending time on things like dealing with class imbalance, etc… and lose
+    track of the main problem we want to learn about and solve; namely class segmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Other popular datasets used for image segmentation tasks include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Pascal VOC (visual object classes)](http://host.robots.ox.ac.uk/pascal/VOC/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[MS Coco](https://cocodataset.org/#home)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Cityscapes](https://www.cityscapes-dataset.com/examples/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Efficient image segmentation with PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this series, we’ll train multiple models for class segmentation from scratch.
+    There are many considerations to account for when building and training a model
+    from scratch. Below, we will look at some of the key decisions that you need to
+    make when doing so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the right model for your task
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are many factors to consider when choosing the right deep-learning model
+    for image segmentation. Some of the most important factors include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The type of image segmentation task**: There are two main types of image
+    segmentation tasks: class (semantic) segmentation and object (instance) segmentation.
+    Since we’re focusing on the simpler class segmentation problem, we shall consider
+    modeling our problem accordingly.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Size and complexity of the dataset**: The size and complexity of the dataset
+    will affect the complexity of the model that we need to use. For example, if we
+    are working with images with a small spatial dimension, we may use a simpler (or
+    shallower) model, such as a fully convolutional network (FCN). If we are working
+    with a large and complex dataset, we may use a more complex (or deeper) model
+    such as a U-Net.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Availability of pre-trained models**: There are many pre-trained models available
+    for image segmentation. These models can be used as a starting point for our own
+    model or we can use them directly. However, if we use a pre-trained model, we
+    may be constrained by the spatial dimensions of the input image to the model.
+    In this series, we shall focus on training a model from scratch.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Computational resources available**: Deep learning models can be computationally
+    expensive to train. If we have limited computational resources, we may need to
+    choose simpler models or more efficient model architectures.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this series, we are going to work with the Oxford IIIT Pet dataset since
+    it’s big enough for us to be able to train a medium size model and require the
+    use of a GPU. We would highly recommend creating an account on [kaggle.com](https://www.kaggle.com/)
+    or use [Google Colab](https://colab.research.google.com/)’s free GPU for running
+    the notebooks and code referenced in this series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model architectures
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Here are some of the most popular deep learning model architectures for image
+    segmentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**U-Net**](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/):
+    The U-Net is a convolutional neural network that is commonly used for image segmentation
+    tasks. It uses skip connections, which can help train the network faster and result
+    in better overall accuracy. If you have to choose, U-Net is always an **excellent
+    default choice**!'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**FCN**](/review-fcn-semantic-segmentation-eb8c9b50d2d1): The Fully Convolutional
+    Network (FCN) is a fully convolutional network, but it is [not as deep as the
+    U-Net](https://stackoverflow.com/questions/50239795/intuition-behind-u-net-vs-fcn-for-semantic-segmentation).
+    The lack of depth is mainly due to the fact that at higher network depths, the
+    accuracy drops. This makes it faster to train, but it may not be as accurate as
+    the U-Net.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**SegNet**](https://arxiv.org/abs/1511.00561): SegNet is a popular model architecture
+    similar to U-Net, and uses lesser activation memory than U-Net. We shall use SegNet
+    in this series.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Vision Transformer (ViT)**](https://arxiv.org/abs/2010.11929): Vision Transformers
+    have recently gained popularity due to their simple structure and applicability
+    of the attention mechanism to text, vision, and other domains. Vision Transformers
+    can be more efficient (compared to CNNs) for both training and inference, but
+    historically have needed more data to train compared to convolutional neural networks.
+    We shall also use ViT in this series.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/616bcf8bc926426b47371e10a626122f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: The U-Net model architecture. Source: [The University of Freiburg,
+    original author(s) of U-Net](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are just a few of the many deep learning models that can be used for image
+    segmentation. The best model for your specific task will depend on the factors
+    mentioned earlier, on the specific task, and your own experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the right loss function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The choice of loss function for image segmentation tasks is an important one,
+    as it can have a significant impact on the performance of the model. There are
+    many different loss functions available, each with its own advantages and disadvantages.
+    The most popular loss functions for image segmentation are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Cross-entropy loss**](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html):
+    Cross-entropy loss is a measure of the difference between the predicted probability
+    distribution and the ground truth probability distribution'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**IoU loss**: IoU loss measures the amount of overlap between the predicted
+    mask and ground-truth mask per class. IoU loss penalizes cases where either the
+    prediction or recall would suffer. IoU as defined is not differentiable, so we
+    need to slightly tweak it to use it as a loss function'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Dice loss**](https://torchmetrics.readthedocs.io/en/stable/classification/dice.html):
+    Dice loss is also a measure of the overlap between the predicted mask and the
+    ground truth mask.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Tversky loss**](https://arxiv.org/abs/1706.05721): Tversky loss is proposed
+    as a robust loss function that can be used to handle imbalanced datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Focal loss**](https://pytorch.org/vision/main/generated/torchvision.ops.sigmoid_focal_loss.html#torchvision.ops.sigmoid_focal_loss):
+    Focal loss is designed to focus on hard examples, which are examples that are
+    difficult to classify. This can be helpful for improving the performance of the
+    model on challenging datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The best loss function for a particular task will depend on the specific requirements
+    of the task. For example, if accuracy is more important, then IoU loss or Dice
+    loss may be better choices. If the task is imbalanced, then Tversky loss or Focal
+    loss may be good choices. The specific loss function used may impact the rate
+    of convergence of your model when training it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The loss function is a hyperparameter of your model, and using a different loss
+    based on the results we see can allow us to reduce the loss faster and improve
+    the model’s accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Default**: In this series, we shall use cross entropy loss, since it’s always
+    a good *default* to choose when the results are not known.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use the following resources to learn more about loss functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PyTorch Loss Functions: The Ultimate Guide](https://neptune.ai/blog/pytorch-loss-functions)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Torchvision — Losses](https://pytorch.org/vision/main/ops.html#losses)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Torchmetrics](https://torchmetrics.readthedocs.io/en/stable/pages/overview.html#metrics-and-differentiability)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s take a detailed look at the IoU Loss we define below as a robust alternative
+    to the Cross Entropy Loss for segmentation tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Custom IoU Loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[IoU](/intersection-over-union-iou-calculation-for-evaluating-an-image-segmentation-model-8b22e2e84686)
+    is defined as intersection over union. For image segmentation tasks, we can compute
+    this by computing (for each class), the intersection of pixels in that class as
+    predicted by the model and in the ground truth segmentation mask.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, if we have 2 classes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Person
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then we can determine which pixels were classified as a person, and compare
+    that with the ground truth pixels for a person, and compute the IoU for the person
+    class. Similarly, we can compute the IoU for the background class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once we have these class-specific IoU metrics, we can choose to average them
+    unweighted or weigh them before averaging them to account for any sort of class
+    imbalance as we saw in the example earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The IoU metric as defined requires us to compute hard labels for each metric.
+    This requires the use of the argmax() function, which isn’t differentiable, so
+    we can’t use this metric as a loss function. Hence, instead of using hard labels,
+    we apply softmax() and use the predicted probabilities as soft labels to compute
+    the IoU metric. This results in a differentiable metric that we can then compute
+    the loss from. Hence, sometimes, the IoU metric is also known as the soft-IoU-metric
+    when used in the context of a loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we have a metric (M) that takes values between 0.0 and 1.0, we can compute
+    the loss (L) as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*L = 1 — M*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, here’s another trick one can use to convert a metric into a loss if
+    your metric has the value between 0.0 and 1.0\. Compute:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*L = -log(M)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I.e. compute the negative log of the metric. This is meaningfully different
+    from the previous formulation, and you can read about it [here](/why-we-care-about-the-log-loss-50c00c8e777c)
+    and [here](/intuition-behind-log-loss-score-4e0c9979680a). Basically, it results
+    in better learning for your model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02aaeb2051bb8124a8b565eccf1c584f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: Comparing the loss resulting from 1-P(x) with -log(P(x)). Source:
+    Author(s).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using IoU as our loss also brings the loss function closer to capturing what
+    we really care about. There are pros and cons of using an evaluation metric as
+    the loss function. If you’re interested in exploring this space more, you can
+    start with [this discussion on stackexchange](https://stats.stackexchange.com/questions/577556/why-not-use-evaluation-metrics-as-the-loss-function).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To train your model efficiently and effectively for good accuracy, one needs
+    to be mindful of the amount and kind of training data used to train the model.
+    The choice of training data used will significantly impact the final model’s accuracy,
+    so if there’s one thing you wish to take away from this article series then this
+    should be it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, we’d split our data into 3 parts with the parts being roughly in
+    the proportions mentioned below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training (80%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Validation (10%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Test (10%)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You’d train your model on the training set, evaluate accuracy on the validation
+    set, and repeat the process till you’re happy with the reported metrics. Only
+    then would you evaluate the model on the test set, and then report the numbers.
+    This is done to prevent any sort of bias from creeping into your model’s architecture
+    and hyperparameters used during training and evaluation. In general, the more
+    you tweak your setup based on the outcomes you see with the test data, the less
+    reliable your results will get. Hence, we must limit our decision making to only
+    the results we see on the training and validation datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this series, we shall not use a test dataset. Instead, we’ll use our test
+    dataset as the validation dataset, and apply [data augmentation](https://en.wikipedia.org/wiki/Data_augmentation)
+    on the test dataset so that we’re always validating our models on data that’s
+    slightly different. This kind of prevents us from overfitting our decisions on
+    the validation dataset. This is a bit of a hack, and we’re doing this just for
+    expediency and as a short-cut. For production model development, you should try
+    to stick with the standard recipe mentioned above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset we’re going to use in this series has 3680 images in the training
+    set. While this may seem like a large number of images, we want to make sure that
+    our model doesn’t overfit on these images since we’ll be training the model for
+    numerous epochs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a single training epoch, we train the model on the entire training dataset,
+    and we’d typically train models in production for 60 or more epochs. In this series,
+    we shall train the model only for 20 epochs for faster iteration times. To **prevent
+    overfitting**, we’ll employ a technique called [data augmentation](https://efficientdlbook.com/#table-of-contents)
+    that is used to generate new input data from existing input data. The basic idea
+    behind data augmentation for image inputs is that if you change the image slightly,
+    it feels like a new image to the model, but one can reason about whether the expected
+    outputs would be the same. Here are some examples of data augmentations that we’ll
+    apply in this series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Random horizontal flip](https://pytorch.org/vision/main/generated/torchvision.transforms.RandomHorizontalFlip.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Random Color jitter](https://pytorch.org/vision/main/generated/torchvision.transforms.ColorJitter.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While we’re going to use the Torchvision library for applying the data augmentations
+    above, we’d encourage you to evaluate the Albumentations data augmentation library
+    for vision tasks as well. Both libraries have a rich set of transformations available
+    for use with image data. We personally continue to use Torchvision simply because
+    it’s what we started with. [Albumentations](https://albumentations.ai/) supports
+    richer primitives for data augmentation that can make changes to the input image
+    as well as the ground truth labels or masks at the same time. For example, if
+    you were to resize or flip an image, you’d need to make the same change to the
+    ground truth segmentation mask. Albumentations can do this for you out of the
+    box.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Broadly speaking, both libraries support transformations that are applied to
+    the image either at the pixel-level or change the spatial dimensions of the image.
+    The pixel-level transforms are called color transforms by torchvision, and the
+    spatial transforms are called Geometric transforms by torchvision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below, we shall see some examples of both pixel-level as well as geometric transforms
+    applied by the Torchvision and Albumentations libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61329a6abccd37e7631dcc683568d326.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: Examples of pixel level data augmentations applied to images using
+    Albumentations. Source: [Albumentations](https://albumentations.ai/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c490cff06d9218c578606c1cb6e3a7e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8: Examples of data augmentations applied to images using Torchvision
+    transforms. Source: Author(s) ([notebook](https://www.kaggle.com/code/dhruv4930/starter-for-oxford-iiit-pet-using-torchvision/notebook?scriptVersionId=129839935))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e9741d85b50584037b6a25aa71e91e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 9: Examples of spatial level transforms applied using Albumentations.
+    Source: Author(s) ([notebook](https://www.kaggle.com/code/dhruv4930/starter-for-oxford-iiit-pet-using-torchvision/notebook?scriptVersionId=129839935))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating your model’s performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When evaluating your model’s performance, you’d want to know how it performs
+    on a metric that is representative of the quality of the model’s performance on
+    real world data. For example, for the image segmentation task, we’d want to know
+    how accurately a model is able to predict the correct class for a pixel. Hence,
+    we say that [Pixel Accuracy](https://torchmetrics.readthedocs.io/en/stable/classification/accuracy.html)
+    is the validation metric for this model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You could use your evaluation metric as the loss function (why not optimize
+    what you really care about!) except that this [may not always be possible](https://jonathan-sands.com/metric/loss/2021/05/13/Metric-vs-Loss.html#what-is-a-loss-function).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to [Accuracy](https://torchmetrics.readthedocs.io/en/stable/classification/accuracy.html),
+    we’ll also track the IoU metric (also called [Jaccard Index](https://torchmetrics.readthedocs.io/en/stable/classification/jaccard_index.html)),
+    and the Custom IoU metric we defined above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To read more about various accuracy metrics applicable to image segmentation
+    tasks, please see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[All the segmentation metrics — Kaggle](https://www.kaggle.com/code/yassinealouini/all-the-segmentation-metrics)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How to evaluate image segmentation models](/how-accurate-is-image-segmentation-dd448f896388)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Evaluating image segmentation models](/evaluating-image-segmentation-models-1e9bb89a001b)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The downside of using pixel accuracy as a performance metric
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While the accuracy metric may be a good default choice to measure the performance
+    of image segmentation tasks, it does have its own drawbacks, which may be significant
+    based on your specific situation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, consider an image segmentation task to identify a person’s eyes
+    in a picture, and mark those pixels accordingly. The model will hence classify
+    each pixels as either one of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Eye
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assume that there’s just 1 person in each image, and 98% of the pixels don’t
+    correspond to an eye. In this case, the model can simply learn to predict every
+    pixel as being a background pixel and achieve 98% pixel accuracy on the segmentation
+    task. Wow!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/01e74d83606404a77323179cb7419753.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 10: An image of a person’s face and the corresponding segmentation mask
+    for their eyes. You can see that the eyes occupy a very small fraction of the
+    overall image. Source: Adapted from [Unsplash](https://unsplash.com/photos/iFgRcqHznqg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In such cases, using the IoU or Dice metric may be a much better idea, since
+    IoU would capture how much of the prediction was correct, and wouldn’t necessarily
+    be biased by the region that each class or category occupies in the original image.
+    You could even consider using the IoU or Dice coefficient per class as a metric.
+    This may better capture the performance of your model for the task at hand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When considering pixel accuracy alone, the [precision and recall](https://developers.google.com/machine-learning/crash-course/classification/precision-and-recall)
+    of the object we’re looking to compute the segmentation mask for (eyes in the
+    example above) can capture the details we’re looking for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have covered a large part of the theoretical underpinnings of image
+    segmentation, let’s take a detour into considerations related to inference and
+    deployment of image segmentation for real-world workloads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model size and inference latency
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Last but not least, we’d want to ensure that our model has a reasonable number
+    of parameters but not too many, since we want a small and efficient model. We
+    shall look into this aspect in greater detail in a future post related to reducing
+    model size using [efficient model architectures](https://efficientdlbook.com/#table-of-contents).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As far as inference latency is concerned, what matters is the number of mathematical
+    operations (mult-adds) our model executes. Both the model size and mult-adds can
+    be displayed using the [torchinfo](https://pypi.org/project/torchinfo/) package.
+    While mult-adds is a great proxy for determining the model’s latency, there can
+    be a large variation in latency across various backends. The only real way to
+    determine the performance of your model on a specific backend or device is to
+    profile and benchmark it on that specific device with the set of inputs you expect
+    to see in production settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Further Reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following articles provide additional information regarding the basics of
+    image segmentation. If you’re the kind of person who likes reading different perspectives
+    on the same subject, please consider reading them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Guide to Image Segmentation in Computer Vision: Best Practices](https://encord.com/blog/image-segmentation-for-computer-vision-best-practice-guide/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[An Introduction to Image Segmentation: Deep Learning vs. Traditional [+Examples]](https://www.v7labs.com/blog/image-segmentation-guide#h5)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Image Segmentation: The Basics and 5 Key Techniques](https://datagen.tech/guides/image-annotation/image-segmentation/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If you wish to get your hands dirty with the Oxford IIIT Pet dataset and use
+    torchvision and Albumentations to perform image augmentations, we have provided
+    a [starter notebook on Kaggle](https://www.kaggle.com/code/dhruv4930/starter-for-oxford-iiit-pet-using-torchvision/notebook?scriptVersionId=129839935)
+    that you can clone and play around with. Many of the images in this article were
+    generated by that notebook!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Article recap
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here’s a quick recap of what we discussed so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Image segmentation is a technique to partition an image into multiple segments
+    (source: [Wikipedia](https://en.wikipedia.org/wiki/Image_segmentation))'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There are two main types of image segmentation tasks: class (semantic) segmentation
+    and object (instance) segmentation. Class segmentation assigns each pixel in an
+    image to a semantic class. Object segmentation identifies each individual object
+    in an image and assigns a mask to each unique object'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We shall use PyTorch as the deep learning framework and the Oxford IIIT Pet
+    dataset in this series of efficient image segmentation
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are many factors to consider when choosing the right deep learning model
+    for image segmentation, including (but not limited to) the type of image segmentation
+    task, the size and complexity of the dataset, the availability of pre-trained
+    models, and the computational resources available. Some of the most popular deep
+    learning model architectures for image segmentation include U-Net, FCN, SegNet,
+    and Vision Transformer (ViT)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The choice of loss function for image segmentation tasks is an important one,
+    as it can have a significant impact on the performance of the model and on training
+    efficiency. For image segmentation tasks, we can use cross-entropy loss, IoU Loss,
+    Dice loss, or Focal loss (among others)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data augmentation is a valuable technique that is used to prevent overfitting
+    as well as deal with insufficient training data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Evaluating your model’s performance is important for the task at hand and one
+    must choose this metric carefully
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model size and inference latency are vital metrics to consider when developing
+    a model, especially if you intend it to be used in real-time applications such
+    as face segmentation or background noise removal
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the [next post](https://medium.com/p/bed68cadd7c7/), we shall look at a Convolutional
+    Neural Network (CNN) built from scratch using PyTorch to perform image segmentation
+    on the Oxford IIIT Pet dataset.
+  prefs: []
+  type: TYPE_NORMAL

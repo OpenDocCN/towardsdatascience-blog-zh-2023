@@ -1,0 +1,744 @@
+- en: 'Implementation Details Of Reluplex: An Efficient SMT Solver for Verifying Deep
+    Neural Networks'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/implementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a?source=collection_archive---------5-----------------------#2023-12-27](https://towardsdatascience.com/implementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a?source=collection_archive---------5-----------------------#2023-12-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to formally verify the bounds of your Neural Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)[![Matthew
+    Daw](../Images/a515428ae9b984c45111d6e868efd55b.png)](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------)
+    [Matthew Daw](https://medium.com/@mattdaw7?source=post_page-----379ea359c41a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a94e02b6ee1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a&user=Matthew+Daw&userId=3a94e02b6ee1&source=post_page-3a94e02b6ee1----379ea359c41a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----379ea359c41a--------------------------------)
+    ·17 min read·Dec 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F379ea359c41a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a&user=Matthew+Daw&userId=3a94e02b6ee1&source=-----379ea359c41a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F379ea359c41a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementation-details-of-reluplex-an-efficient-smt-solver-for-verifying-deep-neural-networks-379ea359c41a&source=-----379ea359c41a---------------------bookmark_footer-----------)![](../Images/55ccc3b29cd5e6f88d0263addd4b6c1f.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [NEOM](https://unsplash.com/@neom?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reluplex is an algorithm submitted to CAV in 2017 by Stanford University [1].
+    Reluplex was designed to formally verify if a nerual network is capable of producing
+    certain outputs given certain inputs. It accepts as input a neural network and
+    a set of constraints on the inputs and outputs of the network. The bounds may
+    restrict any arbitrary number of input or output nodes to a single value or a
+    range of values. The algorithm then finds an input within the given input bounds
+    that can produce an output within the given output bounds. If no example exists,
+    it will determine that the problem is infeasible in a reasonable amount of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithm Uses
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The original algorithm was written to help build the “Airborne Collision-Avoidance
+    System for drone” system. This system uses 45 deep learning networks to fly a
+    series of drones. The researches needed a way to formally guarantee that regardless
+    of what other inputs their networks are receiving, if two drones are too close
+    to each other they will always fly away from each other and never crash. In the
+    most extreme case, the algorithm was able to complete these verifications within
+    109.6 hours, which while a long time, is still an order of magnitude faster than
+    the previous state of the art algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5829c227dd8ce557078f885d0549a649.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Colision course avoidance, image from original paper[1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a more recent publication, ReluPlex has been made obsolute by a tool called
+    Marabou [4] which does everything ReluPlex does but better. This has been used
+    for neural network explainability. The algorithm works by finding an upper bound
+    and a lower bound for the for what parts of the input are strictly necessary to
+    produce output that a network generates. [6]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f21e4bbd4dc66cbd9d57aa8dfa81142f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a neural network explanation, from Towards Formal XAI [6]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm has also been used to set precise bounds on what adversarial perturbations
+    are large enough to change the output of a network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this paper, we wish to discuss the details for Reluplex as they do form
+    an important foundation for being able to understand Maribou.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Basic Neural Network**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before explaining the details of this algorithm, we first need to cover some
+    basics of neural networks. Here is a simple diagram of a network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b99cd5ef4fde6fc6388ea27048de7578.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram of a basic perceptron Neural Network [8]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the diagram above, the hidden layer is calculated by multiplying all of
+    the nodes in a previous layer by specific values, then adding them together, and
+    then adding a bias term that is specific to each node to this sum. The summed
+    value then goes through an activation function f before being used in the next
+    layer. The activation function we will be using in this article is the ReLU function
+    which is defined as f(x) = x if x > 0 else 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52ce28ff62bbab7842fd509e9a7e0af6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of ReLU function. Image based off Deep Learning using Rectified Linear
+    Units [2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**High Level View Of Reluplex**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What reluplex does is it tries to put a neural network into a simplex problem.
+    Once constraints are set inside of a simplex problem, it is guaranteed to be able
+    to find a solution quickly or determine if there is no valid point given the constraints.
+    It is also an algorithm that has proven to be exceptionally efficient at doing
+    this, and there are reputable formal proofs that guarantee it will work every
+    single time. This is exactly what we want for our reluplex problem. The only problem
+    is that reluplex can only work with linear constraints, and the relu funtions
+    in our neural network are non-linear and can not be directly put into the simplex
+    method. To make it linear we must choose to impose additional constraints that
+    either the input to the relu must be non-positive and make the relu inactive,
+    or the input of the relu must be constrained to be non-negative making the relu
+    function active. By default, most SMT solvers would get around this by manually
+    checking every possible combination of constraint. However, in a network with
+    300 plus relu functions this can turn into 2³⁰⁰ case splits which is impracticably
+    slow to solve. What reluplex does then is it first encodes everything it can about
+    a network without the reluconstraints and finds a feasible point. If a feasible
+    point exists, it will then fix the parts of a network that violate the relu constraint
+    one at a time. If a specific node is updated too many times will split the problem
+    into one case where that node is always active and another case where it’s always
+    inactive then continue the search. The original authors of the paper are able
+    to formally prove that this algorithm is sound and complete and will terminate
+    in a finite amount of steps. They also empirically show that it terminates much
+    faster than a simple brute force approach of checking every single possible case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Purpose Of This Article**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The original paper gives a good example of the algorithm actually works. However,
+    they assume the reader has a deep understanding of how the simplex method works
+    and they skip over some important design choices that have to be made. The purpose
+    of this article then is to carefully lay out the exact steps the algorithm uses
+    with all the details of how the simplex method works. We also provide a simplified
+    and working implementation of the algorithm in python. The original paper provides
+    formal proofs to guarantee that as long as the simplex method works, reluplex
+    will work. There is also a relatively large body of publications that prove that
+    reluplex works. As such, we do not provide any formal justification on why this
+    algorithm works. We simply wish to explain the steps needed for the algorithm,
+    and give an intuition of why the authors choose those steps. Deeply understanding
+    this algorithm may require reading the original reluplex paper or studying the
+    simplex method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Simplex Method**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The simplex method is designed to address optimization problems within a defined
+    linear space. These problems involve a set of non-negative variables, the introduction
+    of constraints on those variables, and the declaration of an objective function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2323eaadd734fb926fdadcc75d191469.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: After establishing these constraints, the simplex method initially verifies
+    the existence of a point that satisfies the specified constraints. Upon identifying
+    such a point, the method proceeds to find the point that maximizes the objective
+    within the given constraints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Full Example Of Reluplex**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following is a basic neural network we will be using to demonstrate the
+    full algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/16425f50034719c9427e9ed2713622dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first thing we need to do is break the hidden layer nodes, one node will
+    be a linear function of the previous nodes, and the other node will a ReLU of
+    the output of that linear function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92beee8d84accced9c61a9c0d0b6cdb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we declare the following bounds on our function input and output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5776c7cf747c44731fcd350ffbd03e02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given the model setup and declared constraints, our objective is to transform
+    this problem into a simplex problem. Since the simplex method is limited to linear
+    operations, directly incorporating a ReLU constraint into the setup is not feasible.
+    However, we can introduce constraints for all other components of the network.
+    If a solution is feasible without the ReLU constraints, we can systematically
+    add these constraints one by one until we either discover a feasible solution
+    or establish that the ReLU constraints render the problem impossible. Therefore,
+    by encoding the applicable constraints, we now have the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6580800c9016fbe1be00c5b57d0a25bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To incorporate these constraints into the simplex method, we need to convert
+    them to standard form. In standard form, all non-constant variables are on the
+    left-hand side, and all constants are on the right, with the constants being positive.
+    Upon rewriting, we obtain the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eca382aef9a42d5d55012aca36d98c33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting Up The Simplex Tableau
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The subsequent step involves converting all inequalities into equality constraints.
+    To achieve this, we will introduce slack variables. These variables are inherently
+    non-negative and can assume arbitrarily large values. Additionally, they ensure
+    that our new equality constraints are mathematically equivalent to our original
+    inequality constraints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/97efa385f656b40b52b20a2e4db3fe91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Currently, the simplex method inherently accommodates only non-negative variables.
+    However, the nodes in our network might not adhere to this non-negativity constraint.
+    To accommodate negative values, we must substitute variables that can be either
+    positive or negative with separate positive and negative variables, as illustrated
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e863c8f51ba3cf4c7c5b1b417c3292e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this substitution, x_{+i} and x_{-i} can always be positive values but
+    still combine together to make x_i to be negative. x_4 and x_5 come after a ReLU
+    and as such are always non-negative and don’t need this substitution. However,
+    all the other neural network node variables do. Doing these substitutions, we
+    now have the following set of constraints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2bc3929cab3e2ea546ec130fbd2044d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Distributing the negatives and removing the parenthesis we have the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7259ec8c76733871374652ab46613283.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have separated variables into positive and negative parts, we need
+    to take a small step back and remember that after we solve for this system of
+    equations we will be needing to be making adjustments to fix the ReLU violations.
+    To help make fixing ReLU violations easier, we are ready to introduce a new linear
+    constraint. The constraint constraints we wish to add are setting x_{+2} = x_4
+    and x_{+3} = x_5\. This will make it possible for both i in {2,3}, x_{+i} and
+    x_{-i} may both me non-negative and when that happens the ReLU constraint will
+    not be held. However, fixing the ReLU constraint will become as easy as adding
+    a constraint to either make x_{+i} or x_{-i} equal zero. The problem can proceed
+    without this constraint and it is not actually needed. In fact, the original paper
+    does not actually use, yet, I include in this pose as I did imperially find it
+    does make the faster because it limits the search space. This will result in the
+    following new set of constraints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e40f75d13fdb028c9ba55be202df52ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The clutter of having so many different variables around can make it hard to
+    tell what’s going on. As such, we’ll rewrite everything into a tableau matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/363cc13b4412db78c95731924a45b37a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solving The Primal Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we’ve transformed our problem into a tableau matrix, we will use the
+    two-phase method to solve this setup. The first phase involves finding a feasible
+    point, while the second phase moves the feasible point to maximize a specific
+    utility function. However, for our specific use case, we don’t have a utility
+    function; our goal is solely to determine the existence of a feasible point. Consequently,
+    we will only execute the first phase of the two-phase method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To identify a feasible point, the simplex method initially checks if setting
+    all slack variables to the right-hand side and all other variables to zero is
+    feasible. In our case, this approach is not viable due to non-zero equality constraints
+    lacking a slack variable. Additionally, on lines 5 and 7, the slack variable is
+    multiplied by a negative number, making it impossible for the expression to evaluate
+    to positive right-hand sides, as slack variables are always positive. Therefore,
+    to obtain an initial feasible point, we will introduce new auxiliary variables
+    assigned to be equal to the right-hand side, setting all other variables to zero.
+    This won’t be done for constraints with positive signed slack variables, as those
+    slack variables may already equal the right-hand side. To enhance clarity, we
+    will have the column on the left indicating which variables are assigned a non-zero
+    value; these are referred to as our basic variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e3664bada2597bac1e24c6f4b4a20fde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our feasible point then is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d5117c9e6bbc52bf04bbd376a93152d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have a point that we know is feasible. However, it is important to recognize
+    that these auxiliary variables alter the solution, and in order to arrive at our
+    desired true solution we need to eliminate them. To eliminate them, we will introduce
+    an objective function to set them to zero. Specifically, we aim to minimize the
+    function. a1 + a2 + a3 + a4 + a5 + a6 + a7\. If we successfully minimize this
+    function to zero, we can conclude that our original set of equations has a feasible
+    point. However, if we are unable to achieve this, it indicates that there is no
+    feasible point, allowing us to terminate the problem and declair the inputs and
+    outputs infeasible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the tableau and objective function declared, we are prepared to execute
+    the pivots necessary to optimize our objective. The steps for doing which are
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Replace basic variables in objective function with non-basic variables. In this
+    case, all the auxiliary variables are basic variables. To replace them, we pivot
+    on all of the auxiliary columns and the rows that have a non-zero value entry
+    for the basic variable. A pivot is done by adding or subtracting from the pivot
+    row to all other rows until the only non-zero entry in the pivot column is the
+    entry in the pivot row.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select a pivot column by finding the column with the first and largest value
+    in the objective function.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select a pivot row by using bland’s rule. Bland’s rule identifies all positive
+    entries in our column, divide the objective by those entries, and choose the row
+    that yields the smallest value.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Repeat steps 2 and 3 until all entries in the objective function are non-positive.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Once this done, we will have the following new tableau.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7c00900c9fd660638e5bc2f391f80985.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this, we arrive at the point
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d083350a5a3acb3ad5c12480121f6885.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have successfully adjusted all of the auxiliary variables to equal zero.
+    We also have pivoted away from them to make them all non-basic. Also, we will
+    note that these values do indeed satisfy our initial linear constraints. As such,
+    we no longer need the auxiliary variables and may remove them from our set of
+    linear equations. If we collapse the positive and negative variables and remove
+    the auxiliary variables we have this new point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ef388334b834f9fed732d30993acab8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relu Fix Search Procedure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: By adding the constraints x_{+2} = x_4 and x_{+3} = x_5 we make it possible
+    for both x_{+2} and x_{-2} to both be non-zero (same applies for x_{+3} and x_{-3}
+    ). As can be seen above, both x_{+2} and x_{-2} are non-zero and relu(x_2) does
+    not equal x_4\. To fix the ReLU, there is no way to directly constrain simplex
+    to either have x_{+2} or x_{-2} be zero, we must choose one case and create a
+    constraint for that case. Choosing between these two cases is equivalent to deciding
+    whether the ReLU will be in an active or inactive state. In the original paper,
+    the authors address ReLU violations by assigning one side to equal the value of
+    the other side at that specific moment. We believe this approach overly constrains
+    the problem. That is because limiting the ReLU to a specific value and necessitating
+    potentially an infinite number of configurations to check. Our solution, on the
+    other hand, constrains the ReLU to be either active or inactive. Consequently,
+    we only need to check these situations to cover the space of all allowable configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we need to decide whether the ReLU constraints are active or inactive, and
+    with 2 to the n valid constraints to set, manually examining all possible configurations
+    in a large network becomes impractical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The authors of Reluplex propose addressing violations by attempting to solve
+    them one ReLU fix at a time. They iteratively add one constraint to fix one specific
+    violation, update the tableau to accomodate the new constraint, remove the constraint,
+    then repeat for all other or new violations. Because only one constraint is ever
+    in place it is possible that updating one ReLU fix can break one in another place
+    that was already fixed. This can lead to a cycle of repeatedly fixing the same
+    ReLU constraints. To get around this, if a ReLU node is updated five times, a
+    “ReLU split” is executed. This split divides the problem into two cases: in one,
+    they enforce that the negative side of the variable is zero, and in the other,
+    the positive side is set to zero. Importantly, the constraint is never removed
+    in either case, ensuring that the particular ReLU will never need fixing again.
+    This allows the algorithm to only split on particularly “problematic” ReLU nodes,
+    and empirical evidence shows that typically only about 10% of ReLUs need to split.
+    Consequently, although some fixing operations may be repeated, the overall procedure
+    remains faster than a simple brute-force check for every possibility.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding Constraint To Fix Relu
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To address the ReLU violation, we need to constrain either x_{+2} or x_{-2}
+    to be zero. To maintain a systematic approach, we will consistently attempt to
+    set the positive variable to zero first. If that proves infeasible, we will then
+    set the negative side to zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Introducing a new constraint involves adding a new auxiliary variable. If we
+    add this variable and impose a constraint to set x_{+2}=0, the tableau is transformed
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d24177e449c1eae83366b2b5c3bfd49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'x_{+2} functions as a basic variable and appears in two distinct rows. This
+    contradicts one of the assumptions necessary for the simplex method to function
+    properly. Consequently, a quick pivot on (x_{+2}, x_{+2}) is necessary to rectify
+    this issue. Executing this pivot yields the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f413b001620597e321747d60712f7ea9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solving The Dual Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous step, we applied the two-phase method to solve the last tableau.
+    This method involves introducing artificial variables until a guaranteed trivial
+    initial point is established. Subsequently, it pivots from one feasible point
+    to another until an optimal solution is attained. However, instead of continuing
+    with the two-phase method for this tableau, we will employ the dual simplex method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The dual simplex method initiates by identifying a point that is optimally
+    positioned beyond the given constraints, often referred to as a super-optimal
+    point. It then progresses from one super-optimal point to another until it reaches
+    a feasible point. Once a feasible point is reached, it is ensured to be the global
+    optimal point. This method suits our current scenario as it enables us to add
+    a constraint to our already solved tableau without the need to solve a primal
+    problem. Given that we lack an inherent objective function, we will arbitrarily
+    assign an objective function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df784b9a7d64bd38a91013e9132b1ee0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Solving the Primal Problem typically involves transposing the matrix and replacing
+    the objective function values with the right-hand side values. However, in this
+    case, we can directly solve it using the tableau we’ve already set up. The process
+    is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e4f2710dac90af5d65a23c1b77d11d84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying this procedure to the problem we’ve established will reveal its infeasibility.
+    This aligns with expectations since setting x_{+3} to zero would necessitate setting
+    x_{+1}-x_{-1} or x_1 to 0.4 or lower, falling below the lower bound constraint
+    of 0.5 we initially imposed on x_1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting x_{-1}=0
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Since setting x_{+1}=0 failed, we move on to trying to set x_{-1}=0\. This
+    actually will succeed and result in the following completed tableau:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46e5c92b8f78826bf10272ee56706024.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From this, we have the new solution point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe903d2bdb884a952f766107230c6d36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which if we collapse becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4acdfaeb57f40726f3a6d1922d81a045.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have successfully made x_4 = relu(x_2) , we must remove the temporary
+    constraint before we continuing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removing The Temporary ReLU Constraint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To lift the constraint, a pivot operation is required to explicitly state the
+    constraint within a single row. This can be achieved by pivoting on our new a_1
+    column. Following Bland’s rule for selecting the pivot row, we identify all positive
+    entries in our column, divide the objective by those entries, and choose the row
+    that yields the smallest value. In this instance, the x_{-2} row emerges as the
+    optimal choice since 0/1=0 is smaller than all other candidates. After performing
+    the pivot, the resulting tableau is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f44c851472476ffa15cf81dba409f949.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s important to observe that none of the variable values have been altered.
+    We can now confidently eliminate both the a_1 row and a_1 column from the tableau.
+    This action effectively removes the constraint x_{-2}=0, resulting in the following
+    updated tableau:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0bea79ee5d711b3538c624ea1f5cde84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continuing to Relu Split
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As evident, we successfully addressed the ReLU violation, achieving the desired
+    outcome of x_4 = ReLU(x_2). However, a new violation arises as x_5 does not equal
+    ReLU(x_3). To fix this new violation, we follow the exact same procedure we used
+    to fix the x_4 does not equal ReLU(x_2) violation. Once this is done though, we
+    find that the tableau reverts to its state before we fixed x_4 = ReLU(x_2). If
+    we continue, we will cycle between fixing x_4 = ReLU(x_2) and x_5 = ReLU(x_3)
+    until we have updated one of these enough for a ReLU split to be triggered. This
+    split creates two tableaus: one where x_{+2}=0 (shown to be infeasible) and another
+    where x_{-2}=0, resulting in a tableau we have encountered before.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6c29f05e05ffc320b78ed3753b36dac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This time though, we normally will split the problem into two cases, one where
+    x_{-2}=0 and another where x_{+2}=0\. However, we already determined that x_{+2}=0
+    is infeasible so we terminate that problem. Nowe just need to determine if x_{-2}=0
+    is infeasible then we’ll be done. We proceed now with x_{-2}=0 permanently encoded
+    int he tableu. We now try to fix the x_{+3}=0 constraint. Once we go through the
+    exact same method, we will be successful and result in the following values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f0a2a1ee8f74e9513521e49289a92710.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which when we collapse becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d8eee94e9020f33efa5a2e8ae7227e8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This outcome is free of ReLU violations and represents a valid point that the
+    neural network can produce within the initially declared bounds. With this, our
+    search concludes, and we can officially declare that the neural network can have
+    an input in the range of 0.5 and 1 and generate an output between 0.5 and 2 is
+    possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Possible Optimizations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The original paper suggests other optimizations such as bound tightening, derived
+    bounds, conflict analysis, and floating-point arithmetic. The most promising one,
+    bound tightening, is where some simple checks are run to determine if one bound
+    necessarily dictacts that another bound has to be within something smaller than
+    what the user set. In our example, some simple algebra can quickly show that in
+    order for tht output to at least be 0.5 the input would have to at least be 0.9
+    and hence we could change that bound before we begin any searching. However, these
+    optimizations are not implemented in our solution and as such we leave it to the
+    reader to read the original paper to find details on this and other optimizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code Implementations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For the best-performing and production-ready version of the algorithm, we suggest
+    exploring the official Marabou GitHub page[5] as that is the current state of
+    the art for this problem space. Additionally, you can delve into the official
+    Reluplex repository for a more in-depth understanding of the algorithm[2]. I have
+    also written a simplified implementation of ReLuPlex in Python[3]. This implementation
+    can be valuable for grasping the algorithm and letting a user step through it
+    line by line. It can serve as a foundation for developing a customized more advanced
+    Python version of the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[[1][1702.01135] Reluplex: An Efficient SMT Solver for Verifying Deep Neural
+    Networks (arxiv.org)](https://arxiv.org/abs/1702.01135)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[2][1803.08375] Deep Learning using Rectified Linear Units (ReLU)](https://arxiv.org/abs/1803.08375)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[2] Official Implementation of ReluPlex (github.com)](https://github.com/guykatzz/ReluplexCav2017)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[3] Python Implementation of ReluPlex by author (github.com)](https://github.com/MatthewDaw/reluplex)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[4][1910.14574] An Abstraction-Based Framework for Neural Network Verification
+    (arxiv.org)](https://arxiv.org/abs/1910.14574)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[5] Official Implementation Of Marabou (github.com)](https://github.com/NeuralNetworkVerification/Marabou)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[6][2210.13915]Towards Formal XAI: Formally Approximate Minimal Explanations
+    of Neural Networks](https://arxiv.org/abs/2210.13915)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[7] Neural Networks By Science Direct](https://www.sciencedirect.com/topics/neuroscience/neural-network)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[[8]Comprehensive Overview of Backpropagation Algorithm for Digital Image Denoising](https://www.mdpi.com/2079-9292/11/10/1590)'
+  prefs: []
+  type: TYPE_NORMAL

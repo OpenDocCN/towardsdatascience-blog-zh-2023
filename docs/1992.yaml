@@ -1,0 +1,595 @@
+- en: PyTorch Model Performance Analysis and Optimization — Part 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91?source=collection_archive---------4-----------------------#2023-06-19](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91?source=collection_archive---------4-----------------------#2023-06-19)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to Identify and Reduce CPU Computation In Your Training Step with PyTorch
+    Profiler and TensorBoard
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----3bc241be91--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----3bc241be91--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bc241be91--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3bc241be91--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----3bc241be91--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-2-3bc241be91&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----3bc241be91---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bc241be91--------------------------------)
+    ·15 min read·Jun 19, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bc241be91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-2-3bc241be91&user=Chaim+Rand&userId=9440b37e27fe&source=-----3bc241be91---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3bc241be91&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-2-3bc241be91&source=-----3bc241be91---------------------bookmark_footer-----------)![](../Images/85e6474e09136c4c08ae6b01094ce27f.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Denise Chan](https://unsplash.com/@denmychan?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the second part of a series of posts on the topic of analyzing and
+    optimizing a PyTorch model running on a GPU. In our [first post](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
+    we demonstrated the process — and the *significant* potential — of iteratively
+    analyzing and optimizing a PyTorch model using [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    and [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
+    In this post we will focus on a specific type of performance issue that is particularly
+    prevalent in PyTorch due to its use of eager execution: The dependency on the
+    CPU for portions of the model execution. Identifying the presence and source of
+    these kinds of issues can be quite difficult and often requires the use of a dedicated
+    performance analyzer. In this post we will share some tips for identifying such
+    performance issues when using [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    and the [PyTorch Profiler TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pros and Cons of Eager Execution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the main appeals of PyTorch is its eager execution mode. In eager mode,
+    each PyTorch operation that forms the model is executed independently as soon
+    as it is reached. This is in contrast to graph mode in which the entire model
+    is pre-compiled into a single graph in a manner that is optimal for running on
+    the GPU and executed as a whole. Usually, this pre-compilation results in better
+    performance (e.g., see [here](https://medium.com/towards-data-science/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d)).
+    In eager mode, the programming context returns to the application following each
+    operation thus allowing us to access and evaluate arbitrary tensors. This makes
+    it easier to build, analyze, and debug ML models. On the other hand, it also makes
+    our model more susceptible to (sometimes accidental) insertion of suboptimal blocks
+    of code. As we will demonstrate, knowing how to identify and fix such blocks of
+    code can have a significant impact on the speed of your model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the following blocks we introduce the toy example we will use for our demonstration.
+    The code is very loosely based on the example from our [previous post](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
+    and the loss function defined in [this PyTorch tutorial](https://pytorch.org/tutorials/beginner/nn_tutorial.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start by defining a simple image-patch classification model. Its architecture
+    is not significant for this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we define a pretty standard cross-entropy loss function. This loss function
+    will be the main focus of our discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Last, we define the dataset and the training loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: An experienced PyTorch developer may have already noticed that our example contains
+    a number of inefficient lines of code in the loss function. At the same time,
+    there is nothing *obviously* wrong with it and these types of inefficiencies are
+    not uncommon. If you would like to test your PyTorch proficiency, see if you can
+    find three issues with our implementation of the cross-entropy loss before reading
+    on. In the next sections we will assume that we were *not* able to find these
+    issues on our own and show how we can use PyTorch Profiler and its associated
+    TensorBoard plugin to identify them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As in our [previous post](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869),
+    we will iteratively run an experiment, identify performance issues, and attempt
+    to fix them. We will run our experiments on an [Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/)
+    instance (containing an NVIDIA A10G GPU and 8 vCPUs) and using the official [AWS
+    PyTorch 2.0 Docker image](https://github.com/aws/deep-learning-containers). Our
+    choice of training environment was somewhat arbitrary and should **not** be viewed
+    as an endorsement of any of its components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we will focus on the Trace View portion of the PyTorch Profiler
+    report. See our [previous post](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
+    for examples of how to use the other views of the report. As we highlighted in
+    our [previous post](/pytorch-model-performance-analysis-and-optimization-10c3c5822869),
+    while PyTorch’s default [asynchronous execution](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)
+    can improve performance, it can also reduce the accuracy of time measurements.
+    For the purposes of our blog post we will rely on the step times reported by PyTorch
+    Profiler. For some of our experiments we will introduce an artificial synchronization
+    event to force host-device alignment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initial Performance Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the image below we show the Trace View result of the script above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a3d4c3d25181cd54994b70fbd9643b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View of Baseline Model (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As highlighted, the training step takes roughly 9.35 milliseconds, about **a
+    third of which are spent on the forward pass of our cross-entropy loss**! This
+    is a clear indication that something is wrong. Our loss function contains a small
+    number of calculations compared to the model and should certainly not account
+    for such a large percentage of the step time. Taking a closer look at the call
+    stack, we can see a few function calls that strengthen our suspicions, including
+    “to”, “copy_”, and “cudaStreamSynchronize”. This combination usually indicates
+    that data is being copied from the CPU into the GPU — not something we want to
+    be happening in the middle of our loss calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now know that we have a performance issue in our loss function and that it
+    is likely to be related to copying tensors from the host to the GPU. However,
+    this might not be enough to identify the precise line of code that is causing
+    the issue. To facilitate our search we will wrap each line of code with a labeled
+    [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    context manager and rerun the profiling analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The addition of the labels help us identify the *weight* definition, or more
+    accurately, the copying of the weights into the GPU, as the problematic line of
+    code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/221bdc70575c808f4878212a59a67b9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance Issue of Weights Definition as Seen in Trace View (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the loss function, as it is currently defined, we are copying the weight
+    vector into the GPU in every training step. Being that our weight vector is constant,
+    this seems highly wasteful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #1: Remove redundant host-to-GPU copies from the training step'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once we have identified our first issue, fixing it is rather trivial. In the
+    code block below, we copy our weight vector to the GPU a single time in the loss
+    *init* function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The image below shows the results of the performance analysis following this
+    fix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/54df6aba7a2b6810871608a221bc4a0f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trace View Following Optimization #1 (Captured by Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While our step time has dropped down to 8.9 milliseconds, we can clearly see
+    that we have a new performance issue that we need to address, this time in the
+    *weighted_nll* function. As before, we can use [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    to identify the problematic line of code as the *assert* call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that this issue existed in the base experiment, as well, but was hidden
+    by our previous performance issue. It is not uncommon in the course of performance
+    optimization for severe issues, that were previously hidden by other issues, to
+    suddenly appear in this manner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A closer analysis of the call stack shows calls to “item”, “_local_scalar_dense”,
+    and “cudaMemcpyAsync”. This is often an indication that data is being copied from
+    the GPU to the host. Indeed, our *assert* call, which is performed on the CPU,
+    requires access to the *target* tensor residing on the GPU, thus invoking the
+    highly inefficient data copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #2: Remove redundant GPU-to-host copies from the training step'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While verifying the legality of the input labels may be warranted, it should
+    be done in a way that does not impact our training performance so negatively.
+    In our case, fixing the issue is a simple matter of moving the *assert* to the
+    data input pipeline, before the labels are copied into the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Important Note**: Although our goal is usually to attempt to reduce copies
+    between the host and the GPU in the forward pass, there are times when this is
+    either not possible (e.g., if we require a kernel that is not supported by the
+    GPU) or undesirable (e.g., if running a particular kernel on the CPU will increase
+    performance).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Following the removal of the *assert* our step time drops to 8.71 milliseconds
+    and a new performance issue surfaces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f85f0359594735cc6c2cca38e726549f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trace View Following Optimization #2 (Captured by Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The indexes into the *pred* tensor in the *weighted_nll* are defined by the
+    *r* and *target* tensors. While the *target* tensor already resides on the GPU,
+    the *r* tensor, which was defined on the previous line, does not. This, once again,
+    triggers an inefficient host-to-GPU data copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #3: Replace range with [torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Python’s *range* function outputs a list on the CPU. The presence of any list
+    in your training step should be a red flag. In the code block below, we replace
+    the use of *range* with [torch.arange](https://pytorch.org/docs/stable/generated/torch.arange.html)
+    and configure it to create the output tensor directly on the GPU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results of this optimization are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c1804eae7c94c5137ccbed54a4939496.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trace View Following Optimization #3 (Captured by Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we’re talking!! Our step time has dropped all the way down to 5.63 milliseconds.
+    But if this seems to you to be too good to be true, you are correct. The long
+    synchronization event following the last profiler-step indicates that the GPU
+    is lagging behind the CPU and that the total step time is somewhat higher. To
+    get a more accurate reading, let’s append an artificial synchronization event
+    to the end of each training step for the remainder of our experiments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the addition of the artificial synchronization event, our new *baseline*
+    step time is ten milliseconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To identify further opportunities for optimization, let’s take a closer look
+    at the Trace View of the *weighted_nll* function which takes up the majority of
+    the loss calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5df7030a1caf95b198a8e6d6b0aa4513.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View of *weighted_nll Function* (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see from the trace that the function is formed from multiple small blocks,
+    each of which is ultimately mapped to an individual CUDA kernel which is loaded
+    onto the GPU via the *CudaLaunchKernel* call. Ideally, we would like to reduce
+    the total number of GPU kernels. Not only would this reduce the amount of interaction
+    between the CPU and GPU, but it might also reduce the total number of GPU operations.
+    One way to accomplish this is to prefer, whenever possible, higher level PyTorch
+    operators, such as [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss).
+    Such functions are presumed to “fuse" together underlying operations, thus requiring
+    a lower number of overall kernels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #4: Replace custom NLL with [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The code block below contains our updated loss definition, which now uses [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we have taken the liberty of introducing another common error which we
+    will proceed to demonstrate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the higher-level function further reduces our step time to 9 milliseconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5081b62890d478d4e0a02a79dd8dcb8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trace View Following Optimization #4 (Captured by Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, zooming in on the loss function, we can see that a significant amount
+    of time is now spent on *initializing* the [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    object!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1e0723d509fef638c4165cb77349716.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trace View of the *Loss Function* Following Optimization #4(Captured by Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking back at our loss function, we can see that we are initializing a new
+    [NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    object in each iteration of the training step! Naturally, object initialization
+    occurs on the CPU, and although (in our case) it is relatively fast, it is something
+    we would like to avoid doing during our training step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #5: Refrain from initializing objects in the train step'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the code block below we have modified our loss implementation so that a single
+    instance of [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    is created in the *init* function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The results show an additional modest improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ec92226be7726c8bd9a9e967d5d36a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trace View Following Optimization #5 (Captured by Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #6: Use [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
+    instead of custom loss'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: PyTorch includes a built-in [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
+    which we now evaluate and compare with our custom loss implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resultant step time is a new low of 8.5 milliseconds, as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af85807db4d1d3fa80c40c629029df47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Trace View Following Optimization #6 (Captured by Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #7: Compile loss function'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For our final optimization attempt, we will configure the loss function to run
+    in graph mode using the [torch.compile](https://pytorch.org/docs/stable/generated/torch.compile.html)
+    API. As we discussed at length in [this previous post](/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d)
+    and demonstrated in the [prequel to this post](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869),
+    torch.compile will use techniques such as *kernel fusion* and *out-of-order execution*
+    to map the loss function into low-level compute kernels in a manner that is optimal
+    for the underlying training accelerator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The image below shows the Trace View result of this experiment followed by a
+    zoom-in of the loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb97709b5851a1226deefe11cfce58ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View Following Model Compilation (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f08d43dfb632a714780cdec1cada9bbf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View of the Loss Function Following Model Compilation (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first thing we can see is the appearance of terms containing “OptimizedModule”
+    and “dynamo” which are indicative of the use of torch.compile. We can also see
+    that, in practice, model compilation did not reduce the number of kernels loaded
+    by the loss function which means that it did not identify any opportunities for
+    additional kernel fusion. In fact, in our case, the loss compilation actually
+    caused a slight increase in the time of the forward pass of the loss function.
+    It appears that the [CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
+    is not meaty enough to benefit from this optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may be wondering why we can’t just apply torch compilation to our initial
+    loss function and rely on it to compile our code in an optimal manner. This could
+    save all the hassle of the step-by-step optimization we described above. The problem
+    with this approach is that although PyTorch 2.0 compilation (as of the time of
+    this writing) does indeed optimize certain types of GPU-to-CPU crossovers, some
+    types will crash the graph compilation, and others will result in the creation
+    of multiple small graphs rather than a single large one. The last category causes
+    [*graph breaks*](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#graph-breaks)
+    which essentially limits the torch.compile feature’s ability to boost performance.
+    (One way to address this is to call torch.compile with the *fullgraph* flag set
+    to *True*.) See [our previous post](/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d)
+    for more details on using this option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we demonstrated the discovery and solution of a number of performance
+    issues. Although the increase in training speed of our toy model was relatively
+    modest (~15% when applying the artificial synchronization event) the potential
+    impact of optimizations such as the ones we demonstrated can be very significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall that we started with a pretty innocent looking loss function. Without
+    an in-depth analysis of our application’s behavior, we may have never known that
+    there was anything wrong with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s summarize some of the things we have learned. We divide the summary into
+    two parts. In the first, we describe some coding habits that may impact training
+    performance. In the second, we recommend some tips for performance profiling.
+    Note that these conclusions are based on the example that we have shared in this
+    post and may not apply to your own use case. Machine learning models vary greatly
+    in property and behavior. Therefore, you are strongly advised to assess these
+    conclusions based on the details of your own project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coding Tips
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The way in which you implement the forward pass of your model can have a significant
+    impact on its performance. Here we list just a few recommendations based on the
+    example that we covered in this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Avoid initializing constant tensors in the forward pass. Do it in the constructor
+    instead.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Avoid using *asserts* on tensors residing on the GPU in the forward pass. Either
+    move them to the data input pipeline and/or check if PyTorch has any built-in
+    methods for performing the data verification that you need.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Avoid the use of lists. Check if using torch.arange to create a tensor directly
+    on the device can be a better alternative.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use PyTorch operators such as [torch.nn.NLLLoss](https://pytorch.org/docs/stable/generated/torch.nn.NLLLoss.html#torch.nn.NLLLoss)
+    and [torch.nn.CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss)
+    rather than creating your own loss implementations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Avoid initializing objects in the forward pass. Do it in the constructor instead.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Consider using torch.compile when relevant.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Performance Analysis Tips
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As we demonstrated, the Trace View of the Tensorboard PyTorch Profiler plugin
+    was critical in identifying the performance issues in our model. Below we summarize
+    some of the primary takeaways from our example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: High GPU utilization is NOT necessarily a sign that your code is running optimally.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Look out for portions of the code that take longer than expected.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    to pinpoint performance issues.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Dips in GPU utilization are not necessarily aligned with the source of the performance
+    issue.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Look out for unintended data copies from the host to the GPU. These are typically
+    identified by calls to “to”, “copy_”, and “cudaStreamSynchronize”, which you can
+    search for in the Trace View.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Look out for unintended data copies from the GPU to the host. These are typically
+    identified by calls to “item”, and “cudaStreamSynchronize”, which you can search
+    for in the Trace View.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Although our demonstration has neared its end, **our optimization work is not
+    done**. See our [previous post](https://chaimrand.medium.com/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
+    for some ideas on how to proceed from here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have focused on performance issues in training applications
+    resulting from redundant interaction between the CPU and GPU during the forward
+    pass of the training step. We demonstrated how performance analyzers such as PyTorch
+    Profiler and its associated TensorBoard plugin can be used to identify such issues
+    and facilitate significant performance improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As in our previous post, we emphasize that the path to successful optimization
+    will vary greatly based on the details of the training project, including the
+    model architecture and training environment. In practice, reaching your goals
+    may be more difficult than in the example we presented here. Some of the techniques
+    we described may have little impact on your performance or might even make it
+    worse. We also note that the precise optimizations that we chose, and the order
+    in which we chose to apply them, was somewhat arbitrary. You are highly encouraged
+    to develop your own tools and techniques for reaching your optimization goals
+    based on the specific details of your project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What Next?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the [third post](/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2)
+    in our series on PyTorch model performance optimization we discuss how to identify
+    and reduce cudaMemcpyAsync events and why it’s best to avoid Boolean mask operations.
+    We also encourage you to check out our [other posts on medium](https://chaimrand.medium.com/),
+    many of which cover different elements of performance optimization of machine
+    learning workloads.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,443 @@
+- en: 'Variance Reduction in Experiments — Part 2: Covariate Adjustment Methods'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/variance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f?source=collection_archive---------9-----------------------#2023-02-07](https://towardsdatascience.com/variance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f?source=collection_archive---------9-----------------------#2023-02-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deep dive into MLRATE - machine learning regression-adjusted treatment effect
+    estimator and comparing it to other methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)[![Murat
+    Unal](../Images/9f00db7597d7ece01213a6b0589c87d8.png)](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------)
+    [Murat Unal](https://medium.com/@murat.unal?source=post_page-----f5393f92eb8f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a64c9fc55d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&user=Murat+Unal&userId=15a64c9fc55d&source=post_page-15a64c9fc55d----f5393f92eb8f---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f5393f92eb8f--------------------------------)
+    ·9 min read·Feb 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff5393f92eb8f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&user=Murat+Unal&userId=15a64c9fc55d&source=-----f5393f92eb8f---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff5393f92eb8f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariance-reduction-in-experiments-part-2-covariate-adjustment-methods-f5393f92eb8f&source=-----f5393f92eb8f---------------------bookmark_footer-----------)![](../Images/48d8ff13f43f0cda293c05d88c8fd730.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Sam Moghadam Khamseh](https://unsplash.com/@sammoghadamkhamseh?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the second post in the series of articles where we are discussing variance
+    reduction in experiments. In the first post we discussed why reducing the variance
+    of our outcome metric is necessary in experiments and showed how simple regression
+    adjustment can result in substantial benefits as well as built an intuition on
+    this topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/variance-reduction-in-experiments-part-1-intuition-68b270a0df71?source=post_page-----f5393f92eb8f--------------------------------)
+    [## Variance Reduction in Experiments — Part 1: Intuition'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The intuition behind variance reduction and why it is important in randomized
+    experiments.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/variance-reduction-in-experiments-part-1-intuition-68b270a0df71?source=post_page-----f5393f92eb8f--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post we are going to analyze the variance reduction performances of
+    several well-established covariate adjustment methods. Specifically, we are going
+    to run simulations with varying degrees of complexities in the data generating
+    process and apply the following methods to each experiment data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Regression adjustment (OLS_adj)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Regression adjustment with interactions (OLS_int)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Controlled-experiment using pre-experiment data (CUPED)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Difference-in-differences (DID)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Machine learning regression-adjusted treatment effect estimator (MLRATE)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The average treatment effect (ATE) that we want to find is the expected difference
+    in outcomes, *Y*, between treatment (denoted by 1) and control (denoted by 0):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also useful to think about the conditional average treatment effect (CATE),
+    which is the ATE on a subset of units described in covariates *X:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Taking the average of CATEs over the entire covariate space, gives us back
+    the ATE:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we have an experiment with random assignment to treatment, each method
+    is an unbiased estimate of the ATE. However, the level of variance reduction that
+    each method achieves can be very different, depending on the underlying data generation
+    process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s first discuss the mechanics behind each method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Difference-in-means (DIM)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'DIM is a simple and consistent estimate of the ATE and will be the baseline
+    in our analysis since it does not involve any covariate adjustment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regression adjustment (OLS_adj)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Thisisthe coefficient estimate of the treatment indicator*, T*, which is 1
+    if unit *i* is in treatment and 0 otherwise, from the outcome regression that
+    includes covariates, *X*, in a linear and additive manner, and assumes a constant
+    treatment effect across all units:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To see why the OLS estimator of *τ* is a consistent estimator of the ATE, let’s
+    consider the regression function for treated and control separately and then take
+    the difference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It follows that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regression adjustment with interactions (OLS_int)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Thisisthe coefficient estimate of the treatment indicator*, T*, from the outcome
+    regression that includes not only covariates, *X*, but also interactions between
+    *T* and the demeaned covariates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contrary to OLS_adj, here we do not assume the effect is constant across all
+    units, rather we allow the treatment effect to vary with the covariates, albeit
+    in a linear and additive way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The OLS estimator of *τ* once again is a consistent and asymptotically normal
+    estimator of the ATE. To see why, let’s again take the regression function for
+    treated and control separately and then take the difference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Controlled-experiment using pre-experiment data (CUPED)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'CUPED (Deng et al., 2013) rests on the idea of using a pre-experiment covariate,
+    *X*, that is highly correlated with the outcome, *Y*, but is unrelated to the
+    treatment, *T.* The pre-experiment value of the outcome, *Y,* is a natural candidate
+    as it meets these criteria. Conditional on having access to such a covariate in
+    our data, we apply CUPED as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Obtain theta:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '2\. Create a transformed outcome, *Y_cuped,* for each unit *i*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '3\. Estimate *τ* from:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way the variance of *Y* is reduced by *1*-*Corr(X, Y):*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our simulations, we designed *X1* in all experiment data such that it satisfies
+    the criteria mentioned above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Difference-in-differences (DID)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The DIDestimator in the context of covariate adjustment is not to be confused
+    with the DID estimator used in panel data applications. DID in this context is
+    obtained by firsttraining a machine learning model *g(X)* for predicting *Y* from
+    *X*, and then computing the difference between the treatment and control group
+    averages of *Y − g(X)* (Yongyi et al., 2021).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The motivation behind DID is that because *g(X)* and *T* are independent, the
+    resulting estimator has the same expectation as the DIM estimator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if *g(X)* is a good predictor of *Y* then *Var(Y)* will exceed *Var(Y
+    − g(X))*, and the DID estimate based on averages of *Y −g(X)* will have lower
+    variance than the DIM estimate based on averages of *Y*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, using machine learning allows us to capture complex interplay between
+    the outcome and the covariates in a data-driven way without relying on functional
+    form assumptions as we do in OLS_adj and OLS_int.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A critical point is to use cross-fitting. Simply put, we split the data into
+    2 parts, use one part to build *g(X)* and use the other part to obtain predictions
+    and repeat the process by exchanging the parts. We end up with predictions for
+    every observation that are generated by a model trained only on other observations.
+    In this analysis we apply cross-fitting for both DID and MLRATE, since both use
+    machine learning predictions in the final estimator, but the original paper applies
+    it only for MLRATE (Yongyi et al., 2021).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DID is obtained as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train *g(X)* by using cross-fitting and predicting *Y* from *X.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Create *Y_res* for each unit *i*:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '3\. Estimate *τ* from:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Machine learning regression-adjusted treatment effect estimator (MLRATE)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main difference between DID and MLRATE is that instead of directly subtracting
+    the machine learning predictions *g(X)* from the outcome *Y*, it includes the
+    predictions as well as the interactions between T and the demeaned predictions
+    as regressors in a subsequent linear regression step (Yongyi et al., 2021).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'MLRATE proceeds as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train *g(X)* by using cross-fitting and predicting *Y* from *X.*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Obtain *τ* estimate:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It is shown that including predictions as regressors guarantees robustness of
+    the estimator to poor predictions, and MLRATE has an asymptotic variance no larger
+    than the DIM estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Data Generating Process (DGP)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To compare the effectiveness of these 5 covariate adjustment methods in reducing
+    variance under varying degrees of complexities, we have a DGP that has *N = 2000*
+    iid observations and 10 covariates distributed as *N(0,I(10×10))*. The treatment
+    indicator is *Ti ∼ Bernoulli(0.5)*, and the error term is distributed as *N(0,25²)*.
+    Treatment is independent of covariates and the error term, which itself is independent
+    of the covariates. The outcome *Yi* and thetreatment effect function *τ(Xi)* depend
+    on the functional forms as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Linear Effects of Covariates & Constant Treatment Effect**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**2\. Linear Effects of Covariates & Varying Treatment Effect**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Non-linear Effects of Covariates & Constant Treatment Effect**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Non-linear Effects of Covariates & Varying Treatment Effect**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We generate 1000 datasets under each functional form and apply each covariate
+    adjustment method to these data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we print the estimates, their standard errors and the 95% confidence
+    intervals as well as plot the distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Findings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The simulation results are shown in the figures below and the key findings
+    are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every covariate adjustment method achieves smaller standard errors than the
+    DIM estimator regardless of the DGP, however, the degree of reduction depends
+    on the complexity of the DGP.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When the DGP consists of linear effects of covariates, the OLS_adj and OLS_int
+    estimators have the smallest standard errors, under both constant and varying
+    treatment effects.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When the DGP consists of non-linear effects of covariates, machine learning
+    based estimators DID and MLRATE have the smallest standard errors, under both
+    constant and varying treatment effects.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since non-linearity in covariates and varying treatment effects are both the
+    norm rather than the exception in real-life applications, we conclude that machine
+    learning based adjustment methods are superior than other methods in reducing
+    variance in experiments.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finally, CUPED underperforms other methods under every scenario. This is mainly
+    because the original version of CUPED uses a single covariate for adjustment and
+    that’s how we implement it. It is possible to extend CUPED for multiple covariates.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/381323e1ea9b81c3e89c5f9ad67384d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1: Linear Effects of Covariates & Constant Treatment Effect**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5d51176fa47ebfcdcaf8eae475991803.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2: Linear Effects of Covariates & Varying Treatment Effect**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7216b9a916200745c634a41fd6840ae6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3: Non-linear Effects of Covariates & Constant Treatment Effect**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c3ccf3a15c8507388d22c1c6aa15f4a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4: Non-linear Effects of Covariates & Varying Treatment Effect**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This concludes the two-article series on variance reduction in experiments.
+    In part 1 we built an intuition towards the importance of variance reduction in
+    experiments and in part 2 we have analyzed different covariate adjustment methods.
+    We have seen that all of the methods result in tighter confidence intervals than
+    the simple DIM estimator. As such, covariate adjustment should become a standard
+    practice when analyzing experiments. When it comes to which method to apply, we
+    have seen that machine learning based estimators perform best especially when
+    there is complex interplay in the DGP, which certainly is a more realistic representation
+    of the real-world.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The original notebook can be found in my github [repository](https://github.com/muratunalphd/Blog-Posts).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading! I hope you felt it was worth your time.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I strive to write high quality and useful articles for practitioners on methods
+    and applications in causal inference as well as marketing data science.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If you’re interested in these areas consider [following me](https://medium.com/@murat.unal),
+    and feel invited to share your comments/suggestions.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] W. Lin, [Agnostic notes on regression adjustments to experimental data:
+    Reexamining freedman’s critique](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-7/issue-1/Agnostic-notes-on-regression-adjustments-to-experimental-data--Reexamining/10.1214/12-AOAS583.full).
+    (2013)*, The Annals of Applied Statistics*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] A. Deng, Y. Xu, R. Kohavi, T. Walker, [Improving the Sensitivity of Online
+    Controlled Experiments by Utilizing Pre-Experiment Data](https://dl.acm.org/doi/abs/10.1145/2433396.2433413)
+    (2013), *WSDM*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [G. Yongyi, C. Dominic, M. Konutgan, W. Li, C. Schoener, M. Goldman, Machine
+    Learning for Variance Reduction in Online Experiments (2021), *NeurIPS*.](https://proceedings.neurips.cc/paper/2021/hash/488b084119a1c7a4950f00706ec7ea16-Abstract.html)'
+  prefs: []
+  type: TYPE_NORMAL

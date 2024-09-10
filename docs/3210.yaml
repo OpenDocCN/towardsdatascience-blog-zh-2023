@@ -1,0 +1,452 @@
+- en: Proximity Analysis to Find the Nearest Bar Using Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/proximity-analysis-to-find-the-nearest-bar-using-python-a29d29a3754d?source=collection_archive---------2-----------------------#2023-10-26](https://towardsdatascience.com/proximity-analysis-to-find-the-nearest-bar-using-python-a29d29a3754d?source=collection_archive---------2-----------------------#2023-10-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**A few words about spatial data processing**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mik.sarafanov?source=post_page-----a29d29a3754d--------------------------------)[![Mikhail
+    Sarafanov](../Images/88869a3c6f664785c90539dd7aab6d74.png)](https://medium.com/@mik.sarafanov?source=post_page-----a29d29a3754d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a29d29a3754d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a29d29a3754d--------------------------------)
+    [Mikhail Sarafanov](https://medium.com/@mik.sarafanov?source=post_page-----a29d29a3754d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F209c78c40898&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproximity-analysis-to-find-the-nearest-bar-using-python-a29d29a3754d&user=Mikhail+Sarafanov&userId=209c78c40898&source=post_page-209c78c40898----a29d29a3754d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a29d29a3754d--------------------------------)
+    ·10 min read·Oct 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa29d29a3754d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproximity-analysis-to-find-the-nearest-bar-using-python-a29d29a3754d&user=Mikhail+Sarafanov&userId=209c78c40898&source=-----a29d29a3754d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa29d29a3754d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fproximity-analysis-to-find-the-nearest-bar-using-python-a29d29a3754d&source=-----a29d29a3754d---------------------bookmark_footer-----------)![](../Images/41128cdb9b2221c5fd5299b99c687008.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preview image (by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Disclaimer: in this article we will demonstrate all approaches using the open-source
+    library [estaty](https://github.com/wiredhut/estaty). This library appeared due
+    to the desire to formalize the algorithms we use in our work into a tool that
+    will be available to other developers. In other words, this article is written
+    by the maintainer of the library.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Today we would like to continue discussing the topic of spatial data processing
+    using open-source Python library. We have already talked about how to [combine
+    Open Street Map and Landsat open data to verify areas of green zones](/combining-open-street-map-and-landsat-open-data-to-verify-areas-of-green-zones-b1956e561321)
+    nearby real estate objects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s consider another type of analysis: proximity analysis, or the availability
+    (or accessibility) of some useful objects, such as parks, hospitals, kindergartens,
+    etc. (Figure 1).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae719b69fbe6895a8c1cedfb97528dd7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. Schematic illustrating the approach to proximity analysis (let’s
+    imagine that here it is about hairdressing salons, for example) (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A little bit about proximity analysis**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We propose to start the story with a brief literature review. I like the article
+    “[Location Analytics Use-Cases that Every Data Scientist Should Know](/location-analytics-use-cases-that-every-data-scientist-should-know-740b708a2504)”
+    (attention — it is *Member-only story*) that pretty easily introduces the reader
+    to what geographic information analysis is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The articles “[Creating a Cost Distance Surface to Measure Park Access](https://www.azavea.com/blog/2014/09/04/creating-a-cost-distance-surface-to-measure-park-access/)”
+    and “[The growing state of Utah: a proximity analysis of Utah residents to medical
+    care facilities](https://blog.lib.utah.edu/the-growing-state-of-utah-a-proximity-analysis-of-utah-residents-to-medical-care-facilities/)”
+    also show quite clearly what characteristics in cities engineers can calculate
+    to perform such analyses. The topic is quite popular and a lot of both scientific
+    papers and practical applications have been developed — let’s join in.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Library (that we use)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now let’s go to a more concrete conversation: the tools that can be used for
+    this proximity analysis (in addition to geographic information systems like QGIS
+    or ArcGIS and proprietary services as the end user of the product).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We, as developers, would like to analyze not aggregated data but raw values
+    with the help of convenient libraries or services (preferably open-source, of
+    course). We have not found any suitable tools for us, so we develop and use our
+    own open-source library written in Python. It is called **estaty** and if you
+    want, you can see the documentation page after reading the article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**https://estaty.readthedocs.io/en/latest/?badge=latest**](https://estaty.readthedocs.io/en/latest/?badge=latest)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Based on this library, we compose use cases. Based on these examples, we developed
+    microservices that help real estate managers perform analysis. In addition to
+    the ready-made services, however, these scripts are organized as use cases and
+    are available to anyone who wants to use the library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**estaty** can use different data sources to perform the calculations, but
+    the open examples (to keep them truly open) are based on OpenStreetMap data. In
+    the current paper, we want to show how we can do a fairly quick collateral estimation
+    and still scale the approach to new data sources if needed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Analysis (which we can do)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, install the library using the command
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'or, if you’re using poetry:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are now ready to use version 0.1.0
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start the implementation. We are going to provide a proximity analysis
+    for the following address: “Berlin, Neustädtische Kirchstraße 4–7” — coordinates
+    {latitude: 52.5171411, longitude: 13.3857187}. We will analyze the neighborhood
+    of this object within a radius of 2 km.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to find out how long it will take us to get to the nearest bar (according
+    to OSM — it is worth mentioning here), let’s write and run the [following code](https://github.com/wiredhut/estaty_examples/blob/main/release_01/proximity_tds/path_to_parks.py):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here the following occurs — we construct a processing pipeline for analyzing
+    a property. The pipeline will look like a graph consisting of sequential transformations
+    over the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/987db08a3aef0f05cfd11c82cf9d54da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Spatial data processing pipeline for calculating distances of routes
+    to bars using OpenStreetMap data (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a closer look at what’s going “under the hood”. Let’s start with
+    the fact that the estaty architecture is built on 5 abstract layers (in the case
+    of the Pipeline above, only three types of nodes are used):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**DataSource** — loads data from the required source, brings the data to a
+    common standard (vector and raster). No matter what the source was, the output
+    from this node will be only in two possible variations, which allows to unify
+    their further processing;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Preprocessor** — preprocessing of vector or raster data, e.g. assigning a
+    new coordinate reference system (CRS);'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Merger** — combining data in the required way. Possible combinations: vector
+    data with vector data, raster with raster and vector data with raster data;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Analyzer** — core of the library — uses simple atomic transformations over
+    rasters and vector objects to perform some analysis, such as area matching or
+    pathfinding;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Report** — optional final analysis module, which allows generating a report
+    in a user-friendly format.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By combining these nodes in a certain way it is possible to compose different
+    pipelines for data analysis without modifying the ways of processing the original
+    data — by substituting solely the original sources or ways of analysis (see Animation
+    1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eceb41cd22d0a33ea3e80629adbcacdb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation 1\. Flexibility of the library when preparing a pipeline for analysis
+    (animation by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, Figure 2 shows that only three nodes are used in the analysis — this is
+    a fairly simple pipeline. As a result of its work we will get a geopandas GeoDataFrame
+    (a table with geometries of objects) with linear objects — routes to the objects
+    of our interest. In this case — to the bars. Visualization of the result, by the
+    way, will look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9c310bbd45eb46e2fe034aaa0436a79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Routes to bars with distances calculated by the algorithm (image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have the rights to do what we want with the obtained set of linear objects
+    — for example, to find the distance to the nearest bar, or to request the average
+    value from the sample (which is done in the code):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Min length: 308.93, m'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Average length: 2306.49, m'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a true expert in the location of bars in the centers of large cities, I can
+    say that the bars in the area of analysis, in reality, can be much more. But we
+    agreed at the beginning that we would analyze based on OSM data, so….
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pipeline itself is independent of the source of data on which the analysis
+    is performed. This is ensured by the weak interconnectedness of the library modules.
+    Let’s start with the DataSource node — it has a built-in mechanism of data conversion
+    to one type (for example, vector data here will be in the format geopandas GeoDataFrame
+    and will always be only three types, no matter what source we used for this, all
+    of them will be converted to points, lines, or polygons). This is followed by
+    a pre-processor that will automatically determine the appropriate metric projection
+    for our data. The only thing that matters to the pre-processor is that the data
+    must come from the node’s DataSource, the rest should be taken care of by the
+    node before it. And our simple pipeline is completed by an analysis block, which
+    will operate on any geometric objects, no matter if they are area, linear or point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, we can do exactly the same calculations for other categories of data
+    that we will extract from OSM (of course, the list is not limited only to OSM),
+    for example, proximity analysis for schools, parks, water objects, public toilets,
+    waste disposal bins, police stations and so on — anything (for the types of objects
+    that can be defined by tags, see the wiki page [Map features](https://wiki.openstreetmap.org/wiki/Map_features)
+    or in the [documentation estaty about data sources](https://estaty.readthedocs.io/en/latest/documentation/data_source/)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/457410efe02b4595444aac98106f6f9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Proximity analysis for schools, parks, water objects, waste disposal
+    bins, police stations (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How the approach can be scaled up**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We mentioned that spatial data of any nature can be analyzed: social data,
+    natural objects or artificial constructions. Let’s look even deeper into the source
+    code. From the figures we can see that distance calculation is performed on routes
+    built with regard to roads, which is reasonable, because usually we don’t fly
+    to bars by helicopters, but walk. Therefore, the ‘distance’ analysis includes
+    the search for routes on the road graph, using the one from OSM. That is, the
+    algorithm searches for a route on the following abstractions (we relied on the
+    following article, highly recommended — [OSMnx: Python for Street Networks](https://geoffboeing.com/2016/11/osmnx-python-street-networks/)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d87c87e46592715c3e95c1c8a5c2eed3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Graph of walking roads, which is used to search for optimal routes
+    (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A graph here is a geographically referenced (have latitude and longitude attributes)
+    nodes and edges. To find the shortest route from object A to object B, we need
+    to take three steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the nearest node in the graph to object A (let’s call it node 1)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find the nearest node in the graph to object B (let’s call it node 2)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using the graph traversal algorithm, find the optimal route from node 1 to node
+    2
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If we want to obtain the distance, there is a need to sum up the length of the
+    route from node 1 to node 2 with the distances from object A to node 1 and from
+    object B to node 2\. The last two components can be calculated in a straight line
+    because the network with nodes is quite dense. But here there is a difficulty
+    — if object A and B are points, it is relatively easy to find the nodes nearest
+    to them (calculate the distances between points). If the geometry of object A
+    is, for example, an area, then we have to look for the “nearest” node to the polygon.
+    What to do in the case of a linear object was also a problem to solve
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then let’s answer the question, “How to calculate distances from graph nodes
+    to vector objects of different types: lines, points and polygons in a unified
+    way”? For this purpose, the library converts objects to point type (it is very
+    easy to find the distance between points) before starting the calculation of routes.
+    We call such transformations representations (Figure 6).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c606a11844f867e1cbaad26b27a6df49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Some ways to represent vector objects (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is, instead of writing and maintaining three algorithms, we write one (search
+    for routes to points) and then reduce all the initial data types to one. How to
+    reduce them to one type is an ambiguous question. We could do it simply by calculating
+    centroids. However, in the case of calculation in urban areas and especially for
+    large objects (like parks), finding routes for centroids may be unnecessary —
+    we consider that we have reached the park not when we are in its center, but when
+    we take the first step from the asphalted path into the pleasant dirt park darkness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, we decided to use an approach where we find the closest point of a polygon
+    or linear object to the object of analysis (from which the routes are built).
+    Then this point is considered as the final destination node — to this node that
+    the further route through the graph will be built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**More advanced analysis**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You can’t impress anyone with routes to bars alone. So let’s complicate the
+    task. Let’s assume that we want to make a more complex analysis by combining data
+    from different sources. For example, we want to calculate how much on average
+    we have to walk to parks with oak trees (we like to walk after bars and admire
+    the park with trees). To do this, we will combine data from two sources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s download vector data from GBIF | Global Biodiversity Information Facility
+    (check [https://www.gbif.org/](https://www.gbif.org/), relevant for 20 October
+    2023)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OpenStreetMap — native integration of data downloading in the library
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'GBIF data is a vector layer with point geometries that show the locations where
+    certain species of plants and animals (and something else) have been found. In
+    this case we will be interested in the Oak (or Quercus robur in Latin). This is
+    what our data will look like when we overlay a point layer with oaks on top of
+    the parks polygons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9b0324952621ab326e045f72c9bfe48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. Combining OSM park data and GBIF data to calculate routes to oak
+    woodland parks (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code to analyze looks [like this](https://github.com/wiredhut/estaty_examples/blob/main/release_01/proximity_tds/path_to_parks_with_quercus.py):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One important thing to note is that the points do not have to fall exactly
+    within the park’s polygon. We combine data from different sources and they may
+    differ slightly. Therefore, we set a buffer of 10 meters and look at the result
+    (Figure 8) — we will consider that there is an oak tree in the park if the park
+    polygon has an intersection with the buffer polygon according to GBIF data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d12aec560528017faa0882d63f18479.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8\. Routes to parks where oak trees occur, with calculated distances
+    (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A bit more about relevance**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The topic of analysis is in demand and obvious. Consequently, for example, functionality
+    of routing is available in many source code solutions (while preparing this article
+    I came across an interesting notebook “[Exploring routing tools for calculating
+    paths for a set of origin-destination pairs](https://github.com/rajesvariparasa/spatial-routing-libraries-and-services/blob/main/Routing_Libraries_Services.ipynb)”),
+    as well as in popular user services like Google Maps, and services related to
+    maps implicitly. If we talk about proximity analysis, then here too there are
+    a lot of implemented solutions. For instance, we can mention such a tool as [pandana](https://udst.github.io/pandana/introduction.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: All these tools are certainly useful, but using them in application examples
+    requires writing some auxiliary code. We are trying to make a convenient tool
+    for our own team and want to share our findings with the community. In the approach
+    presented in this article we can mention data source agnostic approach and a flexible
+    way of combining data. We will be glad to receive comments and suggestions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Useful links:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://github.com/wiredhut/estaty](https://github.com/wiredhut/estaty) —
+    Python open-source library for processing spatial data and preparing prototype
+    algorithms for property analysis. The library is quite new, but we plan to develop
+    and improve it;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://estaty.readthedocs.io/en/latest/](https://estaty.readthedocs.io/en/latest/)
+    — documentation page;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/wiredhut/estaty_examples](https://github.com/wiredhut/estaty_examples)
+    — open-source repository with example launches for this article'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Datasets used in this post (& licenses):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Map data copyrighted OpenStreetMap contributors and available from [https://www.openstreetmap.org](https://www.openstreetmap.org)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: License — [Open Data Commons Open Database License](https://opendatacommons.org/licenses/odbl/)
+    Links are up to date at 25th of October 2023
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: GBIF.org (20 October 2023) GBIF Occurrence Download [https://doi.org/10.15468/dl.f487j5](https://doi.org/10.15468/dl.f487j5)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: License — [Attribution-NonCommercial 4.0 International](https://creativecommons.org/licenses/by-nc/4.0/legalcode)
+    Links are up to date at 25th of October 2023
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: The story about proximity analysis using OpenStreetMap data and more, was presented
+    by [Mikhail Sarafanov](https://github.com/Dreamlone) and the [Wiredhut team](https://wiredhut.com/)
+  prefs: []
+  type: TYPE_NORMAL

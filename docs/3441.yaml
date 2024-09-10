@@ -1,0 +1,284 @@
+- en: 'ExLlamaV2: The Fastest Library to Run LLMs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/exllamav2-the-fastest-library-to-run-llms-32aeda294d26?source=collection_archive---------0-----------------------#2023-11-20](https://towardsdatascience.com/exllamav2-the-fastest-library-to-run-llms-32aeda294d26?source=collection_archive---------0-----------------------#2023-11-20)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Quantize and run EXL2 models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)[![Maxime
+    Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------)
+    [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----32aeda294d26--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----32aeda294d26---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32aeda294d26--------------------------------)
+    ·6 min read·Nov 20, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32aeda294d26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&user=Maxime+Labonne&userId=dc89da634938&source=-----32aeda294d26---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32aeda294d26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fexllamav2-the-fastest-library-to-run-llms-32aeda294d26&source=-----32aeda294d26---------------------bookmark_footer-----------)![](../Images/032261661e8c8f24175b7d7766cd2fae.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantizing Large Language Models (LLMs) is the most popular approach to reduce
+    the size of these models and speed up inference. Among these techniques, GPTQ
+    delivers amazing performance on GPUs. Compared to unquantized models, this method
+    uses almost 3 times less VRAM while providing a similar level of accuracy and
+    faster generation. It became so popular that it has recently been directly integrated
+    into the [transformers library](https://huggingface.co/blog/gptq-integration).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**ExLlamaV2**](https://github.com/turboderp/exllamav2) is a library designed
+    to squeeze even more performance out of GPTQ. Thanks to new kernels, it’s optimized
+    for (blazingly) fast inference. It also introduces a new quantization format,
+    EXL2, which brings a lot of flexibility to how weights are stored.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will see how to quantize base models in the EXL2 format
+    and how to run them. As usual, the code is available on [GitHub](https://github.com/mlabonne/llm-course/blob/main/Quantize_models_with_ExLlamaV2.ipynb)
+    and [Google Colab](https://colab.research.google.com/drive/1yrq4XBlxiA0fALtMoT2dwiACVc77PHou?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ⚡ Quantize EXL2 models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To start our exploration, we need to install the ExLlamaV2 library. In this
+    case, we want to be able to use some scripts contained in the repo, which is why
+    we will install it from source as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that ExLlamaV2 is installed, we need to download the model we want to quantize
+    in this format. Let’s use the excellent [zephyr-7B-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta),
+    a [Mistral-7B](https://huggingface.co/mistralai/Mistral-7B-v0.1) model fine-tuned
+    using Direct Preference Optimization (DPO). It claims to outperform Llama-2 70b
+    chat on the MT bench, which is an impressive result for a model that is ten times
+    smaller. You can try out the base Zephyr model using [this space](https://huggingface.co/spaces/HuggingFaceH4/zephyr-chat).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We download zephyr-7B-beta using the following command (this can take a while
+    since the model is about 15 GB):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'GPTQ also requires a **calibration dataset**, which is used to measure the
+    impact of the quantization process by comparing the outputs of the base model
+    and its quantized version. We will use the [wikitext dataset](https://huggingface.co/datasets/wikitext)
+    and directly download the test file as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once it’s done, we can leverage the `[convert.py](https://github.com/turboderp/exllamav2/blob/master/convert.py)`
+    script provided by the ExLlamaV2 library. We''re mostly concerned with four arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`-i`: Path of the base model to convert in HF format (FP16).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`-o`: Path of the working directory with temporary files and final output.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`-c`: Path of the calibration dataset (in Parquet format).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`-b`: Target average number of bits per weight (bpw). For example, 4.0 bpw
+    will give store weights in 4-bit precision.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The complete list of arguments is available [on this page](https://github.com/turboderp/exllamav2/blob/master/doc/convert.md).
+    Let’s start the quantization process using the `convert.py` script with the following
+    arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that you will need a GPU to quantize this model. The official documentation
+    specifies that you need approximately 8 GB of VRAM for a 7B model, and 24 GB of
+    VRAM for a 70B model. On Google Colab, it took me 2 hours and 10 minutes to quantize
+    zephyr-7b-beta using a T4 GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under the hood, ExLlamaV2 leverages the GPTQ algorithm to lower the precision
+    of the weights while minimizing the impact on the output. You can find more details
+    about the GPTQ algorithm [in this article](https://medium.com/towards-data-science/4-bit-quantization-with-gptq-36b0f4f02c34).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So why are we using the “EXL2” format instead of the regular GPTQ format? EXL2
+    comes with a few new features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It supports **different levels of quantization**: it’s not restricted to 4-bit
+    precision and can handle 2, 3, 4, 5, 6, and 8-bit quantization.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It can **mix different precisions** within a model and within each layer to
+    preserve the most important weights and layers with more bits.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ExLlamaV2 uses this additional flexibility during quantization. It tries different
+    quantization parameters and measures the error they introduce. On top of trying
+    to minimize the error, ExLlamaV2 also has to achieve the target average number
+    of bits per weight given as an argument. Thanks to this behavior, we can create
+    quantized models with an average number of bits per weight of 3.5 or 4.5 for example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The benchmark of different parameters it creates is saved in the `measurement.json`
+    file. The following JSON shows the measurement for one layer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this trial, ExLlamaV2 used 5% of 3-bit and 95% of 2-bit precision for an
+    average value of 2.188 bpw and a group size of 32\. This introduced a noticeable
+    error that is taken into account to select the best parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🦙 Running ExLlamaV2 for Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that our model is quantized, we want to run it to see how it performs. Before
+    that, we need to copy essential config files from the `base_model` directory to
+    the new `quant` directory. Basically, we want every file that is not hidden (`.*`)
+    or a safetensors file. Additionally, we don't need the `out_tensor` directory
+    that was created by ExLlamaV2 during quantization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In bash, you can implement this as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our EXL2 model is ready and we have several options to run it. The most straightforward
+    method consists of using the `test_inference.py` script in the ExLlamaV2 repo
+    (note that I don’t use a chat template here):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The generation is very fast (56.44 tokens/second on a T4 GPU), even compared
+    to other quantization techniques and tools like GGUF/llama.cpp or GPTQ. You can
+    find an in-depth comparison between different solutions in this [excellent article](https://oobabooga.github.io/blog/posts/gptq-awq-exl2-llamacpp/)
+    from oobabooga.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In my case, the LLM returned the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Alternatively, you can use a chat version with the `chat.py` script for more
+    flexibility:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you’re planning to use an EXL2 model more regularly, ExLlamaV2 has been integrated
+    into several backends like oobabooga’s [text generation web UI](https://github.com/oobabooga/text-generation-webui).
+    Note that it requires **FlashAttention 2** to work as efficiently as possible,
+    which requires CUDA 12.1 on Windows at the moment (something you can configure
+    during the installation process).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we tested the model, we’re ready to upload it to the Hugging Face Hub.
+    You can change the name of your repo in the following code snippet and simply
+    run it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Great, the model can be found on the [Hugging Face Hub](https://huggingface.co/mlabonne/zephyr-7b-beta-5.0bpw-exl2).
+    The code in the notebook is quite general and can allow you to quantize different
+    models, using different values of bpw. This is ideal for creating models dedicated
+    to your hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we presented ExLlamaV2, a powerful library to quantize LLMs.
+    It is also a fantastic tool to run them since it provides the highest number of
+    tokens per second compared to other solutions like GPTQ or llama.cpp. We applied
+    it to the [zephyr-7B-beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
+    model to create a 5.0 bpw version of it, using the new EXL2 format. After quantization,
+    we tested our model to see how it performs. Finally, it was uploaded to the Hugging
+    Face Hub and can be found [here](https://huggingface.co/mlabonne/zephyr-7b-beta-5.0bpw-exl2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in more technical content around LLMs, [follow me on Medium](https://medium.com/@mlabonne).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Articles about quantization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----32aeda294d26--------------------------------)
+    [## Introduction to Weight Quantization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing the size of Large Language Models with 8-bit quantization
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----32aeda294d26--------------------------------)
+    [](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----32aeda294d26--------------------------------)
+    [## 4-bit Quantization with GPTQ
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantize your own LLMs using AutoGPTQ
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/4-bit-quantization-with-gptq-36b0f4f02c34?source=post_page-----32aeda294d26--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Learn more about machine learning and support my work with one click — become
+    a Medium member here:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne/membership?source=post_page-----32aeda294d26--------------------------------)
+    [## Join Medium with my referral link - Maxime Labonne'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@mlabonne/membership?source=post_page-----32aeda294d26--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

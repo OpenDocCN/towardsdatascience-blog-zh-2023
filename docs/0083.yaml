@@ -1,0 +1,200 @@
+- en: Generating Sentence-Level Embedding Based on the Trends in Token-Level BERT
+    Embeddings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/generating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8?source=collection_archive---------16-----------------------#2023-01-05](https://towardsdatascience.com/generating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8?source=collection_archive---------16-----------------------#2023-01-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/9275b61be55a869b9a7d56ef53ce7455.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by Igor Shabalin
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to derive sentence-level embedding from word embeddings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)[![Yuli
+    Vasiliev](../Images/7a5fbd7fc0d48c87f0163e2ec4622f45.png)](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------)
+    [Yuli Vasiliev](https://jxireal.medium.com/?source=post_page-----eb08fa2ad3c8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83cfb869ab36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8&user=Yuli+Vasiliev&userId=83cfb869ab36&source=post_page-83cfb869ab36----eb08fa2ad3c8---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----eb08fa2ad3c8--------------------------------)
+    ·5 min read·Jan 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Feb08fa2ad3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8&user=Yuli+Vasiliev&userId=83cfb869ab36&source=-----eb08fa2ad3c8---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Feb08fa2ad3c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-sentence-level-embedding-based-on-the-trends-in-token-level-bert-embeddings-eb08fa2ad3c8&source=-----eb08fa2ad3c8---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The sentence (phrase or passage) level embedding is often used as input in many
+    NLP classification problems, for example, in spam detection and question-answering
+    (QA) systems. In my previous post [Discovering Trends in BERT Embeddings of Different
+    Levels for the Task of Semantic Context Determining](https://medium.com/p/268733fdb17e),
+    I discussed how you might generate a vector representation that holds information
+    about changes in contextual embedding values relative to a static embedding of
+    the same token, which you then can use as a component for generating a sentence-level
+    embedding. This article expands on this topic, exploring what tokens in a sentence
+    you need to derive such trend vectors from to be able to generate an efficient
+    embedding for the entire sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first question that arises in connection with this is: from how many tokens
+    in a sentence do you need to derive the embedding in order to generate an efficient
+    embedding for the entire sentence? If you recall from the discussion in the previous
+    post, we’re getting a single vector — derived for the most important word in a
+    sentence — that includes information about the context of the entire sentence.
+    However, to get a better picture of the sentence context, it would also be nice
+    to have such a vector for the word that is most syntactically related to that
+    most important word. Why do we need this?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A simple analogy from life can help answer this question: If you admire the
+    surrounding beauties while sitting, say, in a restaurant located inside the tower
+    — the views you contemplate will not include the tower itself. To take a photo
+    of the tower view, you first need to exit the tower.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'OK, how can we determine the word that is most syntactically related to the
+    most important word in the sentence? (that is, you need to decide on the best
+    place to take a photo of the tower, according to the previous analogy) The answer
+    is: with the help of the attention weights, which you can also obtain from the
+    BERT model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before you can follow the code discussed in the rest of this article, you’ll
+    need to refer to the example provided in the [previous post](https://medium.com/p/268733fdb17e)
+    (we’re going to use the model and the derived vector representations defined in
+    that example). The only correction you’ll need to do is the following: When creating
+    the model, be sure to make the model return not only the hidden states but also
+    the attention weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Everything else, including sample sentences, can be used without modification.
+    Actually, we’re going to use only the first sample sentence: ‘I want an apple.’'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below we are determining the word that is syntactically closest to the most
+    important word (Want, in this particular example). For that we check the attention
+    weights in all 12 layers. To start with, we create an empty array (we don’t count
+    special symbols, excluding the first and last symbols):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we fill in the matrix of attention weights:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We are not interested in the punctuation symbol. So, we’ll remove the last
+    column in the matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: So our matrix will now look as follows (12x4, i.e 12 layers and 4 words)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s now determine in which layers Want (the second column with the index
+    1) drew the most attention:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we can determine which token draws more attention after Want in the layers
+    where Want is in the lead. For that, we first delete the Want column, and then
+    explore the remaining three:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above shows that we have word Apple (after deleting Want here, Apple’s index
+    is 2) as the one that is the most syntactically related to word Want. This is
+    quite expected because these words represent the direct object and the transitive
+    verb, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s now compare the vectors derived from the embeddings of words Apple and
+    Want.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see, one of the values in the pair of matching elements in the above
+    two vectors is in most cases zero while the other value is non-zero — i.e. the
+    vectors look complementary (Remember the tower view analogy: Neighboring sights
+    are visible from the tower, but in order to see the tower itself — perhaps the
+    main attraction — you need to leave it) So, you can safely sum up these vectors
+    elementwise to combine the available information into a single vector.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above vector can next be used as input for sentence-level classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article provides the intuition along with the code on how you can generate
+    sentence-level embedding based on the trends in token-level BERT embeddings when
+    moving from static embedding to contextual embedding. This sentence-level embedding
+    can be then used as an alternative to the CLS token embedding generated by BERT
+    for sentence classification, meaning you can try them both to see which one will
+    work best for your particular problem.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,249 @@
+- en: Two-Tower Networks and Negative Sampling in Recommender Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/two-tower-networks-and-negative-sampling-in-recommender-systems-fdc88411601b?source=collection_archive---------0-----------------------#2023-11-24](https://towardsdatascience.com/two-tower-networks-and-negative-sampling-in-recommender-systems-fdc88411601b?source=collection_archive---------0-----------------------#2023-11-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Understand the key elements that power advanced recommendation engines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://roizner.medium.com/?source=post_page-----fdc88411601b--------------------------------)[![Michael
+    Roizner](../Images/bcb68ee626ea57234b62e512ed4b383b.png)](https://roizner.medium.com/?source=post_page-----fdc88411601b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdc88411601b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fdc88411601b--------------------------------)
+    [Michael Roizner](https://roizner.medium.com/?source=post_page-----fdc88411601b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1bee5af37d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-tower-networks-and-negative-sampling-in-recommender-systems-fdc88411601b&user=Michael+Roizner&userId=1bee5af37d8&source=post_page-1bee5af37d8----fdc88411601b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdc88411601b--------------------------------)
+    ·7 min read·Nov 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffdc88411601b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-tower-networks-and-negative-sampling-in-recommender-systems-fdc88411601b&user=Michael+Roizner&userId=1bee5af37d8&source=-----fdc88411601b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffdc88411601b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftwo-tower-networks-and-negative-sampling-in-recommender-systems-fdc88411601b&source=-----fdc88411601b---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of the most important types of models in recommendation systems at present
+    is the two-tower neural networks. They are structured as follows: one part of
+    the neural network (tower) processes all the information about the query (user,
+    context), while the other tower processes information about the object. The outputs
+    of these towers are embeddings, which are then multiplied (dot product or cosine,
+    as we already discussed [here](https://roizner.medium.com/dot-product-or-cosine-55cd5b22a87c)).
+    One of the first mentions of the application of such networks for recommendations
+    can be found in a very good [paper](https://dl.acm.org/doi/10.1145/2959100.2959190)
+    about YouTube. By the way, I would now call this article a classic and most suitable
+    for entering the field of recommendations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ba8e24dde42029e01b58a473e90365f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the paper [Deep Neural Networks for YouTube Recommendations](https://dl.acm.org/doi/10.1145/2959100.2959190)
+  prefs: []
+  type: TYPE_NORMAL
+- en: What characterizes such networks? They are very similar to matrix factorization,
+    which is actually a special case, taking only *user_id* and *item_id* as input.
+    However, if we compare them with arbitrary networks, the restriction on late crossing
+    (not allowing inputs from different towers to fuse until the very end) makes two-tower
+    networks extremely efficient in application. To build recommendations for a single
+    user, we need to calculate the query tower once, and then multiply this embedding
+    with the embeddings of documents, which are usually pre-calculated. This process
+    is very fast. Moreover, these pre-calculated document embeddings can be organized
+    into an [ANN](https://en.wikipedia.org/wiki/Nearest_neighbor_search) index (e.g.,
+    [HNSW](https://github.com/nmslib/hnswlib)) to quickly find good candidates without
+    having to go through the entire database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=post_page-----fdc88411601b--------------------------------)
+    [## Similarity Search, Part 4: Hierarchical Navigable Small World (HNSW)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hierarchical Navigable Small World (HNSW) is a state-of-the-art algorithm used
+    for an approximate search of nearest…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=post_page-----fdc88411601b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can achieve even more efficiency by computing the user part not for every
+    query, but asynchronously, with some regularity. However, this means sacrificing
+    the consideration of real-time history and context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The towers themselves can be quite sophisticated. For example, in the user part,
+    we can use the self-attention mechanism to process history, which results in a
+    transformer for personalization. But what is the cost of introducing the restriction
+    on late crossing? Naturally, it affects quality. In the same attention mechanism,
+    we cannot use the items that we currently wish to recommend. Ideally, we would
+    like to focus on similar items in the user’s history. Therefore, networks with
+    early crossing are typically used in the later stages of ranking, when there are
+    only a few dozen or hundred candidates left, while those with late crossing (two-tower)
+    are used, conversely, in the early stages and for candidate generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(However, there is a purely theoretical argument that any reasonable ranking
+    of documents for different queries can be encoded through embeddings of sufficient
+    dimensionality. Moreover, decoders in NLP actually operate on the same principle,
+    only recalculating the query tower for each token.)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loss Functions and Negative Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A particular point of interest is the loss function used to train two-tower
+    networks. In principle, they can be trained with any loss function, targeting
+    various outcomes and even having multiple different ones for different heads (with
+    different embeddings in each tower). However, an interesting variant is training
+    with a softmax loss on in-batch negatives. For each query-document pair in the
+    dataset, the other documents in the same mini-batch are used as negatives in combination
+    with the same query in the softmax loss. This method is a highly effective form
+    of hard negative mining.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But it’s important to consider the probabilistic interpretation of such a loss
+    function, which is not always well-understood. In a trained network,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/714c36ba7b5f07a6f592cab38b6e9156.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The exponent of the score is proportional not to the a priori probability of
+    the document given the query, but to the PMI ([Pointwise Mutual Information](https://en.wikipedia.org/wiki/Pointwise_mutual_information)),
+    specific to the query. More popular documents will not necessarily be recommended
+    more often by such a model, because during training, they proportionally appear
+    more often as negatives. Using the score as a feature can be beneficial, but for
+    final ranking and candidate generation, this can lead to very specific, yet poor-quality
+    documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Google, in a [paper](https://research.google/pubs/pub48840/), suggested combating
+    this issue with logQ correction during training. We, on the other hand, typically
+    addressed this at the application stage, not during training, by simply multiplying
+    by the a priori probability of the document P(*d*). However, we never compared
+    these approaches, which would indeed be an interesting comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implicit Regularization: Bridging ALS and Modern Neural Networks'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There is a collaborative filtering algorithm known as Implicit ALS (IALS).
+    I have already [mentioned it before](https://roizner.medium.com/leveraging-external-embeddings-in-recommender-systems-a-practical-guide-e3768cc574e1).
+    In the pre-neural network era, it was arguably one of the most popular algorithms.
+    Its distinguishing feature is the effective ‘mining’ of negatives: all user-object
+    pairs without a history of interaction are treated as negatives (though with less
+    weight than actual interactions). Moreover, unlike in actual mining, these negatives
+    are not sampled but are used in their entirety in every iteration. This approach
+    is known as implicit regularization.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How is this possible? Given reasonable task sizes (number of users and objects),
+    there should be so many negatives that even listing them would take longer than
+    the entire training process. The beauty of the algorithm lies in the fact that,
+    by using the MSE loss and the method of least squares, it’s possible to pre-calculate
+    certain elements separately for all users and separately for all objects before
+    each full iteration, and this is sufficient for performing implicit regularization.
+    This way, the algorithm avoids a quadratic size. (For more details, I refer you
+    to [one of my favorite papers from that time](https://dl.acm.org/doi/10.1145/1864708.1864726)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A couple of years ago, I pondered whether it’s possible to combine this wonderful
+    idea of implicit regularization with the more advanced technology of two-tower
+    neural networks. It’s a complex question, as there’s stochastic optimization instead
+    of full batch, and there’s a reluctance to revert back to MSE loss (at least for
+    the entire task; specifically for regularization, it might be okay) as it tends
+    to yield inferior results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I thought long and hard, and finally came up with a solution! For a couple of
+    weeks, I was exhilarated, eagerly anticipating how we would try this out in place
+    of in-batch negatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And then, of course (as often happens in such cases), I read in a paper that
+    everything had already been thought of three years earlier. Again, it was [Google](https://arxiv.org/abs/1807.07187).
+    Later, in that same [paper about logQ correction](https://research.google/pubs/pub48840/),
+    they demonstrated that softmax loss with in-batch negatives works better than
+    implicit regularization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s how we were able to save time and not test this idea 🙂
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do We Really Need Negative Sampling for Recommendation Models?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After all, we have real instances of recommendation impressions, and if a user
+    did not interact with them, these can be used as strong negatives. (This does
+    not consider the case where the recommendation service itself has not yet been
+    launched and there are no impressions yet.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The answer to this question is not so trivial; it depends on how exactly we
+    intend to apply the trained model: for final ranking, for candidate generation,
+    or simply as features for input into another model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What happens when we train the model only on actual impressions? A rather strong
+    selection bias occurs, and the model learns to distinguish well only those documents
+    that were shown in that particular context. On documents (or more precisely, query-document
+    pairs) that were not shown, the model will perform much worse: it might overpredict
+    for some documents and underpredict for others. Certainly, this effect can be
+    mitigated by applying exploration in ranking, but most often this is only a partial
+    solution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a candidate generator is trained in this way, it may produce a plethora of
+    documents in response to a query, documents it has never seen in such a context
+    and for which it overestimates predictions. Among these documents, there’s often
+    complete trash. If the final ranking model is good enough, it will filter out
+    these documents and not show them to the user. However, we still waste the candidate
+    quota on them unnecessarily (and there may not be any suitable documents left
+    at all). Therefore, candidate generators should be trained in a way that they
+    understand most of the document base is of poor quality and should not be recommended
+    (nominated as candidates). Negative sampling is a good method for this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Models for final ranking are very similar to candidate generation in this regard,
+    but there is an important distinction: they learn from their mistakes. When the
+    model makes an error by overestimating predictions for certain documents, these
+    documents are shown to users and then may be included in the next training dataset.
+    We can retrain the model on this new dataset and roll it out to users again. New
+    false positives will emerge. The dataset collection and retraining process can
+    be repeated, resulting in a kind of active learning. In practice, just a few iterations
+    of retraining are sufficient for the process to converge and for the model to
+    stop recommending nonsense. Of course, the harm from random recommendations must
+    be weighed, and sometimes it’s worth taking extra precautions. But overall, negative
+    sampling is not needed here. On the contrary, it can impair exploration, causing
+    the system to remain in a local optimum.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the model is used for features as input into another model, then the same
+    logic applies, but the harm from overestimating predictions for random candidate
+    documents is even less significant because other features can help adjust the
+    final prediction. (If a document doesn’t even make it to the candidate list, we
+    won’t compute features for it.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: At one point, we directly tested and found that as features, standard ALS works
+    better than IALS, but it should not be used for candidate generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In summary, our exploration emphasized the effectiveness of two-tower networks
+    in ranking, examined the significance of loss functions and negative sampling
+    in model accuracy, bridged the gap with classical collaborative filtering through
+    implicit regularization, and debated the essential role of negative sampling in
+    recommendation systems. This discussion underscores the evolving complexity and
+    sophistication of recommendation system technologies.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,357 @@
+- en: 'Back to the Future: Analyzing Time Series Data with Markov Transition Matrices'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/time-series-data-markov-transition-matrices-7060771e362b?source=collection_archive---------1-----------------------#2023-02-01](https://towardsdatascience.com/time-series-data-markov-transition-matrices-7060771e362b?source=collection_archive---------1-----------------------#2023-02-01)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Conceptual overview and practical applications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)[![Chinmay
+    Kakatkar](../Images/873531f24cd4ee8a927669a211d61ae8.png)](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------)
+    [Chinmay Kakatkar](https://kcpub21.medium.com/?source=post_page-----7060771e362b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F87ab8c40e0ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=post_page-87ab8c40e0ed----7060771e362b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7060771e362b--------------------------------)
+    ·11 min read·Feb 1, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7060771e362b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&user=Chinmay+Kakatkar&userId=87ab8c40e0ed&source=-----7060771e362b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7060771e362b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftime-series-data-markov-transition-matrices-7060771e362b&source=-----7060771e362b---------------------bookmark_footer-----------)![](../Images/6620ab2c70cc6c9e711ca7cedefb60d8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Image by [Oto Godfrey](http://OtoGodfrey.com) and [Justin Morton](http://JMortonPhoto.com)
+    from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:TeamTimeCar.com-BTTF_DeLorean_Time_Machine-OtoGodfrey.com-JMortonPhoto.com-07.jpg):
+    Free to use under [CC-BY-SA-4.0](https://commons.wikimedia.org/wiki/Category:CC-BY-SA-4.0)
+    license'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will look at how reframing time series data using Markov
+    transition matrices can yield interesting descriptive insights as well as elegant
+    approaches for forecasting, backcasting, and the analysis of convergence. Going
+    backwards and forwards in time — just like Doc’s retro-fitted DeLorean time machine
+    in the sci-fi classic *Back to the Future*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** All images of equations and diagrams in the following sections have
+    been created by the author of this article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic Building Blocks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let *E* define the set of *k* unique events that make up the time series data.
+    For instance, a time series may be composed of the following three basic and unique
+    events that represent the types of path trajectories observed when the data is
+    plotted across discrete time-steps: *down*, *flat*, and *up*. Let *S* define a
+    sequence of length *n* (denoting the discrete time-steps), consisting of events
+    defined in *E*, that represents some or all of the data. For example, the sequence
+    [*up*, *down*, *up*, *flat*, *up*] represents five time-steps of data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One can now define a Markov transition matrix *M* of dimensions *k*², such that
+    each element *M(i, j)* describes the probability of transitioning from an event
+    *E(i)* in time-step *t* to an event *E(j)* in time step *t+1* in the given time
+    series. In other words, *M(i, j)* denotes the conditional probability of transitioning
+    between the two events in consecutive time-steps. In a graph-theoretical sense,
+    events *E(i)* and *E(j)* can be thought of as nodes that are connected by a directed
+    edge *E(i)* → *E(j)*, if *E(i)* is followed by *E(j)* in the time series data;
+    then the Markov transition matrix *M* essentially represents a normalized version
+    of an adjacency matrix (or cooccurrence matrix) of the events that are depicted
+    by nodes in the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let us see what we can do with these basic building blocks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Transition Matrices in Action: A Simple Example'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Suppose we have the following raw time series data covering 11 consecutive
+    time-steps: [1, 2, -2, -1, 0, 0, 2, 2, 1, 2, 3]. Using the simplified view of
+    path trajectories described above, we can transform the data into the following
+    sequence of 10 events that describe the transitions between adjacent time-steps:
+    [*up*, *down*, *up*, *up*, *flat*, *up*, *flat*, *down*, *up*, *up*].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now construct the following adjacency matrix that captures the pattern
+    of cooccurrences in the event sequence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bfd60f317863273123ab593a7bef8816.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Element *A(i, j)* denotes the number of times that an event *i* at some time-step
+    *t* is followed by an event *j* at time-step *t+1* in our event sequence; *i*
+    and *j* are the row and column indices, respectively. Note that the rows denote
+    the events in the order *up*, *flat* and *down*, from top to bottom, and the columns
+    denote the same from left to right. For example, the top-left element of *A* says
+    that an *up* event was followed by another *up* event twice in the given event
+    sequence. The center-right element of *A* says that a *flat* event was followed
+    by a *down* event once in the event sequence. And so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can normalize matrix *A* by row or by column to yield a transition matrix.
+    If we were to use row-based normalization, then element *M(i, j)* would describe
+    the probability of seeing event *E(j)* in time step *t+1* given event *E(i)* in
+    time-step *t*. The probabilities in each row should thus sum to 1\. In our example,
+    the row-normalized matrix looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d169d384275fcfb0feda908ffe8ba511.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Similarly, if we were to use column-based normalization, then element *M(i,
+    j)* would describe the probability of having an event *E(i)* in time-step *t-1*
+    given an event *E(j)* in time step *t*. Now the probabilities in each column should
+    sum to 1\. In our example, the column-normalized matrix looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08eac104561338f9b91b673ba4a5881b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that conditional probabilities of row-normalization (notionally going
+    forwards in time) can differ from the conditional probabilities of column-normalization
+    (looking backwards in time).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example in Python Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To try out these concepts, here is some basic Python code that captures what
+    is going on in the above example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Make sure you have the Pandas package installed first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then run the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This should produce the following transition matrices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: A neat way to visualize transition matrices is by depicting them as directed
+    weighted graphs using a graphing package like [Graphviz](https://graphviz.org/)
+    or [NetworkX](https://networkx.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will use Graphviz here, so you will need to have the package installed to
+    follow along:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is worth going through the short and sweet [official installation guide](https://graphviz.readthedocs.io/en/stable/manual.html#installation)
+    to make sure you have the package properly set up, especially for Windows users
+    that may have to perform some additional installation steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once Graphviz is set up, create some helper functions for graphing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now you can generate each transition matrix. By default, the outputted graph
+    will be stored in you working directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Raw co-occurrences:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f25db0921cb6c38575e637365c7edc17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Row-normalized transition probabilities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5973da7968dbced303123fb0d1b6395.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Column-normalized transition probabilities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca757e426361a367cbfc9fae62501773.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Practical Applications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Descriptive Insights
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first and most obvious thing we can do with transition matrices is gain
+    descriptive insights just by inspecting the matrices and their visual graph representations.
+    For instance, with the output of our example from the previous section, we can
+    glean high-level insights such as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of the 9 possible event transitions, 3 never occur in our sample (*flat* → *flat*,
+    *down* → *down*, and *down* → *flat*). A low probability of consecutive flat events
+    may indicate volatility in the system that the time series data is tracking.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An *up* event is the only event type that has a non-zero probability (0.4) of
+    occurring consecutively. In fact, this transition probability is one of the highest
+    in our data, and may point to reinforcing effects in the system underlying the
+    data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Row-based and column-based normalization yield different matrices in our case,
+    albeit with some overlaps. This tells us that our time series is essentially non-symmetrical
+    across time, i.e., the patterns we see are somewhat different depending on whether
+    we look back or look forward from a given reference point in time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Forecasting and Backcasting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By chaining together copies of the transition matrix, we can generate probabilities
+    of event occurrences going forwards and backwards in time; this can be called
+    *forecasting* and *backcasting*, respectively. A central assumption here is that
+    “history does not matter”; regardless of what time-step *t* we take as a reference
+    point, we assume that the transition matrix gives relevant probabilities for *t+1*
+    (if row-normalized) and *t-1* (if column-normalized). The upshot is that we can
+    use the transition matrix to forecast and backcast from any arbitrary time-step.
+    In particular, we can use the row-normalized transition matrix for forecasting
+    and the column-normalized transition matrix for backcasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Taking the matrices computed in the above example, suppose that we observe
+    an *up* event at time-step *t* = 25, and we wish to forecast which event is most
+    likely to occur at time-step *t* = 27\. By inspecting the top row of the row-normalized
+    transition matrix we directly see that, at the very next time-step *t* = 26, the
+    probabilities of observing an *up*, *flat* and *down* event are 0.4, 0.4 and 0.2,
+    respectively. To derive similar event probabilities for time-step *t* = 27 (i.e.,
+    two time-steps from our point of reference), we need to multiply the transition
+    matrix by itself as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/efbfdf13aee5b7747fb1981d5e0331e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice how the event probabilities have changed relative to our reference time-step.
+    For instance, given an *up* event at *t* = 25, the probability of observing another
+    *up* event is 0.4 at *t* = 26 (one step into the future), and increases to 0.56
+    at *t* = 27 (two steps into the future). Meanwhile, the probability of observing
+    a *flat* event is also 0.4 at t = 26, but decreases to 0.16 at t = 27\. Crucially,
+    this approach of matrix multiplication supports forecasting and backcasting. In
+    general, to forecast or backcast event probabilities *n* time-steps away, we can
+    compute the row-normalized or column-normalized transition matrix to the *n*-th
+    power, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The transition matrix can also be used to predict the raw underlying time series
+    data. Let us assume that an *up* or *down* event amounts to a single unit of change
+    in the time series data. Now suppose the time series has gone up from 1 to 2 (an
+    *up* event) at *t* = 25, and we wish to forecast the progression of the time series
+    at *t* = 26 and *t* = 27\. Following an *up* event, *up* and *flat* events each
+    have the highest probability of occurring (0.4) at *t* = 26\. Thus, we might predict
+    that, at *t* = 26, the time series will most likely either be [1, 2, 3] or [1,
+    2, 2], both of which would likely spawn two more possibilities each at t = 27:
+    [1, 2, 3] leading to either [1, 2, 3, 4] or [1, 2, 3, 3] (with probabilities 0.4
+    each, as before), and [1, 2, 2] leading to either [1, 2, 2, 3] or [1, 2, 2, 1]
+    (with probabilities 0.5 each). In general, we would expect that the larger and
+    richer the dataset that is used to generate the transition matrix, the more variance
+    is captured in terms of potential chains of events, and thus the higher the stepwise
+    predictive accuracy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The multiplicative chaining of transition matrices leads to increasingly complex
+    yet fully decomposable combinations of the original event transition probabilities.
+    This decomposability can help us gain deeper insights about the interdependent
+    nature of the events that make up the time series data (or stochastic process).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis of Convergence
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The notion of chaining together transition matrices naturally leads to an interesting
+    question: *Will the probabilities of the transition matrix M ever converge?* Specifically,
+    is there a stable transition matrix *M** such that *MM*=M**? If so, then *lim(n
+    → ∞)⁡Mⁿ = M**, i.e., we would expect the Markov process represented by the chain
+    of matrix multiplications *⁡Mⁿ* to converge to a stable state *M** at some point
+    in time; in this case, the process is convergent and thus stable. Assuming our
+    transition matrix is row-normalized, the element *M*(i, j)* gives us the stable
+    long-term probability of event *i* being followed by event *j*. If a stable matrix
+    *M** cannot be found, however, then the process is non-convergent and non-stable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the running example from previous sections, we can briefly sketch out
+    how the convergence of the Markov process might be derived analytically.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To start off, let us suppose that there is a stable transition matrix *M**
+    such that *MM*=M**, and that *M* is row-normalized. Since we know what *M* looks
+    like, we can write out the matrix multiplication as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a30457610de605c2f15446363f1cdbbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then we have the following system of linear equations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04e2d2c9faf7b112f3cda4d545d929c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If a solution exists for this system of equations (which we can check using
+    a method such as Gaussian elimination), then we can also derive a convergent and
+    stable transition matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Wrap
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once you get the hang of it, reframing time series data using Markov transition
+    matrices can become a useful part of your data science toolkit. Just as you might
+    typically visualize time series data with a line chart to get a better sense of
+    the overall trend, a transition matrix offers a complementary representation of
+    the data that is highly compressed yet versatile in its use cases. When visualized
+    as a directed graph, the transition matrix can already be useful for gaining high-level
+    descriptive insights. When embedded within a larger workflow, the transition matrix
+    can form the basis of more complex approaches for forecasting and backcasting.
+    Moreover, while the simple example we ran through in the above sections treats
+    the transition matrix as a static entity, we could derived different matrices
+    for different time intervals; this can be especially useful in the analysis of
+    time series data that displays pronounced trend reversals reflected by significant
+    U-shaped or elbow-shaped patterns in the data. Clearly, there are several possible
+    extensions to the ideas discussed above, so go ahead and try them out — they just
+    might come in handy in your next data science project.
+  prefs: []
+  type: TYPE_NORMAL

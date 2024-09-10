@@ -1,0 +1,252 @@
+- en: Secure MLOps with extended Databricks MLFlow
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/secure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3?source=collection_archive---------31-----------------------#2023-01-10](https://towardsdatascience.com/secure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3?source=collection_archive---------31-----------------------#2023-01-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Manage model target environments safely
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)[![Luuk
+    van der Velden](../Images/56280e17ccb18454acbb5fb8be94a850.png)](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------)
+    [Luuk van der Velden](https://luukvandervelden.medium.com/?source=post_page-----ee9b7310c5b3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff6c293b24331&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3&user=Luuk+van+der+Velden&userId=f6c293b24331&source=post_page-f6c293b24331----ee9b7310c5b3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee9b7310c5b3--------------------------------)
+    ·6 min read·Jan 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee9b7310c5b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3&user=Luuk+van+der+Velden&userId=f6c293b24331&source=-----ee9b7310c5b3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee9b7310c5b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsecure-mlops-with-extended-databricks-mlflow-ee9b7310c5b3&source=-----ee9b7310c5b3---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLFlow is an opensource Databricks product that supports part of the Machine
+    Learning model lifecycle. Its model registry allows model versions to be registered
+    under model names to facilitate model deployment. We want to use one MLFlow instance
+    and one Databricks workspace to support multiple deployment targets (acceptance,
+    staging, production, etc), while providing security guarantees for production
+    models. We extended the MLFlow client to manage multiple environments in one model
+    registry in a secure manner. This client works in tandem with Databricks permissions
+    of which we will show the Azure terraform snippets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'github repo: [environment mlflow client repository](https://github.com/nederlandsespoorwegen/environment_mlflow_client)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48f61f10f7c7dcae556cfa6085454c82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Aleksa Kalajdzic](https://www.pexels.com/photo/mushroom-on-brown-tree-log-3780917/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 Why one Databricks workspace?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A secure Databricks workspace is deployed in virtual networks, which require
+    separate subnets for the control and the compute planes. The IP range of the compute
+    plane subnet constrains the maximum amount of parallel compute nodes that can
+    be used simultaneously. Due to company wide IP range size limitations we chose
+    to use one large subnet for one Databricks workspace instead of multiple smaller
+    subnets tied to multiple Databricks workspaces. Thus, we want to manage several
+    logical environments (acceptance, preproduction and production) within one Databricks
+    workspace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1.2 Scaling with Databricks pools
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Databricks pools allow reuse of idle instances (virtual machines) during cluster
+    creation. Pools provide moderate start and auto-scaling speed benefits. Each instance
+    in the pool requires one IP from the compute plane subnet. If the maximum is reached
+    the next instance creation request will fail, without any elegant error handling
+    or backoff mechanism. This limitation of the Databricks pools makes it important
+    to have a large subnet for your activities as you can hit the maximum limit at
+    any time and your applications will crash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2 Identity based security
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our security approach is based on identities, mostly application registrations
+    in Azure and Databricks users backed by Azure Active Directory (AAD) users. For
+    instance, we run our acceptance tests in the same Databricks workspace on production
+    data using separate identities that have read-only permissions copying production
+    data to transient acceptance test storage accounts. Identities are very convenient
+    on Azure as Databricks supports credential passthrough leveraging all the AAD
+    roles and groups that we set on the identities. We also rely on Databricks permissions
+    and groups as we work with multiple identities in one Databricks workspace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.1 Databricks groups
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Each logical environment in our single Databricks workspace has a Databricks
+    group for its application principals named f”apps_{env_name}” (i.e. apps_acc,
+    apps_prod) and a group that contains all active application principals “apps_all”.
+    The groups and their permissions are managed with terraform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Databricks groups terraform excerpt
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 Environment MLFlow client
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 3.1 MLFlow experiment tracking
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The MLFlow experiments storage is adapted to support multiple logical environments
+    by managing the storage location per environment. Our solution assigns directories
+    such as “/experiments/acc” and “experiments/prod” to store experiment data. Databricks
+    permissions management is used to give directory rights to the respective Databricks
+    groups (in this example “apps_acc” and “apps_prod”). This allows for secure logging
+    of experiments and models for each of the logical environments, without the user
+    having to think about it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLFlow experiments Databricks permssions terraform excerpt
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2 MLFlow model registry
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The MLFlow model registry is a central place to register models and model versions
+    for use in ML systems. Models logged and registered during data science experiments
+    in different environments end up in the same model registry. The MLFlow model
+    registry is harder to adapt for use with multiple logical environments. Actually,
+    the deployment target concept in MLFlow assumes that each version of the a specific
+    model can have a different “stage”. The model stage is a property of a model version
+    registered in the MLFlow model registry. It can be set to “None”, “Staging”, “Production”
+    and “Archived”. Although helpful the model stage is quite limiting because we
+    cannot define our own values for it, thus it does not fully support our need to
+    define various logical environments. We do use it to manage permissions on our
+    model versions with Databricks, which we will describe later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model naming
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We decided that model naming will be our first layer of differentiating between
+    any number of logical environments. Every registered model name is postfixed with
+    a environment identifier f”{model_name}_{env_name}”. Our MLFlow client manages
+    this naming transparently during model registration and retrieval based on the
+    environment name it gets from a system environment variable or the environment
+    name passed into its constructor. Similar to the experiment management the interface
+    is mostly unchanged compared to vanilla MLFlow, due to our abstraction within
+    the environment MLFlow client.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLFlow client excerpt showing environment model naming
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model permissions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our goal is to separate production models from any other environment and prevent
+    any non-production principal to register or retrieve production model versions.
+    As mentioned, the model Stage can be set to “None”, “Staging”, “Production” and
+    “Archived”. The Databricks permission management hooks into the values of the
+    model Stage. We can control who can set the “Staging” and “Production” model Stage
+    values and who can manage models with these model Stage values using the “CAN_MANAGE_STAGING_VERSIONS”
+    and “CAN_MANAGE_PRODUCTION_VERSIONS” permissions. The “Production” Stage permission
+    also allows principals to access “Staging” Stage model versions and transition
+    them to production model versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To separate Production models from models from other environments we assign
+    the model Stage automatically when registering a model version. All non-production
+    environments assign the model stage value to “Staging”. Model versions registered
+    from the production environment are assigned the “Production” stage value. We
+    leverage the Databricks permissions assigned to our Databricks groups shown below
+    to securely manage our Production models separate from other logical environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Databricks MLFLow model permission Azure terraform excerpt
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.3 Getting it together
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Apart from abstractions on top of the vanilla MLFlow client we have added a
+    few methods wrapping various actions for your convenience. One of the the extra
+    methods is the “log_model_helper”, which handles the various steps to log and
+    register a model version and set the appropriate model stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Registering a model version is commonly done in two steps, first we log a model
+    during an experiment run and then we register the logged model as a model version
+    of a registered model. Logging a model during an experiment run returns a ModelInfo
+    object, which contains a model_uri pointing to the local artifact location. We
+    use the model_uri to register a model version under a registered model name and
+    upload it to the MLFlow registry. Registering a model version returns a ModelVersion
+    object that tells us the autoincremented model version and current_stage of the
+    model which will always be “None” right after creation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our third step during model version registration is to transition the model
+    version stage from “None” to “Staging” or “Production” depending on the logical
+    environment. Everyone can create model versions, but the Stage transitions are
+    restricted with the Databricks permissions. These three steps are wrapped in the
+    “log_model_helper” method. Using this helper method, we can assume that all registered
+    model versions have an environment aware name and appropriate stage value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: log_model_helper excerpt
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.4 Testing our MLFlow client
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For us to maintain our own client we need to test it in detail to check compliance
+    to our permissions design. Any changes in the upstream MLFlow client are tested
+    at the same time, for instance a restructuring of the MLFlow modules. We start
+    a local MLFlow server within a PyTest fixture that is scoped to the whole testing
+    session. The Python tempfile module is used to generate a temporary artifact location
+    and a temporary sqlite database file. The goal of our test session is to log and
+    register a model and perform various mutations and retrievals on it. The first
+    step is to log and register a model version in the empty model registry. We perform
+    this inside a PyTest fixture as all other tests depend on it, although technically
+    it is a test itself as it includes asserts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLFlow test server fixture, thanks to @Wessel Radstok and [Rik Jongerius](https://medium.com/u/8d3b69256f17?source=post_page-----ee9b7310c5b3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: test fixture for model registration
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our extended environment MLFlow client allows us to register models from multiple
+    logical environments into the same model registry. It leverages the minimal permissions
+    options in Databricks to securely separate development environments from production
+    during model registration and retrieval for deployment. In addition, the MLFlow
+    API is largely unchanged and the same across environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*https://codebeez.nl*](https://codebeez.nl/blogs/secure-mlops-with-databricks-mlflow/)*.*'
+  prefs: []
+  type: TYPE_NORMAL

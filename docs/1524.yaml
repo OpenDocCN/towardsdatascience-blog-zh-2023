@@ -1,0 +1,368 @@
+- en: Why and How to Adjust P-values in Multiple Hypothesis Testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/why-and-how-to-adjust-p-values-in-multiple-hypothesis-testing-2ccf174cdbf8?source=collection_archive---------0-----------------------#2023-05-05](https://towardsdatascience.com/why-and-how-to-adjust-p-values-in-multiple-hypothesis-testing-2ccf174cdbf8?source=collection_archive---------0-----------------------#2023-05-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: P-values below a certain threshold are often used as a method to select relevant
+    features. Advice below suggests how to use them correctly.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@igor-s?source=post_page-----2ccf174cdbf8--------------------------------)[![Igor
+    Šegota](../Images/17c592b71fef9526a0679d47937837f6.png)](https://medium.com/@igor-s?source=post_page-----2ccf174cdbf8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2ccf174cdbf8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2ccf174cdbf8--------------------------------)
+    [Igor Šegota](https://medium.com/@igor-s?source=post_page-----2ccf174cdbf8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe5f8ebca4ad8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-and-how-to-adjust-p-values-in-multiple-hypothesis-testing-2ccf174cdbf8&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=post_page-e5f8ebca4ad8----2ccf174cdbf8---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2ccf174cdbf8--------------------------------)
+    ·9 min read·May 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2ccf174cdbf8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-and-how-to-adjust-p-values-in-multiple-hypothesis-testing-2ccf174cdbf8&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=-----2ccf174cdbf8---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2ccf174cdbf8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-and-how-to-adjust-p-values-in-multiple-hypothesis-testing-2ccf174cdbf8&source=-----2ccf174cdbf8---------------------bookmark_footer-----------)![](../Images/d511c23677ff0b8f644e2dbec2ba25c2.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by the author. Taken at Westfield UTC Mall, La Jolla, California.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multiple hypothesis testing occurs when we repeatedly test models on a number
+    of features, as the probability of obtaining one or more false discoveries increases
+    with the number of tests. For example, in the field of genomics, scientists often
+    want to test whether any of the thousands of genes have a significantly different
+    activity in an outcome of interest. Or whether [jellybeans cause acne](https://xkcd.com/882/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this blog post, we will cover few of the popular methods used to account
+    for multiple hypothesis testing by adjusting model p-values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: False Positive Rate (FPR)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Family-Wise Error Rate (FWER)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: False Discovery Rate (FDR)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: and explain when it makes sense to use them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This document can be summarized in the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5943b7c02580e3f0811215a96b4c40be.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create test data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will create a simulated example to better understand how various manipulation
+    of p-values can lead to different conclusions. To run this code, we need Python
+    with `pandas`, `numpy`, `scipy` and `statsmodels` libraries installed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the purpose of this example, we start by creating a Pandas DataFrame of
+    1000 features. 990 of which (99%) will have their values generated from a Normal
+    distribution with mean = 0, called a Null model. (In a function `norm.rvs()` used
+    below, mean is set using a `loc` argument.) The remaining 1% of the features will
+    be generated from a Normal distribution mean = 3, called a Non-Null model. We
+    will use these as representing interesting features that we would like to discover.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: For each of the 1000 features, p-value is a probability of observing the value
+    at least as large, if we assume it was generated from a Null distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'P-values can be calculated from a cumulative distribution ( `norm.cdf()` from
+    `scipy.stats`) which represents the probability of obtaining a value equal to
+    or **less than** the one observed. Then to calculate the p-value we calculate
+    `1 - norm.cdf()` to find the probability **greater than** the one observed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1e09fe5152cdf959d5bb5fa916a04c49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: False Positive Rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first concept is called a False Positive Rate and is defined as a fraction
+    of null hypotheses that we flag as “significant” (also called Type I errors).
+    The p-values we calculated earlier can be interpreted as a false positive rate
+    by their very definition: they are probabilities of obtaining a value at least
+    as large as a specified value, when we sample a Null distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For illustrative purposes, we will apply a common (magical 🧙) p-value threshold
+    of 0.05, but any threshold can be used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'notice that out of our 9900 null hypotheses, 493 are flagged as “significant”.
+    Therefore, a False Positive Rate is: FPR = 493 / (493 + 9407) = 0.053.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main problem with FPR is that in a real scenario we do not a priori know
+    which hypotheses are null and which are not. Then, the raw p-value on its own
+    (False Positive Rate) is of limited use. In our case when the fraction of non-null
+    features is very small, most of the features flagged as significant will be null,
+    because there are many more of them. Specifically, out of 92 + 493 = 585 features
+    flagged true (“positive”), only 92 are from our non-null distribution. That means
+    that a majority or about 84% of reported significant features (493 / 585) are
+    false positives!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, what can we do about this? There are two common methods of addressing this
+    issue: instead of False Positive Rate, we can calculate Family-Wise Error Rate
+    (FWER) or a False Discovery Rate (FDR). Each of these methods takes the set of
+    raw, unadjusted, p-values as an input, and produces a new set of “adjusted p-values”
+    as an output. These “adjusted p-values” represent estimates of *upper bounds*
+    on FWER and FDR. They can be obtained from `multipletests()` function, which is
+    part of the `statsmodels` Python library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Family-Wise Error Rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Family-Wise Error Rate is a probability of falsely rejecting one or more null
+    hypotheses, or in other words flagging true Null as Non-null, or a probability
+    of seeing one or more false positives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When there is only one hypothesis being tested, this is equal to the raw p-value
+    (false positive rate). However, the more hypotheses are tested, the more likely
+    we are going to get one or more false positives. There are two popular ways to
+    estimate FWER: Bonferroni and Holm procedures. Although neither Bonferroni nor
+    Holm procedures make any assumptions about the dependence of tests run on individual
+    features, they will be overly conservative. For example, in the extreme case when
+    all of the features are identical (same model repeated 10,000 times), no correction
+    is needed. While in the other extreme, where no features are correlated, some
+    type of correction is required.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bonferroni procedure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the most popular methods for correcting for multiple hypothesis testing
+    is a Bonferroni procedure. The reason this method is popular is because it is
+    very easy to calculate, even by hand. This procedure multiplies each p-value by
+    the total number of tests performed or sets it to 1 if this multiplication would
+    push it past 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/55e0101586bf95c693bd99efb4c1e5c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Holm procedure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Holm’s procedure provides a correction that is more powerful than Bonferroni’s
+    procedure. The only difference is that the p-values are not all multiplied by
+    the total number of tests (here, 10000). Instead, each sorted p-value is multiplied
+    progressively by a decreasing sequence 10000, 9999, 9998, 9997, …, 3, 2, 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/19df8cf11b5389281f44407675a2cfe9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can verify this ourselves: the last 10th p-value on this output is multiplied
+    by 9991: 7.943832e-06 * 9991 = 0.079367\. Holm’s correction is also the default
+    method for adjusting p-values in `p.adjust()` function in R language.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we again apply our p-value threshold of 0.05, let’s take a look how these
+    adjusted p-values affect our predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: These results are much different than when we applied the same threshold to
+    the raw p-values! Now, only 8 features are flagged as “significant”, and all 8
+    are correct — they were generated from our Non-null distribution. This is because
+    the probability of getting even one feature flagged incorrectly is only 0.05 (5%).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, this approach has a downside: it failed to flag other 92 Non-null
+    features as significant. While it was very stringent to make sure none of the
+    null features slipped in, it was able to find only 8% (8 out of 100) non-null
+    features. This can be seen as taking a different extreme than the False Positive
+    Rate approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is there a more middle ground? The answer is “yes”, and that middle ground is
+    False Discovery Rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: False Discovery Rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What if we are OK with letting some false positives in, but capturing more than
+    single-digit percent of true positives? Maybe we are OK with having *some* false
+    positive, just not that many that they overwhelm all of the features we flag as
+    significant — as was the case in the FPR example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This can be done by controlling for False Discovery Rate (rather than FWER
+    or FPR) at a specified threshold level, say 0.05\. False Discovery Rate is defined
+    a fraction of false positives among all features flagged as positive: FDR = FP
+    / (FP + TP), where FP is the number of False Positives and TP is the number of
+    True Positives. By setting FDR threshold to 0.05, we are saying we are OK with
+    having 5% (on average) false positives among all of our features we flag as positive.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are several methods to control FDR and here we will describe how to use
+    two popular ones: Benjamini-Hochberg and Benjamini-Yekutieli procedures. Both
+    of these procedures are similar although more involved than FWER procedures. They
+    still rely on sorting the p-values, multiplying them with a specific number, and
+    then using a cut-off criterion.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benjamini-Hochberg procedure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Benjamini-Hochberg (BH) procedure assumes that each of the tests are *independent*.
+    Dependent tests occur, for example, if the features being tested are correlated
+    with each other. Let’s calculate the BH-adjusted p-values and compare it to our
+    earlier result from FWER using Holm’s correction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e13078444fc6c5d26695e9dfb9f3aa33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'BH procedure now correctly flagged 33 out of 100 non-null features as significant
+    — an improvement from the 8 with the Holm’s correction. However, it also flagged
+    2 null features as significant. So, out of the 35 features flagged as significant,
+    the fraction of incorrect features is: 2 / 33 = 0.06 so 6%.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that in this case we have 6% FDR rate, even though we aimed to control
+    it at 5%. FDR will be controlled at a 5% rate *on average*: sometimes it may be
+    lower and sometimes it may be higher.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benjamini-Yekutieli procedure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Benjamini-Yekutieli (BY) procedure controls FDR regardless of whether tests
+    are independent or not. Again, it is worth noting that all of these procedures
+    try to establish *upper bounds* on FDR (or FWER), so they may be less or more
+    conservative. Let’s compare the BY procedure with a BH and Holm procedures above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5009f6b28842380845296c6dd2c3cdea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: BY procedure is stricter in controlling FDR; in this case even more so than
+    the Holm’s procedure for controlling FWER, by flagging only 7 non-null features
+    as significant! The main advantage of using it is when we know the data may contain
+    a high number of correlated features. However, in that case we may also want to
+    consider filtering out correlated features so that we do not need to test all
+    of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'At the end, the choice of procedure is left to the user and depends on what
+    the analysis is trying to do. Quoting Benjamini, Hochberg (Royal Stat. Soc. 1995):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Often the control of the FWER is not quite needed. The control of the FWER is
+    important when a conclusion from the various individual inferences is likely to
+    be erroneous when at least one of them is.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This may be the case, for example, when several new treatments are competing
+    against a standard, and a single treatment is chosen from the set of treatments
+    which are declared significantly better than the standard.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In other cases, where we may be OK to have some false positives, FDR methods
+    such as BH correction provide less stringent p-value adjustments and may be preferrable
+    if we primarily want to increase the number of true positives that pass a certain
+    p-value threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are other adjustment methods not mentioned here, notably a [q-value](https://en.wikipedia.org/wiki/Q-value_(statistics))
+    which is also used for FDR control, and at the time of writing exists only as
+    an R package.
+  prefs: []
+  type: TYPE_NORMAL

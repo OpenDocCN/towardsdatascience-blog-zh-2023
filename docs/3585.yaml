@@ -1,0 +1,515 @@
+- en: Retrieval Augmented Generation (RAG) Inference Engines with LangChain on CPUs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/retrieval-augmented-generation-rag-inference-engines-with-langchain-on-cpus-d5d55f398502?source=collection_archive---------1-----------------------#2023-12-05](https://towardsdatascience.com/retrieval-augmented-generation-rag-inference-engines-with-langchain-on-cpus-d5d55f398502?source=collection_archive---------1-----------------------#2023-12-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/1e2477ae7cf2785a1000e1cf8f7cdf54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Created with Nightcafe — Property of Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring scale, fidelity, and latency in AI applications with RAG
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://eduand-alvarez.medium.com/?source=post_page-----d5d55f398502--------------------------------)[![Eduardo
+    Alvarez](../Images/afa0ad855c8ec2e977ebbe60dc3e77a4.png)](https://eduand-alvarez.medium.com/?source=post_page-----d5d55f398502--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d5d55f398502--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d5d55f398502--------------------------------)
+    [Eduardo Alvarez](https://eduand-alvarez.medium.com/?source=post_page-----d5d55f398502--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe49cc416a8ef&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-inference-engines-with-langchain-on-cpus-d5d55f398502&user=Eduardo+Alvarez&userId=e49cc416a8ef&source=post_page-e49cc416a8ef----d5d55f398502---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d5d55f398502--------------------------------)
+    ·13 min read·Dec 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd5d55f398502&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-inference-engines-with-langchain-on-cpus-d5d55f398502&user=Eduardo+Alvarez&userId=e49cc416a8ef&source=-----d5d55f398502---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd5d55f398502&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-inference-engines-with-langchain-on-cpus-d5d55f398502&source=-----d5d55f398502---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While Retrieval Augmented Generation (RAG) is extensively covered, particularly
+    in its application to chat-based LLMs, in this article we aim to view it from
+    a different perspective and analyze its prowess as a powerful operational tool.
+    We will also provide a useful hands-on example to get practical experience with
+    RAG-based applications. By the end of the article, you’ll develop a unique vantage
+    point on RAG — understanding its role and potential in scalable inference within
+    production-scale LLM deployments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first, let’s refresh our understanding of inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Inference is the process that transforms data into predictions. This component
+    of the ML lifecycle is often cradled by data pipelines that manage pre-processing
+    and post-processing tasks. Let’s evaluate a practical example, consider a music
+    streaming service’s recommendation system, as shown in Figure 1\. When a user
+    visits the streaming platform, an intelligently curated list of top 10 songs is
+    presented in the application’s interface. The recommendation system responsible
+    for this list relies on a trained model and robust data pipelines to ensure a
+    high-quality result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75837d8a56126276ae978236c03b5275.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. Simple diagram illustrating a recommendation system supporting “top
+    10 recommended song list” functionality — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The pre-processing stage, represented by yellow boxes in our diagram, is crucial
+    for ensuring that the model’s prediction closely aligns with the user’s unique
+    taste. Starting with the last 250 songs played by the user, the pipeline processes
+    the data and generates a set of contextual features before passing it to a trained
+    model for inference. The inference step predicts what this user might like and
+    yields an output that passes to a post-processing stage (illustrated in orange).
+    In this final step, the model’s top recommendations are enriched with additional
+    metadata — album art, song titles, artist names, and their ranking. This information
+    is then displayed on the user’s interface for consumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the workflow described above, it’s clear how proximal the inference step
+    is to the user in the application topology. Unlike other AI lifecycle components
+    like data collection and model optimization, which tend to operate in the background,
+    the inference engine is in the frontline, interacting closely with the user interface
+    (UI) and user experience (UX).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ebe160f4764522808d7b8d4905ab88e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. An illustration of various components of an AI system and their proximity
+    to user experience. — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use the diagram above (Figure 2) to illustrate the proximity of various
+    components of the AI lifecycle to the user. While many components like data collection
+    and annotation sit “behind the scenes,” the inference engine stands as a critical
+    bridge between the AI’s internal processes and what end-users are exposed to.
+    It’s not just another backend mechanism, it is a core part of the user’s tangible
+    experience with the application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given this critical role in shaping user experience, it is essential that the
+    inference engine — encompassing the inference process and its peripheral components
+    like pre/post-processing, API management, and compute management — operates flawlessly.
+    To establish boundary conditions for inference engine quality, I introduce the
+    “Inference Quality (IQ) Triangle,” depicted in Figure 3\. This qualitative figure
+    highlights three pivotal aspects to focus on when enhancing the performance of
+    an inference workload:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Latency:** if the inference engine takes less time to yield a response, it
+    reduces overhead for the application and leads to a better user experience.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fidelity:** inference needs to provide answers that users can trust and feel
+    confident in. This includes but is not limited to ensuring high accuracy of responses
+    and reducing hallucinations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Scalability:** As the load on the AI system fluctuates, the ability to scale
+    infrastructure is key to optimizing cost and enabling the right-sizing of computing
+    resources.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/c7167e48daf98f92fa5db84d6f8758ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. A simplistic model for aligning three key elements of high-quality
+    inference engines. A strong focus on operation excellence where AI systems need
+    to scale while maintaining low latency and returning high-fidelity insights. —
+    Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we progress through the article, we will reference the IQ Triangle to dive
+    deeply into how these three components — latency, fidelity, and scale — align
+    well with the RAG workload.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brief Introduction to Retrieval Augmented Generation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Retrieval augmented generation, also known as RAG, is a technique introduced
+    initially by Piktus et al. (2021) in *Retrieval-Augmented Generation for Knowledge-Intensive
+    NLP Tasks* and has since been adapted in various frameworks and applications.
+    RAG falls under the category of in-context learning techniques, which focus on
+    providing additional knowledge to pre-trained models in an effort to augment the
+    quality of their responses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hallmark of RAG is in the intelligent retrieval of additional information
+    from relevant data sources, typically vector databases using algorithms like similarity
+    search. The retrieved data is combined with the user’s query, enriching the input
+    provided to the generative model. A standard RAG workflow is depicted in Figure
+    4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fdf37eb0af1e796fd7cf4098a76f8286.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. A simple RAG workflow diagram — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To grasp RAG’s real value, let’s consider a practical scenario: a financial
+    analyst at a major corporation (Figure 5) is grappling with the task of building
+    a quarterly earnings report. Executing this task in a traditional fashion would
+    be a time-intensive endeavor. LLM-based applications offer significant efficiency
+    improvements, but there’s a catch — the need for up-to-date, proprietary information,
+    which isn’t accessible at the time of training foundational open-source models.
+    This could be partially resolved by fine-tuning but the rapid pace of business
+    operations means this process would require continuous fine-tuning to keep models
+    current.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ae0610f4167cb96bd81fe0f231940fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Adapted version of Figure 6\. In this adaptation, a scenario involving
+    a financial analyst’s use of RAG is represented to illustrate the workflow’s validity
+    in building RAG systems based on proprietary data. — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAG tackles these challenges by retrieving relevant, live data, allowing models
+    to be dynamically updated with the latest information. This puts pressure on the
+    quality of the underlying database, but at least data management is more empirical
+    and predictable than LLM hallucinations and neural network extrapolation. As an
+    additional bonus, this approach safeguards sensitive data within the organization’s
+    data infrastructure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many applied AI engineers agree that there should be a shift toward a hybrid
+    strategy focusing on periodic fine-tuning and robust RAG pipelines. In practice,
+    this strategy experiences improved alignment with domain-specific tasks and increases
+    model relevance in applications with fast-evolving data environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In the hands-on example, you can toggle RAG on/off to see the impacts of pre-trained
+    model response quality with and without the context provided by the intelligent
+    retrieval mechanisms. See Figure 10.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Operational RAG Systems in Support of Quality Inference Engines
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have a foundational understanding of RAG and its role in LLM-based
+    applications, we will focus on implementing these systems’ practical and operational
+    aspects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As promised, let’s revisit the IQ Triangle (Figure 3) which underscores three
+    vital aspects of high-quality operational inference engines. We will analyze the
+    opportunity to address all three of these aspects — scalability, latency, and
+    fidelity — using the stack illustrated below (Figure 6), which focuses on an inference
+    engine composed of RAG pipelines and heavily optimized models running on CPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/449e2b8fab0d5a6410796b6ab8cc9162.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Proposed Inference Engine stack — Image my author
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAG’s Architectural Benefits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: RAG-based applications bring significant architectural benefits. From a **scalability**
+    perspective, all data-centric components of the pipeline converge on a single
+    (or few) vector databases (Figure 7), allowing the fresh data benefits of RAG
+    to scale well with increasing/decreasing user requests. This unified approach
+    can significantly improve the **fidelity** of responses to domain-specific tasks
+    while greatly simplifying data governance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea79e05dd5e7c389c2453a539c83a288.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. Simple Data Flow diagram showing the flow of data across a RAG-based
+    AI System — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimized Models: Efficiency and Performance'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Models can achieve smaller computational and environmental footprints through
+    model compression and parameter-efficient fine-tuning techniques. While fine-tuning
+    can help tailor models to specific tasks, enhancing their predictive accuracy
+    (**fidelity**), compression methods like quantization can shrink model sizes,
+    significantly improving inference **latency**. These lean and tuned models are
+    easier to deploy in the data center and enable AI applications at the edge, opening
+    the door for various innovative use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4062887d1a54b6abaab8b38f88894567.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8 — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: CPUs in Support of RAG
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Regarding workflows involving complex logic, like RAG, CPUs stand out for their
+    ubiquity and cost-efficiency. This enables improved scale since almost any organization
+    can access enterprise-grade CPUs in the cloud, unlike specialized accelerators,
+    which are harder to come by.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modern CPUs also come equipped with low-level optimizations — take, for instance,
+    Intel Advanced Matrix Extensions in their 4th Generation Xeon Processors — which
+    improve memory management and matrix operations in deep learning training and
+    inference phases. Their support for lower precision data types (such as bf16 and
+    int8) makes them well-suited for achieving low **latency** during inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, the compatibility of CPUs with the multiple components of a RAG
+    pipeline (Figure 9), including vector databases and intelligent search (for example,
+    similarity search), streamlines infrastructure management, making **scaled** deployment
+    more straightforward and efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/063e1262526782e9e5f47c365f685326.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9\. Adaptation of Figure 7\. Showcases the ability of CPUs to support
+    various parts of the RAG system. — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Before moving on, I must disclose my affiliation with Intel and the product
+    used below. As a Senior AI Engineer at Intel, the following hands-on sample is
+    run on the Intel Developer Cloud (IDC). We will use IDC as* a free and convenient
+    way to access Compute to get practical experience *with the concepts described
+    in this article.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hands-On Example: Implementing RAG with LangChain on the Intel Developer Cloud
+    (IDC)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To follow along with the following hands-on example, create a free account on
+    the [Intel Developer Cloud](https://bit.ly/3sTXnHt) and navigate to the “Training
+    and Workshops” page. Under the *Gen AI Essentials* section, select **Retrieval
+    Augmented Generation (RAG) with LangChain** option. Follow the instructions on
+    the webpage to launch a JupyterLab window and automatically load the notebook
+    with all of the sample code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The notebook includes detailed docstrings and descriptions of the code. This
+    article will discuss the high-level mechanics while providing context for specific
+    functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up Dependencies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We start by installing all of the required packages into the base environment.
+    You’re welcome to create your conda environment, but this is a quick and easy
+    way to start.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: These commands will install all the necessary packages into your base environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Data and Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will be using a quantized version of Falcon 7B (gpt4all-falcon-q4_0) from
+    the GPT4All project. You can learn more about this model on the [GPT4ALL page](https://gpt4all.io/index.html)
+    in the “Model Explorer” section. The model has been stored on disk to simplify
+    the model access process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following logic downloads the available datasets from a Hugging Face project
+    called [FunDialogues](https://huggingface.co/FunDialogues). The selected data
+    will be passed through an embedding model and placed in our vector database in
+    a subsequent step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code snippet above, you can select from 4 different synthetic datasets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Robot Maintenance**: conversations between a technician and a customer support
+    agent while troubleshooting a robot arm.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Basketball Coach**: conversations between basketball coaches and players
+    during a game.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Physics Professor**: conversations between students and physics professor
+    during office hours.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Grocery Cashier**: conversations between a grocery store cashier and customers'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Configuring the Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The GPT4ALL extension in the LangChain API takes care of loading the model
+    into memory and establishing a variety of parameters, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**model_path**: This line specifies the file path for a pre-trained model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**n_threads**: Sets the number of threads to be used, which might influence
+    parallel processing or inference speed. This is especially relevant for multi-core
+    systems.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**max_tokens**: Limits the number of tokens (words or subwords) for the input
+    or output sequences, ensuring that the data fed into or produced by the model
+    does not exceed this length.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**repeat_penalty**: This parameter possibly penalizes repetitive content in
+    the model’s output. A value greater than 1.0 prevents the model from generating
+    repeated sequences.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**n_batch**: Specifies the batch size for processing data. This can help optimize
+    processing speed and memory usage.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**top_k**: Defines the “top-k” sampling strategy during the model’s generation.
+    When generating text, the model will consider only the top k most probable next
+    tokens.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Building the Vector Database with ChromaDB
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The Chroma vector database is an integral part of our RAG setup, where we store
+    and manage our data efficiently. Here’s how we build it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Executing the Retrieval Mechanism
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Upon receiving a user’s query, we use similarity search to search our vector
+    DB for similar data. Once a k number of matching results are found, they are retrieved
+    and used to add the context to the user’s query. We use the `PromptTemplate` function
+    to build a template and embed the user’s query alongside the retrieved context.
+    Once the template has been populated, we move on to the inference component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The LangChain `LLMChain` utility to execute inference based on the query passed
+    by the user and the configured template. The result is returned to the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Interactive Experimentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To help you get started quickly, the notebook includes integrated ipywidget
+    components. You must run all the cells in the notebook to enable these components.
+    We encourage you to adjust the parameters and evaluate the impact on the latency
+    and fidelity of the system’s response. Remember, this is just a starting point
+    and a basic demonstration of RAG’s capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6ff90f892d94b23b4608c11f563e7e04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10\. In this example, we get a quick taste of the power of RAG, clearly
+    seeing the benefits of the additional context provided by RAG, which helps yield
+    a helpful answer to the user’s question — “My robot is not turning on, Can you
+    help me?” The RAG-enabled output provides valid recommendations, while the raw
+    model without RAG simply provides a polite inquiry that is not very helpful to
+    the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary and Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: No one wants to interact with slow, unstable chatbots that respond with bogus
+    information. There are a plethora of technical stack combinations to help developers
+    avoid building systems that yield terrible user experiences. In this article,
+    we have interpreted the importance of inference engine quality to the user experience
+    from the perspective of a stack that enables scale, fidelity, and latency benefits.
+    The combination of RAG, CPUs, and model optimization techniques checks all corners
+    of the IQ Triangle (Figure 3), aligning well with the needs of operational LLM-based
+    AI chat applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A few exciting things to try would be:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edit the prompt template found in the `retrieval_mechanism` method to engineer
+    better prompts in tandem with the retrieved context.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Adjust the various model and RAG-specific parameters and evaluate the impact
+    on inference latency and response quality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Add new datasets that are meaningful to your domain and test the viability of
+    using RAG to build your AI chat-based applications.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This example’s model (gpt4all-falcon-q4_0) is not optimized for Xeon processors.
+    Explore using models that are optimized for CPU platforms and evaluate the inference
+    latency benefits.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Thank you for reading! Don’t forget to follow*** [***my profile for more
+    articles***](https://eduand-alvarez.medium.com/) ***like this!***'
+  prefs: []
+  type: TYPE_NORMAL

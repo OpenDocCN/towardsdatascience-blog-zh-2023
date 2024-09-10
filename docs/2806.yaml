@@ -1,0 +1,545 @@
+- en: 'Monitoring Machine Learning Models in Production: Why and How?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/monitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6?source=collection_archive---------7-----------------------#2023-09-05](https://towardsdatascience.com/monitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6?source=collection_archive---------7-----------------------#2023-09-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How is our model impacted in the evolving world? An analysis focusing on drift
+    examples, and implementing Python-based monitoring strategies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)[![John
+    Leung](../Images/ef45063e759e3450fa7f3c32b2f292c3.png)](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------)
+    [John Leung](https://medium.com/@johnleungTJ?source=post_page-----13d07a5ff0c6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6125e8835d3b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6&user=John+Leung&userId=6125e8835d3b&source=post_page-6125e8835d3b----13d07a5ff0c6---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----13d07a5ff0c6--------------------------------)
+    ·12 min read·Sep 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F13d07a5ff0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6&user=John+Leung&userId=6125e8835d3b&source=-----13d07a5ff0c6---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F13d07a5ff0c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-machine-learning-models-in-production-why-and-how-13d07a5ff0c6&source=-----13d07a5ff0c6---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine Learning (ML) model development often takes time and requires technical
+    expertise. As data science enthusiasts, when we acquire a dataset to explore and
+    analyze, we eagerly train and validate it using diverse [state-of-the-art models](https://medium.com/geekculture/whats-the-public-sentiment-under-inflationary-economic-environment-5edc899efa29)
+    or employing [data-centric strategies](https://medium.com/mlearning-ai/how-to-apply-data-centric-ai-mindset-to-text-classification-problems-b41656c70c16).
+    It feels incredibly fulfilling when we optimize the model’s performance as if
+    all the tasks have been accomplished.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, after deploying the model to production, there are plenty of reasons
+    that contribute to lower model performance or degradation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/295fd5ece6d0106a67d735d40b80bb4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Adrien Delforge](https://unsplash.com/@adriendlf?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**#1 The training data is generated through simulation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data scientists often [face limitations](https://www.cio.com/article/465251/how-can-cios-protect-personal-identifiable-information-pii-for-a-new-class-of-data-consumers.html)
+    in accessing the production data, which results in training the model using simulated
+    or sample data instead. While data engineers bear the responsibility of ensuring
+    the representativeness of the training data in terms of scale and complexity,
+    the training data still deviates to some extent from the production data. There
+    is also a risk of systematic flaws in upstream data processing, such as data collection
+    and labeling. These factors can impact the extraction of additional useful input
+    features or hinder the model’s ability to generalize well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example:** Investor data in the financial industry or patient information
+    in the healthcare industry is often simulated due to security and privacy concerns.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**#2 The new production data exhibits a new data distribution**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over time, the characteristics of input features can also change, such as shifts
+    in age groups, income ranges, or other customer demographics. The data source
+    itself may even be completely replaced due to various cases. During the model
+    development process, optimization relies on learning and capturing patterns from
+    the majority group within the training data. However, as time progresses, the
+    previous majority may transition into the minority in the production data, rendering
+    the original static model inadequate for meeting the most recent production needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example:** The model is well trained initially using customer data in Asian
+    regions. Recently since the business expands into the United States, the same
+    model directly makes prediction based on the input features which have exhibited
+    variations.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/2143289b7b56e32bb729f36ba6d960ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data drift (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**#3 The patterns that we predict are evolving**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apart from shifts in the distribution of input features, the [relationship between
+    the features and the target variable](https://en.wikipedia.org/wiki/Concept_drift)
+    can also change in the evolving environment. These changes can occur in unexpected
+    ways over time, rendering the original model progressively ineffective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sudden concept change
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These changes can occur abruptly, sometimes within a few weeks, due to unforeseen
+    circumstances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example:** The surge in demand for virtual meeting services during public
+    COVID-19 lockdowns.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Gradual concept change
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This type of change takes longer to manifest and is often a natural progression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example:** The gradual increase in the price of dairy products due to long-term
+    inflation.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Recurrent concept change
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These changes can happen periodically, often during specific times of the year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example:** The rapid growth in e-commerce sales during various special days
+    like Black Friday and the Saturday before Christmas.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/c4b2cc04ce61055adc9758b8f7dd5a57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Concept drift (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model development is only a tiny part of a production-ready ML system
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Many companies emphasize data-driven decision-making through the use of ML applications.
+    Imagine that your ML models are utilized in critical applications, such as medical
+    diagnosis, to support healthcare professionals in identifying diseases and conditions.
+    Any model degradation means impacting the accuracy of diagnoses, potentially resulting
+    in incorrect treatment plans and compromised patient outcomes. There are tons
+    of cases with high importance in the real world, thus it becomes imperative to
+    implement objective and continuous monitoring to detect any possible shifts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following sections, we will delve into various layers of monitoring and
+    provide illustrative Python code examples to demonstrate their implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2c3baf922fa9c1ad596a1db57177a2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Nathy dog](https://unsplash.com/@nathdah?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '#1 Monitor the model performance metrics'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To detect any sign of model degradation, one of the direct and effective ways
+    is to keep track of the performance metrics over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Performance metrics for regression model](/what-are-the-best-metrics-to-evaluate-your-regression-model-418ca481755b):
+    R-squared, Root mean squared error (RMSE), and mean absolute error (MAE)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Performance metrics for classification model](/the-5-classification-evaluation-metrics-you-must-know-aa97784ff226):
+    Precision, recall, and F1-score'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These performance metrics collected from the initial deployment serve as benchmarks
+    for ongoing monitoring and evaluation. Periodically reassessing them is crucial
+    whenever a new batch of ground truth data is collected, such as upon completion
+    of a marketing campaign. If the error metrics rise above a predefined threshold,
+    or if the metrics such as R-squared fall below the threshold, it is necessary
+    to consider re-executing the data engineering process and retraining the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this monitoring approach provides valuable insights into any drifts, it
+    tends to lag. We can take a more proactive approach to monitor the latest input
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '#2 Detect the changes in data distribution'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Instead of waiting for sufficient input data for reliable evaluation of model
+    performance, we can apply statistical methods for comparing the data distributions
+    of two datasets. In our case, we can determine if the distribution of the training
+    dataset is the same as that of the latest production dataset. If it is not statistically
+    confident that two distributions are the same, it suggests a drift in the model.
+    This is as a proxy for performance changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kolmogorov-Smirnov Test ([K-S Test](/kolmogorov-smirnov-test-84c92fb4158d)):
+    nonparametric test (i.e. with no assumption on the underlying data distribution)
+    **for numeric features**, it is more sensitive near the center of the distribution
+    than at the tails.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Interpretation:** When p-value < 0.05, an alert indicating the presence of
+    a drift is triggered.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Population Stability Index ([PSI](/psi-and-csi-top-2-model-monitoring-metrics-924a2540bed8)):
+    A statistical test that can be applied to **both numeric and categorical variables**.
+    It is a metric that shows how each variable has diverged independently from the
+    baseline values. It is sometimes called the Characteristic Stability Index (CSI)
+    when evaluating the distribution of features rather than target variables.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Interpretation:** A value 0~0.1 means no significant distribution change;
+    a value 0.1~0.2 considered a moderate distribution change; and a value larger
+    than 0.2 interpreted as a significant distribution change.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Other famous statistical tests include [Kullback-Leibler divergence](/understanding-kl-divergence-f3ddc8dff254),
+    [Jensen-Shannon divergence](/how-to-understand-and-use-jensen-shannon-divergence-b10e11b03fd6),
+    and [Wasserstein distance](/the-gromov-wasserstein-distance-835c39d4751d).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '#3 Monitor drift using a sliding window approach'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Any delay in detecting data or pattern drifts results in a time gap, potentially
+    leading to discrepancies between the ground truth and model predictions. To bridge
+    the gap, are there any further advancements available? One promising idea is leveraging
+    streaming data instead of batch data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Adaptive Windowing ([ADWIN](https://scikit-multiflow.readthedocs.io/en/stable/api/generated/skmultiflow.drift_detection.ADWIN.html))
+    algorithm utilizes a sliding window approach to effectively detect concept drift.
+    Unlike traditional fixed-size windows, ADWIN decides the size of the window by
+    cutting the statistics window at different points. Whenever newly arriving data
+    comes, ADWIN analyses the statistics and identifies the point at which two sub-windows
+    demonstrate notable differences in their means.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpretation:** When the absolute difference between the two means exceeds
+    a pre-defined threshold, an alert indicating the presence of a drift is triggered.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Example Walkthrough**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s explore an example that demonstrates the implementation of the above monitoring
+    strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will utilize a [dataset](https://www.kaggle.com/datasets/parisrohan/credit-score-classification?datasetId=2289007&sortBy=voteCount&select=train.csv)
+    obtained from Kaggle. The dataset comprises 100k records, encompassing 28 featuresthat
+    describe the customer demographics and their credit-related history.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our objective is to segregate customers in a global financial company into credit
+    score brackets. The target variable is **Credit_Score**, a categorical measure
+    classified as ‘Poor’, ‘Standard’, and ‘Good’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Examples of features include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Occupation*: Occupation of the customers (e.g. scientist, teacher, engineer,
+    etc.)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Annual_Income*: Annual income of the customers'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Credit_History_Age*: The age of customers’ credit history'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Payment_Behaviour*: 6 groups of payment behaviors based on spending frequency
+    (low/ high) and payment amount (small/ medium/ large)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/89da1d42d08937e934255688405067cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [CardMapr.nl](https://unsplash.com/@cardmapr?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model performance metrics**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start by applying data cleansing and transformation techniques, including
+    but not limited to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Correcting/ Removing records with missing values or incorrect data (e.g. age
+    < 0), or duplicates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detecting and handling data outliers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performing min-max scaling on numeric variables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Applying label encoding on categorical variables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*This part requires in-depth exploratory data analysis. However, since the
+    focus is on sharing the monitoring strategies, the transformations performed are
+    not discussed in detail here.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Afterward, we split the dataset and developed the advanced gradient boosting
+    algorithm, [LightGBM](https://lightgbm.readthedocs.io/en/stable/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: During our model development, we gathered several performance metrics, including
+    an F1 score of 0.810, a precision score of 0.818, and a recall score of 0.807\.
+    Subsequent monitoring can be evaluated similarly. For instance, if the F1 score
+    falls below 0.75, it serves as an alert, prompting us to take immediate action
+    to mitigate the issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**K-S Test**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To demonstrate how the K-S Test works, I have selected a numeric feature *Credit_History_Age*.
+    We will examine the sensitivity of this statistical test by creating three distinct
+    datasets: one with 1000 samples, another with 5000 samples, and a third with approximately
+    64000 samples, which corresponds to the total size of the cleaned training samples.
+    Each data point within the *Credit_History_Age* feature has been randomly picked
+    from the training data and altered by a random floating-point number.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04df626e2dd072d349f5c829070d2589.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data distributions of ‘Credit_History_Age’ in original data and drifted data
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We obtained the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the dataset with 1000 samples, the p-value of the K-S Test is 0.093.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the dataset with 5000 samples, the p-value of the K-S Test is 0.002.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the dataset with around 64000 samples, the p-value of the K-S Test is 0.000.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When examining the data drift scenario using 1000 samples, the p-value exceeded
+    0.05\. Consequently, we can conclude that the two distributions remain similar.
+    However, as the sample size increased to 5000 and beyond, the K-S Test exhibited
+    exceptional performance, yielding p-values significantly lower than 0.05\. This
+    provides a clear indication of a data distribution drift, serving as a clear alert.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**PSI**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to utilizing the K-S Test, we will also leverage the PSI (Population
+    Stability Index) to evaluate the numeric feature *Credit_History_Age* and assess
+    the categorical feature *Payment_Behaviour*. To represent the drift effect, we
+    have randomly replaced 80% of the data of the feature *Payment_Behaviour* with
+    specific label values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8b316011e2d1c1c0f9c4f96cac6b8772.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data distributions of ‘Payment_Behaviour’ in original data and drifted data
+    (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numeric feature *Credit_History_Age*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With a sample size of 1000, the PSI value is 0.023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a sample size of 5000, the PSI value is 0.015.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a sample size of approximately 64000, the PSI value is 0.021.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Categorical feature *Payment_Behaviour*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With a sample size of 1000, the PSI value is 0.108.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a sample size of 5000, the PSI value is 0.111.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a sample size of approximately 64000, the PSI value is 0.112.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the PSI values for the *Credit_History_Age* feature are significantly lower
+    than 0.1, indicating no significant distribution change. By comparing these results
+    with those obtained from the K-S Test, we observe that the K-S Test exhibits greater
+    sensitivity in detecting distribution changes compared to PSI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, the PSI values for the *Payment_Behaviour* feature are around
+    0.11, signifying a moderate distribution change. Interestingly, the three PSI
+    values remain relatively consistent, implying that PSI’s effectiveness is less
+    dependent on sample sizes. Besides, PSI has the flexibility to monitor across
+    various feature types, positioning it still a valuable approach for drift detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below is the implementation code of PSI:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**ADWIN algorithm**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, we test the power of ADWIN in detecting the change in the numeric feature
+    *Credit_History_Age*. The [data stream](https://en.wikipedia.org/wiki/Streaming_data)
+    consists of the training data, followed by the drifted data. We expect that the
+    algorithm will promptly identify the drift shortly after examining the entirety
+    of the original data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To visually represent the situation, a scatter plot is created to showcase the
+    final 500 points of the original data in blue, followed by the initial 500 points
+    of the drifted data, depicted in green. The drifted data exhibits a slightly higher
+    average value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42d6513244576dea35f68f17a17b8272.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scatter plot (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By continuously adding stream elements, ADWIN identifies the change at index
+    64457, which is the 637th data point within the drifted data. In comparison, the
+    K-S Test and PSI necessitate a larger number of data points to conclude the presence
+    of a drift confidently. The better performance of ADWIN is a testament to its
+    capability to monitor diverse features at speed and ease.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below is the implementation code of ADWIN:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Wrapping it up
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ve delved into the crucial concepts of data drift and model drift, which
+    can lead to model decay in production. We can proactively monitor and detect drift
+    conditions using model performance metrics, statistical tests, and adaptive windowing
+    techniques. Unlike participating in a one-time Kaggle competition, building a
+    production-ready ML system is an iterative journey. It requires a mindset shift
+    towards integrating comprehensive model monitoring to ensure a robust and consistently
+    high-performance serving space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before you go
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you enjoy this reading, I invite you tofollow [my Medium page](https://medium.com/@johnleungTJ).
+    By doing so, you can stay updated with exciting content related to data science
+    side projects, Machine Learning Operations (MLOps) demonstrations, and project
+    management methodologies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=post_page-----13d07a5ff0c6--------------------------------)
+    [## Optimizing Your Strategies with Approaches Beyond A/B Testing'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An in-depth explanation in layman on optimising classic A/B testing: Epsilon-greedy,
+    Thompson Sampling, Contextual…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/optimizing-your-strategies-with-approaches-beyond-a-b-testing-bf11508f8930?source=post_page-----13d07a5ff0c6--------------------------------)
+    [](https://medium.com/mlearning-ai/how-to-apply-data-centric-ai-mindset-to-text-classification-problems-b41656c70c16?source=post_page-----13d07a5ff0c6--------------------------------)
+    [## How to Apply Data-centric AI Mindset to Text Classification Problems?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mastering the customer complaint classification using various data-centric Python
+    packages and AI tricks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/mlearning-ai/how-to-apply-data-centric-ai-mindset-to-text-classification-problems-b41656c70c16?source=post_page-----13d07a5ff0c6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

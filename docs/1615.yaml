@@ -1,0 +1,253 @@
+- en: 'Demystifying Bayesian Models: Unveiling Explanability through SHAP Values'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/demystifying-bayesian-models-unveiling-explanability-through-shap-values-8405f618f4e0?source=collection_archive---------14-----------------------#2023-05-12](https://towardsdatascience.com/demystifying-bayesian-models-unveiling-explanability-through-shap-values-8405f618f4e0?source=collection_archive---------14-----------------------#2023-05-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Exploring PyMC’s Insights with SHAP Framework via an Engaging Toy Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vanillaxiangshuyang?source=post_page-----8405f618f4e0--------------------------------)[![Shuyang
+    Xiang](../Images/36a5fd18fd9b7b88cb41094f09b83882.png)](https://medium.com/@vanillaxiangshuyang?source=post_page-----8405f618f4e0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8405f618f4e0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8405f618f4e0--------------------------------)
+    [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----8405f618f4e0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-bayesian-models-unveiling-explanability-through-shap-values-8405f618f4e0&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----8405f618f4e0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8405f618f4e0--------------------------------)
+    ·6 min read·May 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8405f618f4e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-bayesian-models-unveiling-explanability-through-shap-values-8405f618f4e0&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----8405f618f4e0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8405f618f4e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdemystifying-bayesian-models-unveiling-explanability-through-shap-values-8405f618f4e0&source=-----8405f618f4e0---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Gap between Bayesian Models and Explainability
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: SHAP values (SHapley Additive exPlanations) are a game-theory-based method used
+    to increase the transparency and interpretability of machine learning models.
+    However, this method, along with other machine learning explainability frameworks,
+    has rarely been applied to Bayesian models, which provide a posterior distribution
+    capturing uncertainty in parameter estimates instead of point estimates used by
+    classical machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While Bayesian models offer a flexible framework for incorporating prior knowledge,
+    adjusting for data limitations, and making predictions, they are unfortunately
+    difficult to interpret using SHAP. SHAP regards the model as a game and each feature
+    as a player in that game, but the Bayesian model is not a game. It is rather an
+    ensemble of games whose parameters come from the posterior distributions. How
+    can we interpret a model when it is more than a game?
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article attempts to explain a Bayesian model using the SHAP framework through
+    a toy example. The model is built on PyMC, a probabilistic programming library
+    for Python that allows users to construct Bayesian models with a simple Python
+    API and fit them using Markov chain Monte Carlo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main idea is to apply SHAP to an ensemble of deterministic models generated
+    from a Bayesian network. For each feature, we would obtain one sample of the SHAP
+    value from a generated deterministic model. The explainability would be given
+    by the samples of all obtained SHAP values. We will illustrate this approach with
+    a simple example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the implementations can be found in this [notebook](https://colab.research.google.com/drive/1BXZoicPYSY8ljNlh46WAYrrDBVRdoyqw#scrollTo=6Bk2sYdgKWMS)
+    .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian modelization with PyMC
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Consider the following dataset created by the author, which contains 250 points:
+    the variable y depends on x1 and x2, both of which vary between 0 and 5\. The
+    image below illustrates the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8270f34dfea06227ff5da7ceac8b3345.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: Dataset'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s quickly explore the data using a pair plot. From this, we can observe
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The variables x1 and x2 are not correlated.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Both variables contribute to the output y to some extent. That is, a single
+    variable is not enough to obtain y.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/7ba2e0867684251e8aecdd19b0c04a2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: pair plot of the data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modelization with PyMC
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s build a Bayesian model with PyMC. Without going into the details that
+    you can find in any statistical book, we’ll simply recall that the training process
+    of Bayesian machine learning models involves updating the model’s parameters based
+    on observed data and prior knowledge using [Bayesian rules](https://en.wikipedia.org/wiki/Bayes%27_theorem).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We define the model’s structure as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e3657c471d6b7dffcd1d435357c57078.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: model structure'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the priors and likelihood above, we’ll use the PyMC standard sampling
+    algorithm NUTS designed to automatically tune its parameters, such as the step
+    size and the number of leapfrog steps, to achieve efficient exploration of the
+    target distribution. It repeats a tree exploration to simulate the trajectory
+    of the point in the parameter space and determine whether to accept or reject
+    a sample. Such iteration stops either when the maximum number of iterations is
+    reached or the level of convergence is achieved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can see in the code below that we set up the priors, define the likelihood,
+    and then run the sampling algorithm using PyMC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s build a Bayesian model using PyMC. Bayesian machine learning model training
+    involves updating the model’s parameters based on observed data and prior knowledge
+    using [Bayesian rules](https://en.wikipedia.org/wiki/Bayes%27_theorem). We won’t
+    go into detail here, as you can find it in any statistical book.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can define the model’s structure as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e3657c471d6b7dffcd1d435357c57078.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: model structure'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the priors and likelihood defined above, we’ll use the PyMC standard sampling
+    algorithm NUTS. This algorithm is designed to automatically tune its parameters,
+    such as the step size and the number of leapfrog steps, to achieve efficient exploration
+    of the target distribution. It repeats a tree exploration to simulate the trajectory
+    of the point in the parameter space and determine whether to accept or reject
+    a sample. The iteration stops either when the maximum number of iterations is
+    reached or the level of convergence is achieved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the code below, we set up the priors, define the likelihood, and then run
+    the sampling algorithm using PyMC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The trace plot below displays the posteriors of the parameters in the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d9bd6126610e95f170e9945c28f6d69d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: posterior of the model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explain the model with SHAP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now want to implement SHAP on the model described above. Note that for a
+    given input (x1, x2), the model’s output y is a probability conditional on the
+    parameters. Thus, we can obtain a deterministic model and corresponding SHAP values
+    for all features by drawing one sample from the obtained posteriors. Alternatively,
+    if we draw an ensemble of parameter samples, we will get an ensemble of deterministic
+    models and, therefore, samples of SHAP values for all features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The posteriors can be obtained using the following code, where we draw 200
+    samples per chain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is the table of the data variables from the posteriors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b8670693ea9602bb39d4fd5b97f975c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: samples from posteriors'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we compute one pair of SHAP values for each drawn sample of model parameters.
+    The code below loops over the parameters, defines one model for each parameter
+    sample, and computes the SHAP values of x_test=(2,3) of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resulting ensemble of the two-dimensional SHAP values of the input is shown
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d242b0e663af7c769bb68e828be43d6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: SHAP values samples'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the plot above, we can infer the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SHAP values of both dimensions form more or less a normal distribution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The first dimension has a positive contribution (-1.75 as median) to the model,
+    while the second has a negative contribution (3.45 as median). However, the second
+    dimension’s contribution has a bigger absolute value.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article explores the use of SHAP values, a game-theory-based method for
+    increasing transparency and interpretability of machine learning models, in Bayesian
+    models. A toy example is used to demonstrate how SHAP can be applied to a Bayesian
+    network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please note that SHAP is model-agnostic. Therefore, with changes to its implementation,
+    it may be possible to apply SHAP directly to the Bayesian model itself in the
+    future.
+  prefs: []
+  type: TYPE_NORMAL

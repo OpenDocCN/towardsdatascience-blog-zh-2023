@@ -1,0 +1,304 @@
+- en: Anomaly Detection using Sigma Rules (Part 5) Flux Capacitor Optimization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4?source=collection_archive---------11-----------------------#2023-03-17](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4?source=collection_archive---------11-----------------------#2023-03-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To boost performance, we implement a forgetful bloom filter and a custom Spark
+    state store provider
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)[![Jean-Claude
+    Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)
+    [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----118e538cf8c4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----118e538cf8c4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----118e538cf8c4--------------------------------)
+    ·8 min read·Mar 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F118e538cf8c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&user=Jean-Claude+Cote&userId=444ed0089012&source=-----118e538cf8c4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F118e538cf8c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4&source=-----118e538cf8c4---------------------bookmark_footer-----------)![](../Images/c1af516fa0646ec90967798d864b41ec.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by Leora Winter on Unsplash, Shippagan, NB, Canada
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the 5th article of our series. Refer to [part 1](/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)
+    , [part 2](/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f),
+    [part 3](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-3-temporal-correlation-using-bloom-filters-a45ffd5e9069)
+    and [part 4](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72)
+    for some context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our previous articles, we have demonstrated the performance gains achieved
+    by using a bloom filter. We also showed how we leveraged a bloom filter to implement
+    temporal proximity correlations, parent/child and ancestor relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far we have been using a single bloom per host. Eventually the bloom filter
+    will be saturated with tags and will issue a lot of false positive. Using this
+    [online bloom filter calculator](https://hur.st/bloomfilter/?n=200000&p=0.01&m=&k=),
+    we can see the probability of getting a false positive. Notice how the false positive
+    rate quickly increases passed 200,000 tags. (This graph is for n=200,000 and p=1%)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f78e03cb7d11ad45d15448999ebb2038.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forgetful Bloom Filter
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'What we need is a way to age off very old tags. We need a forgetful bloom filter.
+    As explained in this excellent paper from Redis Labs [Age-Partitioned Bloom Filter](https://arxiv.org/pdf/2001.03147.pdf),
+    there are many ways to achieve a forgetful bloom filter. We will use the most
+    basic approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Segmentation based approaches use several disjoint segments which can be individually
+    added and retired. The most naïf and several times mentioned approach is a sequence
+    of plain BFs, one per generation, adding a new one and retiring the oldest when
+    the one in use gets full.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We chose to use 10 generations. Thus we use 10 bloom filter per host. Each bloom
+    is capable of holding up to 20,000 tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use an “active” bloom to insert new tags. When the “active” bloom is full,
+    we create a new one. When we reach 10 blooms, we discard the oldest bloom.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We query for tags by testing the “active” bloom. If the tag is not found we
+    test the next (older) bloom until we reach the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that for every tag we want to test, we can potentially perform 10 tests
+    in 10 different blooms. Each tests has a certain probability of reporting a false
+    positive. So by using 10 blooms, we increase our chances by 10\. To reduce the
+    chances of getting false positive, we use blooms with a ffp of 1/1000 rather than
+    1/100\. In fact, we will show we can even use ffp of 1/10000
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to accommodate multiple blooms, we will no longer store a bloom object
+    in the state store:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Rather, we will persists an FluxState object holding a list of bloom filters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The FluxState has the following fields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For performance reasons, we serialize the bloom filters ourselves. Since we
+    know the size of these objects, we can optimize the serialization by pre-allocating
+    the serialization buffers. The `serializedBlooms` field holds the serialized blooms.
+    The active field keeps track of the index of the active bloom within this list.
+    We will explain the use of the version number a bit later. This is how we serialize
+    the blooms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Efficient Checkpointing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We segmented our large bloom into 10 smaller ones. Due to the nature of bloom
+    filters, the space used by 10 blooms of 20,000 tags is roughly the same as a larger
+    200,000 tag bloom, roughly 200KiB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Spark HDFS state store provider keeps all the FluxState objects in memory.
+    If we suppose a fleet of 50,000 hosts, this results in about 10GiB of RAM. In
+    fact, the memory usage of the HDFS state store is measured to be 25GiB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/18ad35de65f2b617351447dadba86bc6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason why it’s much higher is that the HDFS state store keeps 2 copies
+    of the states by default. We can changed it to store a single copy using `spark.sql.streaming.maxBatchesToRetainInMemory`.
+    This brings down memory usage to about 12GiB of RAM, which corresponds to our
+    estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As part of checkpointing, Spark writes out all the states to the data lake and
+    it does this after every micro-batch completes. Spark spends a lot of time persisting
+    12 GiB of state and does so over and over.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, during every micro-batch, we only modify 1 out of 10 blooms (the active
+    bloom). The other 9 blooms might be queried but remain unchanged. The default
+    HDFS state store provider is unaware of which bloom is changed, it simply persists
+    the FluxState object. If the state store provider knew which bloom is the active
+    bloom, it could be more efficient and only checkpoint the modified active bloom.
+    It could potentially cut down serialization to 1/10th of the 12GiB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Custom State Store Provider
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The [HDFSBackedStateStoreProvider.scala](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/streaming/state/HDFSBackedStateStoreProvider.scala)
+    class handles the put and get state requests. It holds these key/value pairs in
+    an in-memory map and persists these key/value to the datalake.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With some slight modifications to the put and get methods, we can specialize
+    the behavior of the [HDFSBackedStateStoreProvider](https://github.com/apache/spark/blob/master/sql/core/src/main/scala/org/apache/spark/sql/execution/streaming/state/HDFSBackedStateStoreProvider.scala)
+    class and make it aware of our forgetful bloom filter strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The basic idea is to store each bloom segment under a seperate key. Instead
+    of storing the entire state under the key “windows_host_abc”, we will store each
+    segment under “windows_host_abc_segment1”, “windows_host_abc_segment2”, “windows_host_abc_segment3”,
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **put** function receives the key and value to store. The key will be a
+    host_id and the value will be a FluxState object. Spark encodes both the key and
+    value as an UnsafeRow before calling this method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our **put** function is exactly the same as the original. The only change we
+    make is to the key. We append the “active” bloom index to the original key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to note that we also modified our FluxState class to serialize
+    only the “active” bloom, rather than all 10 blooms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The original **get** method was like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We modified the **get** method to gather the 10 blooms segments of a host_id.
+    First, we build a list of FluxStates by iterating over the 10 bloom indexes. Then,
+    we create a new FluxState which holds all the blooms. We determine which one is
+    the active bloom using the version number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Adjusting False Positive Probability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have segmented the bloom in 10 parts, we can potentially query 10
+    blooms and thus have more chances of false positives. To remedy this, we’ve reduce
+    the fpp to 1/10000 which results in an overall fpp of 1/1000\. This is ten times
+    less chances then in our previous experiments. Nonetheless, because we only serialize
+    the “active” bloom, the overall performance is much better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Previously, when we were serializing all segments, we could reach up to a capacity
+    of 100,000 tags per host at a rate of 5,000 events per second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using a segmented approach where we only serialize the active bloom, we can
+    achieve a capacity of 300,000 tags per host at a rate of 5,000 events per second.
+    Alternatively, we can reduce the size of the bloom to accommodate more events
+    per seconds: 200,000 tag @ 8,000 events per second'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/631f1abf3ec0c4c90039164bcad28db1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In all previous experiments, we have been “seeding” the newly created bloom
+    filters with random tags. We did this to prevent the HDFSBackStore from compressing
+    the bloom filters while it saves their state to the data lake. An empty bloom
+    compresses to practically zero and a bloom at capacity (with maximum entropy)
+    is pretty much incompressible. When we first launched the experiment, performance
+    was amazing due to incredible compression. It took a very long time to see the
+    effect of the tags in the blooms. To fix this, we seeded all blooms at 95% capacity.
+    In other words, we have been measuring the worst case scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in practice, blooms will fill up slowly. Some blooms will fill up faster
+    than others. Statistically, we will never have all 50,000 blooms filled at 95%
+    capacity at the exact same time. A more realistic simulation can be performed
+    using random seeding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Benefiting from compressible blooms, we can run this simulation with a rate
+    of 10,000 events per seconds and a overall capacity of 400,000 tags per host for
+    a total of 20 billion tags on a single Spark worker. This is way more than the
+    100 million tags we could achieve with stream-stream join.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing and retrieving tags from the blooms is extremely fast. On average, a
+    single machine can perform about 200,000 tests a second. Storing tags in the bloom
+    is a bit more costly, but a machine can still store 20,000 tags a second. This
+    means we can support a lot of Sigma rules simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a summary of the different strategies used in our experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52571db56aedf882da762d1edce20464.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The results clearly show the performance improvements of the bloom strategy
+    coupled with a custom state store which only saves the “active” bloom segments.
+    The bloom strategy is also more generic than the stream-stream join approach since
+    it can handle use cases such as “ancestors” and [temporal proximity](https://github.com/SigmaHQ/sigma-specification/blob/version_2/Sigma_meta_rules.md#temporal-proximity-temporal)
+    (ordered and un-ordered). The proof of concept can be found here [https://github.com/cccs-jc/flux-capacitor](https://github.com/cccs-jc/flux-capacitor).
+    If you have novel use cases for this flux-capacitor function we would love to
+    hear about it.
+  prefs: []
+  type: TYPE_NORMAL

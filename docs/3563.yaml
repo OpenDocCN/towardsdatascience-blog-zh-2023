@@ -1,0 +1,354 @@
+- en: Almost Everything You Want to Know About Partition Size of Dask Dataframes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/almost-everything-you-want-to-know-about-partition-size-of-dask-dataframes-ac1b136d7674?source=collection_archive---------11-----------------------#2023-12-01](https://towardsdatascience.com/almost-everything-you-want-to-know-about-partition-size-of-dask-dataframes-ac1b136d7674?source=collection_archive---------11-----------------------#2023-12-01)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**And how to utilize it effectively in XGBoost model**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mik.sarafanov?source=post_page-----ac1b136d7674--------------------------------)[![Mikhail
+    Sarafanov](../Images/88869a3c6f664785c90539dd7aab6d74.png)](https://medium.com/@mik.sarafanov?source=post_page-----ac1b136d7674--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac1b136d7674--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac1b136d7674--------------------------------)
+    [Mikhail Sarafanov](https://medium.com/@mik.sarafanov?source=post_page-----ac1b136d7674--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F209c78c40898&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falmost-everything-you-want-to-know-about-partition-size-of-dask-dataframes-ac1b136d7674&user=Mikhail+Sarafanov&userId=209c78c40898&source=post_page-209c78c40898----ac1b136d7674---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac1b136d7674--------------------------------)
+    ·7 min read·Dec 1, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac1b136d7674&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falmost-everything-you-want-to-know-about-partition-size-of-dask-dataframes-ac1b136d7674&user=Mikhail+Sarafanov&userId=209c78c40898&source=-----ac1b136d7674---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac1b136d7674&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Falmost-everything-you-want-to-know-about-partition-size-of-dask-dataframes-ac1b136d7674&source=-----ac1b136d7674---------------------bookmark_footer-----------)![](../Images/6162b6b47f392693f9bcc37cc103e84f.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preview image (by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, my colleagues and I have been working on a big high-loaded service
+    that utilizes the [Xgboost](https://xgboost.readthedocs.io/en/stable/tutorials/dask.html)
+    machine learning model and Dask as the tool for distributed data processing and
+    forecast generating. Here I would like to share findings that we have been able
+    to maximize the use of Dask for the purpose of data preparation and ML model fitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is Dask?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Dask](https://www.dask.org/) is a library for distributed processing of large
+    amounts of data. The basic concept behind it is to divide large arrays into small
+    parts (partitions).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is how Dask Dataframes are stored and processed: tables can be split into
+    small data frames (look at this as pandas DataFrames) so that there is no need
+    to store the entire table in RAM. The entire source table may be too large to
+    load into memory, but individual partitions can. In addition, such data storage
+    allows efficient utilization of multiple processor cores to parallelize computations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the same time, the size of these partitions (chunks) is determined by the
+    developer. Thus, the same dataframe can be divided into several partitions using
+    for example ‘Split 1’ or ‘Split 2’ (Figure 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/541332b83eae5329024d552cd75a1d85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. Splitting Dask dataframe into partitions (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the optimal partition size is crucial, because if it is not optimal,
+    the processing of the data can slow down. The optimal partition size depends on
+    the size of the overall dataset, as well as on the resources of the server (or
+    laptop) — the number of CPUs and available RAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Disclaimer:** Further on, for convenience, we will measure the size of the
+    dataset by the number of rows. All tables will consist of 4 columns (3 features
+    + 1 target). When implementing the algorithm in the system, we built all dependencies
+    not on the number of rows in the tables, but on the total number of elements (rows
+    x columns).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The problem**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Dask can be used to compute simple statistics and aggregations, but Dask can
+    also be used to train big machine learning models (using a lot of data). For example,
+    XGBoost. Since the service we were developing might require us to train a model
+    on 2–10 million records using only 8–16 GB of RAM (in the case of small virtual
+    machines), we decided to conduct experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Even in the case of calculating simple statistics, the size of partitions is
+    very important because it can significantly slow down the calculation algorithm
+    in two cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Partitions are too large** so it takes too much time and resources to process
+    them in RAM'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Partitions are too small** so to process all of them Dask needs to load these
+    tables into RAM too often — more time is spent on synchronization and uploading/downloading
+    than on the calculations themselves'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thus, using the same computing resources can significantly degrade the performance
+    of the program by choosing a non-optimal partition size (Figure 2). Figure 2 shows
+    the time to fit the XGBoost model on Dask dataframes with different partition
+    sizes. The average execution time over 5 runs is shown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e211905900d041620463667f5c46022c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Influence of partition size on XGBoost model fitting velocity. The
+    original dataframe for these experiments contains 500,000 rows and 4 columns (image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, the **algorithm for optimal size for Dask Dataframes partitions
+    search** is discussed. All tables shown in this post are used to fit the Dask
+    Xgboost machine learning model. We will also share some tips that you may find
+    helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Documentation tips**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the official Dask documentation there are web pages with tips on how to handle
+    Dask objects (dataframes, arrays, etc.) correctly such as [Dask DataFrames Best
+    Practices](https://docs.dask.org/en/stable/dataframe-best-practices.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On this page, in particular, you can see such advice:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should aim for partitions that have around 100MB of data each.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: However, this advice is rough and does not take into account the computing specifications
+    of the server, the size of the source dataset and the specifics of solving the
+    problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Experiment setup**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As mentioned above, it is assumed that the optimal partition size depends on
+    the following three conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Size of full dataset;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: CPU resources (number of processes) which XGBoost and Dask can use;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Available Random-access memory (RAM).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Thus, during the experiments, the number of computing resources was varied,
+    as well as the size of the source dataset. Considered cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Partition size, thousands of rows: **[5, 10, 50, 100, 200, 300, 400, 500, 600,
+    700, 800, 900, 1000]** (13 cases)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Size of full dataset, thousands of rows: **[100, 200, 300, 400, 500, 600, 1000,
+    2000, 3000, 4000]** (10 cases)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'CPU resources (workers): **[2, 3, 4]** (3 cases)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Available Random-access memory (RAM) per worker: **[1GB, 2GB, 4GB]** (3 cases)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Note: [Worker in Dask](https://distributed.dask.org/en/latest/worker.html)
+    is a process in a computer (on a server) that uses the computing resources allocated
+    to it and runs in isolation and in parallel relative to other workers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, 1170 (13 x 10 x 3 x 3) cases were analyzed. **To obtain more robust estimates
+    of execution time, each case was launched 5 times. The metrics (execution time)
+    were then averaged.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: As part of the investigation, we wanted to find out the limits of the dataset
+    size at which the virtual machine would not be able to handle the load in order
+    to scale the service more successfully.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Results**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, consider the general visualizations from the experiments. We performed
+    runs with different numbers of CPU cores and amounts of RAM, as well as varying
+    the size of the original dataset and the size of the partitions. After completing
+    the experiments, we prepared a table showing only the optimal solutions (partition
+    sizes). Optimal partition sizes are those at which the execution time with given
+    conditions (RAM, CPU and source dataset size) was minimal. The correlation matrices
+    of the collected metrics are shown in Figure 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b73c7691d69963f279eca714bac9648.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Correlation matrices of experiment results (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the graph you can see that the biggest influence on the execution time
+    was obviously the size of the source dataset. The number of workers and amount
+    of RAM also have a significant effect on the fit time. Chunk size has a relatively
+    weak effect. However, this could be due to the fact that the dependence between
+    execution time and partition size is nonlinear, which is confirmed by the curve
+    from Figure 2\. Also, Figure 4 confirms that the measurements were made correctly,
+    because the results are consistent with our expectations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the animation with 3d graphs (Animation 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c3609781e62bf3d33f1cda67ad40768.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation 1\. Graph of the different test cases, where each frame is a fixed
+    size of the source dataset. Optimal surfaces for each case are shown (by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the animation, the optimal (for each combination of Processes number and
+    RAM per worker) cases are circled in red. That is, the conditions in which the
+    execution time of the algorithm was minimal for a given size of dataset, number
+    of cores, RAM and partition size are shown. The graphs also show piecewise constant
+    optimal surfaces in gray (NB: surface is global for all cases).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the animation it can be seen that in some frames there is no data on experiments
+    (no dots) (Figure 4). This means that the proposed computational resources were
+    insufficient to run the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5e51a0290a96c89d73ba7bb83ab086a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Modeling results for a dataset of 4 million rows. There are no results
+    for RAM less than 4 (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the picture it can be observed that with this dataset size, **if the number
+    of cores is small, then the larger partitions should be formed**. Note that this
+    dependence does not hold for all cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on the results of launches with insufficient computational resources,
+    the following visualization was prepared (Figure 5).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2bca7d7b9d8d34fbcae10ea0f6643511.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Limit of data volume, exceeding which does not allow to start model
+    fitting. The number of objects is calculated as the number of rows in the table
+    multiplied by the number of columns (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Also, based on the statistics collected on failed runs, a conclusion (tip)
+    was reached: if the amount of memory is limited, it is more reliable to use a
+    small partition size.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Discussion**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Based on this research, several tips for more effective configuration of the
+    system based on the Dask XGBoost model were formed. Note that this study was conducted
+    in order to run Dask more efficiently on relatively small servers (not having
+    hundreds of gigabytes of RAM and tens of CPUs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The experiment revealed the optimal hyperplanes. They are modeled using [Gaussian
+    processes](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor).
+    Based on this algorithm the optimal partition sizes are automatically selected
+    (Animation 2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/18d2a6daae39d15d2cd674a3ae13c6f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation 2\. Optimal surface for different conditions (CPU, RAM and source
+    dataset size). Each frame display conditions for particular source dataset size
+    (by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen from the animation, on average, **the optimal partition size
+    decreases when the number of rows in the source dataset increases**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion (& tips)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope you were interested in reading about what size patrician proved to be
+    the optimal size for training the XGBoost model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I realize that this article has gotten very “technical”. Therefore, for those
+    who managed to read it to the end, I will give some tips:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are measuring execution time, always run the calculations several times
+    and average the results since runtimes are stochastic;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you are in doubt about what size of partitions to choose, it is better to
+    make a mistake to a smaller extent (otherwise the algorithm will not just run
+    for a long time, but may crash with an error);
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To initialize a cluster locally in Dask, the *cluster = LocalCluster()* and
+    *Client(cluster)* [commands are used](https://docs.dask.org/en/stable/deploying-python.html).
+    We strongly recommend to initialize such a cluster only once in code using the
+    Singleton pattern. You can see how it can be implemented in Python [here](https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python).
+    Otherwise, you will initialize a new cluster every launch;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: On average, the optimal partition size decreases when the number of rows in
+    the source dataset increases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The story about Dask and machine learning was presented by [Mikhail Sarafanov](https://github.com/Dreamlone)
+    and the [Wiredhut team](https://wiredhut.com/)
+  prefs: []
+  type: TYPE_NORMAL

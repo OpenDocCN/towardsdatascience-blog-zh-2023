@@ -1,0 +1,368 @@
+- en: Training an Agent to Master a Simple Game Through Self-Play
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/training-an-agent-to-master-a-simple-game-through-self-play-88bdd0d60928?source=collection_archive---------5-----------------------#2023-09-06](https://towardsdatascience.com/training-an-agent-to-master-a-simple-game-through-self-play-88bdd0d60928?source=collection_archive---------5-----------------------#2023-09-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Simulate games and predict the outcomes.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://sebastiengilbert.medium.com/?source=post_page-----88bdd0d60928--------------------------------)[![Sébastien
+    Gilbert](../Images/380f6588c3ef718947bcf82061f190eb.png)](https://sebastiengilbert.medium.com/?source=post_page-----88bdd0d60928--------------------------------)[](https://towardsdatascience.com/?source=post_page-----88bdd0d60928--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----88bdd0d60928--------------------------------)
+    [Sébastien Gilbert](https://sebastiengilbert.medium.com/?source=post_page-----88bdd0d60928--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F975aef8c496a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-an-agent-to-master-a-simple-game-through-self-play-88bdd0d60928&user=S%C3%A9bastien+Gilbert&userId=975aef8c496a&source=post_page-975aef8c496a----88bdd0d60928---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----88bdd0d60928--------------------------------)
+    ·8 min read·Sep 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F88bdd0d60928&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-an-agent-to-master-a-simple-game-through-self-play-88bdd0d60928&user=S%C3%A9bastien+Gilbert&userId=975aef8c496a&source=-----88bdd0d60928---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F88bdd0d60928&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftraining-an-agent-to-master-a-simple-game-through-self-play-88bdd0d60928&source=-----88bdd0d60928---------------------bookmark_footer-----------)![](../Images/d109dfb5700af262af5a3d2b43e7547e.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A robot computing some additions. Image by the author, with help from DALL-E
+    2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Isn’t it amazing that everything you need to excel in a perfect information
+    game is there for everyone to see in the rules of the game?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, for mere mortals like me, reading the rules of a new game is
+    only a tiny fraction of the journey to learn to play a complex game. Most of the
+    time is spent playing, ideally against a player of comparable strength (or a better
+    player who is patient enough to help us expose our weaknesses). Losing often and
+    hopefully winning sometimes provides the psychological punishments and rewards
+    that steer us towards playing incrementally better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perhaps, in a not-too-far future, a language model will read the rules of a
+    complex game such as chess and, right from the start, play at the highest possible
+    level. In the meantime, I propose a more modest challenge: learning by self-play.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this project, we’ll train an agent to learn to **play perfect information,
+    two player games** by observing the results of matches played by previous versions
+    of itself. The agent will approximate a value (the game expected result) for any
+    game state. As an additional challenge, our agent won’t be allowed to maintain
+    a lookup table of the state space, as this approach would not be manageable for
+    complex games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solving SumTo100
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The game
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The game that we are going to discuss is SumTo100\. The game goal is to reach
+    a sum of 100 by adding numbers between 1 and 10\. Here are the rules:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize sum = 0.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choose a first player. The two players take turns.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'While sum < 100:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The player chooses a number between 1 and 10 inclusively. The selected number
+    gets added to the sum without exceeding 100.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If sum < 100, the other player plays (i.e., we go back to the top of point 3).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4\. The player that added the last number (reaching 100) wins.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/795b2aff5a3db4ea402f215dfb555414.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two snails minding their own business. Image by the author, with help from DALL-E
+    2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Starting with such a simple game has many advantages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The state space has only 101 possible values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The states can get plotted on a 1D grid. This peculiarity will allow us to represent
+    the state value function learned by the agent as a 1D bar graph.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The optimal strategy is known:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- Reach a sum of 11n + 1, where n ∈ {0, 1, 2, …, 9}'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'We can visualize the state value of the optimal strategy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9fa578e690e7ca71bc5d28f13819cf2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: The optimal state values for SumTo100\. Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The game state is the sum after an agent has completed its turn. A value of
+    1.0 means that the agent is sure to win (or has won), while a value of -1.0 means
+    that the agent is sure to lose (assuming the opponent plays optimally). An intermediary
+    value represents the estimated return. For example, a state value of 0.2 means
+    a slightly positive state, while a state value of -0.8 represents a likely loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to dive in the code, the script that performs the whole training
+    procedure is *learn_sumTo100.sh*, [in this repository](https://github.com/sebastiengilbert73/tutorial_learnbyplay).
+    Otherwise, bear with me as we’ll go through a high level description of how our
+    agent learns by self-play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generation of games played by random players
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We want our agent to learn from games played by previous versions of itself,
+    but in the first iteration, since the agent has not learned anything yet, we’ll
+    have to simulate games played by *random players*. At each turn, the players will
+    get the list of legal moves from the game authority (the class that encodes the
+    game rules), given the current game state. The random players will select a move
+    randomly from this list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 2 is an example of a game played by two random players:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/621b06f67e6b39bb1b66c0de6fe48c53.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Example of a game played by random players. Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, the second player won the game by reaching a sum of 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll implement an agent that has access to a neural network that takes as input
+    a game state (after the agent has played) and outputs the expected return of this
+    game. For any given state (before the agent has played), the agent gets the list
+    of legal actions and their corresponding candidate states (we only consider games
+    having deterministic transitions).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 3 shows the interactions between the agent, the opponent (whose move
+    selection mechanism is unknown), and the game authority:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73c3f1248a7589182a154460b1ec050c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Interactions between the agent, the opponent, and the game authority.
+    Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this setting, the agent relies on its regression neural network to predict
+    the expected return of game states. The better the neural network can predict
+    which candidate move yields the highest return, the better the agent will play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our list of randomly played matches will provide us with the dataset for our
+    first pass of training. Taking the example game from Figure 2, we want to punish
+    the moves made by player 1 since its behaviour led to a loss. The state resulting
+    from the last action gets a value of -1.0 since it allowed the opponent to win.
+    The other states get discounted negative values by a factor of γᵈ , where d is
+    the distance with respect to the last state reached by the agent. γ (gamma) is
+    the discount factor, a number ∈ [0, 1], that expresses the uncertainty in the
+    evolution of a game: we don’t want to punish early decisions as hard as the last
+    decisions. Figure 4 shows the state values associated with the decisions made
+    by player 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd36467f54afe8bb0ebd7d69304985b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: The state values, from the point of view of player 1\. Image by the
+    author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The random games generate states with their target expected return. For example,
+    reaching a sum of 97 has a target expected return of -1.0, and a sum of 73 has
+    a target expected return of -γ³. Half the states take the point of view of player
+    1, and the other half take the point of view of player 2 (although it doesn’t
+    matter in the case of the game SumTo100). When a game ends with a win for the
+    agent, the corresponding states get similarly discounted positive values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training an agent to predict the return of games
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We have all we need to start our training: a neural network (we’ll use a two-layers
+    perceptron) and a dataset of (state, expected return) pairs. Let’s see how the
+    loss on the predicted expected return evolves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aed34ba90cca092159f457e82761b0e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: Evolution of the loss as a function of the epoch. Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We shouldn’t be surprised that the neural network doesn’t show much predicting
+    power over the outcome of games played by random players.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Did the neural network learn anything at all?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Fortunately, because the states can get represented as a 1D grid of numbers
+    between 0 and 100, we can plot the predicted returns of the neural network after
+    the first training round and compare them with the optimal state values of Figure
+    1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e29ae6d8508e4435fde819a26e55cba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: The predicted returns after training on a dataset of games played
+    by random players. Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As it turns out, through the chaos of random games, the neural network learned
+    two things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you can reach a sum of 100, do it. That’s good to know, considering it is
+    the goal of the game.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you reach a sum of 99, you’re sure to lose. Indeed, in this situation, the
+    opponent has only one legal action and that action yields to a loss for the agent.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The neural network learned essentially to finish the game.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To learn to play a little better, we must rebuild the dataset by simulating
+    games played between copies of the agent with their freshly trained neural network.
+    To avoid generating identical games, the players play a bit randomly. An approach
+    that works well is choosing moves with the epsilon-greedy algorithm, using ε =
+    0.5 for each players first move, then ε = 0.1 for the rest of the game.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Repeating the training loop with better and better players
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Since both players now know that they must reach 100, reaching a sum between
+    90 and 99 should be punished, because the opponent would jump on the opportunity
+    to win the match. This phenomenon is visible in the predicted state values after
+    the second round of training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56665c735e94d184694716d505e7211b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: Predicted state values after two rounds of training. Sums from 90
+    to 99 show values close to -1\. Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see a pattern emerging. The first training round informs the neural network
+    about the last action; the second training round informs about the penultimate
+    action, and so on. We need to repeat the cycle of games generation and training
+    on prediction at least as many times as there are actions in a game.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following animation shows the evolution of the predicted state values after
+    25 training rounds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77fdfa0b81871f7545cb49bdda1617c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8: Animation of the state values learned along the training rounds.
+    Image by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The envelope of the predicted returns decays exponentially, as we go from the
+    end towards the beginning of the game. Is this a problem?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Two factors contribute to this phenomenon:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: γ directly damps the target expected returns, as we move away from the end of
+    the game.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The epsilon-greedy algorithm injects randomness in the player behaviours, making
+    the outcomes harder to predict. There is an incentive to predict a value close
+    to zero to protect against cases of extremely high losses. However, the randomness
+    is desirable because we don’t want the neural network to learn a single line of
+    play. We want the neural network to witness blunders and unexpected good moves,
+    both from the agent and the opponent.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In practice, it shouldn’t be a problem because in any situation, we will compare
+    values among the legal moves in a given state, which share comparable scales,
+    at least for the game SumTo100\. The scale of the values doesn’t matter when we
+    choose the greedy move.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We challenged ourselves to create an agent that can learn to master a game
+    of perfect information involving two players, with deterministic transitions from
+    a state to the next, given an action. No hand coded strategies nor tactics were
+    allowed: everything had to be learned by self-play.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could solve the simple game of SumTo100 by running multiple rounds of pitching
+    copies of the agent against each other, and training a regression neural network
+    to predict the expected return of the generated games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gained insight prepares us well for the next ladder in game complexity,
+    but that will be for my next post! 😊
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for your time.
+  prefs: []
+  type: TYPE_NORMAL

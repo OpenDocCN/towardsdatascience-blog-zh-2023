@@ -1,0 +1,396 @@
+- en: 'Retrieval-Augmented Generation (RAG): From Theory to LangChain Implementation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2?source=collection_archive---------0-----------------------#2023-11-14](https://towardsdatascience.com/retrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2?source=collection_archive---------0-----------------------#2023-11-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From the theory of the original academic paper to its Python implementation
+    with OpenAI, Weaviate, and LangChain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)[![Leonie
+    Monigatti](../Images/4044b1685ada53a30160b03dc78f9626.png)](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------)
+    [Leonie Monigatti](https://medium.com/@iamleonie?source=post_page-----4e9bd5f6a4f2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3a38da70d8dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&user=Leonie+Monigatti&userId=3a38da70d8dc&source=post_page-3a38da70d8dc----4e9bd5f6a4f2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e9bd5f6a4f2--------------------------------)
+    ·7 min read·Nov 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e9bd5f6a4f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&user=Leonie+Monigatti&userId=3a38da70d8dc&source=-----4e9bd5f6a4f2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e9bd5f6a4f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fretrieval-augmented-generation-rag-from-theory-to-langchain-implementation-4e9bd5f6a4f2&source=-----4e9bd5f6a4f2---------------------bookmark_footer-----------)![](../Images/ac6c086f3ecee48e8c43eaf4439e8442.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieval-Augmented Generation Workflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since the realization that you can supercharge large language models (LLMs)
+    with your proprietary data, there has been some discussion on how to most effectively
+    bridge the gap between the LLM’s general knowledge and your proprietary data.
+    There has been a lot of debate around [whether fine-tuning or Retrieval-Augmented
+    Generation (RAG) is more suited for this](/rag-vs-finetuning-which-is-the-best-tool-to-boost-your-llm-application-94654b1eaba7)
+    (spoiler alert: it’s both).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article first focuses on the concept of RAG and first covers its theory.
+    Then, it goes on to showcase how you can implement a simple RAG pipeline using
+    [LangChain](https://www.langchain.com/) for orchestration, [OpenAI](https://openai.com/)
+    language models, and a [Weaviate](https://weaviate.io/) vector database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Retrieval-Augmented Generation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Retrieval-Augmented Generation (RAG) is the concept to provide LLMs with additional
+    information from an external knowledge source. This allows them to generate more
+    accurate and contextual answers while reducing hallucinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'State-of-the-art LLMs are trained on large amounts of data to achieve a broad
+    spectrum of general knowledge stored in the neural network''s weights (parametric
+    memory). However, prompting an LLM to generate a completion that requires knowledge
+    that was not included in its training data, such as newer, proprietary, or domain-specific
+    information, can lead to factual inaccuracies (hallucinations), as illustrated
+    in the following screenshot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e4a0faeee6e536b3729d70d00f41a34c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ChatGPT’s answer to the question, “What did the president say about Justice
+    Breyer?”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, it is important to bridge the gap between the LLM’s general knowledge
+    and any additional context to help the LLM generate more accurate and contextual
+    completions while reducing hallucinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Traditionally, neural networks are adapted to domain-specific or proprietary
+    information by fine-tuning the model. Although this technique is effective, it
+    is also compute-intensive, expensive, and requires technical expertise, making
+    it less agile to adapt to evolving information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In 2020, Lewis et al. proposed a more flexible technique called Retrieval-Augmented
+    Generation (RAG) in the paper [Retrieval-Augmented Generation for Knowledge-Intensive
+    NLP Tasks](https://arxiv.org/abs/2005.11401) [1]. In this paper, the researchers
+    combined a generative model with a retriever module to provide additional information
+    from an external knowledge source that can be updated more easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In simple terms,** RAG is to LLMs what an open-book exam is to humans. In
+    an open-book exam, students are allowed to bring reference materials, such as
+    textbooks or notes, which they can use to look up relevant information to answer
+    a question. The idea behind an open-book exam is that the test focuses on the
+    students’ reasoning skills rather than their ability to memorize specific information.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, the factual knowledge is separated from the LLM’s reasoning capability
+    and stored in an external knowledge source, which can be easily accessed and updated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parametric knowledge:** Learned during training that is implicitly stored
+    in the neural network''s weights.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Non-parametric knowledge:** Stored in an external knowledge source, such
+    as a vector database.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: (By the way, I didn’t come up with this genius comparison. As far as I know,
+    this comparison was [first mentioned by JJ during the Kaggle — LLM Science Exam
+    competition](https://www.kaggle.com/code/jjinho/open-book-llm-science-exam).)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The vanilla RAG workflow is illustrated below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac6c086f3ecee48e8c43eaf4439e8442.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Retrieval-Augmented Generation Workflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Retrieve:** The user query is used to retrieve relevant context from an external
+    knowledge source. For this, the user query is embedded with an embedding model
+    into the same vector space as the additional context in the vector database. This
+    allows to perform a similarity search, and the top k closest data objects from
+    the vector database are returned.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Augment:** The user query and the retrieved additional context are stuffed
+    into a prompt template.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Generate:** Finally, the retrieval-augmented prompt is fed to the LLM.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Retrieval-Augmented Generation Implementation using LangChain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This section implements a RAG pipeline in Python using an [OpenAI](https://openai.com/)
+    LLM in combination with a [Weaviate](https://weaviate.io/) vector database and
+    an [OpenAI](https://openai.com/) embedding model. [LangChain](https://www.langchain.com/)
+    is used for orchestration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are unfamiliar with LangChain or Weaviate, you might want to check out
+    the following two articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c?source=post_page-----4e9bd5f6a4f2--------------------------------)
+    [## Getting Started with LangChain: A Beginner’s Guide to Building LLM-Powered
+    Applications'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A LangChain tutorial to build anything with large language models in Python
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/getting-started-with-langchain-a-beginners-guide-to-building-llm-powered-applications-95fc8898732c?source=post_page-----4e9bd5f6a4f2--------------------------------)
+    [](/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=post_page-----4e9bd5f6a4f2--------------------------------)
+    [## Getting Started with Weaviate: A Beginner’s Guide to Search with Vector Databases'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to use vector databases for semantic search, question answering, and generative
+    search in Python with OpenAI and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/getting-started-with-weaviate-a-beginners-guide-to-search-with-vector-databases-14bbb9285839?source=post_page-----4e9bd5f6a4f2--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prerequisites
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Make sure you have installed the required Python packages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`langchain` for orchestration'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`openai` for the embedding model and LLM'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`weaviate-client` for the vector database'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additionally, define your relevant environment variables in a .env file in your
+    root directory. To obtain an OpenAI API Key, you need an OpenAI account and then
+    “Create new secret key” under [API keys](https://platform.openai.com/account/api-keys).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, run the following command to load the relevant environment variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As a preparation step, you need to prepare a vector database as an external
+    knowledge source that holds all additional information. This vector database is
+    populated by following these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Collect and load your data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Chunk your documents
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Embed and store chunks
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The first step is to **collect and load your data** — For this example, you
+    will use [President Biden’s State of the Union Address from 2022](https://www.whitehouse.gov/state-of-the-union-2022/)
+    as additional context. The raw text document is available in [LangChain’s GitHub
+    repository](https://raw.githubusercontent.com/langchain-ai/langchain/master/docs/docs/modules/state_of_the_union.txt).
+    To load the data, You can use one of LangChain’s many built-in `[DocumentLoader](https://api.python.langchain.com/en/latest/api_reference.html#module-langchain.document_loaders)`s.
+    A `Document` is a dictionary with text and metadata. To load text, you will use
+    LangChain’s `TextLoader`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, **chunk your documents —** Because the `Document`, in its original state,
+    is too long to fit into the LLM’s context window, you need to chunk it into smaller
+    pieces. LangChain comes with many built-in [text splitters](https://python.langchain.com/docs/modules/data_connection/document_transformers/)
+    for this purpose. For this simple example, you can use the `CharacterTextSplitter`
+    with a `chunk_size` of about 500 and a `chunk_overlap` of 50 to preserve text
+    continuity between the chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lastly, **embed and store the chunks** — To enable semantic search across the
+    text chunks, you need to generate the vector embeddings for each chunk and then
+    store them together with their embeddings. To generate the vector embeddings,
+    you can use the OpenAI embedding model, and to store them, you can use the Weaviate
+    vector database. By calling `.from_documents()` the vector database is automatically
+    populated with the chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 1: Retrieve'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once the vector database is populated, you can define it as the retriever component,
+    which fetches the additional context based on the semantic similarity between
+    the user query and the embedded chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 2: Augment'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next, to augment the prompt with the additional context, you need to prepare
+    a prompt template. The prompt can be easily customized from a prompt template,
+    as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 3: Generate'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, you can build a chain for the RAG pipeline, chaining together the retriever,
+    the prompt template and the LLM. Once the RAG chain is defined, you can invoke
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can see the resulting RAG pipeline for this specific example illustrated
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b939dd150f26bf0a9d0200a3748a64cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Retrieval-Augmented Generation Workflow
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article covered the concept of RAG, which was presented in the paper [Retrieval-Augmented
+    Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
+    [1] from 2020\. After covering some theory behind the concept, including motivation
+    and problem solution, this article converted its implementation in Python. This
+    article implemented a RAG pipeline using an [OpenAI](https://openai.com/) LLM
+    in combination with a [Weaviate](https://weaviate.io/) vector database and an
+    [OpenAI](https://openai.com/) embedding model. [LangChain](https://www.langchain.com/)
+    was used for orchestration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enjoyed This Story?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[*Subscribe for free*](https://medium.com/subscribe/@iamleonie) *to get notified
+    when I publish a new story.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@iamleonie/subscribe?source=post_page-----4e9bd5f6a4f2--------------------------------)
+    [## Get an email whenever Leonie Monigatti publishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Get an email whenever Leonie Monigatti publishes. By signing up, you will create
+    a Medium account if you don't already…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@iamleonie/subscribe?source=post_page-----4e9bd5f6a4f2--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Find me on* [*LinkedIn*](https://www.linkedin.com/in/804250ab/),[*Twitter*](https://twitter.com/helloiamleonie)*,
+    and* [*Kaggle*](https://www.kaggle.com/iamleonie)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disclaimer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I am a Developer Advocate at Weaviate at the time of this writing. In addition
+    to this article, I have also added the same example to the [Weaviate notebook
+    in the LangChain documentation](https://python.langchain.com/docs/integrations/vectorstores/weaviate).
+    Alternatively, you can start by following the `[rag-weaviate](https://github.com/langchain-ai/langchain/tree/master/templates/rag-weaviate)`
+    [template in LangChain](https://github.com/langchain-ai/langchain/tree/master/templates/rag-weaviate).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Literature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Lewis, P., et al. (2020). Retrieval-augmented generation for knowledge-intensive
+    NLP tasks. *Advances in Neural Information Processing Systems*, *33*, 9459–9474.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If not otherwise stated, all images are created by the author.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,645 @@
+- en: Implementing LoRA from Scratch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/implementing-lora-from-scratch-20f838b046f1?source=collection_archive---------0-----------------------#2023-12-12](https://towardsdatascience.com/implementing-lora-from-scratch-20f838b046f1?source=collection_archive---------0-----------------------#2023-12-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to implement LoRA from scratch and some practical tips
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)[![Martin
+    Dittgen](../Images/b469995c47e0cc4859225d225ab373db.png)](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------)
+    [Martin Dittgen](https://medium.com/@martin.p.dittgen?source=post_page-----20f838b046f1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F733d27d88c18&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&user=Martin+Dittgen&userId=733d27d88c18&source=post_page-733d27d88c18----20f838b046f1---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20f838b046f1--------------------------------)
+    ·17 min read·Dec 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20f838b046f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&user=Martin+Dittgen&userId=733d27d88c18&source=-----20f838b046f1---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20f838b046f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-lora-from-scratch-20f838b046f1&source=-----20f838b046f1---------------------bookmark_footer-----------)![](../Images/503b0cc8bc85127a81c5479c847024b8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Abstract artistic representation of LoRA, created by DALLE*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I will show you how to implement LoRA from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LoRA, an acronym for *Low-Rank Adaptation* or *Low-Rank Adaptors*, offers an
+    efficient and lightweight method for fine-tuning pre-existing language models.
+    This includes masked language models like *BERT* and *RoBERTa*, as well as causal
+    (or chatbot) models such as *GPT*, *Llama*, and *Mistral*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the main advantages of low-rank adaptors is their efficiency. By utilizing
+    fewer parameters, LoRAs significantly lower computational complexity and memory
+    usage. This allows us to train large models on consumer-grade GPUs and effortlessly
+    distribute our compact (in terms of megabytes) LoRAs to others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, LoRAs can improve generalization performance. By constraining
+    the model complexity, they help prevent overfitting, especially in scenarios with
+    limited training data. This results in more resilient models that excel with new,
+    unseen data, or at the very least, retain the knowledge from their initial training
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Furthermore, low-rank adaptors can be seamlessly integrated into existing neural
+    network architectures. This integration allows for fine-tuning and adaptation
+    of pre-trained models with minimal additional training cost, making them highly
+    suitable for transfer learning applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start by delving into how LoRA functions, then I’ll demonstrate how you
+    can develop it from scratch for a *RoBERTa* model, followed by benchmarking our
+    implementation using the *GLUE* and *SQuAD* benchmarks along with a discussion
+    on general tips and improvements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How LoRA works
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The basic idea of LoRA is to keep the pre-trained matrices (i.e. parameters
+    of the original model) frozen (i.e. in a fixed state) and only add a small delta
+    to the original matrix, which has fewer parameters than the original matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example consider the matrix *W*, which could either be the parameters of
+    a fully connected layer or one of the matrices from the self-attention mechanism
+    of a transformer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1acfe2d8a621aeb34bb51fe08b784d9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Obviously, if ***W****-orig* had dimensions *n×m* and we would just initialize
+    a new delta matrix with the same dimensions to fine-tune on we would have gained
+    nothing; quite to the contrary we would have doubled the parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trick is to make **ΔW** less *“dimensional”* than the original matrix, by
+    constructing it via matrix multiplication from lower dimensional matrices *B*
+    and *A*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ad4155288d76a9fbc316fef34fc12bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Where we first define a rank *r*, to be significantly smaller than the base
+    matrix dimensions *r≪n* and *r≪m.* Then matrix ***B*** is *n×r* and matrix ***A***
+    is *r×m*. Multiplying them yields a matrix with the same dimensions of ***W***,
+    but constructed from a much lower parameter count.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously we want our delta to be zero at the start of the training, such that
+    the fine-tuning starts just like the original model. Therefore ***B*** is often
+    initialized as all zeros and ***A*** is initialized as random (usually normally
+    distributed) values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, this might look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea8acfaa08916bdc36979d8989788b40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*A figure with an example of how LoRA might look for an actual matrix*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imagine a situation where our base-dimensionality is 1024 and we chose a LoRA
+    rank *r* of 4 then:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***W*** has 1024 * 1024 ≈ 1 Million parameters'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***A*** & ***B*** have r * 1024 = 4 * 1024 ≈ 4k parameters each, yielding 8k
+    in total'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thus we only have to train 0.8% of the parameters to update our matrix with
+    LoRA
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A little aside, in the LoRA paper they weigh the delta matrix with an alpha
+    parameter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c10bf0da1628cfad229a9daefd7501a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If you just set your *α* to the first *r* you experiment with and fine-tune
+    the learning rate you can generally change the *r* parameter later without having
+    to fine-tune the learning rate again (at least approximately). While we can overlook
+    this detail in our implementation, it’s a common feature in many other LoRA libraries,
+    such as Hugging Face’s PEFT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing LoRA
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For our implementation we want to stick closely to the original LoRA paper.
+    There they tested which matrices of a transformer you actually have to replace.
+    They found that, when comparing different strategies on a GPT-3 fine-tune task,
+    it was sufficient to only adapt the self-attention mechanism’s query and value
+    vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that many people ignore this assessment nowadays and allow each matrix
+    to be fine-tuned, no matter the task or model (see QLoRA paper).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our implementation here will be done in PyTorch, but should be easily adaptable
+    to different frameworks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this blogpost, I simplified the code a bit, such that it should be easier
+    to read, while still showing the essential elements. The full code and some trained
+    LoRA weights can be found here: [https://github.com/Montinger/Transformer-Workbench](https://github.com/Montinger/Transformer-Workbench).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reimplementing the self-attention model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The model we wish to adapt is the RoBERTa model from Huggingface. The most straightforward
+    way is to just re-wrap the original self-attention mechanism `RobertaSelfAttention`.
+    The new class `LoraRobertaSelfAttention` will then initialize the LoRA matrices.
+    All the B matrices will be initialized with zeros and all the A matrices with
+    random numbers from a normal distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Given these matrices, we now define new class methods `lora_query` and `lora_value`.
+    These calculate the ***ΔW*** matrix, i.e. ***BA,*** and add it to the original
+    matrix, which we call from the original methods `query` and `value`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now the ugly part: To use the methods we have to overwrite the original forward
+    function of the `RobertaSelfAttention`. Though this is a bit hard-coded (see the
+    discussion on improvements later), it is quite simple. First, we copy the original
+    forward code from [https://github.com/huggingface/transformers/blob/main/src/transformers/models/roberta/modeling_roberta.py](https://github.com/huggingface/transformers/blob/main/src/transformers/models/roberta/modeling_roberta.py).
+    Second we replace each call to `query` by `lora_query` and each call to `value`
+    to `lora_value`. The function then looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Tada, there we have it: Our implementation of our LoRA-self-attention. Now
+    the only task that remains is to swap out the attention modules in the original
+    RoBERTa model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Replacing the modules
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ok great, we have replaced the self-attention with our own implementation; but
+    how do we get this new class into the old RoBERTa model? Essentially we have to
+    loop over each named component of the RoBERTa model, check whether it is of the
+    class `RobertaSelfAttention`, and if yes replace it by `LoraRobertaSelfAttention`,
+    while making sure that the original weight matrices are retained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to achieve this we will write a new wrapper function that can do this
+    replacement. Additionally, we also want to add the functionality for fine-tuning
+    the RoBERTa model on some actual tasks later
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As you can see we call two helper methods in the initialization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`self.replace_multihead_attention`: This replaces the attention of all neural
+    network parts by our previously written `LoraRobertaSelfAttention`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`self.freeze_parameters_except_lora_and_bias`: This will freeze all of the
+    main parameters for the training, such that the gradients and optimizer steps
+    are only applied to the LoRA parameters and the other bias and layer norm parameters
+    we want to keep trainable.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have to loop recursively through all the model parts, as in PyTorch parts
+    of the network can (and in fact are for RoBERTa) packed into a separate PyTorch
+    module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we have to freeze all the parameters we don’t want to train any longer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additionally, we have to implement the forward methods to account for the tasks
+    we will fine-tune on as well as two methods to save and load the LoRA weights,
+    such that we can load the adapters of a previously trained model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cliffhanger: There is a way, that would have made the code much nicer and easy
+    to generalize to other network architectures (as ours is pretty hard coded to
+    the RoBERTa model). Can you think what this might be? You have time to ponder
+    this question until we discuss it in the *Possible Improvements* section below.
+    But until then: Let''s test on some benchmarks if our implementation actually
+    works.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmarking the results with GLUE and SQuAD
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our implementation is now ready to be evaluated using the GLUE (General Language
+    Understanding Evaluation) and SQuAD (*Stanford Question Answering* Dataset) benchmarks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The GLUE benchmark, a suite of eight diverse NLP tasks, gauges a language model’s
+    comprehensive understanding abilities. It includes challenges like sentiment analysis,
+    textual entailment, and sentence similarity, offering a robust measure of a model’s
+    linguistic adaptability and proficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQuAD, on the other hand, focuses on assessing question-answering models. It
+    involves extracting answers from Wikipedia passages, where the model identifies
+    the relevant text span. SQuAD v2, a more advanced version, introduces unanswerable
+    questions, adding complexity and mirroring real-life situations where models must
+    recognize when text lacks an answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that for the following benchmark, I did not tune any hyperparameters, did
+    not do multiple runes (especially the smaller GLUE datasets are prone to stochastic
+    noise), did not do any early stopping, and did not start from a fine-tune on a
+    previous GLUE task (as is often done to decrease the variability of the small
+    dataset noise and prevent overfitting).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All runs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Started from a freshly initialized LoRA injection with rank 8 into the RoBERTa-base
+    model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The training is done for exactly 6 epochs for each task, without any early stopping.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: During the first 2 epochs the learning rate was linearly scaled up to the maximum
+    value, and then linearly decayed towards zero over the remaining 4 epochs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The maximum learning rate for all tasks was 5e-4.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The batch size for all tasks was 16
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The RoBERTa-base model has 124.6 million parameters. With the LoRA parameters,
+    the biases, and layer norms we only have 420 thousand unfrozen parameters to train.
+    This means we essentially train on only 0.34% of the original parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of parameters introduced by LoRA for these specific tasks is remarkably
+    minimal, amounting to just 1.7 MB of actual disk size. You can find the trained
+    LoRAs in the Git repo in the *Output* folder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Post-training, we reloaded the LoRA parameters, reapplied them, and tested
+    performance on each task’s validation set. Below are the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e92c5face32556fe13d7a5f16513bf11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance on GLUE Benchmarks using LoRA
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a5ccaa0cbca95310a416bd7cb67f45e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance on SQuAD Datasets using LoRA
+  prefs: []
+  type: TYPE_NORMAL
+- en: Likely these results could be greatly improved with some hyperparameter fine-tuning.
+    Nevertheless, it clearly proves that our LoRA implementation is working and our
+    injected low-rank matrices are learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Possible Improvements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Reflecting on our implementation, one might wonder: “Could there have been
+    a more efficient, generalizable (i.e. transferable to other network architectures)
+    approach than recoding the self-attention class and performing complex replacements?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Indeed we could have simply implemented a wrapper around the pytorch `nn.Linear`
+    function and be more specific on which layers we want to replace with it, via
+    checking their names. Similarly, you could write wrappers around most base pytorch
+    layers and be able to quickly adapt LoRA to new network architectures. To give
+    a quick sketch of how this could be done:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is actually (close to) the way the huggingface PEFT (Parameter-Efficient
+    Fine-Tuning) library implements LoRA. For any practical application, where you
+    are not trying to learn, I strongly recommend using it, instead of coding your
+    own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also it became a rather common practice to inject LoRA into all linear layers
+    as well (i.e. all matrices of the self-attention and the two linear layers for
+    the fully connected forward network). It is usually a good idea to keep the biases
+    and layer-norms trainable, in addition to the LoRA parameters. As they already
+    are small you won’t need a low-rank injection for them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantizing the original matrix weights to conserve GPU VRAM is also advisable,
+    facilitating the training of larger models on a given GPU. This can be efficiently
+    done using the bits-and-bytes library, now fully integrated with Hugging Face
+    (see references).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Summarizing, here are the Five Commandments of Low-Rank Adaptation in a serious
+    setting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6222aa9676676f2a24a822f2250a2bd2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*The Five Commandments of Low-Rank Adaptation*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you find the inscribed stone tablet hard to read, here they are again in
+    plain text:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Five Commandments of Low-Rank Adaptation
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1\. Utilize LoRA for efficient model fine-tuning, focusing on keeping parameter
+    sizes minimal.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 2\. Employ the PEFT library for LoRA implementation, avoiding the need for complex
+    coding.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. Extend LoRA adaptations to all linear layers, enhancing overall model capabilities.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4\. Keep biases and layer norms trainable, as they are critical for model adaptability
+    and don’t require low-rank adaptations.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 5\. Apply Quantized-LoRA — QLoRA — to preserve GPU VRAM and train your model,
+    enabling the training of larger models.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Remember, training with QLoRA may be a bit slower than LoRA, as it involves
+    de-quantizing matrices during each multiplication. For instance, when fine-tuning
+    something massive like Llama-7B, QLoRA requires about 75% less VRAM but is roughly
+    40% slower compared to standard LoRA. For more insights, check out the blogposts
+    I linked in the references.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Step-by-Step Guide to PEFT Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let's look at how to actually obey our commandments and implement a better version
+    via PEFT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First off, let’s load our model in a quantized manner. Thanks to the bitsandbytes
+    integration with the Huggingface transformers library (introduced in May 2023),
+    this is a breeze.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have to specify a configuration file and then load the model directly from
+    huggingface with this quantization. Generally, it is best to use the *AutoModel*
+    objects from transformers. It is difficult to load a quantized model as a submodule
+    of a larger, newly defined, `nn.module` object. You should generally work with
+    the raw models from huggingface and thus import directly an `AutoModelForSequenceClassification`
+    for the GLUE tasks and `AutoModelForQuestionAnswering` for the SQuAD benchmarks.
+    In the configuration we can also specify which parameters not to quantize: Here
+    we have to register the classification or qa-output heads, as we want to train
+    these in full, i.e. without LoRA, as these were newly initialized for the fine-tuning
+    and were never part of the pre-trained base model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can verify the 4-bit loading by inspecting the model’s modules and parameter
+    data types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now on to inject the LoRA parameters with PEFT. Note that the PEFT library is
+    much more flexible, also when working with custom models or other convoluted structures,
+    so as long as you are only doing LoRA instead of QLoRA (quantization is usually
+    the tricky part).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The PEFT library targets the modules to replace via their names; thus we have
+    to take a look at the models `model.named_parameters()`. Here is how this looks
+    for the non-quantized roberta-base model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can then specify the LoRA targets to select for these strings. The check
+    is if it contains the specified substring in its full name. Thus writing `query`
+    and `value` is equivalent to our from-scratch implementation above. For the dense
+    layers we have to be a bit more careful as the classifier also has a dense output.
+    If we wish to fine-tune the other dense layers we have to be more specific via
+    `intermediate.dense` and `output.dense`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All parameters that were not injected with LoRA parameters are automatically
+    frozen, i.e. will not receive any gradient updates. If there are any layers we
+    want to train in their original form we can specify them by passing a list to
+    the `modules_to_save` parameters of the Lora-Config. In our case, we want to add
+    the `LayerNorm` here and the fine-tune heads for GLUE and SQuAD. Note that not
+    each element of the lists has to match something. We can simply add the `classifier`
+    and `qa_outputs` to this list and then have a single configuration file that will
+    work correctly for both tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the bias parameters you can use the convenient configuration parameter `bias`.
+    You can specify either *all* to retrain all biases of all modules, *lora_only*
+    to only train the injected ones, or *none* to keep all biases constant during
+    training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following example injects a LoRA with rank 2\. We specify the alpha parameters
+    with the 8 above, as this was the rank we tried first and should allow us to keep
+    the original learning rate from our from-scratch example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remember, specifying more modules for LoRA injections might increase VRAM requirements.
+    If you encounter VRAM limitations, consider reducing the number of target modules
+    or the LoRA rank.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For training, especially with QLoRA, choose an optimizer that’s compatible
+    with quantized matrices. Replace your standard torch optimizer with a bitsandbytes
+    variant like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can then train this model like before, without having to explicitly worry
+    about QLoRA during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once training is complete, the process for saving and reloading your model is
+    straightforward. Use `model.save_pretrained` to save your model, specifying the
+    desired filename. The PEFT library will automatically create a directory at this
+    location, where it stores the model weights and a configuration file. This file
+    includes essential details like the base model and LoRA configuration parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To reload the model, utilize `peft.AutoPeftModel.from_pretrained`, passing the
+    directory path as an argument. A crucial point to remember is that the LoRA configuration
+    currently does not retain the number of classes for which `AutoModelForSequenceClassification`
+    was initialized. When using `from_pretrained`, you need to manually input this
+    class number as an additional parameter. Failing to do so will result in an error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reloaded model will comprise the original base model with the LoRA adapters
+    applied. Should you decide to integrate the LoRA adapters permanently into the
+    base model matrices, simply execute `model.merge_and_unload()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a more hands-on understanding and detailed instructions, have a look at
+    the GitHub repository. There, you’ll find two notebooks titled *Train-QLoRA-with-PEFT.ipynb*
+    and *Load-LoRA-Weights-PEFT.ipynb*, providing a step-by-step example for training
+    and loading models with PEFT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*“We shall not cease from exploration, and the end of all our exploring will
+    be to arrive where we started and know the place for the first time.”*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*— from “Little Gidding” by T.S. Eliot*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This journey has taken us from a straightforward, albeit hard-coded, LoRA implementation
+    to a deeper understanding of low-rank adaptors, their practical implementation,
+    and benchmark testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We explored an alternative, more efficient implementation strategy and delved
+    into the elegance of existing libraries like PEFT for LoRA integration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our adventure concludes with practical guidelines for employing LoRA, encapsulated
+    in the ‘Five Commandments,’ ensuring efficient and effective use of this technique
+    in real-world applications and a step-by-step guide on how to implement them in
+    practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*All images, unless otherwise noted, are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Original LoRA paper: [https://arxiv.org/pdf/2106.09685.pdf](https://arxiv.org/pdf/2106.09685.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'QLoRA paper: [https://arxiv.org/abs/2305.14314](https://arxiv.org/abs/2305.14314)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Sentdex Guide on QLoRA finetuning: [https://www.youtube.com/watch?v=J_3hDqSvpmg](https://www.youtube.com/watch?v=J_3hDqSvpmg)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Blogpost about LoRA fine-tuning on Llama: [https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2](https://www.anyscale.com/blog/fine-tuning-llms-lora-or-full-parameter-an-in-depth-analysis-with-llama-2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'bitsandbytes Hugging Face integration: [https://huggingface.co/blog/4bit-transformers-bitsandbytes](https://huggingface.co/blog/4bit-transformers-bitsandbytes)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'LoRA training insights: [https://lightning.ai/pages/community/lora-insights/](https://lightning.ai/pages/community/lora-insights/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Expected VRAM savings LoRA vs QLoRA when fine-tuning a Llama model: [https://cloud.google.com/vertex-ai/docs/model-garden/lora-qlora](https://cloud.google.com/vertex-ai/docs/model-garden/lora-qlora)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The font I used for the stone slab text, in case you want to create your own:
+    [https://www.fontspace.com/sharp-objects-nbp-font-f14469](https://www.fontspace.com/sharp-objects-nbp-font-f14469)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

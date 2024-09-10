@@ -1,0 +1,556 @@
+- en: Rubik’s cubes and Markov chains
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-random-walk-on-the-rubiks-cube-684dd304bf3e?source=collection_archive---------1-----------------------#2023-08-04](https://towardsdatascience.com/a-random-walk-on-the-rubiks-cube-684dd304bf3e?source=collection_archive---------1-----------------------#2023-08-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/f2a440689d64309768d49e01e4c71ba0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Unsplash modified by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*We obtain the probability of* optimally *solving the Rubik’s cube using a
+    Markov process description*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@eduardotestelino?source=post_page-----684dd304bf3e--------------------------------)[![Eduardo
+    Testé](../Images/238ed56054abe20dd9ca0b580ca3be20.png)](https://medium.com/@eduardotestelino?source=post_page-----684dd304bf3e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----684dd304bf3e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----684dd304bf3e--------------------------------)
+    [Eduardo Testé](https://medium.com/@eduardotestelino?source=post_page-----684dd304bf3e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F180b2f8491d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-random-walk-on-the-rubiks-cube-684dd304bf3e&user=Eduardo+Test%C3%A9&userId=180b2f8491d8&source=post_page-180b2f8491d8----684dd304bf3e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----684dd304bf3e--------------------------------)
+    ·14 min read·Aug 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F684dd304bf3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-random-walk-on-the-rubiks-cube-684dd304bf3e&user=Eduardo+Test%C3%A9&userId=180b2f8491d8&source=-----684dd304bf3e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F684dd304bf3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-random-walk-on-the-rubiks-cube-684dd304bf3e&source=-----684dd304bf3e---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Rubik’s cube is a prototype of a planning problem with a *colossal state
+    space* and only one solution. It is the very definition of a needle in a haystack.
+    With no guidance (even if you can turn the faces 100 times per second) you might
+    spend the whole age of the universe with no success. Everything about it seems
+    to involve huge numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The quantity we are going to compute here is an exception to that. With it
+    you will get a simple perspective on a difficult problem (and on any similar planning
+    problem too). We need two ingredients, a random process, and an optimal solver.
+    This last is a device (real or ideal) that can solve the cube (or a similar problem)
+    using a minimum number of moves, given any initial state. We will fully answer
+    the following question:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If a solved cube undergoes* ***N*** *random turns, what is the probability*
+    ***p(d|N)*** *that an optimal solver needs precisely* ***d*** *moves to solve
+    it back?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a normal situation, if someone ask you to solve the cube, you will just
+    get that, a scramble cube with no references or labels. Here we have one piece
+    of information about the scrambled state: it was obtained after ***N*** random
+    moves from the solved state. That information is useful!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why are we interested in **p(d|N)** ?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Computationally you can try to decipher the cube in different ways. The ambition
+    of a Rubik’s project might range between *solving any or some states suboptimally*,
+    and *solve every possible state optimally* (this, for example, will take the famous
+    [35 CPU-years](https://www.outsidethebeltway.com/rubiks-cube-gods-number-20/)).
+    A [cube solver](https://medium.com/@benjamin.botto/implementing-an-optimal-rubiks-cube-solver-using-korf-s-algorithm-bf750b332cf9)
+    generally involves two things, a search algorithm and a heuristic function. By
+    choosing these two we parametrize how difficult, efficient, or computationally
+    demanding our approach is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the field of the heuristic function, i.e. the search guidance, there is always
+    room for new ideas. Historically, the cube’s heuristic was a combination of Manhattan-like
+    distance estimations for the position of the scrambled cube facelets relative
+    to their solved positions. Only [recently](https://deepcube.igb.uci.edu/static/files/SolvingTheRubiksCubeWithDeepReinforcementLearningAndSearch_Final.pdf)
+    a neural net was used as the heuristic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Neural Net = Rubik’s cube new heuristic*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The work of the neural net is simple (a classifier): you feed a cube’s state
+    ***x*** and the depth ***d*** of that state is predicted. The depth ***d*** of
+    a state is defined as the minimum number of moves required to solve the cube optimally
+    from that state. Notice the following. If we have a device that knows the depth
+    of any state, we actually have an optimal solver because everytime we can select
+    the move that give us a state with a lower depth, until we get to depth = 0 (the
+    solved state).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The problem here is how to train that net. Or, specifically, how to get an
+    accurate training data. There is no easy way to know the ground-truth depth of
+    a scrambled state ***x***, unless you already have an optimal solver. And we don’t
+    have an optimal solver, or, we don’t want to use a computational expensive one.
+    We want to build an approximate and efficient optimal solver from scratch and
+    with minimal human input, and we also want accurate training data for it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: training_data = (***x , d***).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we said, the accuracy of ***d*** is difficult to get, but it is easy to
+    associate a number ***N*** with some particular scrambled states: the ones produced
+    by acting on the solved state with ***N*** random moves. Then'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***p(d|N)*** *estimates* ***d,*** *given* ***N.***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***p(d|N)*** will be used to improve the accuracy of that training data. The
+    authors of the aforementioned [paper](https://deepcube.igb.uci.edu/)(s) built
+    the first Rubik’s cube depth-classifier neural net. Their training data was of
+    the form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: training_data = (***x , N***).
+  prefs: []
+  type: TYPE_NORMAL
+- en: They took ***d*** as ***N.*** That choice was compensated by dynamically improving
+    the accuracy of the labels using a Bellman-like loop during the training. The
+    probability ***p(d|N)*** computed here offers a better starting point for the
+    accuracy of that training data (abundantly obtained by just randomly twisting
+    the solved state ***N*** times).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Random Walk view
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Computing ***p(d|N)*** is equivalent to ask how far ***d*** would a random
+    walker be after ***N*** steps. Instead of walking in a square lattice, he would
+    be walking in a massive Rubik’s graph of 10 to the power of 19 nodes (cube’s states)
+    and a similar number of links (legal moves). If we chose a layout where the nodes
+    are organized by their depths: with the solved state in the center and the states
+    of depth ***d*** located at radius ***d*** from the center, the graph will look
+    very symmetrical. The radial (depth) direction offers a very simple perspective.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here we adopt the so called quarter-turn metric for the 3x3x3 cube, where a
+    move involves a 90-degree face turn, either clockwise or anticlockwise. In this
+    metric there are twelve possible moves. If we had chosen a different metric, like
+    the half-turn metric (that also includes 180-degree face turns as a single move)
+    the expression for ***p(d|N)*** would differ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To get ***p(d|N)*** we will need to use some kind of domain knowledge , but
+    we don’t want to deal with graphs, patterns databases or group theory. We will
+    use something more “primary”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The list containing the population of cubes’ states at a depth* ***d****.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The list](http://www.cube20.org/qtm/) (provided by the authors of the 2012’s
+    God’s number paper) doesn’t specify which states are at a certain depth, just
+    the total number of them, and there is no reference to any ***N.***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2494783db0d4fb83d6bc9dfe05668fa3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Log-scaled plot of the number of states vs depth
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some observations on this list:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, there are zero states at a depth greater than 26 (God’s number is 26
+    in the quarter-turn metric). Second, the list reports an approximate number of
+    states for ***d*** between *19* and *24*. We will need to be careful with this
+    later. Third, if we make a log-scaled graph, we can see a linear growth for most
+    depths (except for those close to the end). That means the population ***D(d)***
+    of states growths exponentially. Fitting the linear part of the log graph with
+    a straight line we learn that between ***d =*** *3* and ***d =*** *18* the state
+    population growth as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d932b286974a514385d7cec312583c5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: At depths *3 <* ***d*** *< 18,* on average, *9.34* of the *12* moves will make
+    you go away from the solved state, and *2.66* will make you go closer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Markov process on depth’s classes**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To find ***p(d|N)*** we imagine the depth classes as sites of a Markov process.
+    Let me explain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e4f65fd4964a257da295fab9325f5fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Randomly moving the cube faces is described as a Markov process (one dimensional
+    random walk) between depth classes. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A depth class ***d*** is the set of all the cube’s states at a depth ***d***
+    (minimal number of moves to the solved state). If we randomly chose a state in
+    a depth class ***d***, and we turn a random face with a random move, that will
+    give us either a state in the class ***d + 1 ,*** with a probability ***p_d***,
+    or a state in the class ***d -1,*** with a probability ***q_d.*** In the quarter-turn
+    metric there are no self-class moves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e02256c6870b9cc2f8af9205c251d07.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That defines a Markov process, where a particular site is a whole depth class.
+    In our case, only contiguous ***d*** classes are one-jump connected. To be precise,
+    this is a [discrete-time birth-death Markov chain](https://www.randomservices.org/random/markov/BirthDeath.html).
+    Because the amount of sites is finite, the chain is also irreducible and ergodic,
+    and a unique stationary distribution exist.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We assume equally distributed probabilities for the selection of the random
+    moves at each time. That induces some transition probabilities ***p_d, q_d***
+    (to be computed)between the depth classes. The amount of random moves ***N***
+    is the discrete time of the Markov process. This is also a one-dimensional random
+    walker: at every site (depth class number ***d)***, the probability of going forward
+    is ***p_d,*** and the probability of going backwards is ***q_d.*** This one dimensional
+    chain is, roughly speaking, the “radial” direction in the Rubik’s graph (organized
+    in the depth-radial layout).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The transition matrix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Any Markov processes is encoded in a transition matrix ***M***. The **(*i,j*)**entry
+    of ***M*** is the probability of jumping from site ***i*** to site ***j***. In
+    our case only the following entries are different from zero:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57083f8394eb0d8992d285009e40350f.png)![](../Images/58dba14ad43573438ebfd95c23d5e330.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here ***p_*0 *= 1:*** from the depth class **0** (containing just the solved
+    state) we can only jump to the depth class ***1*** (there is no class ***-1***).
+    Also, ***q_*26 *= 1***: from the depth class **26** we can only jump to depth
+    class **25** (there is no class **27**). For the same reason, there are no ***p_*26**
+    or ***q_*0.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The stationary distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We mapped the action of randomly moving the cube to a one-dimensional depth-class
+    random walker jumping back and forth with probabilities ***q_d*** and ***p_d***.
+    What happens after a long walk? or, how many times does the walker visit a particular
+    site after a long walk? In real life: how often is a depth class visited when
+    the cube undergoes random turns?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the long run, and no matter what the starting point was, the time the walker
+    spends in the depth class ***d*** is proportional to the population ***D(d)***
+    of that depth class. This is the main point here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*the (normalized) depth-population list* ***D(d)*** *should be interpreted
+    as the vector representing the stationary distribution of our depth class Markov
+    process.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mathematically, ***D(d)*** is a left eigenvector of ***M***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bde913f9da3abfad0083731280a5d51b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This matrix equation will give us **26** linear equations, from which we will
+    get the ***p_i’***s and ***q_i****’*s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0eeb7faa1a5b0dde5d756aa467e928f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Taking into account that ***p_*0 *= q_*26 *=* 1*,*** we can rewrite these as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7dffda0523d71261d1597a8cacf9b85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Detailed balance equations. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These are known as ***detailed balance equations***: the flux, defined to be
+    the stationary site population times the jumping probability, is the same in both
+    directions. The solutions are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa7368abaae4e49dfbffb35965cccbee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and ***p_i*** is obtained using ***p_i + q_i = 1.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some conditions on the population of a depth class
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There is something interesting about these solutions. Because ***q_i*** is a
+    probability we should have that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf99a7c64535e8839cfc796007eb75ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'and that translate into the following condition for the distribution ***D_k***:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/843b9f5679324a7b0d15998c790c54c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is a tower of inequalities that the depth-population ***D_k*** should
+    fulfill. Explicitly, they can be organized as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41bf55db7c0f0278a9e59085609a4411.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In particular, the last two inequalities are
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ffda467b088df2d468490af3b19e34e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Because ***D_27 = 0,*** we get that the lower and upper bound are equal, so
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38a6a36914d5831e968da9c01f04abd5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Or:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3b99d688cb884f585ca2ff6af13efe0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*The sum of the population of the even sites should be equal to the sum of
+    the population of the odd sites!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see this as a detailed balance between even and odd sites: every move
+    is always to a different and contiguous depth class. Any jump will take you from
+    the odd depth class (the class of all the odd depth classes) to the even depth
+    class (the class of all the even depth classes). So the odd to even class jump
+    occur with probability 1 (and vise versa). Being the probabilities one in both
+    direction, their population should be equal by detailed balance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the same reason the Markov process will attain a period-two “stationary
+    distribution” that switches between even and odd sites after every move (discrete
+    time ***N***).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A problem with the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The depth-population ***D_d*** reported in the [source](http://www.cube20.org/qtm/)
+    of the data that we are planning to use is approximate for ***d*** *= 19,20,21,22,23,24\.*
+    So there is no guarantee it will satisfy all these conditions (inequalities).
+    Don’t be surprised if we get some probabilities ***q_i*** out of the range [0,1]
+    (as it is the case!). In particular, if we try and check the last condition (the
+    even-odd population equality) it is off by a big number! (update: see the note
+    at the end)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3e73762c794aeaf2e594603731cf6fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A way out
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The odd class seem to be underpopulated (this is a consequence of the approximation
+    the authors chose to report the data). To make things work (get probabilities
+    in the range [0,1]), we decided to add the previous big number to the population
+    of the depth class 21 (the odd class with the greatest population, or, the one
+    that will notice that big addition the least). With this correction, all the obtained
+    probabilities seems to be correct (which means the inequalities are also satisfied).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The jumping probabilities are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice that almost all the first ***p_i*** (up to ***i = 21***) are close to
+    **1\.** These are the probabilities of going away from the solved state. The probabilities
+    of going closer to the solved state (***q_i***) are almost ***1*** for ***i***
+    greater than ***21\.*** This puts in perspective why it is difficult to solve
+    the cube: the random walker (or the cube’s random mover) will be “trapped forever”
+    in a neighborhood of the depth class ***21***.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**p(d|N)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Plugging the ***​​p_i, q_i*** numerical values in the transition matrix ***M***
+    the Markov process is completely described. In particular, if we start at site
+    **0** with probability one, after ***N*** steps the random walker will be at site
+    ***d*** with probability:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/239206aa18da8c62b25b6283c75c1bbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is the probability we were looking for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/848d2cf583e6041543f8dbb1de70b2ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Numerically, we learn that ***p(d|N)*** is non zero only if ***N*** and ***d***
+    have the same parity (something that is well known by some Rubik’s cube scholars).
+    Below we plot some ***p(d|N)***’s for different ***N***’s:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60327a7b01aa936c7c67fa93b5cbc87b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Some probabilities p(d|N). Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example: after ***N*** *= 18* random moves (green plot), it is more likely
+    the resulting cube’s state is at depth ***d*** = *17* than at depth***d*** *=
+    19\.* We also observe that after ***N*** = ***31*** or ***32****,* ***p(d|N)***
+    is pretty close to the stationary distribution ***D(d)*** (except it switches
+    back and forth between even and odd sites). This is another answer the question
+    of how many moves are enough to say we [really scrambled the cube](https://theconversation.com/how-hard-is-it-to-scramble-rubiks-cube-129916).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s notice we have solved an inverse problem. We got the transition probabilities
+    from the stationary distribution. This is not possible for a general Markov process.
+    In particular, it is not possible to find ***p(d|N),*** withthe method described
+    here, for the half-turn metric. The half-turn metric is different because we can
+    stay in the same depth class after a move (by their moves definition). These self
+    depth class jumps introduce extra probabilities ***r_i*** in the diagonal of the
+    transition matrix and we will have more variables than equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Comments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Even if the Rubik’s cube is a 35 CPU-years problem from a computational perspective,
+    there are many aspects of it that can be described analytically or with modest
+    numerical efforts. The probability we computed here is an example of that. Everything
+    we said can be easy generalized to more complex Rubik’s cube-[siblings](https://superliminal.com/cube/).
+    A cool generalization is to go to more dimensions: ***S = 4D, 5D, 6D***, … dimensional
+    Rubik’s cube. The state space in those cases growth exponentially with ***S***.
+    So there are cubes for which the Markov chain is as long as we want. In other
+    words, we have similar puzzles for which God’s numbers as big as we want (roughly
+    speaking, God’s number is the logarithm of the number of states, and the number
+    of states increases with the dimension ***S***). In those cases we can take certain
+    limits that explain some aspects of our ***3D*** case, like the next one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In the limit of large God’s number* ***G,*** *the probability* ***p(d|N)***
+    *should approach the binomial distribution*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is not very difficult to see why that might be the case. If ***G*** is large,
+    the exponential growth of ***D_d*** will be very stable for most ***d***’s. This
+    is a daring, yet not excessively wild guess:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/85ebc8962ba21d12032b6d749ad4d857.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'for ***k*** away from ***0*** and ***G***. As we said, in the ***S = 3D***
+    case ***b =*** *9.34\.* For higher ***S***, ***b*** should increase (having more
+    faces will increase the branching factor ***b***). That translate into the following
+    values for the probabilities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb2f9575ad779d4d0c7b8098f3ceb6ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '***q_i*** approaches a constant value ***1/(b+1)*** when ***i*** is away from
+    the origin (***i>>1***) and God’s number (***i<<G***). ***p_i*** will also be
+    constant in this range. You can see that the values of ***p_i*** and ***q_i***
+    computed here for the ***3D*** case are almost constant for ***i=3, …, 15,***
+    and that ***q_i*** is approximately equal to ***1/(b+1)*** with ***b =*** *9.34\.*
+    For ***0 << i << G*** we will then have a one dimensional random walker with constant
+    probabilities of going back (***q***) and forth (***p***). In this case the position
+    the walker will be described by a binomial-like distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The probability that the random walker will take ***k*** steps to the right
+    (success rate ***p***) and ***N-k*** steps to the left (success rate ***q***)
+    after ***N*** trials is ***Binomial(k,N,p)***. The distance traveled after ***N***
+    steps will then be
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***d = k -* (*N - k*)*,***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: from which we obtain
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9a2768e4fe65621547b6265fbf6598a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From here we can get analytical estimates for the most likely ***d***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/040fdb32d30d8bded4adee7998f2ca22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The most likely ***d*** (in the binomial regime)growth linearly with ***N,***
+    and with a slope that depends on the “effective” branching factor ***b***. As
+    the dimension ***S*** of the cube increases, the branching factor ***b*** grows,
+    and the most probable depth ***d*** actually approaches ***N.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update note**. After this story was published I contacted Tomas Rokicki and
+    Morley Davidson (two of the authors of the 2012’s [proof that God’s number is
+    20 in the half-turn metric](https://tomas.rokicki.com/rubik20.pdf)) about their
+    [reported **D(d)**](https://cube20.org/qtm/)and the negative probabilities I got
+    using it**.** They share with me a more accurate data, with lower and upper bounds
+    for the population of the depths d = 19, …, 24 . Their data is fully compatible
+    with the here obtained inequalities, and with the fact that the population of
+    the even depth classes should be equal to the population of the odd depth classes
+    (in the quarter-turn metric). The probabilities computed here have a negligible
+    correction when using this new data.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

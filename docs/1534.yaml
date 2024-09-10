@@ -1,0 +1,753 @@
+- en: Generating Images Using VAEs, GANs, and Diffusion Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/generating-images-using-vaes-gans-and-diffusion-models-48963ddeb2b2?source=collection_archive---------1-----------------------#2023-05-06](https://towardsdatascience.com/generating-images-using-vaes-gans-and-diffusion-models-48963ddeb2b2?source=collection_archive---------1-----------------------#2023-05-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to generate images using VAEs, DCGANs, and DDPMs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jcheigh?source=post_page-----48963ddeb2b2--------------------------------)[![Justin
+    Cheigh](../Images/0bafdd733fe57267074a937b4777418c.png)](https://medium.com/@jcheigh?source=post_page-----48963ddeb2b2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48963ddeb2b2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----48963ddeb2b2--------------------------------)
+    [Justin Cheigh](https://medium.com/@jcheigh?source=post_page-----48963ddeb2b2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F24cd781f1018&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-images-using-vaes-gans-and-diffusion-models-48963ddeb2b2&user=Justin+Cheigh&userId=24cd781f1018&source=post_page-24cd781f1018----48963ddeb2b2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48963ddeb2b2--------------------------------)
+    ·21 min read·May 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F48963ddeb2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-images-using-vaes-gans-and-diffusion-models-48963ddeb2b2&user=Justin+Cheigh&userId=24cd781f1018&source=-----48963ddeb2b2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48963ddeb2b2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgenerating-images-using-vaes-gans-and-diffusion-models-48963ddeb2b2&source=-----48963ddeb2b2---------------------bookmark_footer-----------)![](../Images/1cf4312fbcc564f4c6172c34651fe21e.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by [CatBird AI](https://www.catbird.ai/), Image Prompt by [ChatGPT](https://chat.openai.com/),
+    ChatGPT Prompted by Justin Cheigh
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Introduction:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’re currently in the midst of a generative AI boom. In November 2022, Open
+    AI’s generative language model ChatGPT shook up the world, and in March 2023 we
+    even got GPT-4!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Even though the future of these LLMs is extremely exciting, today we will be
+    focusing on image generation. With the rise of diffusion models, image generation
+    took a giant leap forward. Now we’re surrounded by models like DALL-E 2, Stable
+    Diffusion, and Midjourney. For example, see the above image. Just to show the
+    power of these LLMs, I gave ChatGPT a very simple prompt, which I then fed into
+    the free [CatbirdAI.](https://www.catbird.ai/) CatbirdAI uses different models,
+    including Openjourney, Dreamlike Diffusion, and more:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article [**Daisuke Yamada**](https://www.linkedin.com/in/daisukeyamada1999/)
+    (my co-author) and I will work towards diffusion. We’ll use 3 different models
+    and generate images in the style of MNIST handwritten digits using each of them.
+    The first model will be a traditional Variational Autoencoder (VAE). We’ll then
+    discuss GANs and implement a [Deep Convolution GAN (DCGAN).](https://arxiv.org/pdf/1511.06434v2.pdf)
+    Finally, we’ll turn to diffusion models and implement the model described in the
+    paper [Denoising Diffusion Probabilistic Models](https://arxiv.org/pdf/2006.11239.pdf).
+    For each model we’ll go through the theory working behind the scenes before implementing
+    in Tensorflow/Keras.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A quick note on notation. We will use try to use subscripts like ***x₀,*** but
+    there may be times where instead we will have to use ***x_T*** to denote subscript.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s briefly discuss prerequisites. It’s important to be familiar with deep
+    learning and comfortable with Tensorflow/Keras. Further, you should be familiar
+    with VAEs and GANs; we will go over the main theory but prior experience will
+    be helpful. If you’ve never seen these models, check out these helpful sources:
+    [MIT S6.191 Lecture](https://www.youtube.com/watch?v=3G5hWM6jqPk&t=285s), [Stanford
+    Generative Model Lecture](https://www.youtube.com/watch?v=5WoItGTWV54&t=516s),
+    [VAE Blog](/understanding-variational-autoencoders-vaes-f70510919f73). Finally,
+    there’s no need to be familiar with DCGANs or diffusion. Great! Let’s get started.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Generative Model Trilemma:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As an unsupervised process, generative AI often lacks well defined metrics to
+    track progress. But before we approach any methods to evaluate generative models,
+    we need to understand what generative AI is actually trying to accomplish! The
+    goal of generative AI is to take training samples from some unknown**,** complex
+    data distribution(e.g., the distribution of human faces)and learn a model that
+    can “capture this distribution”. So, what factors are relevant in evaluating such
+    a model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We certainly want high quality samples, i.e. the generated data should be realistic
+    and accurate compared to the actual data distribution. Intuitively we can just
+    subjectively evaluate this by looking at the outputs. This is formalized and standardized
+    in a benchmark known as [HYPE (Human eYe Perceptual Evaluation).](https://arxiv.org/pdf/1904.01121.pdf)
+    Although there are other [quantitative methods](https://deepgenerativemodels.github.io/assets/slides/cs236_lecture15.pdf),
+    today we will just rely on our own subjective evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s also important to have fast sampling (i.e., the speed of generation, or
+    scalability)**.** One particular aspect we will look at is the number of network
+    passes required to generate a new sample. For example, we will see that GANs will
+    require just one pass of the generator network to turn noise into a (hopefully)
+    realistic data sample, while DDPMs require sequential generation,which ends up
+    making it much slower.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A final important quality is known as mode coverage. We don’t just want to learn
+    a specific part of the unknown distribution, but rather we want to capture the
+    entire distribution to ensure sample diversity. For example, we don’t want a model
+    that just outputs images of 0s and 1s, but rather all possible digit classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of these three important factors (quality of samples, speed of sampling,
+    and mode coverage), are covered in the **“**[**Generative Model Trilemma**](https://arxiv.org/pdf/2112.07804.pdf)**”.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b262f9578a1ad0179b8afa78c1c545ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image Created by Daisuke Yamada, Inspired by [Figure 1 in DDGANs Paper](https://arxiv.org/pdf/2112.07804.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we understand how we will compare and contrast these models, let’s
+    dive into VAEs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Variational Autoencoder:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the first generative models that you will encounter is the Variational
+    Autoencoder (VAE). Since VAEs are just traditional autoencoders with a probabilistic
+    spin, let’s remind ourselves of autoencoders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Autoencoders are dimensionality reduction models that learn to compress data
+    into some latent representation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f6e569a1baedf817f06b3bdeb69241e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image Created by Justin Cheigh
+  prefs: []
+  type: TYPE_NORMAL
+- en: The encoder compresses the input into a latent representation called the bottleneck,
+    and then the decoder reconstructs the input. The decoder reconstructing the input
+    means we can train with L2 loss between input/output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Autoencoders cannot be used for image generation since they overfit, which
+    leads to a sparse latent space that is discontinuous and disconnected (non-regularizable).
+    VAEs fix this by encoding the input ***x*** as a distribution over the latent
+    space:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The input ***x*** gets fed into the encoder ***E.*** The output ***E(x)*** isa
+    vector of means and vector of standard deviations which parameterize a distribution
+    ***P(z | x).*** The common choice is a multivariate standard Gaussian.From here
+    we sample ***z ~ P(z | x),*** and finally the decoder attempts to reconstruct
+    ***x*** from ***z (***just like with the autoencoder).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice this sampling process is non-differentiable, so we need to change something
+    to allow backpropagation to be possible. To do so we use the reparameterization
+    trick, where we move sampling to an input layerby first sampling ***ϵ ~ N(0,1).***
+    Then we can perform a fixed sampling step: ***z* = *μ* + *σ* ⊙ *ϵ.*** Notice we
+    get the same sampling, but now we have a clear path to backpropagate error since
+    the only stochastic node is an input!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall training for autoencoders is L2 loss, which constitutes a reconstruction
+    term. For VAEs, we also add a regularization term, which is used to make the latent
+    space “well-behaved”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, the first term is a reconstruction term, whereas the second term is a
+    regularization term. Specifically here we are using the [Kullback-Leibler (KL)
+    divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)
+    between the learned distribution over the latent space and a prior distribution.
+    This measures the similarity between 2 distributions and helps prevent overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Great! We’ve recapped the theory and intuition behind VAEs, and we will now
+    discuss implementation details. After importing relevant libraries, we define
+    a few hyperparameter values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After downloading the MNIST dataset and doing some basic preprocessing, we
+    define our loss function and network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Ok, let’s break this down. The get_default_loss(model, x) function takes in
+    a VAE model and some input ***x*** and returns the VAE loss we defined before
+    (with ***C* = 1**). We defined a convolutional VAE, where the encoder uses Conv2D
+    layers to downsample, and the decoder uses [Conv2DTranspose](https://www.geeksforgeeks.org/what-is-transposed-convolutional-layer/)
+    layers (deconvolution layers) to upsample. We optimized with Adam.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since the other two generative models begin with random noise, rather than
+    use some input image we simply sampled from the latent space and used the decoder
+    to generate new images. We tested latent_dim = 2 **and** latent_dim = 100 and
+    obtained the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c8e2bbf8dd68b0e589114f533a04b6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generated Images for VAE. Image Created by Daisuke Yamada
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we just do one forward pass for generating new samples, our sampling is
+    fast. Further, this is comparatively a simple model, so our training is fast.
+    The results in dimension 2 (meaning the dimension of our bottleneck latent representation
+    is 2) are good but a bit blurry. However, our results in dimension 100 are not
+    that good. We think either we lacked computing power or maybe the posterior began
+    to spread over non-existent modes. In other words, we begin to learn unmeaningful
+    latent features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, how could one theoretically choose the “optimal” latent dimension? Clearly
+    100 is not good, but perhaps there’s something in between 2 and 100 that is ideal.
+    There’s a tradeoff here betweensample quality and computational efficiency. So,
+    you could determine how important each of these factors is for you and do something
+    like a grid searchto correctly choose this hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also plotted the latent space in dimension 2\. Basically, the following tells
+    us what the decoder outputs based on where in the latent space we begin with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be81739e30ee3c519f7d08772ede4918.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our VAE Latent Space
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see the latent space is decently diverse and is pretty complete
+    and continuous! So, reflecting on the Generative Model Trilemma we get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/adc868c8d930283d3fce1d2bf9bb0c4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trilemma for VAE (Red is Good, Blue is Bad). Image Created by Daisuke Yamada
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll now shift gears and discuss DCGANs, and we’ll begin with an accelerated
+    explanation of GANs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Deep Convolutional GANs:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In GANs, there is a **generator G** and a **discriminator D**. The generator
+    creates new data, and the discriminator differentiates (or discriminates) between
+    real and fake data. The two are trained against each other in a mini-max game
+    fashion, hence the term adversarial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are given some training data, and we begin by sampling random noise ***z***
+    using either a standard normal or uniform distribution. This noise is the latent
+    representation of the data to be generated. We start with noise to allow for more
+    diverse data samples and to avoid overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The noise is fed into the generator, which outputs the generated data ***x =
+    G(z).*** The discriminator then takes ***x*** and outputs ***P[x = real] = D(x),***
+    i.e. the probability that the generated image ***x*** is a real image. Additionally,
+    we feed the discriminator a real image from the training set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We typically define the loss as a mini-max game:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GANs Loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice for the discriminator this looks like binary cross entropy, which makes
+    sense since it’s a binary classifier. The fancy looking expected value over points
+    sampled from each distribution really corresponds to what you would expect to
+    get if you take a data point from (a) the data distribution *(****E_{x ~ p(data)})***
+    and (b) random noise ***(E_{z ~ p(z)).*** The first term expresses that the discriminator
+    wants to maximize the likelihood of classifying real data as 1, whereas the second
+    term expresses that the discriminator wants to maximize the likelihood of classifying
+    fake data as 0\. The discriminator also acts under the mini-max assumption that
+    the generator will act optimally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ok, we’ll now transition to DCGANs. DCGANs are like GANs, with a few notable
+    changes in architecture; the main one is that DCGANs don’t use any multilayer
+    perceptrons and instead utilizes convolutions/deconvolutions. Below are the architectural
+    guidelines for stable DCGANs (from the original paper):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Replace any pooling layers with strided convolutions (discriminator) and fractional-strided
+    convolutions (i.e. deconvolutions) (generator)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use batchnorm in both the generator and the discriminator
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Remove fully connected hidden layers for deeper architectures
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use ReLU activation in generator for all layers except for the output, which
+    uses Tanh
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use LeakyReLU activation in the discriminator for all layers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e32fb044eea8a87bcc9946c9b35c269c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DCCGAN Architecture- Image Created by Justin Cheigh
+  prefs: []
+  type: TYPE_NORMAL
+- en: We often use GANs for image generation, so intuitively it makes sense to use
+    convolutional layers. We use standard convolutional layers in the discriminator,
+    as we want to down-sample the image into hierarchical features, while for generators
+    we use deconvolutional layers to up-sample the image from noise (latent representation)
+    to the generated image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Batch normalization is used to stabilize the training process, improve convergence,
+    and enable faster learning. Leaky ReLU prevents the zero learning problem of ReLu.
+    Finally, Tanh is used to prevent saturation of smaller inputs and avoid the vanishing
+    gradient problem (since it’s symmetric around the origin).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Great! Now let’s see how to implement DCGANs. After importing libraries we
+    set hyperparameter values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After some data preprocessing and splitting into batches for computational
+    efficiency, we are ready to define the generator and discriminator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Remember all of the architectural guidelines for DCGANs! We are using Conv2DTranspose
+    for the generator, and regular Conv2D with stride for the discriminator. Notice
+    we compile the discriminator with the loss Binary cross entropy, yet specify the
+    discriminator as trainable = False. This is because we will implement the training
+    loop ourselves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'First we train the discriminator with both real data and fake data created
+    from the generator, and then we train the generator as well. Great! Let’s see
+    what the results look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0fa24f563a86ba2252c53f82b859d186.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image Created by Daisuke Yamada
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our sample quality is better (less blurry)! We still have fast sampling, as
+    inference is just inputting random noise to the generator. Below is our latent
+    space:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/137d0d8879e32e6c0774ce7c15a5e88c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our DCGAN Latent Space
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, our latent space is not very diverse (this is especially evident
+    from the samples in Epoch 1 with latent dimension 2). We are likely experiencing
+    a common issue of mode collapse. Formally, this means the generator only learns
+    to create a subset specialized in fooling discriminator. In other words, if the
+    discriminator doesn’t do well when the generator creates images of 1s, there’s
+    no reason for the generator to do anything else. So, for the generative model
+    trilemma, we get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0fa9d8b81a5445c2defc1776dea1c93.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trilemma for DCGANs (Red is Good, Blue is Bad). Image Created by Daisuke Yamada
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we explored GANs and DCGANs, it’s time to transition to diffusion models!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Diffusion Models:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Diffusion probabilistic models (or just diffusion models) are currently a part
+    of every top image generation model. We will be discussing **Denoising Diffusion
+    Probabilistic Models (DDPMs)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For both VAEs and GANs, sample generation involves going from noise to a generated
+    image in one step.GANs perform inference by taking noise and doing a forward pass
+    through the generator, and VAEs perform inference by sampling noise and passing
+    it through the decoder. The main idea of diffusion is to generate a sequence of
+    images,where every subsequent image is slight less noisy, with the final image
+    ideally being realistic! There are two aspects of DDPMs. In the forward process
+    we take real images and iteratively add noise. In the reverse process we learn
+    how to undo the noise added in the forward process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s explain the forward and reverse process at an intuitive level. We are
+    given a set of training data ***X***₀***,*** where each data point ***x₀* ∈ *X***₀
+    is sampled from a data distribution ***x₀ ~ q(x₀).*** Recall ***q(x₀)*** is the
+    unknown distribution we want to represent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From right to left is the hardcoded forward process where we take some training
+    sample ***x₀ ~ q(x₀)*** and iteratively add Gaussian noise. Namely we will generate
+    a sequence of images ***x***₁, ***x***₂, …, ***x_T,*** with each subsequent image
+    in the sequence being more and more noisy. In the end, we will end up with something
+    that can be thought of as pure noise! From left to right we have the reverse process,
+    where we learn how to denoise**,** i.e. predict how to get from ***x_{t+1} → xₜ.***
+    Great! Now that we understand the basics of the forward and reverse process, let’s
+    dive into the theory!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formally, the forward process is described by a Markov chain that iteratively
+    adds Gaussian noise to the data according to a pre-determined variance schedule
+    ***β₁, …, β_T.*** The term Markov chain just means that ***x_{t+1}*** *only* depends
+    on ***xₜ.*** So, ***x_{t+1}*** is conditionally independent of ***x***₁, …, ***x_ₜ₋₁***
+    given ***xₜ.*** which means ***q(xₜ | x₀, …, xₜ₋₁) = q(xₜ | xₜ₋₁).*** The other
+    important concept is a variance schedule. We define some values ***β₁, …, β_T***
+    which are used to parameterize the Gaussian noise we add at each time step. Typically
+    ***0 ≤ β ≤ 1*** with ***β₁*** small and ***β_T*** large. All of this is put in
+    our definition of ***q(xₜ | xₜ₋₁):***
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward Diffusion Process
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, we start with ***x₀.*** Then, for **T** timesteps, we follow the above
+    equation to get to the next image in the sequence: ***xₜ ~ q(xₜ | xₜ₋₁)***. One
+    can prove in the limit **T →** ∞ that ***x_T*** is equivalent to an isotropic
+    Gaussian distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Except we’re not done yet. We intuitively should be able to get from ***x₀***
+    to any ***x_t*** in one step by expanding recursively. We first use a reparameterization
+    trick (like with VAEs):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reparameterization Trick
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This allows us to do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sampling Arbitrary Timestep t
+  prefs: []
+  type: TYPE_NORMAL
+- en: By following the above equation we can get from ***x₀*** to any ***xₜ*** in
+    one step! For those curious the [derivation](https://medium.com/@steinsfu/diffusion-model-clearly-explained-cd331bd41166)
+    involves expanding and using the [addition property of Gaussians](https://en.wikipedia.org/wiki/Sum_of_normally_distributed_random_variables).Let’s
+    move on to the reverse process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the reverse process our goal is to know ***q(xₜ₋₁| xₜ)*** since we can just
+    take random noise and iteratively sample from ***q(xₜ₋₁ | xₜ)*** to generate a
+    realistic image. One may think we can easily obtain ***q(xₜ₋₁ | xₜ)*** using Bayes
+    rule,but it turns out this is computationally intractable. This intuitively makes
+    sense; to reverse the forward step we need to look at ***xₜ*** and consider all
+    the possible ways we could have gotten there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, rather than directly computing ***q(xₜ₋₁ | xₜ)***, we will learn a model
+    ***p*** with weights ***θ*** that approximates these conditional probabilities.
+    Luckily, we can successfully estimate ***q(xₜ₋₁| xₜ)*** as a Gaussian if ***βₜ***
+    is sufficiently small. This insight is due to some incredibly difficult theory
+    involving stochastic differential equations.So we can define ***p*** as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Definition
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, what is our loss? Well, if we want to undo the noise added, intuitively
+    it should suffice to just predict the added noise. To see a more complete derivation
+    please check out [this great blog](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/#nice)
+    by Lilian Weng**.** But it turns out our intuition is true, and rather than have
+    a model ***p***, instead we can just have a network ***ϵ_θ*** that predicts noise
+    added. With this we can train using MSE between the actual and predicted noise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, ***ϵ*** is the actual error, whereas the other term is the predicted error.
+    You may notice the expectation is taken over ***x_0***; this is because usually
+    the error is written in terms of the reparameterization trick (from above), which
+    allows you to obtain ***x_t*** directly from ***x_0*.** Thus our network inputs
+    are the time ***t*** and the current image ***xₜ***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s do a full recap. We train a network ***ϵ_θ*** using MSE to learn how
+    to predict noise added. Once trained, we can use our neural network ***ϵ_θ***
+    to predict the noise added at any timestep. Using this noise and some of the above
+    equations we complete the reverse process and effectively can “denoise”. We therefore
+    can perform inference by taking noise and continuously denoise. Both this sampling
+    process and train process are described by the following pieces of pseudocode:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf0de3a60f43f86b4d104047722d3568.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Pseudocode for Training/Sampling](https://hojonathanho.github.io/diffusion/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In training we take a real image, sample ***t* ~ Uniform({*1,2,…,T*})** (we
+    do this since it’s computationally inefficient to do every step), then take a
+    gradient descent step on the MSE of target/predicted noise. In sampling we take
+    random noise then continuously sample using our predicted noise and our derived
+    equations, until we get to some generated image ***x₀.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great! We can now move on to implementation details. For our underlying architecture
+    we will use a [**U-Net**](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)**:**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/805102a6a9bbde32efe879e54048736e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image Created by Justin Cheigh; [Inspiration](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the architecture it’s pretty clear why this is called a U-Net! U-Nets were
+    initially used in biomedical image segmentation, but they also work very well
+    with diffusion models! Intuitively, this is true because (a) the input and output
+    shape are the same, which is exactly what we need, and (b) we will see that U-Nets
+    (due to the encoder-decoder structure paired with the skip connections) are good
+    at preserving both local/global information, which helps retain our image but
+    still add noise effectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The U-Net has a similar encoder-decoder structure as past generative models.
+    Specifically if you look at the image following the shape of the “U”, you can
+    see on the way down we have a sequence of downsampling layers, each of which are
+    part of the encoder structure. On the way up, we have a sequence of upsampling
+    layers, which are part of the decoder structure. The input and output have the
+    same shape, which is ideal given our input is a noisy image ***xₜ*** and our output
+    is some predicted noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, you may notice there is one important difference between a U-Net and
+    a standard autoencoder, which are the skip connections. At each level we have
+    a downsampling block, which connects to another downsampling block (following
+    the shape of the “U”), and a skip connection to an upsampling block. Remember
+    these downsampling blocks basically are looking at the image at different resolutions
+    (learning different levels of hierarchical features). By having these skip connections
+    we ensure that we account for each of these features at each resolution! Another
+    way to think of a U-Net is as a sequence of stacked autoencoders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ok, now let’s look at our specific implementation. First of all, I lied… I
+    said that our input is just the noisy image ***xₜ.*** However, we also input the
+    actual timestep ***t*** in order to give us a notion of time.The way we do so
+    is using a time step embedding, where we take the time ***t***and use a sinusoidal
+    positional embedding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba068bfe9ba3050bc3ea39b46c6088ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sinusoidal Position Embedding
+  prefs: []
+  type: TYPE_NORMAL
+- en: For those unfamiliar, a high level overview of sinusoidal position embedding
+    is that we encode elements in some sequence (here just the timesteps) using sinusoidal
+    functions, with the intuition being the smooth structure of these functions will
+    be easier for neural networks to learn from. So, our actual input is our noisy
+    image ***xₜ*** and our time step ***t***, which initially goes through this time
+    embedding layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then have our downsampling/upsampling blocks: each downsampling (upsampling)
+    block contains 2 ResNet blocks, 1 Attention layer, and 1 Convolution (deconvolution)
+    layer. Let’s quickly go over each of these.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Residual Networks, or ResNet, are basically a sequence of convolutional layers
+    with large skip connections, which allow information flow across very deep neural
+    networks. Attention, a revolutionary idea crucial in understanding fundamental
+    architectures like the Transformer, tells the neural network what to focus on.
+    For example, here we have 2 ResNet blocks. After these blocks we will have the
+    input image as a vector of latent features, and the attention layer will tell
+    the neural network which of these features are most important to focus on. Finally,
+    the standard convolution/deconvolution allows for down/upsampling, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use 4 of these stacked autoencoders in our implementation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Great! Now that we have defined our U-Net class, we can move on to using the
+    U-Net for our specific problem. We first define relevant hyperparameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Due to lack of computing power, we use **timesteps = *T* = 200,** even though
+    the original paper used ***T* = 1000\.** After data preprocessing, we define the
+    forward process
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, here we define our variance schedule in a pretty standard way. In the forward
+    function we use the reparameterization trick that allows us to sample arbitrary
+    ***xₜ*** from ***x₀.*** Below is a visualization of the forward process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/253ffb16376a1b1b00563453e87fead4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualization of Our Forward Process
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then instantiate our U-Net, define our loss function, and define the training
+    process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Remember, our loss (after lots of work) is just MSE! The rest is a fairly standard
+    training loop. After training, we can think aboutinference. Recalling our Sampling
+    Algorithm 2, we implement as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here we define how to take an image at a certain time step and denoise it.
+    With this we can fully define our inference process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We take random noise, then continuously use our backward function to denoise,
+    until we get to a realistic looking image! And here are some of our results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f01eafdba4b3a6a42b442652dc303ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Examples of Our DDPMs Generated Samples
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The samples are decently high quality. Further, we were able to get a diverse
+    range of samples. Presumably our sample quality would improve with more computing
+    power; diffusion is very computationally expensive, which impacted our ability
+    to train this model. One can also “reverse engineer”. We take a training image,
+    noise it, and then denoise it to see our ability to reconstruct the image. We
+    get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4d744658be612e0c5066b84b8734d01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reverse Engineering. Image Created by Daisuke Yamada
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is important to note that the reverse process is probabilistic, meaning we
+    don’t always end up with even a similar image as our input image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Great! Let’s go back to the Generative Model Trilemma. We have high quality
+    samples, a diverse range of samples, and more stable training (this happens as
+    a byproduct of doing these iterative steps). However, we have slow training and
+    slow sampling, as we need to sample over and over again during inference. So,
+    we get the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2664a1495ec2701f253da9d716883b6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trilemma for DDPMs (Red is Good, Blue is Bad). Image Created by Daisuke Yamada
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Wow! We covered 3 image generation models, going all the way from standard
+    VAEs to DDPMs. For each we looked at the Generative Model Trilemma and obtained
+    the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f849303d137db4aedaebd3c75b648cf6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparing Models. Image Created by Daisuke Yamada
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The natural question is: can we get all 3 parts of the Generative Model Trilemma?
+    Well it seems like diffusion is almost there, as we just need to figure out a
+    way to increase the speed of sampling. Intuitively this is difficult because we
+    relied on the assumption that we can model the reverse process as a Gaussian,
+    which only works if we do the reverse process at nearly all timesteps.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it turns out getting all 3 factors of the Trilemma is possible!Models
+    like DDIMs or DDGANs build on top of DDPMs, but they have figured out ways to
+    increase the speed of sampling (one way is to use a strided sampling schedule**).**
+    With this and different other optimizations, we can obtain all 3 facets of the
+    Generative Model Trilemma!
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, what’s next? One particular interesting avenue is conditional generation.Conditional
+    generation allows you to generate new samples conditioned on some class labels
+    or descriptive text. For example, in all of the image generation models initially
+    listed you can input something like “Penguin bench pressing 1000 pounds” and get
+    a reasonable output. Although we didn’t have time to explore this avenue of conditional
+    generation, it seems like a very interesting next step!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Well, that’s all from us. Thank you for reading!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Unless otherwise stated, all images are created by the author(s).*'
+  prefs: []
+  type: TYPE_NORMAL

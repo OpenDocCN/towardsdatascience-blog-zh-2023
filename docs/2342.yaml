@@ -1,0 +1,371 @@
+- en: dbt Incremental — The Right Way
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/dbt-incremental-the-right-way-63f931263f4a?source=collection_archive---------1-----------------------#2023-07-21](https://towardsdatascience.com/dbt-incremental-the-right-way-63f931263f4a?source=collection_archive---------1-----------------------#2023-07-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Full-Load Pain to Incremental Gain (and a Few Mistakes Along the Way)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)[![Leah
+    Nguyen](../Images/7c3a6bc7de9b2446453dc5133a3bf9ae.png)](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------)
+    [Leah Nguyen](https://medium.com/@ndleah?source=post_page-----63f931263f4a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7ee083e5e515&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&user=Leah+Nguyen&userId=7ee083e5e515&source=post_page-7ee083e5e515----63f931263f4a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----63f931263f4a--------------------------------)
+    ·9 min read·Jul 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63f931263f4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&user=Leah+Nguyen&userId=7ee083e5e515&source=-----63f931263f4a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63f931263f4a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdbt-incremental-the-right-way-63f931263f4a&source=-----63f931263f4a---------------------bookmark_footer-----------)![](../Images/9e13b288f5887d77255a505868893874.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Lukas Tennie](https://unsplash.com/es/@luk10?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When my team at GlamCorner began transitioning from traditional MySQL databases
+    to ELT on a Postgres database with dbt as the transformation and modeling layer,
+    we were overjoyed. We set up dbt projects and profiles, dedicated macros for our
+    models, and built more data marts to serve downstream needs. We thought we were
+    done — I thought we were done until we hit our first bump: model run time. In
+    this article, I explain how I overcame one of the toughest performance challenges
+    at the time by adopting dbt incremental, making mistakes (like who doesn’t?),
+    and learning valuable lessons along the way.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Evolving Monster
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At GlamCorner, we’re in the circular fashion game. Our “back-end” team plays
+    with RFID scanners in the warehouse, scanning items in and out like pros. We also
+    use fancy platforms like Zendesk and Google Analytics to make our customers feel
+    extra special. And to top it off, we’ve got our own in-house inventory system
+    — thanks to our brilliant software engineers — that links all our front-end and
+    back-end systems together. It’s like a match made in heaven. But as we grow and
+    add more years of operation, our database is getting bigger and bigger. And let’s
+    just say the traditional full-table load is starting to feel a bit like a pain
+    in the you-know-what.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Pain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You either understand the pain of “I want the data to be ready by 9am” or you
+    don’t.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4fe69be394d107502ea89bc3e2902fb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The team’s put the efforts to create a flawless **(E)**xtract and **(L)**oad,
+    we gather and toast. Then one day, the **(T)**ransformation decided like “Nah,
+    that’s not how it works around here” and decided to spin up the total runtime
+    from 10 minutes to 90 minutes. I may exaggerate on the 10 to 90 minutes part because
+    yes, everything has its own reason, but the fear of the business team knocking
+    on your door at 8.55 am in the morning when you haven’t even started your first
+    cup of coffee, just to ask: “Where is the newest data?” is hell of the ride to
+    work every day. This is like dumping all the hard work in the trash and I, myself,
+    cannot accept that reality.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s go back to the thing I said: everything has its own reason, and why the
+    fairytale once was taken 10 minutes of my time now has become a red horn demon
+    of 90 minutes. To illustrate this, let’s take the example of the **fct_booking**
+    data figure. This table contains all booking information taken from the website
+    each day. Each `**booking_id**` represents one order that was booked on the website.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0cf43fdf7cf89c0d4444d886adfa65c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every day, around 4 orders are added to the booking table, which already contains
+    80 orders. When this model is run using dbt, it delete the entire table from the
+    last day, replaces all of them with 84 records, including the old and new orders
+    (80 orders from historical cumulative data + 4 new orders added for the latest
+    day). To add to the list, for every new 4 records added, the query time increases
+    by around 0.5 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f28ffc8a83cbafacf6d78a9672c2bcf4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, imagine that 4 orders are equivalent to 4000 per day and 80 orders actually
+    represent 800,000 records. Can you guess how much time it will take to transform
+    the fct_bookings table, and where we will be in, for example, 3 months?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Well,** **I’ll leave the math for you.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Golden Egg
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So, after aimlessly wandering through dbt Community threads and halfheartedly
+    skimming through dbt documentation (I mean, who hasn’t done that?), I stumbled
+    upon the holy grail of dbt Incremental. It’s like finding a needle in a haystack,
+    except the needle is golden and the haystack is made of code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In layman’s terms, dbt Incremental means that you don’t have to go through the
+    hassle of processing all data from the beginning. You just process the new and
+    modified data, saving you time and resources. It’s like a shortcut that actually
+    works and won’t get you in trouble with your boss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b22fb01112e95066f78201f330bb383.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you want to know more about the nitty-gritty details of dbt Incremental,
+    then check out this blog and document:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=post_page-----63f931263f4a--------------------------------)
+    [## The power of dbt incremental models for Big Data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An experiment on BigQuery
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=post_page-----63f931263f4a--------------------------------)
+    [](https://docs.getdbt.com/docs/build/incremental-models?source=post_page-----63f931263f4a--------------------------------)
+    [## Incremental models | dbt Developer Hub
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read this tutorial to learn how to use incremental models when building in dbt.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: docs.getdbt.com](https://docs.getdbt.com/docs/build/incremental-models?source=post_page-----63f931263f4a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To set up this model in your dbt model, you need to add a config block at the
+    beginning of your model script, keeping these two components in mind:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Materialized:** By default, a dbt model’s materialized view is equal to ‘table’
+    when there is no configuration. To set the incremental mode, set the materialized
+    view to ‘incremental’. For more information on other dbt materializations, please
+    visit:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://docs.getdbt.com/docs/build/materializations?source=post_page-----63f931263f4a--------------------------------)
+    [## Materializations | dbt Developer Hub'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read this tutorial to learn how to use materializations when building in dbt.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: docs.getdbt.com](https://docs.getdbt.com/docs/build/materializations?source=post_page-----63f931263f4a--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Unique_key:** Although setting up a unique key is optional according to the
+    dbt documentation, it is extremely important to rationally consider how you want
+    to set this up. Essentially, the unique key will be the main driver that lets
+    dbt know if the record should be added or changed. Some questions to keep in mind
+    are:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Is the unique key really unique?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Is it a combination of two or more columns?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Failing to set up a unique key can lead to missing data and ambiguous values,
+    **so be careful!**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example of how the config block is set up for a single unique key:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the case the unique key is the combination of several columns, you can tweak
+    the config to be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** if you’re using BigQuery or Snowflake to store your data, you might
+    have the option of tuning more extra configs like setting up sync_mode. But since
+    my company’s database is built on Redshift, specifically Postgres, we don’t have
+    those fancy gears.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Once that’s taken care of, there’s just one more important step we need to
+    add to our dbt incremental models'' script: a conditional block for the `**is_incremental()**`
+    macro.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The **is_incremental()** macro returns *True* if the following conditions are
+    met:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The destination table already exists in the database.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: dbt is not running in `**full-refresh**` mode.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The running model is configured with `**materialized=’incremental’**`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that the SQL in your model needs to be valid regardless of whether `**is_incremental()**`
+    evaluates to ***True*** or ***False***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Returning to the example of fct_booking, here is the original query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After applying the incremental setup described above, we have a model that
+    includes the unique key, a tag for the model, and a conditional block for the
+    **is_incremental()** macro as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As seen in the code, the unique_key has been set to the `**booking_id**`, as
+    one booking_id corresponds to one order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make it fancier, I have also added a model tag as **incremental_model** for
+    any other model that I integrate with an incremental materialized. The main driver
+    is that, often when things go wrong with dbt model incremental, they often go
+    wrong ‘in bulk’. Thus, to refresh them without affecting other models and don’t
+    have to remember every single model with incremental mode enabled, I can run the
+    above code instead of having to specify each model name with incremental mode
+    separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Also note that if the incremental model is set up incorrectly and updates incorrect
+    data in the production table, I would need to run the model again using the `--full-refresh`
+    command. However, you should keep in mind that running it in full load refresh
+    instead of incremental mode will be slower, so remember to pick the right time
+    to do it (*tips: don’t do it at 9 am in the morning*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Slap Back
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Up until this point, life was good again! I set up the table flawlessly, and
+    the performance query significantly improved. Finally, I can sleep at night. My
+    hand can touch the grass, and dbt incremental grant miss little Leah — a dream
+    come true. However, not long after, a guy from the Finance team rushed to my desk
+    with a report in his hand and aggressively claimed, “You gave me the wrong data!”
+  prefs: []
+  type: TYPE_NORMAL
+- en: It turned out that the incremental models accidentally skipped many orders in
+    a day and then went to the next day. “How on earth could this happen? I followed
+    the expert tutorial — this can’t be wrong!” I whispered in my head. Except there
+    is something going on upstream that I might have missed. After some digging, the
+    issue came to light.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every day, a data extraction and load process takes place at midnight to synchronize
+    all the data up until that moment. This synchronization typically occurs at midnight,
+    but its timing can be influenced by factors such as start spinup time and package
+    cache. It’s important to note that the Extract part of the process may begin slightly
+    after midnight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a scenario where the extract starts at 12:02 am and someone decides
+    to make a booking around 12:01 am. In this situation, the data will also include
+    a small portion of the orders from that day, which is referred to as “late arrival
+    data” in more technical terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there’s a drawback with the current logic of the WHERE filter. The
+    filter’s efficiency is compromised because it only appends new records from the
+    latest date value of `**created_at**`. This means that it won’t capture all the
+    data for the entire day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to fix this, we will twist this logic a little bit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The new filter involves syncing all data from the past 7 days. Any new data
+    will be added to the existing dataset, while any old data with updated field values
+    will be replaced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Tradeoff
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As you’ve been following along, you might be wondering, “How many days should
+    I go back using the is_incremental filter? And why did I choose 7 days for my
+    case? What if I need data for the last 30 days?” Well, the answer is not straightforward
+    — it depends on your specific scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my situation, I ensure that each day should have at least one order. Since
+    there could be internal changes in the data during the last 7 days, I set my filter
+    to append new and update existing data within that timeframe. However, if you
+    feel confident about your query performance and want to go back further, say the
+    last 365 days, you are free to do so! Just be mindful that there are tradeoffs
+    to consider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The primary reason for using an incremental model is to reduce costs in terms
+    of model run performance. However, scanning through a larger dataset for the last
+    7 days could slow down performance, depending on the size of your data and your
+    company’s specific use case. It’s essential to strike the right balance based
+    on your needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a more general approach, I recommend using 7 days as a standard rule. You
+    can set up data update schedules on a weekly or annual basis for full-refreshes
+    of the dbt incremental models. This approach allows you to account for unexpected
+    issues, as no matter how well your setup is, there may still be occasional downtimes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my use case, I typically schedule the incremental run on a full-refresh during
+    the weekend when there are fewer operational tasks. However, this schedule can
+    be customized according to your team’s requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember, the key is to find the right tradeoff between data freshness and query
+    performance, ensuring that your data remains accurate and up-to-date while optimizing
+    your model’s efficiency.
+  prefs: []
+  type: TYPE_NORMAL

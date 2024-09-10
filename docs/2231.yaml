@@ -1,0 +1,513 @@
+- en: Solving Geographic Travelling Salesman Problems using Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/solving-geographic-travelling-salesman-problems-using-python-e57284b14cd7?source=collection_archive---------1-----------------------#2023-07-12](https://towardsdatascience.com/solving-geographic-travelling-salesman-problems-using-python-e57284b14cd7?source=collection_archive---------1-----------------------#2023-07-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using pyconcorde to find optimal solutions to real-world routing problems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)[![Mike
+    Jones](../Images/b841e6215298729d051a21fecbd83b12.png)](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------)
+    [Mike Jones](https://medium.com/@mikedbjones?source=post_page-----e57284b14cd7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F253ada1cc4c9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&user=Mike+Jones&userId=253ada1cc4c9&source=post_page-253ada1cc4c9----e57284b14cd7---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e57284b14cd7--------------------------------)
+    ·12 min read·Jul 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe57284b14cd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&user=Mike+Jones&userId=253ada1cc4c9&source=-----e57284b14cd7---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe57284b14cd7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-geographic-travelling-salesman-problems-using-python-e57284b14cd7&source=-----e57284b14cd7---------------------bookmark_footer-----------)![](../Images/2e7334e2d22e1e5749ed0fa324793135.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An optimal car driving route between 79 UK cities. Image by author. Map data
+    from [OpenStreetMap](https://www.openstreetmap.org/copyright).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The famous [Travelling Salesman Problem (TSP)](https://en.wikipedia.org/wiki/Travelling_salesman_problem)
+    is about finding an optimal route between a collection of nodes (cities) and returning
+    to where you started. It sounds simple, but is impossible to solve by brute force
+    for large numbers of nodes, since the number of possible orderings of `n` cities
+    is `n!`. This means that for even just 30 cities, the number of trips you would
+    have to check is 265,252,859,812,191,058,636,308,480,000,000\. Large TSP problems
+    are impractical to solve by brute force, even by powerful computers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ffc8bce187e3538ae1b404b70271bbd0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Randomly generated TSP with 10 nodes: 3,628,800 possible routes to check. Image
+    by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, some algorithms have been developed that dramatically reduce the
+    amount of compute needed to solve large TSPs. One such piece of software, [Concorde](https://www.math.uwaterloo.ca/tsp/concorde/),
+    was developed a couple of decades ago for use in the academic community. Although
+    it is quite technical to use as stand-alone software, and is intended for specialists
+    only, [*pyconcorde*](https://github.com/jvkersch/pyconcorde) has been developed
+    as a Python wrapper for Concorde. An explanation of the algorithms used in Concorde
+    is outside the scope of this article. However, we will delve into the code needed
+    to reproduce these problems and their solutions in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Real-world geographic TSP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: How would someone go about solving a real-world, geographical travelling salesman
+    problem? Real-world points are not connected by simple 2D lines like in the image
+    above. Instead, geographical features are connected by various possible routes,
+    and those routes will change depending on whether someone is walking, cycling
+    or driving.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why might a data scientist or software engineer want to solve a real-world
+    TSP? Here are a few examples of use cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A company employing couriers needs a way of calculating optimal routes through
+    a city, minimizing the time spent on the road for each of its drivers.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A tour operator needs to find the shortest route connecting a set of destinations,
+    within a constrained amount of time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A waste disposal company or local authority needs to allocate its resources
+    to ensure pickups are ordered in as efficient a manner as possible.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In order to solve a real-world TSP, the [*routingpy*](https://github.com/gis-ops/routingpy)library
+    can be used to find routes, distances (in metres) and durations (in seconds) between
+    geographical points in `[longitude, latitude]` pairs. In this article we will
+    describe the method that can be used for such a problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coding walk-through
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A guide to solving a geographic TSP using Python is outlined here. The broad
+    structure of the problem-solving process is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obtain a list of *n* coordinates as `[longitude, latitude]` pairs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use a routing service to obtain a matrix (*n* x *n*) of real-world durations
+    between each of these coordinates, for the appropriate profile (walking, cycling,
+    driving a car, driving an HGV, etc). This matrix will be asymmetric (driving from
+    A to B is not the exact reverse of B to A).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Transform (*n* x *n*) matrix into a symmetric matrix (*2n* x *2n*).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Feed this matrix into the Concorde solver to find an optimal ordering of coordinates.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create the real-world route using the routing service.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Visualize the results on a map.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Optionally, create a GPX file of the final route.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Each of these steps will be covered in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Obtaining coordinates'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For our example, we will consider the problem of driving a car between 79 cities
+    in the UK. Shown below is a map of the UK cities in blue. A data scientist can
+    find coordinates in a number of ways. If required, they can be found manually
+    using Google Maps or [Google Earth](https://earth.google.com/web/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c577cb11b1cdb53cb3700979657130f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 79 cities in the UK. Image by author. Map data from [OpenStreetMap](https://www.openstreetmap.org/copyright).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The code structure and data used in this example is also available in** [**this
+    GitHub repository**](https://github.com/mikedbjones/Geographic-TSP)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is a CSV file containing the coordinates of the cities (*gb_cities.csv*
+    in the repo), and below it the code required to import it using pandas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 2: Using a routing service to obtain duration matrix'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are several routing services available through the routingpy library.
+    The API from [Graphhopper](https://www.graphhopper.com/) includes a free tier
+    which allows rate-limited use. Other routers that are available through routingpy
+    are listed in the [documentation](https://routingpy.readthedocs.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is `durations`, a 79 x 79 matrix of the driving time in seconds between
+    coordinates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The driving time between cities can be determined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each row and column corresponds to a city: Aberdeen is the first row and column,
+    Ayr the second, Basildon the third, and so on.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To find the time between Aberdeen and Ayr, look at the 1st row, 2nd column:
+    10,902 seconds. The reverse time (Ayr to Aberdeen) is 10,901 seconds.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In general, the time from the i-th to the j-th city is at the intersection between
+    the i-th row and j-th column.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Notice that the matrix, as expected, has zeros along the diagonal, since each
+    point is connected to itself with zero distance or duration. Also, the matrix
+    is not quite symmetric: driving durations between cities are unlikely to be identical
+    in opposite directions, due to different road layouts and traffic hotspots. They
+    are broadly similar, though, as would be expected.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: Transforming asymmetric matrix to symmetric'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before using this matrix to generate an optimal ordering in pyconcorde, we
+    need to make the matrix symmetric. A method for transforming an asymmetric TSP
+    into symmetric TSP is described by [Jonker and Volgenant (1983): Transforming
+    asymmetric into symmetric traveling salesman problems, Operations Research Letters,
+    2(4), 161–163](https://www.sciencedirect.com/science/article/abs/pii/0167637783900482).
+    What follows is the theory behind this transformation. If desired, this section
+    can be skipped (scroll down to the section titled *Transforming the geographic
+    asymmetric TSP*)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Jonker/Volgenant asymmetric to symmetric transformation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is a visualization of an asymmetric TSP with 3 nodes, and its distance
+    matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6666027086298ed86cb89062ad636fb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Asymmetric TSP with 3 nodes. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is a sketch of the method used to transform this into a symmetric TSP:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create new *ghost nodes*, A’, B’ and C’. Join A to A’, B to B’ and C to C’ with
+    distance zero.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Connect the nodes with weights as follows:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A to B is now represented by A’ to B; B to A is now B’ to A.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: B to C is now B’ to C; C to B is now C’ to B.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: C to A is now C’ to A; A to C is A’ to C.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Set all other edge weights to be infinite, so any algorithm does not attempt
+    to travel between them. Since this will be impractical later when using pyconcorde,
+    instead set all other weights to be much higher than the highest weight we have.
+    In this case, we will set them to equal 99.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/df27cbcf58566d17b4115a5d2fe2abcf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Equivalent symmetric TSP with (3 x 2) nodes. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the resulting distance matrix. The ordering of the nodes in the matrix
+    is: A, B, C, A’, B’, C’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note again that the diagonal is zero, as would be expected, and that the matrix
+    is now symmetric. The original matrix is in the bottom-left corner of the new
+    matrix, and its transpose is in the top-right. Meanwhile, the top-left and bottom-right
+    parts contain very high weights between nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A, B and C (top-left) are no longer connected to each other (strictly speaking,
+    they are connected but with very high instead of infinite weight, for practical
+    purposes). This means that any algorithm will not seek to find a path between
+    these nodes. Likewise, A’, B’ and C’ (bottom-right) are not connected to each
+    other. Instead, the directional nature of the original asymmetric network is represented
+    here by the weights on the original nodes A, B and C, together with their ghosts
+    A’, B’ and C’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is a one-to-one mapping between solutions of the original asymmetric
+    problem and the new, symmetric TSP:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A — B — C — A corresponds to A — A’ — B — B’ — C — C’ — A
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A — C — B — A corresponds to A — A’ — C — C’ — B — B’ — A
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In each case the ghost nodes A’, B’ and C’ alternate with the original nodes
+    A, B and C, and each original node is adjacent to its ‘partner’ ghost node (A
+    is adjacent to A’, and so on).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Transforming the geographic asymmetric TSP**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Back to our practical example. We can create a function to transform an asymmetric
+    TSP matrix into a symmetric one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`symmetricize(durations)` returns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This 158 x 158 matrix contains a copy of `durations` in the bottom left and
+    a transposed copy in the top right. The high value of 461,120 (10 times the maximum
+    value in `durations`) means that, for practical purposes, nodes with this duration
+    are not connected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This matrix can finally be fed into pyconcorde to calculate an optimal path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: Using the Concorde solver'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Installing pyconcorde**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Run the following commands to install pyconcorde (installation is available
+    in Linux or Mac OS, but not in Windows at present):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Solving the TSP in Python**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can import from `concorde` in a Python script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our symmetric durations matrix can be fed into `solve_concorde()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is the print output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This solution shows the ordering of nodes in the optimal tour. Note that this
+    solution, as expected above, contains original nodes (numbered 0 to 78) alternating
+    with their partner ghost nodes (79 to 157):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 0 is partnered with 79,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 22 with 101,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 25 with 104, and so on…
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This suggests that the solution has worked correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 5: Creating the real-world route'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step is to pick alternate elements of the solution (the nodes corresponding
+    to the original 79 cities), then order the coordinates accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here are the first few city names in `names_ordered`, (the real ordering of
+    the cities in the optimal tour):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we add back in the first city to make a complete looped tour, and finally
+    obtain the final route using the Graphhopper directions API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 6: Visualization on a map'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Seeing the final route on a map will enable us to be confident in the result,
+    as well as allowing us to use the solution in a practical setting. The following
+    code will display a folium map which can be saved to HTML.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result is shown at the top of this article. [Click here to view as an interactive
+    map](https://mikedbjones.github.io/Geographic-TSP/gb_cities.html). It’s possible
+    to zoom in to the map to see more detail and to hover over individual cities which
+    will reveal their number in the tour sequence. Below is a zoomed-in part of the
+    map showing the route passing through Sheffield (between Lincoln and Chesterfield
+    on the optimal tour).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc9e4fabdeb1f4050d04f4a4bf26bd86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. Map data from [OpenStreetMap](https://www.openstreetmap.org/copyright).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 7: Optional: Creating a GPX file'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If the calculated route needs to be followed in real-life, for instance on
+    a device with a GPS (such as a phone or car navigation system), a GPX can be created.
+    This is not part of the optimization problem, but is an optional additional step
+    available if you want to save the route to a file. The GPX file is created from
+    the `directions` variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: The GPX file for this problem can be downloaded [here](https://github.com/mikedbjones/Geographic-TSP/blob/master/gb_cities.gpx).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We have seen how we can combine the following elements to solve real-world
+    geographic travelling salesman problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Directions and duration matrices from the routingpy library, specifying an appropriate
+    `profile` (mode of transport).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Efficient and powerful Concorde solver via the pyconcorde wrapper, to provide
+    an optimal route.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Visualization using folium to create a map.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The driving tour shown above is a convincing solution to the 79-city travelling
+    salesman problem, and according to the Concorde solver is provably ‘optimal’.
+    Since we are working with real-world data, however, the end result is only as
+    good as the input. We are relying that the point-to-point durations matrix obtained
+    from routingpy is representative of the real-world. In reality, the time taken
+    to walk, cycle or drive between points will depend on the time of day, or day
+    of the week. This is a limitation of the method that we’ve used. One way of being
+    more confident in the end result would be to try the same method with an [alternative
+    routing service](https://routingpy.readthedocs.io/en/latest/#module-routingpy.routers).
+    Each routing service (Graphhopper, ORS, Valhalla, and so on) has its own API which
+    could be used for a TSP problem such as the one described here, and the results
+    could be compared from different services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite the real-world limitations of solving a problem such as this, the methodology
+    above provides a good starting point for a salesperson or courier needing to make
+    their way round a city in as efficient a manner as possible or a tourist hoping
+    to catch as many sights as possible on their tour. By visualizing the results
+    on an interactive map and storing the route as a GPX file, the solution is useful
+    by the end user, not just the data scientist who implemented the code.
+  prefs: []
+  type: TYPE_NORMAL

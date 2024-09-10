@@ -1,0 +1,470 @@
+- en: Variable Importance in Random Forests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/variable-importance-in-random-forests-20c6690e44e0?source=collection_archive---------2-----------------------#2023-11-03](https://towardsdatascience.com/variable-importance-in-random-forests-20c6690e44e0?source=collection_archive---------2-----------------------#2023-11-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Traditional Methods and New Developments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jeffrey_85949?source=post_page-----20c6690e44e0--------------------------------)[![Jeffrey
+    Näf](../Images/0ce6db85501192cdebeeb910eb81a688.png)](https://medium.com/@jeffrey_85949?source=post_page-----20c6690e44e0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20c6690e44e0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20c6690e44e0--------------------------------)
+    [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----20c6690e44e0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariable-importance-in-random-forests-20c6690e44e0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----20c6690e44e0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20c6690e44e0--------------------------------)
+    ·15 min read·Nov 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20c6690e44e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariable-importance-in-random-forests-20c6690e44e0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----20c6690e44e0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20c6690e44e0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvariable-importance-in-random-forests-20c6690e44e0&source=-----20c6690e44e0---------------------bookmark_footer-----------)![](../Images/67a49d96a841b077c6462f8c9063a193.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Features of (Distributional) Random Forests. In this article: The ability to
+    produce variable importance. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Random Forest and generalizations (in particular, Generalized Random Forests
+    (GRF) and Distributional Random Forests (DRF) ) are powerful and easy-to-use machine
+    learning methods that should not be absent in the toolbox of any data scientist.
+    They not only show robust performance over a large range of datasets without the
+    need for tuning, but can also easily handle [missing values](https://medium.com/towards-data-science/random-forests-and-missing-values-3daaea103db0),
+    and even provide [confidence intervals](https://medium.com/towards-data-science/inference-for-distributional-random-forests-64610bbb3927).
+    In this article, we focus on another feature they are able to provide: notions
+    of feature importance. In particular, we focus on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditional Random Forest (RF), which is used to predict the conditional expectation
+    of a variable *Y* given p predictors ***X***.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The [Distributional Random Forest](https://medium.com/towards-data-science/drf-a-random-forest-for-almost-everything-625fa5c3bcb8),
+    which is used to predict the whole conditional distribution of a d-variate ***Y***
+    given *p* predictors ***X***.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Unfortunately, like many modern machine learning methods, both forests lack
+    interpretability. That is, there are so many operations involved, it seems impossible
+    to determine what the functional relationship between the predictors and *Y* actually
+    is. A common way to tackle this problem is to define Variable Importance measures
+    (VIMP), that at least help decide which predictors are important. Generally, this
+    has two different objectives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (1) finding a small number of variables with maximal accuracy,
+  prefs: []
+  type: TYPE_NORMAL
+- en: (2) detecting and ranking all influential variables to focus on for further
+    exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference between (1) and (2) matters as soon as there is dependence between
+    the elements in ***X*** (so pretty much always). For example, if two variables
+    are highly correlated together and with *Y*, one of the two inputs can be removed
+    without hurting accuracy for objective (1), since both variables convey the same
+    information. However, both should be included for objective (2), since these two
+    variables may have different meanings in practice for domain experts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Today we focus on (1) and try to find a smaller number of predictors that display
+    more or less the same predictive accuracy. For instance, in the wage example below,
+    we are able to reduce the number of predictors from 79 to about 20, with only
+    a small reduction in accuracy. These most important predictors contain variables
+    such as age and education which are well-known to influence wages. There are also
+    many great articles on medium about (2), using Shapley values such as [this one](/from-shapley-to-shap-understanding-the-math-e7155414213b)
+    or [this one](/understand-the-working-of-shap-based-on-shapley-values-used-in-xai-in-the-most-simple-way-d61e4947aa4e).
+    There is also very recent and exciting [academic literature](https://hal.science/hal-03232621/document)
+    on how to efficiently calculate Shapley values with Random Forest. But this is
+    material for a second article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two measures we look at today are actually more general variable importance
+    measures that can be used for any method, based on the drop-and-relearn principle
+    which we will look at below. We focus exclusively on tree-based methods here,
+    however. Moreover, we don’t go into great detail explaining the methods, but rather
+    try to focus on their applications and why newer versions are preferable to the
+    more traditional ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3acf6bdba23d5be159289e2dd040c7a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Overview of Variable Importance Measures for Random Forests. Mean Decrease
+    Impurity (MDI) and Mean Decrease Accuracy (MDA) were both postulated by Breiman.
+    Due to their empirical nature, however, several problems remained, which were
+    recently addressed by Sobol-MDA. Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Beginnings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Variable importance measures for RFs are in fact as old as RF itself. The first
+    accuracy the **Mean Decrease Accuracy (MDA)** was proposed by Breiman in his seminal
+    Random Forest paper [1]. The idea is simple: For every dimension *j=1,…,p*, one
+    compares the accuracy of the full prediction with the accuracy of the prediction
+    when *X_j* is randomly permuted. The idea of this is to break the relationship
+    between *X_j* and *Y* and compare the accuracy when *X_j* is not helping to predict
+    *Y* by design, to the case when it is potentially of use.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are various different versions of MDA implemented in R and Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a9877cc70937cb5664d9cf9d41986cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Different Versions of MDA, implemented in different packages. Source: Table
+    1 in [3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, permuting variable *X_j* in this way not only breaks its relationship
+    to *Y*, but also to the other variables in ***X***. This is not a problem if *X_j*
+    is independent from all other variables, but it becomes a problem once there is
+    dependence. Consequently, [3] is able to show that as soon as there is dependence
+    in ***X***, the MDA converges to something nonsensical. In particular, MDA can
+    give high importance to a variable *X_j* that is not important to predict *Y*,
+    but is highly correlated with another variable, say *X_l*, that is actually important
+    for predicting *Y* (as demonstrated in the example below). At the same time, it
+    can fail to detect variables that are actually relevant, as demonstrated by a
+    long list of papers in [3, Section 2.1]. Intuitively, what we would want to measure
+    is the performance of the model if *X_j* is not included, and instead, we measure
+    the performance of a model with a permuted *X_j* variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second traditional accuracy measure is **Mean Decrease Impurity (MDI)**,
+    which sums the weighted decreases of impurity over all nodes that split on a given
+    covariate, averaged over all trees in the forest. Unfortunately, MDI is ill-defined
+    from the start (it's not clear what it should measure) and several papers highlight
+    the practical problem of this approach (e.g. [5]) As such, we will not go into
+    detail about MDI, as MDA is often the preferred choice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Modern Developments I: Sobol-MDA'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For the longest time, I thought these somewhat informal measures were the best
+    we could do. One paper that changed that, came out only very recently. In this
+    paper, the authors demonstrate theoretically that the popular measures above are
+    actually quite flawed and do not measure what we want to measure. So the first
+    question might be: What do we actually want to measure? One potential answer:
+    The Sobol-index (originally proposed in the computer science literature):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02d351a195fc2410668b427c48916e28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s unpack this. First, *tau(****X****)=E[ Y |* ***X****]* is the conditional
+    expectation function we would like to estimate. This is a random variable because
+    it is a function of the random ***X***. Now ***X****^{(-j)}* is the *p-1* vector
+    with covariate *j* removed. Thus *ST^{(j)}* is the reduction in output explained
+    variance if the *j*th output variable is removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The above is the more traditional way of writing the measure. However, for
+    me writing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c77e4e33b3e4720e609e9aa5edd97e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: is much more intuitive. Here *d* is a distance between two random vectors and
+    for the *ST^{(j)}* above, this distance is simply the usual Euclidean distance.
+    Thus the upper part of *ST^{(j)}* is simply measuring the average squared distance
+    between what we want (*tau(****X****)*) and what we get without variable *j*.
+    The latter is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45dc0fc966fb263863a38d32c9aa5289.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The question becomes how to estimate this efficiently. It turns out that the
+    intuitive drop-and-relearn principle would be enough: Simply estimating *tau(****X****)*
+    using RF and then dropping *X_j* and refitting the RF to obtain an estimate of
+    *tau(****X^{(-j)}****),* one obtains the consistent estimator*:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a7852dcae89d65509a4d43a4d4b2a63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *tau_n(****X****_i)* is the RF estimate for a test point ***X****_i* using
+    all *p* predictors and similarly *tau_n(****X****_i^{(-j)})* is the refitted forest
+    using only *p-1* predictors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, this means the forest needs to be refitted *p* times, not very efficient
+    when *p* is large! As such the authors in [3] develop what they call the **Sobol-MDA**.
+    Instead of refitting the forest each time, the forest is only fitted once. Then
+    test points are dropped down the same forest and the resulting prediction is “projected”
+    to form the measure in (1). That is, splits on *X_j* are simply ignored (remember
+    the goal is to obtain an estimate without *X_j*). The authors are able to show
+    that calculating (1) above with this projected approach also results in a consistent
+    estimator! This is a beautiful idea indeed and renders the algorithm applicable
+    even in high dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ded296de922c3d43a2d81d508473bfb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Illustration of the projection approach. On the left the division of the two-dimensional
+    space by RF. On the right the projection approach ignores splits in X^(2), thereby
+    removing it when making predictions. As can be seen the point X gets projected
+    onto X^{(-j)} on the right using this principle. Source: Figure 1 in [3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method is implemented in R in the [soboldMDA](https://gitlab.com/drti/sobolmda)
+    package, based on the very fast [ranger](https://cran.r-project.org/web/packages/ranger/ranger.pdf)
+    package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Modern Developments II: MMD-based sensitivity index'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Looking at the formulation using the distance *d*, a natural question is to
+    ask whether different distances could be used to get variable importance measures
+    for more difficult problems. One such recent example is to use the MMD distance
+    as *d:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/317b256761f69b6c00357facb2981d7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The MMD distance is a wonderful tool, that allows to quite easily build a distance
+    between distributions using a kernel *k* (such as the Gaussian kernel):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1aa92f737ec9e3ff4e3dbda69e531d56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'For the moment I leave the details to further articles. The most important
+    takeaway is simply that *I^{(j)}* considers a more general target than the conditional
+    expectation. It recognizes a variable *X_j* as important, as soon as it influences
+    the distribution of *Y* in any way. It might be that *X_j* only changes the variance
+    or the quantiles and leaves the conditional mean of *Y* untouched (see example
+    below). In this case, the Sobol-MDA would not recognize *X_j* as important, but
+    the MMD method would. This doesn’t necessarily make it better, it is simply a
+    different tool: If one is interested in predicting the conditional expectation,
+    *ST^{(j)}* is the right measure. However, if one is interested in predicting other
+    aspects of the distribution, especially quantiles, *I^{(j)}* would be better suited.
+    Again *I^{(j)}* can be consistently estimated using the drop-and-relearn principle
+    (refitting DRF for *j=1,…,p* eacht time with variable $j$ removed), or the same
+    projection approach as for Sobol-MDA can be used. A drop-and-relearn-based implementation
+    is attached at the end of this article. We refer to this method here as **MMD-MDA**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simulated Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We now illustrate these two modern measures on a simple simulated example:
+    We first download and install the Sobol-MDA package from [Gitlab](https://gitlab.com/drti/sobolmda)
+    and then load all the packages necessary for this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we simulate from this simple example: We take *X_1, X_2, X_4, …, X_10*
+    independently uniform between (-1,1) and create dependence between *X_1* and *X_3*
+    by taking *X_3=X_1 + uniform error*. Then we simulate *Y* as'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db8b95d3d53203e739c5509eb1aa992e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We then analyze the Sobol-MDA approach to estimate the conditional expectation
+    of *Y* given ***X***:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As can be seen, it correctly identifies that *X_1* is the most important variable,
+    while the others are ranked equally (un)important. This makes sense because the
+    conditional expectation of *Y* is only changed by *X_1*. Crucially, the measure
+    manages to do this despite the dependence between *X_1* and *X_3*. Thus we successfully
+    pursued goal (1), as explained above, in this example. On the other hand, we can
+    also have a look at the traditional MDA:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this case, while it correctly identifies *X_1* as the most important variable,
+    it also places *X_3* in second place, with a value that seems quite a bit higher
+    than the remaining variables. This despite the fact, that *X_3* is just as unimportant
+    as *X_2, X_4,…, X_10*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But what if we are interested in predicting the distribution of *Y* more generally,
+    say for estimating quantiles? In this case, we need a measure that is able to
+    recognize the influence of *X_2* on the conditional variance of *Y*. Here the
+    MMD variable importance measure comes into play:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Again the measure is able to correctly identify what matters: *X_1* and *X_2*
+    are the two most important variables. And again, it does this despite the dependence
+    between *X_1* and *X_3*. Interestingly, it also gives the variance shift from
+    *X_2* a higher importance than the expectation shift from *X_1*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Real Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, I present a real data application to demonstrate the variable importance
+    measure. Note that with DRF, we could look even at multivariate ***Y*** but to
+    keep things more simple, we focus on a univariate setting and consider the US
+    wage data from the 2018 American Community Survey by the US Census Bureau. In
+    the first [DRF paper](https://www.jmlr.org/papers/v23/21-0585.html), we obtained
+    data on approximately 1 million full-time employees from the 2018 American Community
+    Survey by the US Census Bureau from which we extracted the salary information
+    and all covariates that might be relevant for salaries. This wealth of data is
+    ideal to experiment with a method like DRF (in fact we will only use a tiny subset
+    for this analysis). The data we load can be found [here](https://github.com/lorismichel/drf/blob/master/applications/wage_data/data/datasets/wage_benchmark.Rdata).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We now calculate both variable importance measures (this will take a while
+    as only the drop-and-relearn method is implemented for DRF):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this case, the two variable importance measures agree quite a bit on which
+    variables are important. While this is not a causal analysis, it is also nice
+    that variables that are known to be important to predict wages, specifically “age”,
+    “education_level” and “gender”, are indeed seen as very important by the two measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To obtain a small set of predictive variables, one could now for *j=1,…p-1,*
+  prefs: []
+  type: TYPE_NORMAL
+- en: (I) Remove the least important variable
+  prefs: []
+  type: TYPE_NORMAL
+- en: (II) Calculate the loss (e.g. mean squared error) on a test set
+  prefs: []
+  type: TYPE_NORMAL
+- en: (III) Recalculate the variable importance for the remaining variable
+  prefs: []
+  type: TYPE_NORMAL
+- en: (IV) Repeat until a certain stopping criterion is met
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One could stop, for instance, if the loss increased by more than 5%. To make
+    my life easier in this article, I just use the same variable importance values
+    saved in “SobolMDA” and “MMDVimp” above. That is, I ignore step (III) and only
+    consider (I), (II) and (IV). When the goal of estimation is the full conditional
+    distribution, step (II) is also not entirely clear. We use what we refer to as
+    MMD loss, described in more detail in our paper ([4]). This loss considers the
+    error we are making in the prediction of the distribution. For the conditional
+    mean, we simply use the mean-squared error. This is done in the function “evalall”
+    found below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This results in the following two pictures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3267a58fc9905842a0a742c1a5a2b645.png)![](../Images/0700067c7c45b844f3d63d0257a74368.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that both have somewhat wiggly lines, which is first due to the fact
+    that I did not recalculate the importance measure, e.g., left out step (III),
+    and second due to the randomness of the forests. Aside from this, the graphs nicely
+    show how the errors successively increase with each variable that is removed.
+    This increase is first slow for the least important variables and then gets quicker
+    for the most important ones, exactly as one would expect. In particular, the loss
+    in both cases remains virtually unchanged if one removes the 50 least important
+    variables! In fact, one could remove about 70 variables in both cases without
+    increasing the loss by more than 6%. One has to note though that many predictors
+    are part of one-hot encoded categorical variables and thus one needs to be somewhat
+    careful when removing predictors, as they correspond to levels of one categorical
+    variable. However, in an actual application, this might still be desirable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we looked at modern approaches to variable importance in Random
+    Forests, with the goal of obtaining a small set of predictors or covariates, both
+    with respect to the conditional expectation and for the conditional distribution
+    more generally. We have seen in the wage data example, that this can lead to a
+    substantial reduction in predictors with virtually the same accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As noted above the measures presented are not strictly constrained to Random
+    Forest, but can be used more generally in principle. However, forests allow for
+    the elegant projection approach that allows for the calculation of the importance
+    measure for all variables *j*, without having to refit the forest each time (!)
+    This is described in both [3] and [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Literature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Breiman, L. (2001). Random forests. Machine learning, 45(1):5–32.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Breiman, L. (2003a). Setting up, using, and understanding random forests
+    v3.1\. Technical report, UC Berkeley, Department of Statistics'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Bénard, C., Da Veiga, S., and Scornet, E. (2022). Mean decrease accuracy
+    for random forests: inconsistency, and a practical solution via the Sobol-MDA.
+    Biometrika, 109(4):881–900.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Clément Bénard, Jeffrey Näf, and Julie Josse. MMD-based variable importance
+    for distributional random forest, 2023.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Strobl, C., Boulesteix, A.-L., Zeileis, A., and Hothorn, T. (2007). Bias
+    in random forest variable importance measures: illustrations, sources and a solution.
+    BMC Bioinformatics, 8:25.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Appendix : Code'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE

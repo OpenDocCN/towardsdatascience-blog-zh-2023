@@ -1,0 +1,783 @@
+- en: Creating an Information Edge with Conversational Access to Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/enabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c?source=collection_archive---------1-----------------------#2023-06-11](https://towardsdatascience.com/enabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c?source=collection_archive---------1-----------------------#2023-06-11)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A guide to implementing Text2SQL to power data-driven organisations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)[![Dr.
+    Janna Lipenkova](../Images/112fe9a8c5936869243f2a43fde6dfee.png)](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------)
+    [Dr. Janna Lipenkova](https://medium.com/@janna.lipenkova_52659?source=post_page-----f8e07089dd0c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff215f8e427a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=post_page-f215f8e427a2----f8e07089dd0c---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f8e07089dd0c--------------------------------)
+    ·19 min read·Jun 11, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff8e07089dd0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c&user=Dr.+Janna+Lipenkova&userId=f215f8e427a2&source=-----f8e07089dd0c---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff8e07089dd0c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fenabling-the-data-driven-organisation-with-text2sql-f8e07089dd0c&source=-----f8e07089dd0c---------------------bookmark_footer-----------)![](../Images/42f16105568d40cff91bfa5e2f217ff4.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Figure 1: Representation of the Text2SQL flow'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As our world is getting more global and dynamic, businesses are more and more
+    dependent on data for making informed, objective and timely decisions. In this
+    article, we will see how AI can be used for intuitive conversational data access.
+    We will use the mental model shown in Figure 2 to illustrate the implementation
+    of Text2SQL systems (cf. [**Building AI products with a holistic mental model**](https://medium.com/towards-data-science/building-ai-products-with-a-holistic-mental-model-33f8729e3ad9)for
+    an introduction to the mental model). After considering the market opportunities
+    and the business value, we will explain the additional “machinery” in terms of
+    data, LLM fine-tuning, and UX design that needs to be set up to make data widely
+    accessible throughout the organization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b86867e84a6eb440d24cc1e28c5a903.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Mental model of an AI system'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Opportunity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As of now, unleashing the full potential of organisational data is often a
+    privilege of a handful of data scientists and analysts. Most employees don’t master
+    the conventional data science toolkit (SQL, Python, R etc.). To access the desired
+    data, they go via an additional layer where analysts or BI teams “translate” the
+    prose of business questions into the language of data. The potential for friction
+    and inefficiency on this journey is high — for example, the data might be delivered
+    with delays or even when the question has already become obsolete. Information
+    might get lost along the way when the requirements are not accurately translated
+    into analytical queries. Besides, generating high-quality insights requires an
+    iterative approach which is discouraged with every additional step in the loop.
+    On the other side, these ad-hoc interactions create disruption for expensive data
+    talent and distract them from more strategic data work, as described in these
+    “confessions” of a data scientist:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I was at Square and the team was smaller we had a dreaded “analytics on-call”
+    rotation. It was strictly rotated on a weekly basis, and if it was your turn up
+    you knew you would get very little “real” work done that week and spend most of
+    your time fielding ad-hoc questions from the various product and operations teams
+    at the company (SQL monkeying, we called it). There was cutthroat competition
+    for manager roles on the analytics team and I think this was entirely the result
+    of managers being exempted from this rotation — no status prize could rival the
+    carrot of not doing on-call work.[1]
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 2\. Value
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Wouldn’t it be cool to talk directly to your data instead of having to go through
+    multiple rounds of interaction with your data staff? This vision is embraced by
+    conversational interfaces which allow humans to interact with data using language,
+    our most intuitive and universal channel of communication. After parsing a question,
+    an algorithm encodes it into a structured logical form in the query language of
+    choice, such as SQL. Thus, non-technical users can chat with their data and quickly
+    get their hands on specific, relevant and timely information, without making the
+    detour via a BI team. The three main benefits are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Business users** can access organisational data in a direct and timely way.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This relieves **data scientists and analysts** from the burden of ad-hoc requests
+    from business users and allows them to focus on advanced data challenges.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **business** can leverage its data in a more fluid and strategic way, finally
+    turning it into a solid basis for decision making.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Now, what are the product scenarios in which you might consider Text2SQL? The
+    three main settings are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You are offering a **scalable data/BI product** and want to enable more users
+    to access their data in a non-technical way, thus growing both the usage and the
+    user base. As an example, ServiceNow has [integrated data queries into a larger
+    conversational offering](https://www.servicenow.com/products/conversational-ai.html),
+    and [Atlan](https://atlan.com/) has recently [announced natural-language data
+    exploration](https://atlan.com/ai/).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You are looking to build something in the data/AI space to democratise data
+    access in companies, in which case you could potentially consider an **MVP with
+    Text2SQL at the core**. Providers like [AI2SQL](https://www.ai2sql.io/) and [Text2sql.ai](https://www.text2sql.ai/)
+    are already making an entrance in this space.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You are working on a **custom BI system** and want to maximise and democratise
+    its use in the individual company.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As we will see in the following sections, Text2SQL requires a non-trivial upfront
+    setup. To estimate the ROI, consider the nature of the decisions that are to be
+    supported as well as the available data. Text2SQL can be an absolute win in dynamic
+    environments where data is changing quickly and is actively and frequently used
+    in decision making, such as investing, marketing, manufacturing and the energy
+    industry. In these environments, traditional tools for knowledge management are
+    too static, and more fluent ways to access data and information help companies
+    generate a competitive advantage. In terms of the data, Text2SQL provides the
+    biggest value with a database that is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Large and growing**, so that Text2SQL can unfold its value over time as more
+    and more of the data is leveraged.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**High-quality**, so that the Text2SQL algorithm does not have to deal with
+    excessive noise (inconsistencies, empty values etc.) in the data. In general,
+    data that is automatically generated by applications has a higher quality and
+    consistency than data that is created and maintained by humans.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Semantically mature** as opposed to raw, so that humans can query the data
+    based on central concepts, relationships and metrics that exist in their mental
+    model. Note that semantic maturity can be achieved by an additional transformation
+    step which conforms raw data into a conceptual structure (cf. section “Enriching
+    the prompt with database information”).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3\. Data**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Any machine learning endeavour starts with data, so we will start by clarifying
+    the structure of the input and target data that are used during training and prediction.
+    Throughout the article, we will use the Text2SQL flow from Figure 1 as our running
+    representation, and highlight the currently considered components and relationships
+    in yellow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d4bd7ba190333441278d248f480f256.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: In this Text2SQL representation, data-related elements and relations
+    are marked in yellow.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. 1 Format and structure of the data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Typically, a raw Text2SQL input-output pair consists of a natural-language
+    question and the corresponding SQL query, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Question**: “*List the name and number of followers for each user.”*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**SQL query**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the training data space, the mapping between questions and SQL queries is
+    many-to-many:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A SQL query can be mapped to many different questions in natural language;
+    for example, the above query semantics can be expressed by: “*show me the names
+    and numbers of followers per user*”, “*how many followers are there for each user?*”
+    etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SQL syntax is highly versatile, and almost every question can be represented
+    in SQL in multiple ways. The simplest example are different orderings of WHERE
+    clauses. On a more advanced stance, everyone who has done SQL query optimisation
+    will know that many roads lead to the same result, and semantically equivalent
+    queries might have completely different syntax.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The manual collection of training data for Text2SQL is particularly tedious.
+    It not only requires SQL mastery on the part of the annotator, but also more time
+    per example than more general linguistic tasks such as sentiment analysis and
+    text classification. To ensure a sufficient quantity of training examples, data
+    augmentation can be used — for example, LLMs can be used to generate paraphrases
+    for the same question. [3] provides a more complete survey of Text2SQL data augmentation
+    techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1.2 Enriching the prompt with database information**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Text2SQL is an algorithm at the interface between unstructured and structured
+    data. For optimal performance, both types of data need to be present during training
+    and prediction. Specifically, the algorithm has to know about the queried database
+    and be able to formulate the query in such a way that it can be executed against
+    the database. This knowledge can encompass:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Columns and tables of the database
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Relations between tables (foreign keys)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Database content
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There are two options for incorporating database knowledge: on the one hand,
+    the training data can be restricted to examples written for the specific database,
+    in which case the schema is learned directly from the SQL query and its mapping
+    to the question. This single-database setting allows to optimise the algorithm
+    for an individual database and/or company. However, it kills off any ambitions
+    for scalability, since the model needs to be fine-tuned for every single customer
+    or database. Alternatively, in a multi-database setting, the database schema can
+    be provided as part of the input, allowing the algorithm to “generalise” to new,
+    unseen database schemas. While you will absolutely need to go for this approach
+    if you want to use Text2SQL on many different databases, keep in mind that it
+    requires considerable prompt engineering effort. For any reasonable business database,
+    including the full information in the prompt will be extremely inefficient and
+    most probably impossible due to prompt length limitations. Thus, the function
+    responsible for prompt formulation should be smart enough to select a subset of
+    database information which is most “useful” for a given question, and to do this
+    for potentially unseen databases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, database structure plays a crucial role. In those scenarios where you
+    have enough control over the database, you can make your model’s life easier by
+    letting it learn from an intuitive structure. As a rule of thumb, the more your
+    database reflects how business users talk about the business, the better and faster
+    your model can learn from it. Thus, consider applying additional transformations
+    to the data, such as assembling normalised or otherwise dispersed data into wide
+    tables or a data vault, naming tables and columns in an explicit and unambiguous
+    way etc. All business knowledge that you can encode up-front will reduce the burden
+    of probabilistic learning on your model and help you achieve better results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Intelligence**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/64cd42647130f82bb6039733da49c1d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: In this Text2SQL representation, algorithm-related elements and relations
+    are marked in yellow.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Text2SQL is a type of **semantic parsing** — the mapping of texts to logical
+    representations. Thus, the system has not only to “learn” natural language, but
+    also the target representation — in our case, SQL. Specifically, it needs to acquire
+    the following bits of knowledge:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQL syntax and semantics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Database structure
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Natural Language Understanding (NLU)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mapping between natural language and SQL queries (syntactic, lexical and semantic)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**2.1 Solving linguistic variability in the input**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At the input, the main challenge of Text2SQL lies in the flexibility of language:
+    as described in the section Format and structure of the data, the same question
+    can be paraphrased in many different ways. Additionally, in the real-life conversational
+    context, we have to deal with a number of issues such as spelling and grammar
+    mistakes, incomplete and ambiguous inputs, multilingual inputs etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2afbd70985674d6f0b3a22562961e97d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: The Text2SQL algorithm has to deal with many different variants of
+    a question'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLMs such as the GPT models, T5, and CodeX are coming closer and closer to solving
+    this challenge. Learning from huge quantities of diverse text, they learn to deal
+    with a large number of linguistic patterns and irregularities. In the end, they
+    become able to generalise over questions which are semantically similar despite
+    having different surface forms. LLMs can be applied out-of-the-box (zero-shot)
+    or after fine-tuning. The former, while convenient, leads to lower accuracy. The
+    latter requires more skill and work, but can significantly increase accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In terms of accuracy, as expected, the best-performing models are the latest
+    models of the GPT family including the CodeX models. In April 2023, GPT-4 led
+    to a dramatic accuracy increase of more than 5% over the previous state-of-the-art
+    and achieved an accuracy of 85.3% (оn the metric “execution with values”).[4]
+    In the open-source camp, initial attempts at solving the Text2SQL puzzle were
+    focussed on auto-encoding models such as BERT, which excel at NLU tasks.[5, 6,
+    7] However, amidst the hype around generative AI, recent approaches focus on autoregressive
+    models such as the T5 model. T5 is pre-trained using multi-task learning and thus
+    easily adapts to new linguistic tasks, incl. different variants of semantic parsing.
+    However, autoregressive models have an intrinsic flaw when it comes to semantic
+    parsing tasks: they have an unconstrained output space and no semantic guardrails
+    that would constrain their output, which means they can get stunningly creative
+    in their behaviour. While this is amazing stuff for generating free-form content,
+    it is a nuisance for tasks like Text2SQL where we expect a constrained, well-structured
+    target output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.2 Query validation and improvement**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To constrain the LLM output, we can introduce additional mechanisms for validating
+    and improving the query. This can be implemented as an extra validation step,
+    as proposed in the PICARD system.[8] PICARD uses a SQL parser that can verify
+    whether a partial SQL query can lead to a valid SQL query after completion. At
+    each generation step by the LLM, tokens that would invalidate the query are rejected,
+    and the highest-probability valid tokens are kept. Being deterministic, this approach
+    ensures 100% SQL validity as long as the parser observes correct SQL rules. It
+    also decouples the query validation from the generation, thus allowing to maintain
+    both components independently of one another and to upgrade and modify the LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another approach is to incorporate structural and SQL knowledge directly into
+    the LLM. For example, Graphix [9] uses graph-aware layers to inject structured
+    SQL knowledge into the T5 model. Due to the probabilistic nature of this approach,
+    it biases the system towards correct queries, but doesn’t provide a guarantee
+    for success.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the LLM can be used as a multi-step agent that can autonomously check
+    and improve the query.[10] Using multiple steps in a chain-of-thought prompt,
+    the agent can be tasked to reflect on the correctness of its own queries and improve
+    any flaws. If the validated query can still not be executed, the SQL exception
+    traceback can be passed to the agent as an additional feedback for improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beyond these automated methods which happen in the backend, it is also possible
+    to involve the user during the query checking process. We will describe this in
+    more detail in the section on User experience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2.3 Evaluation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To evaluate our Text2SQL algorithm, we need to generate a test (validation)
+    dataset, run our algorithm on it and apply relevant evaluation metrics on the
+    result. A naive dataset split into training, development and validation data would
+    be based on question-query pairs and lead to suboptimal results. Validation queries
+    might be revealed to the model during training and lead to an overly optimistic
+    view on its generalisation skills. A **query-based split**, where the dataset
+    is split in such a way that no query appears both during training and during validation,
+    provides more truthful results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In terms of evaluation metrics, what we care about in Text2SQL is not to generate
+    queries that are completely identical to the gold standard. This **“exact string
+    match”** method is too strict and will generate many false negatives, since different
+    SQL queries can lead to the same returned dataset. Instead, we want to achieve
+    high **semantic accuracy** and evaluate whether the predicted and the “gold standard”
+    queries would always return the same datasets. There are three evaluation metrics
+    that approximate this goal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Exact-set match accuracy**: the generated and target SQL queries are split
+    into their constituents, and the resulting sets are compared for identity.[11]
+    The shortcoming here is that it only accounts for order variations in the SQL
+    query, but not for more pronounced syntactic differences between semantically
+    equivalent queries.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Execution accuracy**: the datasets resulting from the generated and target
+    SQL queries are compared for identity. With good luck, queries with different
+    semantics can still pass this test on a specific database instance. For example,
+    assuming a database where all users are aged over 30, the following two queries
+    would return identical results despite having different semantics:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: select * from user
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: select * from user where age > 30
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Test-suite accuracy**: test-suite accuracy is a more advanced and less permissive
+    version of execution accuracy. For each query, a set (”test suite”) of databases
+    is generated that are highly differentiated with respect to the variables, conditions
+    and values in the query. Then, execution accuracy is tested on each of these databases.
+    While requiring additional effort to engineer the test-suite generation, this
+    metric also significantly reduces the risk of false positives in the evaluation[.](https://aclanthology.org/2020.emnlp-main.29.pdf)[12]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3\. User experience**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/027e84c09a68f36f9636e67d7ca59cdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: In this Text2SQL representation, UX-related elements and relations
+    are marked in yellow.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The current state-of-the-art of Text2SQL doesn’t allow a completely seamless
+    integration into production systems — instead, it is necessary to actively manage
+    the expectations and the behaviour of the user, who should always be aware that
+    she is interacting with an AI system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.1 Failure management**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Text2SQL can fail in two modes, which need to be caught in different ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**SQL errors**: the generated query is not valid — either the SQL is invalid,
+    or it cannot be executed against the specific database due to lexical or semantic
+    flaws. In this case, no result can be returned to the user.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Semantic errors**: the generated query is valid but it does not reflect the
+    semantics of the question, thus leading to a wrong returned dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The second mode is particularly tricky since the risk of “silent failures” —
+    errors that go undetected by the user — is high. The prototypical user will have
+    neither the time nor the technical skill to verify the correctness of the query
+    and/or the resulting data. When data is used for decision making in the real world,
+    this kind of failure can have devastating consequences. To avoid this, it is critical
+    to educate users and establish **guardrails on a business level** that limit the
+    potential impact, such as additional data checks for decisions with a higher impact.
+    On the other hand, we can also use the user interface to manage the human-machine
+    interaction and help the user detect and improve problematic requests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.2 Human-machine interaction**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Users can get involved with your AI system with different degrees of intensity.
+    More interaction per request can lead to better results, but it also slows down
+    the fluidity of the user experience. Besides the potential negative impact of
+    erroneous queries and results, also consider how motivated your users will be
+    to provide back-and-forth feedback in order to get more accurate results and also
+    help improve the product in the long term.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The easiest and least engaging way is to work with confidence scores. While
+    the naive calculation of confidence as an average of the probabilities of the
+    generated tokens is overly simplistic, more advanced methods like verbalised feedback
+    can be used. [13] The confidence can be displayed in the interface and highlighted
+    with an explicit alert in case it is dangerously low. This way, the responsibility
+    of an appropriate follow-up in the “real world” — be it a rejection, acceptance
+    or an additional check of the data — lands on the shoulders of your user. While
+    this is a safe bet for you as a vendor, transferring this work to the user can
+    also reduce the value of your product.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A second possibility is to engage the user in a clarification dialogue in the
+    case of low-confidence, ambiguous or otherwise suspicious queries. For example,
+    your system might suggest orthographic or grammar corrections to the input and
+    ask to disambiguate specific words or grammatical structures. It might also allow
+    the user to proactively ask for corrections in the query:[14]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'USER: *Show me John’s tasks in this sprint.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ASSISTANT: *Would you like to see tasks John created, or those he is working
+    on?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'USER: *tasks John created*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ASSISTANT: *Ok, here are the task IDs:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47e1f5220deba265ee2811b790700550.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'USER: *Thanks, I would also like to see more information about the tasks. Please
+    also sort by urgency.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ASSISTANT: *Sure, here are the tasks along with short descriptions, assignees
+    and deadlines, sorted by deadline.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7557c8d8f923a271bf886f34a1f170e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finally, to ease the understanding of queries by the user, your system can also
+    provide an explicit textual reformulation of the query and ask the user to either
+    confirm or correct it.[15]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Non-functional requirements**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section, we discuss the specific non-functional requirements for Text2SQL
+    as well as the trade-offs between them. We will focus on the six requirements
+    that seem most important for the task: accuracy, scalability, speed, explainability,
+    privacy and adaptability over time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.1 Accuracy**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For Text2SQL, the requirements on accuracy are high. First, Text2SQL is typically
+    applied in a conversation setting where predictions are made one-by-one. Thus,
+    the “Law of large numbers” which typically helps balance off the error in batched
+    predictions, does not help. Second, syntactic and lexical validity is a “hard”
+    condition: the model has to generate a well-formed SQL query, potentially with
+    complex syntax and semantics, otherwise the request cannot be executed against
+    the database. And if this goes well and the query can be executed, it can still
+    contain semantic errors and lead to a wrong returned dataset (cf. section 3.1
+    Failure management).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.2 Scalability**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main scalability considerations are whether you want to apply Text2SQL on
+    one or multiple databases — and in the latter case, whether the set of databases
+    is known and closed. If yes, you will have an easier time since you can include
+    the information about these databases during training. However, in a scenario
+    of a scalable product — be it a standalone Text2SQL application or an integration
+    into an existing data product — your algorithm has to cope with any new database
+    schema on the fly. This scenario also doesn’t give you the opportunity to transform
+    the database structure to make it more intuitive for learning (link!). All of
+    this leads to a heavy trade-off with accuracy, which might also explain why current
+    Text2SQL providers that offer ad-hoc querying of new databases have not yet achieve
+    a significant market penetration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.3 Speed**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since Text2SQL requests will typically be processed online in a conversation,
+    the speed aspect is important for user satisfaction. On the positive side, users
+    are often aware of the fact that data requests can take a certain time and show
+    the required patience. However, this goodwill can be undermined by the chat setting,
+    where users subconsciously expect human-like conversation speed. Brute-force optimisation
+    methods like reducing the size of the model might have an unacceptable impact
+    on accuracy, so consider inference optimisation to satisfy this expectation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.4 Explainability and transparency**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the ideal case, the user can follow how the query was generated from the
+    text, see the mapping between specific words or expressions in the question and
+    the SQL query etc. This allows to verify the query and make any adjustments when
+    interacting with the system. Besides, the system could also provide an explicit
+    textual reformulation of the query and ask the user to either confirm or correct
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.5 Privacy**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Text2SQL function can be isolated from query execution, so the returned
+    database information can be kept invisible. However, the critical question is
+    how much information about the database is included in the prompt. The three options
+    (by decreasing privacy level) are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: No information about the database
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Database schema
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Database content
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Privacy trades off with accuracy — the less constrained you are in including
+    useful information in the prompt, the better the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4.6 Adaptability over time**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To use Text2SQL in a durable way, you need to adapt to data drift, i. e. the
+    changing distribution of the data to which the model is applied. For example,
+    let’s assume that the data used for initial fine-tuning reflects the simple querying
+    behaviour of users when they start using the BI system. As time passes, information
+    needs of users become more sophisticated and require more complex queries, which
+    overwhelm your naive model. Besides, the goals or the strategy of a company change
+    might also drift and direct the information needs towards other areas of the database.
+    Finally, a Text2SQL-specific challenge is database drift. As the company database
+    is extended, new, unseen columns and tables make their way into the prompt. While
+    Text2SQL algorithms that are designed for multi-database application can handle
+    this issue well, it can significantly impact the accuracy of a single-database
+    model. All of these issues are best solved with a fine-tuning dataset that reflects
+    the current, real-world behaviour of users. Thus, it is crucial to log user questions
+    and results, as well as any associated feedback that can be collected from usage.
+    Additionally, semantic clustering algorithms, for example using embeddings or
+    topic modelling, can be applied to detect underlying long-term changes in user
+    behaviour and use these as an additional source of information for perfecting
+    your fine-tuning dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s summarise the key points of the article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text2SQL allows to implement intuitive and democratic data access in a business,
+    thus maximising the value of the available data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Text2SQL data consist of questions at the input, and SQL queries at the output.
+    The mapping between questions and SQL queries is many-to-many.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is important to provide information about the database as part of the prompt.
+    Additionally, the database structure can be optimised to make it easier for the
+    algorithm to learn and understand it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: On the input, the main challenge is the linguistic variability of natural-language
+    questions, which can be approached using LLMs that were pre-trained on a wide
+    variety of different text styles
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The output of Text2SQL should be a valid SQL query. This constraint can be incorporated
+    by “injecting” SQL knowledge into the algorithm; alternatively, using an iterative
+    approach, the query can be checked and improved in multiple steps.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Due to the potentially high impact of “silent failures” which return wrong data
+    for decision-making, failure management is a primary concern in the user interface.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In an “augmented” fashion, users can be actively involved in iterative validation
+    and improvement of SQL queries. While this makes the application less fluid, it
+    also reduces failure rates, allows users to explore data in a more flexible way
+    and creates valuable signals for further learning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The major non-functional requirements to consider are accuracy, scalability,
+    speed, explainability, privacy and adaptability over time. The main trade-offs
+    consist between accuracy on the one hand, and scalability, speed and privacy on
+    the other hand.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Ken Van Haren. 2023\. [Replacing a SQL analyst with 26 recursive GPT prompts](https://www.patterns.app/blog/2023/01/18/crunchbot-sql-analyst-gpt/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Nitarshan Rajkumar et al. 2022\. [Evaluating the Text-to-SQL Capabilities
+    of Large Language Models](https://arxiv.org/abs/2204.00498)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Naihao Deng et al. 2023\. [Recent Advances in Text-to-SQL: A Survey of
+    What We Have and What We Expect](https://aclanthology.org/2022.coling-1.190.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Mohammadreza Pourreza et al. 2023\. [DIN-SQL: Decomposed In-Context Learning
+    of Text-to-SQL with Self-Correction](https://arxiv.org/abs/2304.11015)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Victor Zhong et al. 2021\. [Grounded Adaptation for Zero-shot Executable
+    Semantic Parsing](https://arxiv.org/abs/2009.07396)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Xi Victoria Lin et al. 2020\. [Bridging Textual and Tabular Data for Cross-Domain
+    Text-to-SQL Semantic Parsing](https://aclanthology.org/2020.findings-emnlp.438/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Tong Guo et al. 2019\. [Content Enhanced BERT-based Text-to-SQL Generation](https://arxiv.org/pdf/2012.12627.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Torsten Scholak et al. 2021\. [PICARD: Parsing Incrementally for Constrained
+    Auto-Regressive Decoding from Language Models](https://arxiv.org/abs/2109.05093)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Jinyang Li et al. 2023\. [Graphix-T5: Mixing Pre-Trained Transformers with
+    Graph-Aware Layers for Text-to-SQL Parsing](https://arxiv.org/abs/2301.07507)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] LangChain. 2023\. [LLMs and SQL](https://blog.langchain.dev/llms-and-sql/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Tao Yu et al. 2018\. [Spider: A Large-Scale Human-Labeled Dataset for
+    Complex and Cross-Domain Semantic Parsing and Text-to-SQL Task](https://aclanthology.org/D18-1425.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] Ruiqi Zhong et al. 2020\. [Semantic Evaluation for Text-to-SQL with Distilled
+    Test Suites](https://aclanthology.org/2020.emnlp-main.29.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] Katherine Tian et al. 2023\. [Just Ask for Calibration: Strategies for
+    Eliciting Calibrated Confidence Scores from Language Models Fine-Tuned with Human
+    Feedback](https://arxiv.org/pdf/2305.14975.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] Braden Hancock et al. 2019\. [Learning from Dialogue after Deployment:
+    Feed Yourself, Chatbot!](https://arxiv.org/abs/1901.05415)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] Ahmed Elgohary et al. 2020\. [Speak to your Parser: Interactive Text-to-SQL
+    with Natural Language Feedback](https://arxiv.org/pdf/2005.02539.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[16] Janna Lipenkova. 2022\. [Talk to me! Text2SQL conversations with your
+    company’s data](https://www.youtube.com/watch?v=GCU_1thWAmc), talk at New York
+    Natural Language Processing meetup.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

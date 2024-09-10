@@ -1,0 +1,564 @@
+- en: Behind the Scenes of a Deep Learning Neural Network for Image Classification
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/behind-the-scenes-of-a-deep-learning-neural-network-for-image-classification-5222aee3231d?source=collection_archive---------5-----------------------#2023-02-10](https://towardsdatascience.com/behind-the-scenes-of-a-deep-learning-neural-network-for-image-classification-5222aee3231d?source=collection_archive---------5-----------------------#2023-02-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Is it magic or linear algebra and calculus?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://brunocaraffa.medium.com/?source=post_page-----5222aee3231d--------------------------------)[![Bruno
+    Caraffa](../Images/414f88c6974dba79ec9851c051eff49f.png)](https://brunocaraffa.medium.com/?source=post_page-----5222aee3231d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5222aee3231d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5222aee3231d--------------------------------)
+    [Bruno Caraffa](https://brunocaraffa.medium.com/?source=post_page-----5222aee3231d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F657289ec5532&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbehind-the-scenes-of-a-deep-learning-neural-network-for-image-classification-5222aee3231d&user=Bruno+Caraffa&userId=657289ec5532&source=post_page-657289ec5532----5222aee3231d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5222aee3231d--------------------------------)
+    ·16 min read·Feb 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5222aee3231d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbehind-the-scenes-of-a-deep-learning-neural-network-for-image-classification-5222aee3231d&user=Bruno+Caraffa&userId=657289ec5532&source=-----5222aee3231d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5222aee3231d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbehind-the-scenes-of-a-deep-learning-neural-network-for-image-classification-5222aee3231d&source=-----5222aee3231d---------------------bookmark_footer-----------)![](../Images/e6ae84b0e2b26d22873a0927970063ac.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Pietro Jeng](https://unsplash.com/@pietrozj?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Deep Learning Neural Networks are getting a lot of attention lately and for
+    a good reason. It’s the technology behind speech recognition, face detection,
+    voice control, autonomous cars, brain tumor detection, and that kind of technologies
+    that 20 years ago were not part of our lives. As complex as those networks seem
+    they are learning just as humans do: by example. The networks are trained using
+    large sets of data and optimized through numerous layers and multiple iterations
+    to achieve optimal results. Over the last 20 years exponential increases in computational
+    power and data volume created the perfect storm for deep learning neural networks.
+    And even though we stumble at flashy terms like *machine learning* and *artificial
+    intelligence*, it’s just linear algebra and calculus combined with computation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Frameworks such as Keras, PyTorch, and TensorFlow facilitate the arduous building,
+    training, validating, and deploying of custom deep networks. They are the obvious
+    go-to choice when creating deep learning applications in real life. Nevertheless,
+    sometimes it’s essential to step back to move forward and I mean by really understanding
+    what is happening behind the scenes of the framework. In this article, we’ll do
+    that by creating a network using only NumPy and applying it to an image classification
+    problem. You might get lost somewhere during the calculations, especially in the
+    backpropagation where the calculus kicks in, but don’t worry. The intuition about
+    the process is more important than the calculations as the frameworks take care
+    of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we will build an image classification (cat or no cat) neural
+    network which will be trained with 1.652 images from two sets: 852 cat images
+    from the [Dogs & Cats Images Dataset](https://www.kaggle.com/datasets/chetankv/dogs-cats-images)
+    and 800 random images from the [Unsplash Random Images Collection](https://www.kaggle.com/datasets/lprdosmil/unsplash-random-images-collection).
+    First of all, the images need to be converted to arrays and we’ll do that by reducing
+    the original dimensions to 128x128 pixels to speed up computation since if we
+    keep the original shapes it will take too long to train the model. All those 128x128
+    images have three layers of colors (red, green, and blue) that when mixed reach
+    the original color of the image. Each of the 128x128 pixels on every image has
+    a range of red, green, and blue values going from 0 to 255 and those are the values
+    in our image vectors. Therefore, in our computations, we will deal with 128x128x3
+    vectors of 1.652 images.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To run this vector through the network it is necessary to reshape it by stacking
+    the three layers of colors into a single array as the image below displays. Then
+    we’ll get a (49.152,1.652) vector that will be split by using 1.323 of the image
+    vectors to train the model and 331 to test it by predicting the image classification
+    (cat or no cat) using the trained model. After comparing those predictions with
+    the true classification label of the image it will be possible to estimate the
+    model’s accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e65a038ee29aef694bf405c31072b111.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 1 — The process of transforming images into vectors. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, with the training vector explained, it’s time to talk about the architecture
+    of the network, displayed in Image 2\. As there are 49.152 values in the training
+    vector the input layer of the model must have the same number of nodes (or neurons).
+    Then, there are three hidden layers until the output layer, which will be the
+    probability of a cat in that picture. In real-life models usually, there are much
+    more than 3 hidden layers as the networks need to be deeper to perform well in
+    a Big Data context, still, in this article, only three hidden layers will be used
+    because they are good enough for a simple classification model. However, despite
+    this architecture having only 4 layers (the output layer doesn’t count), the code
+    is applicable to create deeper neural networks by using the dimensions of the
+    layers as a parameter to the training function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/693e936138bdde413259975ac96f9d50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 2 — The architecture of the network. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that the image vectors and network architecture have been explained, the
+    optimization algorithm is described in Image 3: T[he Gradient Descent](/gradient-descent-algorithm-a-deep-dive-cf04e8115f21).
+    And again, don’t worry if you don’t get all of it right away because each of the
+    steps will be detailed later on in the coding part of the article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e617ce11b1f56a7bfdb200965181c87b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 3 — The training process. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we initiate the parameters of the network. Those parameters are weights
+    (***w***) and biases (***b)*** to each of the connections of the nodes displayed
+    in Image 2\. During the code, it will be easier to understand how each of the
+    weight and biases parameters work and how they are initialized. Later, with those
+    parameters initialized it is time to run the forward propagation block and finally
+    apply a sigmoid function in our last activation to obtain the probability prediction.
+    In our case, it’s the probability of a cat being in that picture. Later we compare
+    our prediction with the true label (cat or no cat) of the image through the cross-entropy
+    cost, a widely used loss function to optimize classification models. Finally,
+    with the cost calculated, we run it back through the backpropagation module to
+    calculate its gradient with respect to the parameters ***w*** and ***b***. With
+    the gradients of the loss function with respect to ***w*** and ***b*** in hands,
+    is possible to update the parameters by summing the respective gradients as they
+    point in the direction of the ***w*** and ***b*** values that minimize the loss
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the goal is to minimize the loss function this loop should run through
+    a predefined number of iterations to take small steps toward the minimum value
+    of the loss function. At some point, the parameters will just stop changing because
+    the gradients will tend to zero as the minimum is near.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Load the data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, the libraries need to be loaded. Only Numpy, Pandas, and OS will be necessary
+    other than the *keras.preprocessing.image,* to convert the images to vectors,
+    and *sklearn.model_selection* to split the image vector into train and test vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data must be loaded from the two folders: cats and random images. This
+    can be done by getting all the filenames and building the path to each file. Then
+    it’s just consolidating all the file paths in a data frame and creating a conditional
+    column “*is_cat*” with values 1 if that path is in the cat folder or 0 if not.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the paths dataset in hand, it is time to build our training and testing
+    vectors by splitting the images with 80% dedicated to training and 20% to testing.
+    Y represents the true labels of the features while X represents the RGB values
+    of the images, so X is defined as the column in the data frame with the file paths
+    to the images and then they are loaded using the *load_img* function with target_size
+    set to 128x128 pixels in order et o enable quicker computations. At last, the
+    images are converted to arrays using the *img_to_array* function. Those are the
+    shapes of the X_train and X_test vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07c0cfed985d85db99caca250bad438c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 4 — Shapes of X_train and X_test. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Initialize the parameters**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since the linear function is `z = w*x + b` and the network has 4 layers, the
+    parameters vectors to be initialized are w1, w2, w3, w4, b1, b2, b3, and b4\.
+    In the code, this is done by looping over the length of the layer dimensions list,
+    which will be defined later, but is a hard-coded list with the number of neurons
+    in each of the layers in the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The parameters ***w*** and ***b*** must have different initializations: ***w***
+    must be initialized to a random small numbers matrix and ***b*** to a zeros matrix.
+    This happens because if we initialized the weights to zero the derivative of the
+    weights wrt (with respect to) loss function would all be the same, thus the values
+    in subsequent iterations would always be the same and the hidden layers would
+    all be symmetric causing the neurons to learn only the same few features. Therefore,
+    the weights are initialized to random numbers to break this symmetry and allow
+    the neurons to learn different features. It is important to note that the bias
+    can be initialized to zeros because the symmetry is already broken by the weights
+    and the values in the neurons will all be different.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, to understand the shapes defined on the initialization of the parameter
+    vectors one must know that the weights take part in matrix multiplications while
+    the bias in matrix sums (remember `z1 = w1*x + b1`?). Matrix addition can be done
+    with arrays of different sizes, because of [Python broadcasting](https://www.geeksforgeeks.org/python-broadcasting-with-numpy-arrays/).
+    [Matrix multiplication](https://www.cuemath.com/algebra/multiplication-of-matrices/),
+    on the other hand, it’s only possible when the shapes are compatible as in `(m,n)
+    x (n,k) = (m,k)`*,*meaning that the number of columns on the first array needs
+    to match the number of rows on the second array and the final matrix will have
+    the number of rows from array 1 and the number of columns from array 2\. Image
+    5 presents the shapes of all the parameter vectors used on the neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1354a879200959578d8d0aa98b90854.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 5 — Shapes of the parameters vectors. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first layer, as we are multiplying the ***w1*** parameters vectors by
+    the original 49.152 input values, we need the ***w1*** shape to be `(20,49.152)`
+    because `(20,49.152) * (49.152,1.323) = (20,1.323)`, which is the shape of 1st
+    hidden layer activations. The ***b1*** parameter sums to the result of the matrix
+    multiplication (remember`z1 = w1*x + b1)`so we can add a `(20,1)` array to the
+    `(20,1.323)` result of the multiplication, as broadcasting will take care of the
+    mismatching shapes. This logic goes on to the next layers, so we can assume the
+    formula of **w(l)** shape is `(number of nodes layer l+1, number of nodes layer
+    l)`while the formula of **b(l)** shape is`(number of nodes layer l+1, 1)`***.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, an important observation on weight vector initialization. We should
+    divide the random initialization by the square root of the number of nodes on
+    the respective layer we are initializing the w parameters vector. For instance,
+    the input layer has 49.152 nodes so we divide the randomly initialized parameters
+    by √49.152 which is 222, while the 1st hidden layer has 20 nodes so we divide
+    the randomly initialized w2 parameters by √20 which is 4,5\. The initializations
+    must be kept small because that is a [requirement of stochastic gradient descent](https://machinelearningmastery.com/why-initialize-a-neural-network-with-random-weights/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Forward Propagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that the parameter vectors are initialized we can go to the forward propagation
+    which is combining the linear operation `z = w*x + b`followed by a ReLU activation
+    until the last layer when the sigmoid activation substitutes the ReLU and we get
+    a probability as the last activation. The output of the linear operation is usually
+    denominated with the letter “z” and called the pre-activation parameter. Therefore,
+    the pre-activation parameter ***z*** will be an input to the ReLU and sigmoid
+    activations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the input layer, the linear operation on a given layer L will be `z[L]
+    = w[L] * A[L-1] + b[L]`, using the activation value of the previous layer instead
+    of the data input x. The parameters of both linear operation and activations will
+    be stored on a cache list to serve as inputs to calculate the gradients later
+    on the Backpropagation block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So let the linear forward function be defined first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: And now the Sigmoid and ReLU functions must be defined. Image 6 presents a plot
+    of both functions. Sigmoid activations are commonly used in two-class classification
+    problems to predict the probability of a binary variable. This happens because
+    of the S-shaped curve that puts most of the values close to 0 or 1\. Therefore,
+    we will use the sigmoid activation only on the last layer of the network to predict
+    the probability of a cat being in a picture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, the ReLU function will output the input directly if it is
+    positive, otherwise, it will output zero. This is a quite simple operation as
+    it does not have any exponential operations and helps speed up the computations
+    on the inner layers. Furthermore, using ReLU as an activation reduces the likelihood
+    of the [vanishing gradient problem](/the-vanishing-gradient-problem-69bf08b15484),
+    unlike the tanh and sigmoid functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The ReLU activation makes not all the nodes being activated at the same time
+    as the negative values will be turned to zero after the activation. Having some
+    0 values throughout the network is important because it adds a desired property
+    of neural networks: sparsity, meaning that the network has better predictive power
+    and less overfitting. After all, the neurons are processing meaningful parts of
+    information. Like in our example there may be a specific neuron that can identify
+    the cat ears, which obviously should be set to 0 if the image is a human or a
+    landscape.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e6083b622f69814d0d5bf0399e2c94b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 6 — Sigmoid and ReLU functions. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now it is possible to implement the full activation functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, it is time to consolidate the activations in a function according to
+    the planned network architecture. First, the caches list is created, the first
+    activation is set as the data input (the training vector) and since there are
+    two parameters in the network (***w*** and ***b***), the number of layers can
+    be defined as half the length of the parameters dictionary. Then the function
+    loops over all the layers except the last one applying the linear forward function
+    followed by the ReLU activation and wraps up in the last layer of the network
+    with a final linear forward propagation followed by a sigmoid activation to generate
+    the prediction probability which is the last activation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Cross-Entropy Loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A loss function quantifies how well a model is performing on a given data by
+    comparing the predicted probabilities (the result of the last activation) with
+    the real labels of the images. If the network is learning with the data, the cost
+    (the result of the loss function) must drop after every iteration. In classification
+    problems, the [cross-entropy loss function](/cross-entropy-loss-function-f38c4ec8643e)
+    is commonly used for optimization and its formula is presented in Image 6 below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b50c407a1a011f4e5af0a02fd7ceae16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 7— Cost of a neural network. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Defining the cross-entropy cost function with NumPy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Backpropagation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the Backpropagation module, we should move from right to left over the network
+    calculating the gradients of the parameters with respect to the loss function
+    to update them later. Just like in the forward propagation module, the linear
+    backpropagation will be presented first followed by the sigmoid and relu and,
+    finally, a function will consolidate all functions over the architecture of the
+    network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a given layer L, the linear part is `z[L] = w[L] * A[L-1] + b[L]`***.***
+    Suppose you have already calculated the derivative **dZ[L]**, the derivative of
+    cost wrt the linear output. Its formula will be presented soon, but first let’s
+    take a look at the formulas of the derivatives of the **dW[L]**, **dA[L-1]**,
+    and **db[L]** presented in Image 8 below to implement the linear backward function
+    first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c96851125b05385c747407b0b4ae3954.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 8 — Derivatives of the cost wrt weight, bias, and previous activation.
+    Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those formulas are the derivatives of the cross-entropy cost function with respect
+    to the weight, bias, and previous activation **(a[L-1])**. This article will not
+    go through the derivative calculations but they are presented in [this Towards
+    Data Science article](https://medium.com/@pdquant/all-the-backpropagation-derivatives-d5275f727f60).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the linear backward function requires using **dZ** as an input because
+    in the backpropagation the linear part comes after the sigmoid or relu backward.
+    In the next code section **dZ** will be calculated, but to follow the same function
+    implementation logic on the forward propagation the linear backward function will
+    come first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before implementing the gradient computations is necessary to load the parameters
+    ***weight***, ***bias,*** and ***activation*** from the previous layer, all stored
+    in the cache during the linear propagation. The parameter ***m*** comes originally
+    from the cross-entropy cost formula and is the vector’s size of the previous activation,
+    which can be obtained with `previous_activation.shape[1]`. Then it is possible
+    to implement the vectorized computations of the gradient formulas with NumPy.
+    In the bias gradient, the `keepdims=True` and `axis=1` parameters are necessary,
+    since the sum needs to be carried out in the rows of the vector and the original
+    dimensions of the vector must be kept, meaning that **dB** will have the same
+    dimensions as **dZ**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The derivative of the cost wrt to the linear output (**dZ**) formula is presented
+    in Image 9, where **g’(Z[L])** is the derivative of the activation function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/33ad7aa1c483cb148a9b4bde45625ed8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 9— Derivative of the cost wrt the linear output. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, the derivatives of the sigmoid and ReLU functions must be computed first.
+    In the ReLU the derivative is 1 if the value is positive and undefined otherwise,
+    but for computational purposes to obtain **dZ** in the ReLU backward, it is possible
+    to just copy the dactivation vector (since `dactivation * 1 = dactivation`) and
+    set **dZ** to 0 when *z* is negative. For a sigmoid function ***s*** its derivative
+    is `s * (1-s)`***,*** and multiplying this derivative by ***dactivation,*** thevector
+    **dZ** is implemented in the sigmoid backward function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now it is possible to implement the `linear_activation_backward` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the linear and activation caches have to be retrieved from the `cache`list.
+    Then for each activation run first the `activation_backward` function, obtaining
+    **dZ**, and then use it as input, combined with the `linear cache`, to the `linear_backward`
+    function. In the end, the function returns the **dW**, **dB**, and **dprevious_activation**
+    gradients. Remember that this is the inverse order of the forward propagation
+    as we are going from the right to the left on the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now it is time to implement the backward function for the whole network. This
+    function will iterate over all the hidden layers backward starting from the last
+    layer L. Thus, the code needs to compute **dAL**, which is the derivative of the
+    cost function wrt the last activation, to use it as an input for the `linear_activation_backward`
+    function of the sigmoid activation. The formula for dAL is presented in Image
+    10 below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f84009e0489c5d5c61180b68b7a8269.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 10 — Derivative of the cost wrt the last activation. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now everything is set to implement the backpropagation function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the gradient dictionary is created. The number of layers of the network
+    is defined by taking the length of the caches dictionary as each layer had its
+    linear and activation caches stored during the forward propagation block, so the
+    caches list length is the same as the number of layers. Later the function will
+    iterate over those layers’ caches to retrieve the input values for the linear
+    activation backward function. Also, the true labels vector (**Y_train**) is reshaped
+    for the dimensions to match the last activation’s shape since that is a requirement
+    to divide one by the other in the **dAL** computation, the next line of the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ***current_cache*** object is created and set to retrieve the last layer’s
+    linear and activation caches (remember python indexing starts at 0 so the last
+    layer is n_layers — 1). Then, to the last layer, on the `linear_activation_backward`
+    function, the activation cache will be used on the `sigmoid_backward`function
+    while the linear cache will be an input to the `linear_backward` function. Finally,
+    the function gathers the returns of the functions and assigns them to the gradients
+    dictionary. In the case of **dA** as the gradient formula computed is from the
+    previous activation it’s necessary to assign it using n_layers-1 on the indexation.
+    After this code block, the gradients are computed for the last layer of the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following the reverse order of the network, the next step is to reverse loop
+    over the linear->relu layers and calculate their gradients. However, during the
+    reverse loop, the `linear_activation_backward` function must use the ‘relu’ parameter
+    instead of ‘sigmoid’ since the `relu_backward` function needs to be called for
+    the remaining layers. In the end, the function returns the ***dA***, ***dW,***
+    and ***dB*** gradients of all layers calculated and the backpropagation is finished.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Parameters Update
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the gradients calculated it is time to wrap up the gradient descent by
+    updating the original parameters with the gradients to move towards the minimum
+    of the cost function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function does that by looping over the layers and assigning the ***w***
+    and ***b*** parameters their original values subtracted by the learning rate input
+    times the respective gradient. Multiplying by the learning rate is a way to control
+    how much to change the network parameters ***w*** and ***b*** in response to the
+    estimated error each time the model weights are updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Pre-processing the Vectors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, all the functions necessary for the gradient descent optimization are
+    implemented, so the training and testing vectors can be pre-processed and get
+    ready for the training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The layers_dimensions, input for the initialization function has to be hard-coded,
+    and this is done by creating a list with the number of neurons in each layer.
+    Later, the X_train and X_test vectors must be flattened to serve as inputs for
+    the network, as has been presented in Image 1\. This can be done by using the
+    NumPy function reshape. Also, is necessary to divide the X_train and X_test values
+    by 255, since they are in pixels (which range from 0 to 255) and it’s a good practice
+    to normalize the values to range from 0 to 1\. That way the numbers will be smaller
+    and the computations faster. Finally, Y_train and Y_test are converted to arrays
+    and also flattened.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And those are the final dimensions of the training and testing vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6a379c2e4cd10c2358156774071bc35.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 11 — Dimensions of the training and testing vectors. Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8\. Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With all functions in hand, it's just necessary to organize them into a loop
+    to create the training iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first, create an empty list to store the cost output from the `cross_entropy_cost`
+    function and initialize the parameters, as this has to be done once before the
+    iterations since these parameters will be updated by the gradients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now create the loop over the inputted number of iterations calling the implemented
+    functions in the correct order: `l_layer_model_forward`, `cross_entropy_cost`,
+    `l_layer_model_backward`, and `update_parameters`. Finally, a conditional statement
+    to print the cost every 50 iterations or in the last one.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Calling the function for 2500 iterations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cost decreases from 0.69 in the first iteration to 0.09 in the last one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d5b943ab866c84b97c960ef303e24fc6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 12 — Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means the gradient descent functions developed in NumPy have optimized
+    the parameters along the training, which leads to better predictions and hence
+    a lower cost. With the training concluded, we can check how the trained model
+    predicts the testing image labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 9\. Predictions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By using the trained parameters, this function runs the forward propagation
+    for the **X_test** vector to obtain the predictions and then compares them with
+    the true labels vector **Y_test** to return the accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b860b6a1811e08e42634b30f621a23ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image 13— Source: The author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model has reached an accuracy of almost 77% in detecting cats on the testing
+    images. This is a pretty decent accuracy, considering that NumPy alone was used
+    to build the network. Adding new images to the training dataset, increasing the
+    complexity of the network, or using data augmentation techniques to convert the
+    existing training images into new ones would all be possibilities to increase
+    the accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But again, accuracy was not the focus here as we dove deep into the mathematical
+    fundamentals. This is where the value of this article lies. Learning the fundamentals
+    of the networks lays the knowledge base for the fascinating world of deep learning
+    network applications. Hope you keep diving!
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,279 @@
+- en: Random Forests and Missing Values
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/random-forests-and-missing-values-3daaea103db0?source=collection_archive---------7-----------------------#2023-06-21](https://towardsdatascience.com/random-forests-and-missing-values-3daaea103db0?source=collection_archive---------7-----------------------#2023-06-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: There is a very Intriguing Practical Fix
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)[![Jeffrey
+    Näf](../Images/0ce6db85501192cdebeeb910eb81a688.png)](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------)
+    [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----3daaea103db0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----3daaea103db0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3daaea103db0--------------------------------)
+    ·9 min read·Jun 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3daaea103db0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----3daaea103db0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3daaea103db0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frandom-forests-and-missing-values-3daaea103db0&source=-----3daaea103db0---------------------bookmark_footer-----------)![](../Images/2e019db6f9d938ddee0933bf834feb92.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Features of (Distributional) Random Forests. In this article: The ability to
+    deal with missing values. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outside of some excessively cleaned data sets that one finds online, missing
+    values are everywhere. In fact, the more complex and large the dataset, the more
+    likely it is that missing values are present. Missing values are a fascinating
+    field of statistical research, but in practice they are often a nuisance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you deal with a prediction problem where you want to predict a variable *Y*
+    from *p-*dimensional covariates ***X****=(X_1,…,X_p)* and you face missing values
+    in ***X***, there is an interesting solution for tree-based methods. This method
+    is actually rather old but appears to work remarkably well in a wide range of
+    data sets. I am talking about the “missing incorporated in attributes criterion”
+    (MIA; [1]). While there are many good articles about missing values (such as [this
+    one](https://medium.com/@vinitasilaparasetty/guide-to-handling-missing-values-in-data-science-37d62edbfdc1)),
+    this powerful approach seems somewhat underused. In particular, one does not need
+    to impute, delete or predict your missing values in any way, but instead can just
+    run your prediction as if you have fully observed data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will quickly explain how the method itself works, and then present an example
+    with the distributional random forest (DRF) explained [here](https://medium.com/towards-data-science/drf-a-random-forest-for-almost-everything-625fa5c3bcb8).
+    I chose DRF because it is a very general version of Random Forest (in particular,
+    it can also be used to predict a random vector ***Y***) and because I am somewhat
+    biased here. MIA is actually implemented for the generalized random forest ([GRF](https://grf-labs.github.io/grf/)),
+    which covers a wide range of forest implementations. In particular, since the
+    implementation of DRF on [CRAN](https://cran.r-project.org/web/packages/drf/index.html)
+    is based on GRF, after a slight modification, it can use the MIA method as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, be aware that this is a quick fix that (as far as I know) has no
+    theoretical guarantees. Depending on the missingness mechanism, it might heavily
+    bias the analysis. On the other hand, most commonly used methods for dealing with
+    missing values don’t have any theoretical guarantees or are outright known to
+    bias the analysis and, at least empirically, MIA appears to work well and
+  prefs: []
+  type: TYPE_NORMAL
+- en: How it works
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recall that in a RF, splits are build of the form *X_j < S* or *X_j ≥ S*, for
+    a dimension *j=1,…,p*. To find this split valule *S* it optimizes some kind of
+    criterion on the *Y*’s, for example the CART criterion. Thus the observations
+    are successively divided through decision rules that depend on ***X***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08097166f4a96b74715d61318e9e392e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the splitting done in a RF. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The original paper explains it a bit confusingly, but as far as I understand
+    MIA works as follows: Let us consider a sample (*Y_1*, ***X****_1),…, (Y_n,* ***X****_n),
+    with*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***X****_i=(X_i1,…,X_ip)’.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Splitting without missing values is just looking for the value *S* as above
+    and then throwing all *Y_i* with *X_ij < S* in Node 1 and all *Y_i* with *X_ij
+    ≥ S* in Node 2\. Calculating the target criterion such as CART for each value
+    *S*, we can choose the best one. With missing values there are instead 3 options
+    for every candidate split value *S* to consider:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use the usual rule for all observations *i* such that *X_ij* is observed and
+    send *i* to Node 1 if *X_ij* is missing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use the usual rule for all observations i such that *X_ij* is observed and send
+    *i* to Node 2 if *X_ij* is missing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ignore the usual rule and just send i to Node 1 if *X_ij* is missing and to
+    Node 2 if it is observed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Which of these rules to follow is again decided according to the criterion on
+    *Y_i* we use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d95dcadbfd118c2e6d7d8b92323f3beb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of how I understand the MIA procedure. Given observations in the
+    parent node, we are looking for the best split value S. For each split value we
+    consider the 3 options and try until we find the minimum. The sets {} on the left
+    indicate the observations i that get sent to the left or the right. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Small Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It needs to be mentioned at this point that the drf package on [CRAN](https://cran.r-project.org/web/packages/drf/index.html)
+    is not yet updated with the newest methodology. There will be a point in the future
+    where all of this is implemented in one package on CRAN(!) However, for the moment,
+    there are two versions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to use the **fast drf implementation** with missing values (**without**
+    confidence intervals), you can use the “drfown” function attached at the end of
+    this article. This code is adapted from
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[lorismichel/drf: Distributional Random Forests (Cevid et al., 2020) (github.com)](https://github.com/lorismichel/drf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If on the other hand, you want **confidence intervals** with your parameters,
+    use this (slower) code
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[drfinference/drf-foo.R at main · JeffNaef/drfinference (github.com)](https://github.com/JeffNaef/drfinference/blob/main/drf-foo.R)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, drf-foo.R contains all you need in the latter case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will focus on the slower code with confidence intervals, as explained in
+    [this article](https://medium.com/towards-data-science/inference-for-distributional-random-forests-64610bbb3927)
+    and also consider the same example as in said article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that this is a heteroskedastic linear model with *p=2* and with the variance
+    of the error term depending on the *X_1* values. Now we also add missing values
+    to *X_1* in a Missing at Random (MAR) fashion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This means that *X_1* is missing with a probability of 0.3, whenever *X_2* has
+    a value smaller than -0.2\. Thus the probability of *X_1* being missing depends
+    on *X_2*, which is what is referred to as “Missing at Random”. This is already
+    a complex situation and there is information to be gained by looking at the pattern
+    of missing values. That is, the missingness is not “Missing Completely at Random
+    (MCAR)”, because the missingness of *X_1* depends on the value of *X_2\.* This
+    in turn means that the distribution of *X_2* we draw from is different, conditional
+    on whether *X_1* is missing or not. This in particular means that deleting the
+    rows with missing values might severely bias the analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now fix***x*** and estimate the conditional expectation and variance given
+    ***X****=****x,*** exactly as in the [previous article](https://medium.com/towards-data-science/inference-for-distributional-random-forests-64610bbb3927).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We then also fit DRF and predict the weights for the test point ***x*** (which
+    corresponds to predicting the conditional distribution of *Y|****X****=****x***):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Example 1: Conditional Expectation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We first estimate the conditional expectation of *Y|****X****=****x.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remarkably, the values obtained with NAs are very close to the ones from the
+    first analysis without NAs in the [previous article](https://medium.com/towards-data-science/inference-for-distributional-random-forests-64610bbb3927)!
+    This really is quite astounding to me, as this missing mechanism is not easy to
+    deal with. Interestingly, the estimated variance of the estimator also doubles,
+    from around 0.025 without missing values to roughly 0.06 with missing values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The truth is given as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cd5e502fc70db9f959510cdc678eb651.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: so we have a slight error, but the confidence intervals contain the truth, as
+    they should.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result looks similar for a more complex target, like the conditional variance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here the difference in the estimated values is a bit larger. As the truth is
+    given as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8d473ae073c8529a43b43b80c61f949.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: the estimate with NAs is even slightly more accurate (though of course this
+    is likely just randomness). Again the variance estimate of the (variance) estimator
+    increases with missing values, from 0.15 (no missing values) to 0.23.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we discussed MIA, which is an adaptation of the splitting method
+    in Random Forest to deal with missing values. Since it is implemented in GRF and
+    DRF, it can be used broadly and the small example we looked at indicates that
+    it works remarkably well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, I’d like to note again that there is no theoretical guarantee for consistency
+    or for the confidence intervals to make sense, even for a very large number of
+    datapoints. The reason for missing values are numerous and one has to be very
+    careful to not bias one’s analysis through a careless handling of this issue.
+    The MIA method is by no means a well-understood fix for this problem. However,
+    it seems to be a reasonable quick fix for the moment, that appears to be able
+    to make some use of the pattern of missingness in the data. If somebody does/has
+    a more extensive simulation analysis I would be curious about the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***Citations***'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Twala, B. E. T. H., M. C. Jones, and David J. Hand. Good methods for coping
+    with missing data in decision trees. *Pattern Recognition Letters 29*,2008.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,435 @@
+- en: Making Music-Tagging AI Explainable through Source Separation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/making-music-tagging-ai-explainable-through-source-separation-2d9493547a7e?source=collection_archive---------10-----------------------#2023-04-04](https://towardsdatascience.com/making-music-tagging-ai-explainable-through-source-separation-2d9493547a7e?source=collection_archive---------10-----------------------#2023-04-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s open the black box
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@maxhilsdorf?source=post_page-----2d9493547a7e--------------------------------)[![Max
+    Hilsdorf](../Images/01da76c553e43d5ed6b6849bdbfd00da.png)](https://medium.com/@maxhilsdorf?source=post_page-----2d9493547a7e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2d9493547a7e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2d9493547a7e--------------------------------)
+    [Max Hilsdorf](https://medium.com/@maxhilsdorf?source=post_page-----2d9493547a7e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd0c085a74ae8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-music-tagging-ai-explainable-through-source-separation-2d9493547a7e&user=Max+Hilsdorf&userId=d0c085a74ae8&source=post_page-d0c085a74ae8----2d9493547a7e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2d9493547a7e--------------------------------)
+    ·10 min read·Apr 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2d9493547a7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-music-tagging-ai-explainable-through-source-separation-2d9493547a7e&user=Max+Hilsdorf&userId=d0c085a74ae8&source=-----2d9493547a7e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2d9493547a7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmaking-music-tagging-ai-explainable-through-source-separation-2d9493547a7e&source=-----2d9493547a7e---------------------bookmark_footer-----------)![](../Images/7b1d37ae9034fdd2de1ac91d8ea421c3.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Images by [Jadson Thomas](https://www.pexels.com/de-de/foto/mann-der-trommel-spielt-542553/),
+    [Clem Onojeghuo](https://www.pexels.com/de-de/foto/mann-sitzt-auf-gitarrenverstarker-und-spielt-e-gitarre-375893/),
+    and [Dmitry Demidov](https://www.pexels.com/de-de/foto/mann-im-weissen-t-shirt-das-braune-e-gitarre-spielt-3807838/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Why do We Need This?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: AI systems for music tagging have been around for quite a while. Ever since
+    the mid-2010s, music streaming services have been competing for the most innovative
+    music recommendation system using sophisticated tagging AI in the background.
+    Slowly, production music libraries and music labels have caught on to tagging
+    AIs, using it to categorize, filter, and query their huge music databases. Today,
+    even artists are using auto-tagging systems to gain objective insights into their
+    music to find the right audience for it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although widespread, little is known about the inner workings of auto-tagging
+    systems. Because audio data is complex and high-dimensional, deep learning models
+    consistently outperform traditional machine learning approaches on music tagging
+    tasks. The problem with deep learning is well-known: by building more and more
+    complex and capable models, we sacrifice interpretability. Deep learning models
+    are effectively black boxes where we have no idea what is really going on inside.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Goal of this Project
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This project aims to lay out a method to explain the behavior of music-tagging
+    AI systems by breaking down tracks into their instrumental sources (stems) and
+    seeing how the classification changes. This method was inspired by a well-known
+    Explainable AI (XAI) concept called **Shapley Values**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shapley Values are derived from cooperative game theory. Suppose we have different
+    players who can form “coalitions” to achieve a common goal. The goal, then, is
+    to assign each player a value that states how adding them to a coalition tends
+    to improve the outcome, on average — to determine their fair share, in some sense.
+    Now, what does this concept have to do with music tagging and instrument source
+    separation?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Figure 1* helps you to understand the analogy between game theory and a music
+    classifier. If a track is assigned the genre “jazz” by an AI tagging system, we
+    might wonder how much each instrument in the band (drums, guitar, vocals) contributed
+    to this classification. In other words: We want to find out how important each
+    instrument is for the track to sound like “jazz” music.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/59ad3faef8e94daa71fbb48743ddb889.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1**: Illustration of the goal of this project. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Method
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Example Tracks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All example tracks used for this analysis are taken from the [Free Music Archive
+    (FMA)](https://github.com/mdeff/fma), a dataset with thousands of copyright-free
+    music snippets. The first example is a track with multiple distorted guitars,
+    heavy drums, and rather soft male vocals in the beginning. This track will serve
+    as our **“rock” example**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Excerpt from “Look of Wonder” by Aviv Mark (CC BY-NC-ND 3.0 license).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next piece has a walking bass, broomstick drums, laid-back guitar chords,
+    and a dominant piano improvising a solo. This one will serve as our **“jazz” example**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Excerpt from “Jingle Jazz” by Quantum Jazz (CC BY-SA 3.0 license).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The third and last track is a mixture of the “jazz” and “rock” genres, combining
+    a bluesy piano, drums with a slight swing, distorted electric guitars, and more
+    rock-like vocals. This piece will serve as our **“mixed genre” example**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Excerpt from “Vermouth and Baby” by Sakee Sed (CC BY-NC-ND 3.0 license).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Source Separation & Recombination
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this project, I used the [source separation tool by LALAL.AI](https://www.lalal.ai/),
+    a startup company focusing specifically on this technology. While there are many
+    other competing solutions like Spleeter or Vocalremover.org, I decided on LALAL.AI
+    after I was quite impressed by their online demos. Furthermore, they were so kind
+    as to provide me with the resources to perform the source separation jobs required
+    for this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After I had split the three tracks into their instrumental sources, I combined
+    the isolated sources to form all possible source combinations for each track.
+    For the tracks with 4 sources (“rock” and “jazz”), this resulted in 15 new audio
+    files, ranging from solo drum tracks to the full band setup. For the “mixed genre”
+    track, which has 5 instruments, a total of 31 combinations were possible. Each
+    of these combinations is analogous to the “coalition” concept from the Shapley
+    Value game theory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Genre & Mood Tagging
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As for the auto-tagging AI, I made use of another service called [“Cyanite AI”](https://cyanite.ai/).
+    Cyanite is an auto-tagging tool offering tags from different categories like genre,
+    mood, or instruments. Again, while there are other auto-tagging providers like
+    AudioRanger and Songtradr’s musicube, I am familiar with Cyanite’s product, having
+    contributed to it myself as a working student. Cyanite also kindly provided me
+    with the resources to analyze the example tracks for this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The auto tagger outputs a score between 0 and 1 for each tag, indicating how
+    well (1) or badly (0) the tag fits the track. This output value can be interpreted
+    as the degree to which a track is “rock”, “metal”, or even “sad”, or “angry”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computing Shapley Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For each track, I analyzed all source coalitions in terms of the track’s two
+    most prominent genres and moods. To obtain the Shapley value for an instrument,
+    I computed the difference between the genre & mood scores of each coalition where
+    the instrument is absent with the respective coalition where the instrument is
+    present. The average of these differences, i.e. the average contribution of adding
+    this instrument to the mix, is the Shapley value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Rock Track
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Excerpt from “Look of Wonder” by Aviv Mark (CC BY-NC-ND 3.0 license).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “Rock” track was labeled as “rock” and “metal” for genres and as “energetic”
+    and “aggressive” for moods by the auto-tagging tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19b167d6ea1d08a863ef1fdbfeab32f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2**: Stem-Based Shapley Values for the “Rock” Track. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we see?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Figure 2* shows how each instrument source contributed to the respective tag.
+    For example, we can see that the electric guitar, on average, increases the “metal”
+    score by more than 50 percentage points. On the other hand, the “rock” score increases
+    only around 5 percentage points. From that, we can already tell that the electric
+    guitar sounds more like a “metal” guitar than like a “rock” guitar. For the vocals,
+    the opposite is true: The vocals strongly increase the “rock” score while decreasing
+    the “metal” score. This tells us the vocals and the electric guitar in this song
+    contrast each other when it comes to genre. Isn’t that cool?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at moods, we can see that the electric guitar is particularly important
+    for expressing this track's “energetic” and “aggressive” mood. Unlike in the genre
+    graph, all instruments seem to convey the same moods, just to different degrees.
+    Interestingly, the bass instrument does not seem to contribute to the genre or
+    mood scores. This could be because the bass is not very expressive, either because
+    it is rather quiet or because it is played in a way that is not characteristic
+    of a specific genre or mood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we do with it?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Already, the Shapley value approach helps us to understand the output of the
+    auto-tagging system by analyzing which instrument contributes in which way to
+    (or against) a specific genre or mood we are interested in. For example, if we
+    wanted this track to achieve a higher “metal” score, we should consider rerecording
+    the vocals with a different singer or singing style. To make it more “rock” and
+    less “metal”, we could try to turn down the distortion of the electric guitar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jazz Track
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Excerpt from “Jingle Jazz” by Quantum Jazz (CC BY-SA 3.0 license).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the “Jazz” track, the only genre output was “jazz” and the mood outputs
+    were “happy” and “chill”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed2d30ff7c74d11407f73fe4d9fc0c6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3**: Stem-Based Shapley Values for the “Jazz” Track. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we see?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Figure 3** reveals that the piano and drums are what makes this song sound
+    particularly “jazzy”. Although, from a musical point of view, the bass and electric
+    guitar are also played very “jazzy” in the recording, it makes sense to highlight
+    the piano and drums because they are just much more dominant in the mix and seem
+    to carry the “stylistic weight” of the song, to my ears. The drums and piano alone
+    would make a great-sounding jazz track, while the guitar and bass alone would
+    sound odd without any of the other instruments present.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mood analysis reveals that all instruments positively contribute to the
+    same moods. However, the piano and drums increase the “happy” score more than
+    they do the “chill” score. The opposite applies to the electric guitar and bass,
+    which contribute more to the “chill” score of the track. This is interesting because,
+    while the piano and drums are also the most important instruments for the mood
+    tags, the track would still be significantly less “chill” if the electric guitar
+    and bass were not present or played differently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we do with it?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Again, through our analysis, we gain insights into which instruments are most
+    important for the tags assigned to the track. Additionally, we can see that we
+    could now manipulate the mood characteristics of the song by changing the way
+    some instruments are played, recorded, or mixed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixed Track
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Excerpt from “Vermouth and Baby” by Sakee Sed (CC BY-NC-ND 3.0 license).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As expected, this track is labeled as both “rock” and “jazz”. As for moods,
+    “happy” and “chill” were tagged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b253362898315ad14a64f39f30377c98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4**: Stem-Based Shapley Values for the “Jazz” Track. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we see?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The results displayed in *Figure 4* are truly amazing to me! For one, our approach
+    identifies that the piano is very “jazzy” and does not fit the “rock” genre well.
+    On the other hand, the vocals are very untypical for “jazz” and contribute more
+    to a “rock” classification. The other instruments are also contrastive, i.e. they
+    point in either of the two genre directions, but their overall contribution scores
+    are really low.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the first time, we see some contrastive mood score contributions, although
+    small ones. The graph implies that the vocals and drums contribute to the track
+    being more “happy” and less “chill”. Still, most of the weight is carried by the
+    piano, which makes the track both, more “happy” and more “chill”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What can we do with it?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This analysis gives us some great advice on which instruments contributed to
+    the genre and mood outputs of the auto-tagging AI. We can also see that removing
+    or changing the piano part would make the track less “jazzy”, but could, at the
+    same time, decrease its “happiness” and “chillness”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What worked well?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The overall goal of this article, to find an algorithmic solution that offers
+    local explanations for black-box auto-tagging systems using source separation,
+    was reached. The generated explanations offer insights into how each instrument
+    contributed to the genre and mood outputs of the auto-tagging system. Although
+    we looked only at a few selected genres and moods, this approach can be expanded
+    to other tags like decades, brand values, locations, etc. without much additional
+    effort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I can see two use cases where this approach could benefit the work of musicians.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Musicians could use it to check if their music is interpreted by the AI in a
+    way that they deem appropriate. If that is not the case, the Shapley values give
+    recommendations on which instruments could be changed to achieve this goal. This
+    could help musicians achieve better visibility in music catalogs or on streaming
+    services.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Lastly, this approach could be useful for the composition and production process
+    itself. Musicians could analyze their demos and get some AI feedback on which
+    genres, moods, etc. each instrument in the song is characteristic for. This could
+    help the composer to further flesh out their work or to try new stylistic approaches.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What did not work so well?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The main problem with the proposed algorithm is that it is resource-inefficient.
+    An input music track has to be split into all instruments/instrument groups present.
+    This alone takes a long time, as music source separation systems are complex and
+    require lots of computing power. Then, all combinations of instrument sources
+    are generated and thrown separately into an AI auto-tagger. If we have 6 instrument
+    sources in the track, this means that the auto-tagger has to process 31 tracks
+    instead of just one. Once this is done, the Shapley values, at least, can be computed
+    very efficiently. All in all, doing this for a few tracks is feasible, but applying
+    this algorithm at scale may be out-of-scope with the current technology.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another weakness of this approach is that, although source separation tools
+    have been getting much better over the last years, the results are still not perfect.
+    If we automate the algorithm and do not check every single separated source, individually,
+    we will not realize when the separation did not work so well. This could drastically
+    distort the results of the analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What could be the next steps?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The proposed method has a high algorithmic complexity and therefore does not
+    scale well with the number of instruments present in a track. Additionally, it
+    is unclear whether we can sufficiently rely on the quality of current source separation
+    systems. Both of these challenges will be less of a problem as computing resources
+    become cheaper and as the quality of source separation tools increases even further.
+    Still, the algorithmic complexity will remain a problem, unless an efficient approximation
+    is found and developed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code written for this blog post is far from efficient and was solely created
+    for the purpose of this article. And while I do publish the code on [GitHub](https://github.com/MaxHilsdorf/music_stem_shapley_values),
+    I advise against using it as a basis for a real-world implementation of the algorithm.
+    In my estimation, it would be better to construct an efficient pipeline for this
+    multi-stage process from scratch and with an eye for detail. A cloud-based implementation
+    looks promising, as most parts of the process can be sped up drastically by leveraging
+    parallel computing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Zooming out a bit, this approach applies the concept of Shapley values to abstract
+    features of a piece of music, not to the “real” data as the AI sees it (e.g. the
+    values of a spectrogram or a waveform). I am sure that there are other applications
+    for this kind of feature abstraction in other domains where non-tabular data is
+    used to train AI models (e.g. images, text, speech). For instance, we could split
+    a text into its individual sentences and attempt something similar to what we
+    did here. With such an approach, we might be able to tell which sentence in a
+    mail lead to the mail being classified as spam, for example. There must be more
+    like this out there to find and implement!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Thank you so much for reading this!**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'I write a lot about AI and music. Here are some related posts you might like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Natural Audio Data Augmentation Using Spotify’s Pedalboard](/natural-audio-data-augmentation-using-spotifys-pedalboard-212ea59d39ce)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Zero-Shot Song Lyrics Transcription Using Whisper](https://medium.com/mlearning-ai/zero-shot-song-lyrics-transcription-using-whisper-3f360499bcfe)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Music Classification Using a Divide & Conquer CRNN](/music-genre-classification-using-a-divide-conquer-crnn-2ff1cf49859f)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

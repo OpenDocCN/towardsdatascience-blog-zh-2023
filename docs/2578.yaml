@@ -1,0 +1,276 @@
+- en: Using Bayesian Networks to forecast ancillary service volume in hospitals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5?source=collection_archive---------9-----------------------#2023-08-11](https://towardsdatascience.com/using-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5?source=collection_archive---------9-----------------------#2023-08-11)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Python example using diagnostic input variables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)[![Gabe
+    Verzino](../Images/36452afec54430c55594a26247136f6f.png)](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------)
+    [Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----48968a978cb5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb4abbbfdcbbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=post_page-b4abbbfdcbbb----48968a978cb5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----48968a978cb5--------------------------------)
+    ·8 min read·Aug 11, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F48968a978cb5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=-----48968a978cb5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F48968a978cb5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5&source=-----48968a978cb5---------------------bookmark_footer-----------)![](../Images/c3b96d094baa9f9c53fa03129dce892c.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo from Unsplash, by EJ Strat
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Navigating the Complexity: Forecasting Patient Volume in Healthcare'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In healthcare, accurately predicting forthcoming patient volume is not only
+    essential for operational success but also an immensely tough nut to crack. There
+    are so many dependencies to consider — patient severity and special requests,
+    administrative needs, exam room constraints, staff calling out sick, a bad snow
+    storm, etc. To make matters worse, unanticipated scenarios can have cascading
+    impacts on scheduling and resource allocation that contradict even the best Excel
+    projections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From a data perspective, these challenges are really interesting to try and
+    solve because they’re complicated and you can chew on it for awhile. But also,
+    even slight improvements can lead to major wins (e.g., improve patient throughput,
+    lower wait times, happier providers, lower costs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An alternative way to forecast: Bayesian Models'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So what’s an alternative? Well, Epic provides us with lots of data, including
+    actual records of when patients arrived for their appointments. With historical
+    “shows” and “no-shows” known, we can operate in the space of supervised learning,
+    and Bayesian Networks (BNs) offer good probabilistic graphical models to predict
+    future visit probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While most decisions in life can be determined with a single input (e.g., consider
+    “should I bring a raincoat?”, assuming it’s raining outside, then the decision
+    should be “yes”), BNs can easily handle more complex decision-making — ones involving
+    multiple inputs (e.g., it’s humid, the walk is just 3 minutes, your raincoat is
+    on another floor, your friend may have an umbrella, etc.), of varying probability
+    and dependencies. In this article, I’m going to “scratch pad” in python a super
+    simple BN that can output a probability score for a patient arriving in 2 months
+    based on known probabilities for three factors: symptoms, cancer stage, and treatment
+    goal.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Understanding Bayesian Networks:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At its core, a Bayesian Network is a graphical representation of a joint probability
+    distribution using a directed acyclic graph (DAG). Nodes in the DAG represent
+    random variables, and directed edges denote causal relationships or conditional
+    dependencies between these variables. As is true for all data science projects,
+    spending lots of time with the stakeholder in the beginning to properly map the
+    workflows (e.g., variables) involved in decision-making is critical for high-quality
+    predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, I’ll invent a scenario that we meet our Breast oncology partners and they
+    explain that three variables are critical for determining whether a patient will
+    need an appointment in 2 months: patients symptoms, their cancer stage, and current
+    treatment goal. I’m making this up as I type, but let’s go with it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(In reality there will be dozens of factors that influence future patient
+    volumes, some of singular or multiple dependencies, others completely independent
+    but still influencing).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e93fd7c2e5bca03f13e65dcb8a6546ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now, let’s say we agree the workflow looks like the above: Stage depends on
+    their symptom, but treatment type is independent of those and also influences
+    the appointment occurring in 2 months.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on this, we would the fetch data for these variables from our data source
+    (for us, Epic), which again, would contain *known* values for our score node (Appointment_2months),
+    labeled “yes” or “no”. This data wrangling is a big part; you need to properly
+    capture cases of true patient arrivals in 2 months based on what these variables
+    indicate 2 months prior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Above, let’s manually input some probability scores for levels in each variable
+    (node). These probabilities aren’t guessed, or even best guessed. In practice,
+    you would again calculate the frequencies based on existing data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take the symptom variable as an example. I’ll get frequencies of their
+    2-levels, about 31% are non-malignant and 69% are malignant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91806075439e19fb9571ee7ce118208f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we consider the next variable, Stage, and crosstab that with Symptom to
+    get these frequencies. We do this because Stage is *dependent* on Symptom, and
+    since they each have two scenarios, they effectively have 4 probabilities outcomes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6240c8140b2074fa50749accc12fb69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: And, so on and so forth, until all crosstabs between parent-child pairs are
+    defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, most BNs include many parent-child relationships, so calculating probabilities
+    can get tedious (and majorly error prone), so the function below can calculate
+    the probability matrix for any child node corresponding with 0, 1 or 2 parents.
+    While insights cannot and should not be automated, the data preparation piece
+    can and should.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we create the actual BN nodes and the network itself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: And we’re all set. Now let’s run some hypotheticals through our BN and evaluate
+    the outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating the BN outputs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, let’s take a look at the probability of each node as it stands, without
+    specifically declaring any conditions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above shows us that all the patients in this dataset have a 67% probability
+    of being Stage_I_II, a 69% probability of being Non-Malignant, a 58% probability
+    of requiring Adjuvant/Neoadjuvant treatment, and only 22% of them required an
+    appointment 2 months from now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could easily get that from simple frequency tables without a BN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**But now, let’s ask a more conditional question:** What’s the probability
+    a patient will require care in 2 months given that they have Stage = Stage_I_II
+    and have a TreatmentTypeCat = Therapy. Also, consider the fact that the provider
+    knows nothing about their symptoms yet (maybe they haven’t seen the patient yet).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll run what we know to be true in the nodes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which returns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: That patient only has an 11% chance of arriving in 2 months. We can ask any
+    arrangement of known or unknown features of our variables to the predicated probability
+    of that patient arriving in 2 months. Further algorithms and functions can be
+    leveraged to gather probabilities for many patients in aggregate, or groups of
+    patients, or optimize those probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A note about the importance of quality input variables:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Python code-writing is one thing, but the true success of BNs in providing
+    a reliable future visit estimate depends heavily on an accurate mapping of workflows
+    for patient care. This takes time and talking and whiteboarding — not coding.
+    It may even take several dips into the data and resurfacing with clients to stress-test
+    assumptions: “We said before a nurse navigator always calls a patient after a
+    poor symptom is reported, but that only happened 10% of the time. The next time
+    the patient is spoken to is with their provider.” (Again, just making that up,
+    but that would be an important workflow mapping to get right).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Patients presenting similarly, in similar conditions, will typically require
+    similar services and come in at similar cadences. The permutation of those inputs,
+    whose characteristics can span from the clinical to administrative, ultimately
+    correspond to a somewhat deterministic path for service needs. But the more complicated
+    or farther out the time projection, the higher the need for more specific, intricate
+    BNs with high-quality inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s why:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Accurate Representation:** The structure of the Bayesian Network must reflect
+    the actual relationships between variables. Poorly chosen variables or misunderstood
+    dependencies can lead to inaccurate predictions and insights.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Effective Inference:** Quality input variables enhance the model’s ability
+    to perform probabilistic inference. When variables are accurately connected based
+    on their conditional dependence, the network can provide more reliable insights.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Reduced Complexity:** Including irrelevant or redundant variables can unnecessarily
+    complicate the model and increase computational requirements. Quality inputs streamline
+    the network, making it more efficient.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Thanks for reading. Happy to connect with anyone on [LinkedIn](https://www.linkedin.com/in/gabe-verzino-71401137/)!
+    If you are interested in the intersection of data science and healthcare or if
+    you have interesting challenges to share, please leave a comment or DM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Check out some of my other articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Why Balancing Classes is Over-Hyped**](https://medium.com/towards-data-science/why-balancing-classes-is-over-hyped-e382a8a410f7)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Feature Engineering CPT Codes**](https://medium.com/mlearning-ai/working-with-cpt-codes-5a2b04a4d183)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**7 Steps to Design a Basic Neural Network**](/7-steps-to-design-a-basic-neural-network-part-1-of-2-ff0d391bf32b)'
+  prefs: []
+  type: TYPE_NORMAL

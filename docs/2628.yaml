@@ -1,0 +1,407 @@
+- en: A Simple (Yet Effective) Approach to Implementing Unit Tests for dbt Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18](https://towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Unit testing dbt models has always been one of the most critical missing pieces
+    of the dbt ecosystem. This article proposes a new unit testing approach that relies
+    on standards and dbt best practices
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)[![Mahdi
+    Karabiben](../Images/f1aac76435b8db295c306c76796a3201.png)](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)
+    [Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cda12823b7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=post_page-7cda12823b7a----da2583ea8e79---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)
+    ·9 min read·Aug 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=-----da2583ea8e79---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&source=-----da2583ea8e79---------------------bookmark_footer-----------)![](../Images/9fa3a5ea813d037c94ab620c1126f1a6.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Fabio Ballasina](https://unsplash.com/@fabiolog?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ever since [dbt](https://www.getdbt.com/product/what-is-dbt/) introduced software
+    engineering best practices to the realm of data engineering, its functionalities
+    and the ecosystem around it have kept expanding to cover yet more areas of the
+    data transformation space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, one essential piece of the “*data engineering with software engineering
+    best practices*” puzzle remains elusive and an unsolved problem: unit testing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Justifying the importance of unit tests, why they’re critical for any line
+    of code before it can be called “production-ready”, and why they’re different
+    from dbt Tests or data quality tests is something that has already been [brilliantly
+    tackled and explained](https://www.youtube.com/watch?v=hxvVhmhWRJA). But if we
+    wanted to summarize their importance in a one-minute elevator pitch, it’d be the
+    following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In data engineering there are generally two different elements that we want
+    to test: the data and our code — dbt Tests (and other data quality systems/tools)
+    allow us to test the data, while unit tests allow us to test our code.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: With the above in mind, it’s only natural that there have been multiple initiatives
+    by the community to enhance dbt with an open-source unit testing capability (like
+    Equal Experts’ [dbt Unit Testing package](https://github.com/EqualExperts/dbt-unit-testing)
+    or GoDataDriven’s [dbt-focused Pytest plugin](https://github.com/godatadriven/pytest-dbt-core)).
+    However, these packages remain limited in functionalities and have a steep learning
+    curve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article introduces a different approach that’s much simpler yet more elegant,
+    relying on standards and dbt best practices to implement a scalable and reliable
+    unit testing process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unit testing models vs. CTEs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving into the approach, let’s first define the level at which we want
+    to run our unit tests. The question to answer here is related to our definition
+    of a “testable unit” within a dbt project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are our testable units?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we stick to software engineering best practices, a testable unit would be
+    a small piece of code with clear inputs and outputs — and without dependencies
+    on external factors. Depending on the dbt project and its complexity, this definition
+    can apply to both dbt models and the Common Table Expressions (CTEs) they’re made
+    of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we have a dbt project that mostly contains short and fairly simple models
+    (less than 100 lines of code per model), then defining unit tests at the model
+    level can be suitable. However, if our dbt project contains long and complex models,
+    then defining unit tests at the CTE level will be the more efficient approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a matter of perspective
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: dbt Labs (the company behind dbt Core) [has a preference for the first approach](https://www.getdbt.com/analytics-engineering/modular-data-modeling-technique/#data-model-readability).
+    So, unsurprisingly, [their unit testing proposal](https://github.com/dbt-labs/dbt-core/discussions/8275)
+    focuses on model-level tests and considers CTE-level tests an *anti-goal*. For
+    small or greenfield dbt projects, this can be a very reasonable design decision.
+    However, if you have a mature or large dbt project, then adding layers of unnecessary
+    ephemeral models solely to avoid complex models [may not be a good idea](https://medium.com/p/d49550f95580#:~:text=Why%20do%20we%20need%20design%20docs%20for%20data%20pipelines%3F).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For most dbt projects, performing multiple operations (transformations, aggregation,
+    etc.) on the same entity within a dbt model is completely acceptable: We can first
+    transform a given column and then aggregate the data using it, or we can create
+    a new flag and then rely on it to apply some business logic or filter the data.
+    These operations can happen in different CTEs within the same model, making the
+    CTE a natural testable unit.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approach presented in this article will focus on unit testing CTEs and not
+    the model as a whole, although the same principles can be tweaked to perform unit
+    tests at the model level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The secret sauce: shrinking the universe'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main complexity when implementing a unit testing system for dbt models stems
+    from the fact that a “dbt model” can be many, many things. From a 1000-line massive
+    `select` statement to a long list of CTEs and subqueries, all these scenarios
+    need to be considered if we want to build a generic unit testing system that can
+    be used in any dbt project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, we can avoid this complexity altogether by limiting the scope of the
+    problem. Instead of building a unit testing system that works in any dbt project,
+    we only need to build one for ***our*** dbt projects. [As Don Draper would tell
+    you](https://www.youtube.com/watch?v=ijJonVw7YPY), we can always “***change the
+    conversation***”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of building a unit testing system for dbt models (***a universe we can’t
+    control***), let’s build a system for our dbt models (***a much smaller universe
+    that we can control***).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Changing our targeted universe dramatically simplifies the problem since we
+    know our dbt models and their quirks. More importantly, we can define standards
+    and guidelines for their structure and contents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/afca9da593d06a0764695eab547f05a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A visual representation of how “shrinking” the universe simplifies the unit
+    testing approach (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above principle can also be applied to other areas where we want to build
+    customizations and functionalities related to dbt. Setting standards and limiting
+    what we can expect when we talk about “dbt models” simplifies the problem and
+    opens the door for straightforward solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Navigating a familiar universe: standardizing the structure of our dbt models'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we’ve limited the scope of the work to our dbt models, we can clarify
+    our inputs by defining a mandatory model structure that we can enforce via automation
+    like CI actions. If you’re already maintaining dbt projects that don’t have a
+    recommended model structure, you can always start enforcing it progressively as
+    you update your existing models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The ideal structure would depend on your use cases, but the ***import-intermediate-final***
+    approach recommended by dbt Labs is a safe bet in most cases. It basically divides
+    a dbt model into three types of CTEs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Import CTEs**: These constitute the first section of the model and merely
+    consist of reading data from other models. We can perform column renaming and
+    filtering, but we shouldn’t transform the data at this stage. Ideally, their names
+    would start with the `import_` prefix.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Intermediate CTEs**: This is where the bulk of the work happens. We can use
+    these CTEs to transform, join, and aggregate the data, apply business logic, and
+    all the other operations to generate the desired output of the model — making
+    these the CTEs that we’d want to unit test. Ideally, their names would start with
+    the `intermediate_` prefix.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Final CTE**: In this CTE we join different import and intermediate CTEs to
+    define the model’s output — without applying any additional transformations. This
+    CTE should be named `final`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then, as the last section of the model, a `select * from final` statement would
+    generate its output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5463781d6ed959fd945029667e14bff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample dbt model using the import-intermediate-final structure (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have a model structure that we can design around, defining a unit
+    testing system becomes a much easier task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth noting, however, that ideally we’d define the model structure before
+    we start using dbt — along with other foundations for our dbt usage. This was
+    one of the key areas that my team at Zendesk and myself focused on when we decided
+    to implement a dbt-based data transformation framework, and we detailed our work
+    on standards in [this article](https://zendesk.engineering/dbt-at-zendesk-part-i-setting-foundations-for-scalability-34b55e6a6aa1)
+    published on the Zendesk engineering blog.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Building on standards: a simple unit testing system'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Based on the structure we discussed above, to ensure efficient unit testing
+    code coverage for our dbt models, we can rely on testing the intermediate CTEs
+    and the final CTE — since the import CTEs don’t contain any code we’d want to
+    test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/011f38aae61b82b635f72cee65815e1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dividing the dbt model into inputs and code that needs to be tested (image by
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: And so now we can define the different components of our unit testing system
+    and how they’d interact based on the above standards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The mock inputs: the output of import CTEs'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first component of our system is mock inputs (basically, the sample data
+    we’d want to use to test different execution scenarios). In terms of structure,
+    this should be similar to the output of our import CTEs — so if we’re reading
+    two columns from a model named `customers`, the mock input should contain the
+    same structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc2574b360143165136dd435a6bc18e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Translating the output of import CTEs into mock inputs for unit tests (image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: These inputs should be defined as [dbt seeds](https://docs.getdbt.com/docs/build/seeds)
+    (and so we’re providing CSV files that contain the mock data) ideally in a separate
+    `tests` dbt project (to avoid cluttering our main project with unit testing seeds).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The expectations: the desired output of intermediate CTEs'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we’ve defined our inputs, we can use the same process (dbt seeds) to
+    define our desired outputs. These outputs correspond to the expected state of
+    the data after the execution of every intermediate CTE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For every intermediate CTE, we can have multiple outputs corresponding to the
+    scenarios we want to test to maximize code coverage and ensure we test edge cases.
+    (Either within the same CSV with a `test_id` column that allows us to separate
+    the different tests or by providing multiple CSVs.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Running the tests: the luxury of choice'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last architectural component of the system is the process that will perform
+    the assertions for us (comparing the actual outputs of our CTEs with the expected
+    outputs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Technically, we just want to compare two tables in our data warehouse:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The table generated from our expectations dbt seed (the expected output that
+    we provided in a CSV file)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The table generated by running the CTE we’re testing (with the mock data as
+    its inputs)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The comparison can then be achieved using existing packages like [dbt audit
+    helper](https://github.com/dbt-labs/dbt-audit-helper) or a data quality system
+    like [Soda Core](https://github.com/sodadata/soda-core) (using [the built-in comparison
+    checks](https://docs.soda.io/soda-cl/compare.html) of SodaCL).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connecting the dots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Finally, now that all of the components are defined, we only need to connect
+    the dots via a module (which we can write in Python or any other language) that
+    does the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compile the dbt model we want to test (to replace variables and macros with
+    their actual values).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Parse the compiled model and retrieve the list of intermediate CTEs (ideally
+    we’d rely on the `intermediate_` prefix but this can be achieved in multiple ways)
+    and the Final CTE (using its name).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For every CTE, replace references to import CTEs and other intermediate CTEs
+    with references to the corresponding mock data (and so instead of referencing
+    CTEs, we’d reference the dbt seeds). Here again, we can rely on the prefixes (both
+    `import_` and `intermediate_`) to find the CTE names that we need to replace.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For every CTE, write its new body (after replacing the references) as a dbt
+    model within our tests dbt project.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run `dbt seed` command in our tests project (to recreate the mock data tables
+    and the expected output tables), ideally with a tag that only refreshes the tables
+    related to the model we’re currently testing.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Perform the assertions using our tool of choice (a dbt package or a tool like
+    Soda) and print the output or perform an action based on it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With the above process, we can test every intermediate CTE (and the final CTE)
+    during one execution without having the actual output of one CTE interfere with
+    the next one. This means that for a given CTE, dbt will only use the mock inputs
+    when running it (since it’s referencing the dbt seeds we provided) — with the
+    inputs being the output of import CTEs and the expected output of other intermediate
+    CTEs we’re referencing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/107eb6753a3c94defea5d20318729d39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample inputs for an intermediate CTE in which we’re referencing two import
+    CTEs and another intermediate CTE (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this article, we presented a scalable and flexible unit testing approach
+    for dbt models (at the CTE level) that requires a relatively small amount of engineering
+    effort and a focus on enforcing standards. Even though the approach doesn’t solve
+    unit testing for every dbt project, I believe many teams can leverage it (or a
+    variation of it) in their projects to add an essential layer of safety: testing
+    the code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approach can be tweaked and enhanced based on the specificities of the dbt
+    project, and may not be suitable for all scenarios (for example, if the bulk of
+    your code resides in macros) — but standardization remains a powerful ally that
+    streamlines the path towards enhancing dbt in different areas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*For more data engineering content you can subscribe to my newsletter, Data
+    Espresso, in which I discuss various topics related to data engineering and technology
+    in general:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://dataespresso.substack.com/?source=post_page-----da2583ea8e79--------------------------------)
+    [## Data Espresso | Mahdi Karabiben | Substack'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hundreds of subscribers. Data engineering updates and commentary to accompany
+    your afternoon espresso. Click to read…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: dataespresso.substack.com](https://dataespresso.substack.com/?source=post_page-----da2583ea8e79--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,556 @@
+- en: Architecture of AI-Driven Security Operations with a Low False Positive Rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/architecture-of-ai-driven-security-operations-with-a-low-false-positive-rate-a33dbbad55b4?source=collection_archive---------1-----------------------#2023-04-21](https://towardsdatascience.com/architecture-of-ai-driven-security-operations-with-a-low-false-positive-rate-a33dbbad55b4?source=collection_archive---------1-----------------------#2023-04-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This article discusses a mindset on building **production-ready** **machine
+    learning solutions** when applied to **cyber-security needs**
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ditrizna.medium.com/?source=post_page-----a33dbbad55b4--------------------------------)[![Dmitrijs
+    Trizna](../Images/4a7a925e4383f4b3b087e85c0fba0ca4.png)](https://ditrizna.medium.com/?source=post_page-----a33dbbad55b4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a33dbbad55b4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a33dbbad55b4--------------------------------)
+    [Dmitrijs Trizna](https://ditrizna.medium.com/?source=post_page-----a33dbbad55b4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fbea2ebee7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchitecture-of-ai-driven-security-operations-with-a-low-false-positive-rate-a33dbbad55b4&user=Dmitrijs+Trizna&userId=2fbea2ebee7a&source=post_page-2fbea2ebee7a----a33dbbad55b4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a33dbbad55b4--------------------------------)
+    ·12 min read·Apr 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa33dbbad55b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchitecture-of-ai-driven-security-operations-with-a-low-false-positive-rate-a33dbbad55b4&user=Dmitrijs+Trizna&userId=2fbea2ebee7a&source=-----a33dbbad55b4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa33dbbad55b4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Farchitecture-of-ai-driven-security-operations-with-a-low-false-positive-rate-a33dbbad55b4&source=-----a33dbbad55b4---------------------bookmark_footer-----------)![](../Images/f9e75555920db760e316903cce5618f0.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Figure 1\. Anomalies on [NL2Bash data](https://github.com/TellinaTool/nl2bash).
+    [Code](https://github.com/dtrizna/slp/blob/main/examples/jupyterthon_ml_unix.ipynb).
+    Security analysts want to avoid seeing this picture in their dashboards. Image
+    by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even today, in a world where LLMs [compromise the integrity](https://www.nytimes.com/2023/01/12/technology/chatgpt-schools-teachers.html)
+    of the educational system we used for decades, and [we (finally) started to fear](https://futureoflife.org/open-letter/pause-giant-ai-experiments/)
+    an [existential dread](https://www.lesswrong.com/posts/uMQ3cqWDPHhjtiesc/agi-ruin-a-list-of-lethalities)
+    from AGI, the applicability of artificial intelligence (AI) systems to non-conventional
+    data science domains is far from achieving futuristic milestones and requires
+    a distinct approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we have a conceptual discussion about AI applicability to *cyber-security*,
+    **why** most applications fail, and **what** methodology actually **works**. Speculatively,
+    the provided approach and conclusions are transferable to other application domains
+    with low false-positive requirements, especially ones that rely on inference from
+    system logs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will **not** cover **how** to implement machine learning (ML) logic on data
+    relevant to information security. I have already provided functional implementations
+    with code samples in the following articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Anomaly Detection Engineering Based on Power Law Distribution in Enterprise
+    Security Telemetry](/data-centric-security-threat-hunting-based-on-zipfs-law-50ad919fc135);'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Shell Language Processing: Intrusion Detection with TF-IDF and Hash Encoding
+    on Linux auditd logs](/shell-language-processing-machine-learning-for-security-intrusion-detection-with-linux-auditd-73d7196995c7);'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Which GPT-like Model Engineering Techniques Work on System Logs?](https://medium.com/towards-data-science/which-gpt-like-engineering-strategies-work-on-system-logs-6b0a3a1ebcad)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Signatures
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Even today, the **fundamental** and the **most valuable** component of mature
+    **security** posture is just targeted **signature rules**. Heuristics, like those
+    exemplified below, are an essential part of our defenses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Honestly, rules like these are great. This is just an example, a (simplified)
+    logic [shared by the Red Canary](https://redcanary.com/threat-detection-report/threats/impacket/)
+    for lateral movement detection via WMI that can be achieved with tools like [impacket](https://github.com/fortra/impacket).
+    Never turn such rules off, and keep stacking further!
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this approach leaves gaps...
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That’s why once in a while, every Chief Information Security Officer (CISO)
+    spends money, human, and time resources on a solution that offers to solve security
+    problems through the magic of “machine learning”. Usually, this appears to be
+    a rabbit hole with low return on investment: (1) dashboards of security analysts
+    illuminate like a Christmas tree, consider Figure 1 above; (2) analysts got alert
+    fatigue; (3) ML heuristics are disabled or just ignored.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: General vs. Narrow Heuristics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let me first bring to your attention the concept of **narrow** and **general**
+    intelligence since this directly transfers to security heuristics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Intelligence,** in broad terms, is an ability to achieve **goals**. Humans
+    are believed to have general intelligence since we are able to “generalize” and
+    achieve goals that we would never require to reach in an environment driven by
+    natural selection and genetic imperative, like landing on the moon.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While generalization allowed our species to conquer the world, there are entities
+    that are much better than we are on a narrow set of tasks. For instance, calculators
+    are way better at arithmetics than the cleverest of us like [von Neumann](https://en.wikipedia.org/wiki/John_von_Neumann)
+    ever could be, or squirrels (!) can significantly outperform humans on memorizing
+    locations of acorns hidden last year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/339a69f7396bbe68e48818b9fd0ca77e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Schematic view on intelligence. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can reason about security heuristics in a similar way. There are rules that
+    are heavily focused on a specific tool or CVE, and rules that attempt to detect
+    a broader set of techniques. For instance, consider [this detection logic](https://github.com/SigmaHQ/sigma/blob/master/rules/linux/process_creation/proc_creation_lnx_sudo_cve_2019_14287.yml)
+    focused solely on `sudo` privilege escalation abusing [CVE-2019–14287](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-14287):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On the contrary, [this webshell detection rule](https://github.com/SigmaHQ/sigma/blob/master/rules/linux/process_creation/proc_creation_lnx_webshell_detection.yml)
+    (replicated in redacted form) attempts to implement a significantly broader logic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It defines a more sophisticated behavioral heuristic that maps the parent process
+    of common HTTP servers to the [enumeration](https://attack.mitre.org/tactics/TA0007/)
+    activity on the compromised host.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Resembling the intelligence landscape above, we can visualize a security posture
+    by mapping detection rules to a landscape of offensive techniques, tools, and
+    procedures (TTPs) as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a85042886a82e15022329694f3223de9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Schematic view of your security posture. Note the gaps, and don’t
+    flatter yourself — you have more of them. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: False-Positives vs. False-Negatives
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sudo CVE rule detects **only one** specific technique and misses **all the others**
+    (extremely high False-Negative rate). On the contrary, the web shell rule *might*
+    detect a set of offensive techniques and [webshell tools from the Kali Linux arsenal](https://www.kali.org/tools/webshells/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The obvious question is — why, then, do we just not cover all possible TTPs
+    with several broad behavioral rules?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because they bring False-Positives… A lot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we observe a **False-Positive vs. False-Negative trade-off**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While most organizations can just copy-paste the sudo CVE rule and enable it
+    right away in their SIEMs, the webshell rule might run for a while in “monitor
+    only” mode while security analysts filter out all legitimate triggers observed
+    in their environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**By building detections, security engineers try to answer what is** m̶a̶l̶i̶c̶i̶o̶u̶s̶̶
+    **not representative to their environment.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: They might see alerts from automation created by system administrators that
+    run a REST API request which triggers one of the enumeration actions or an Ansible
+    shell script that, when deployed, creates weird parent-child process relationships.
+    Eventually, I observed how broad behavioral rules become lists with dozen exclusions
+    and more edits per month than active code repositories. That’s why security engineers
+    balance between broadness of their rules — expanding generalization is costly,
+    and they try to keep the False-Positive rate as low as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Failures of Machine Learning as a Security Heuristic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here security professionals start to look for alternative techniques to implement
+    behavioral heuristics. Requirements for ML implementations are *a priori* broad.
+    Given the applicability of ML algorithms, most often, the intuition of security
+    professionals leads them to unsupervised learning. We task AI to [capture anomalies
+    in the network](https://ieeexplore.ieee.org/document/9610045), alert on [anomalous
+    command lines](https://blog.developer.adobe.com/using-machine-learning-to-detect-command-line-anomalies-a3257daafeab),
+    et cetera. These tasks are at the generalization level of “solve security for
+    me”. No surprise it works poorly in production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Actually, oftentimes ML does exactly what we ask. It may report an anomalous
+    *elevator.exe* binary, which IntelliJ uses to update itself for the first time,
+    or a new CDN Spotify started using for updates with jittered delay exactly like
+    [Command and Control](https://attack.mitre.org/tactics/TA0011/) callback. And
+    hundreds of similar behaviors, all of which were anomalous that day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of supervised learning, where it is possible to assemble large labeled
+    datasets, for instance, [malware detection](https://arxiv.org/abs/2006.09271),
+    we indeed are capable of building qualitative modeling schemes like [EMBER](https://github.com/elastic/ember)
+    that are able to generalize well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But even in solutions like these — modern AI models in infosec do not yet possess
+    wide enough context to parse the “gray” area. For instance, do we consider TeamViewer
+    bad or good? Many small and medium-sized businesses use it as a cheap VPN. At
+    the same time, some of these small businesses are [ransomware groups](https://www.synacktiv.com/publications/legitimate-rats-a-comprehensive-forensic-analysis-of-the-usual-suspects.html)
+    that backdoor target networks using such tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Successes of Machine Learning as a Security Heuristic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ML-based heuristics should follow the same ideology as rule-based detection
+    — be focused on a specific set of malicious TTPs. To apply AI in security — you
+    actually need to have some knowledge and intuition in security, sorry data scientists.
+    ¯\_(ツ)_/¯ *At least today, until LLMs achieve generalization so broad, they can
+    solve security challenges (and many other tasks) collaterally.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instance, instead of asking for anomalies in command lines (and getting
+    results as in top Figure 1 of this article with 634 anomalies on humble size dataset),
+    ask for out-of-baseline activity around a specific offensive technique — e.g.,
+    anomalous Python executions ([T1059.006](https://attack.mitre.org/techniques/T1059/006/))
+    and *viola!* — given **the same** ML algorithm, preprocessing, and modeling technique,
+    we get only anomaly which is actually a Python reverse shell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0ef2e56506c6e3186c890c8071671e8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Python anomalies in the [NL2Bash dataset](https://github.com/TellinaTool/nl2bash)
+    expanded by malicious techniques. Anomaly reports Python reverse shell. [Code](https://github.com/dtrizna/slp/blob/main/examples/jupyterthon_ml_unix.ipynb).
+    Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Examples of unsupervised Unix-focused techniques that work:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomalous python/perl/ruby process (execution via scripting interpreter, [T1059.006](https://attack.mitre.org/techniques/T1059/006/));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Anomalous *systemd* command (persistence via systemd process, [T1543.002](https://attack.mitre.org/techniques/T1543/002/));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Anomalous ssh login source to high severity jumpbox ([T1021.004](https://attack.mitre.org/techniques/T1021/004/)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Examples of unsupervised Windows-focused techniques that work:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anomalous user logged on Domain Controllers, MSSQL servers ([T1021.002](https://attack.mitre.org/techniques/T1021/002/));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An anomalous process that loads NTDLL.DLL ([T1129](https://attack.mitre.org/techniques/T1129/));
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Network connection with anomalous RDP client and server combination ([T1021.001](https://attack.mitre.org/techniques/T1021/001/)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Examples of functional supervised ML baselines:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Reverse shell model: generate malicious part of a dataset from known methods
+    (inspire yourself with [generators like this](https://www.revshells.com/)); use
+    the process creation events from your environment telemetry as a legitimate counterpart
+    of a dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Rather than building rules in mind with robustness against obfuscation, like
+    one exemplified in Figure 5 below (spoiler: you won’t succeed), better build a
+    separate ML model that detects obfuscation as a separate technique. [Here is a
+    good article on this topic by Mandiant](https://www.mandiant.com/resources/blog/obfuscated-command-line-detection-using-machine-learning).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/0c664391a2289ef4e9796b7f6a6447e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Example of simple cmd.exe command line obfuscation. Image by the
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine Learning is an Extension of Signature Logic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To systematize the examples above, successful application of the ML heuristic
+    consists of these two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Narrow down input data so it captures telemetry generated by specific TTP as
+    precise as possible;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define as few dimensions as possible along which to look for out-of-baseline
+    activity (e.g., a logic that looks only at the *process.image* will bring up fewer
+    alerts than logic that, in addition, looks on *parent.process.image* and *process.args*).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Step 1** above actually ***is*** how we create **signature rules**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do you remember how we discussed above that prior to enabling the web shell
+    rule, “*security analysts filter out all triggers representative for their environment*”?
+    This is **Step 2**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous case, a person builds a decision boundary between legitimate
+    and malicious activity. This is actually where contemporary ML algorithms are
+    good. ML heuristics can remove the burden of manually filtering out vast quantities
+    of legitimate activity close to a specific TTP. Thus, ML allows building broader
+    heuristics than signature rules with less work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ML is just another way to achieve the same goal, an extension of signatures.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Swiss Cheese Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we are ready to outline a holistic vision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The traditional detection engineering approach is to stack as many signature
+    rules as possible without overflowing [SOC](https://en.wikipedia.org/wiki/Security_operations_center)
+    dashboards. Each of these rules has a high False Negative Rate (FNR) but a low
+    False Positive Rate (FPR).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can further continue stacking ML heuristics with the same requirement towards
+    FPR – it has to be low to protect the only bottleneck: human analyst attention.
+    ML heuristics allow covering gaps in rule-based detections by introducing more
+    general behavioral logic without significantly depleting security engineer time
+    resources.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have covered most of the low-hanging fruits and want to go deeper into
+    behavioral analytics, you can bring deep learning logic on top of what you have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d23f1c983a7c5ad3b4a8d1cd54ebdb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. A holistic view of collaborative work of security heuristics that
+    use different techniques to achieve the same goal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember the Occam razor principle, and implement every new heuristic as simply
+    as possible. Do not use ML unless signature rules cannot define a reliable baseline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of slices in this model should have low False Positive Rate. You can ignore
+    high number of False Negatives — to combat that just add slices.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'For instance, in the example above with anomalous Python executions — Python
+    arguments might still be too variable in your environment, alerting you with too
+    much anomalous activity. You might need to narrow it down further. For instance,
+    capture only processes that have `-c` in the command line to look for cases where
+    code is passed in as an argument to Python binary, therefore, only focusing on
+    techniques like this Python reverse shell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since we decrease FPR, we increase False-Negatives. Therefore, you might miss
+    executions of Python from scripts with unusual names, like `python fake_server.py`,
+    that an attacker might use to spoof a legitimate service. For that, you might
+    want to create a separate heuristic that focuses on this subset of TTPs but has
+    a low FPR on its own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Meta-Detection Layer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Worth noting that even despite following the Swiss Cheese methodology, you will
+    end up with verbose heuristics. Usually, those do not represent maliciousness
+    *a priori*, however, are interested in the context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, SSH/RDP login to a high-severity host from a new source is not
+    bad (just a new employee or workstation), as well as execution of `whoami /all`
+    might be usual among skilled users. Thus both of these heuristics are not suitable
+    for a direct trigger of an alert. However, a combination of the two might be worth
+    analyst attention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution to this dilemma comes with the introduction of additional logic
+    on top of such verbose rules that yield “True Positive Benigns”. We can call it
+    the *meta-detection layer*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4b0ddc6ef9d945933ef3f01cc94c248.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. A schematic view of alerting setup that includes a dedicated parsing
+    of verbose but useful rules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The meta-logic that is applied on top of rule activations can vary but usually
+    involves two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“Group by”* all activations by an “*entity*”, e.g., host, username, source
+    IP, cookie, etc.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply an “*aggregate function*” on activations within some *time period*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Examples of simple yet functional meta-detection logic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: just *count* the number of different rule triggers from a single entity, like
+    a single host or user, and report if it exceeds a threshold, e.g., more than three
+    different rules triggered within three hours;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the same as above, but apply *weighted sum* on rules based on severity, e.g.,
+    “critical” rule counts as 3, “medium” as 2, “info” as 1 — report if exceeds a
+    threshold, like *sum > 6*;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: More sophisticated methods exist, like one defined in [the following AISec ’22
+    publication](https://dl.acm.org/doi/10.1145/3560830.3563726), where I use the
+    second layer of ML on malware representations. These should be tuned to a specific
+    application and environment since the data specifics, amount of telemetry, and
+    infrastructure size might require a different approach to stay below the acceptable
+    alert limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we discussed a mindset behind expanding your security operations
+    arsenal beyond a signature approach. Most of the implementations fail to do it
+    properly since security professionals define too broad requirements for behavioral
+    heuristics through machine learning (ML).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We argue that proper application should be driven by offensive techniques, tactics,
+    and procedures (TTPs). Given proper use, ML techniques save a vast amount of human
+    resources, efficiently filtering out a baseline of legitimate activity around
+    specific TTPs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A mature and successful security posture will consist of signature and behavioral
+    heuristics combined, where every separate detection logic has a low False-Positive
+    rate, and limitations in missing False-Negatives are offset by stacking multiple
+    heuristics in parallel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples in this article included cases from detection engineering if applied
+    to conventional security operations. However, we argue that the same methodology
+    with limited modifications will be useful in other security applications, for
+    instance, EDR/XDR heuristic space, network traffic analysis, and counting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Technical Note: Estimate Detection Rate under Fixed False Positive Rate'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a notice with a code sample on how to evaluate behavioral ML heuristic
+    utility in a production environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data scientists — forget about the *accuracy*, *F1*-*score*, and *AUC* — these
+    give little to no information on the production readiness of security solutions.
+    These metrics can be used to reason about the **relative** utility of multiple
+    solutions but not an **absolute** value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is because of the **base rate fallacy** in security telemetry — basically,
+    all data your model will see are benign samples (until it is not, which really
+    matters). Therefore, even a false-positive rate of *0.001%* will bring you 10
+    alerts a day if your heuristic performs 10 000 checks daily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only true value of your model can be estimated by looking at the **Detection
+    Rate (aka, True Positive Rate, TPR) under a fixed False Positive Rate (FPR).**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider the plot below — the **x**-**axis** represent a **true label** of
+    a data sample. It is either malicious or benign. On the **y-axis** is the model’s
+    probabilistic **prediction** — how bad it thinks the sample is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8f10dd6895e94d98e48eb5ac44737ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. Distribution on predictions on extended [NL2Bash](https://github.com/TellinaTool/nl2bash)
+    data. [Code](https://github.com/dtrizna/slp/blob/main/examples/jupyterthon_ml_unix.ipynb).
+    Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are allowed to bring **only one false alert**, you have to set a decision
+    threshold of a model to be around ~0.75 (dashed red line), just above the second
+    false positive. Therefore, the realistic detection rate of the model is ~50% (the
+    dotted line almost overlaps with the mean value of boxplot).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Evaluation of detection rates under variable false positive rates, given you
+    have *y_true* (true labels) and *preds* (model predictions), can be done with
+    the code sample below:'
+  prefs: []
+  type: TYPE_NORMAL

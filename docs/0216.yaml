@@ -1,0 +1,559 @@
+- en: How to Estimate the Number of Parameters in Transformer models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-estimate-the-number-of-parameters-in-transformer-models-ca0f57d8dff0?source=collection_archive---------3-----------------------#2023-01-13](https://towardsdatascience.com/how-to-estimate-the-number-of-parameters-in-transformer-models-ca0f57d8dff0?source=collection_archive---------3-----------------------#2023-01-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An inside look at the Transformer Encoder/Decoder building blocks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@andimid?source=post_page-----ca0f57d8dff0--------------------------------)[![Dmytro
+    Nikolaiev (Dimid)](../Images/4121156b9c08ed20e7aa620712a391d9.png)](https://medium.com/@andimid?source=post_page-----ca0f57d8dff0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ca0f57d8dff0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ca0f57d8dff0--------------------------------)
+    [Dmytro Nikolaiev (Dimid)](https://medium.com/@andimid?source=post_page-----ca0f57d8dff0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97b5279dad26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-estimate-the-number-of-parameters-in-transformer-models-ca0f57d8dff0&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=post_page-97b5279dad26----ca0f57d8dff0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ca0f57d8dff0--------------------------------)
+    ·10 min read·Jan 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fca0f57d8dff0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-estimate-the-number-of-parameters-in-transformer-models-ca0f57d8dff0&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=-----ca0f57d8dff0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fca0f57d8dff0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-estimate-the-number-of-parameters-in-transformer-models-ca0f57d8dff0&source=-----ca0f57d8dff0---------------------bookmark_footer-----------)![](../Images/fb985f7db85197f007d20523d048a8ba.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preview. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to [Regan Yue](https://medium.com/u/84ea27feb7de?source=post_page-----ca0f57d8dff0--------------------------------),
+    you can read the Chinese version of this article at [mp.weixin.qq.com](https://mp.weixin.qq.com/s/-zAqPfR-RVeRYjX5raehtA),
+    [juejin.cn](https://juejin.cn/post/7243435843145924667), [segmentfault.com](https://segmentfault.com/a/1190000043888810)
+    and [xie.infoq.cn](https://xie.infoq.cn/article/3d1edc1049f34d0f797231c2c)!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The most effective way to understand new machine learning architecture (as well
+    as any new technology in general) is to *implement it from scratch*. This is the
+    best approach that helps you understand the implementation *down to the smallest
+    details*, although it is very complex, time-consuming, and sometimes **just impossible**.
+    For example, if you do not have similar computing resources or data you will not
+    be able to make sure that there is no hidden bug in your solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there is a much easier way — to count the number of parameters. It’s
+    not much harder than just reading the paper, but allows you to dig quite deep
+    and check that you fully understand the building blocks of the new architecture
+    (Transformer Encoder and Decoder blocks in our case).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can think about this with the following diagram, which presents three ways
+    to understand a new ML architecture —*the size of the circle represents the level
+    of understanding*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/19e581dc0cc02ea2ec3094601facb28b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ways to understand ML architecture. Calculating the number of parameters is
+    not much more difficult than simply reading the paper, but it will allow you to
+    delve deeper into the topic. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will take a look at the famous Transformer architecture
+    and consider **how to calculate the number of parameters** in PyTorch [*TransformerEncoderLayer*](https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html)
+    and [*TransformerDecoderLayer*](https://pytorch.org/docs/stable/generated/torch.nn.TransformerDecoderLayer.html)classes.
+    Thus, we will make sure that there are no mysteries left for us about what this
+    architecture consists of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TL;DR
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All formulas are summarized in the **Conclusions** section. You are welcome
+    to take a look at them right now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I present not only exact formulas but also their less accurate *approximate
+    versions*, which will allow you to **quickly estimate** the number of parameters
+    in any Transformer-based model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformer Architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The famous Transformer architecture was presented in the breathtaking [“Attention
+    Is All You Need” paper](https://arxiv.org/abs/1706.03762) in 2017 and became the
+    de-facto standard in the majority of Natural Language Processing and Computer
+    Vision tasks because of its ability to effectively capture long-range dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, in early 2023, [diffusion](https://techcrunch.com/2022/12/22/a-brief-history-of-diffusion-the-tech-at-the-heart-of-modern-image-generating-ai/)
+    is gaining extreme popularity, mainly due to [text-to-image generative models](https://www.washingtonpost.com/technology/interactive/2022/ai-image-generator/).
+    Maybe, soon **they** will become the new state-of-the-art in various tasks, as
+    it was with Transformers vs LSTMs and CNNs. But let’s take a look at Transformers
+    first…
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: My article is not an attempt to explain Transformer architecture since there
+    are enough articles that do it very well. It just might allow you *to look at
+    it from a different side* or *clarify some details* if you haven’t fully figured
+    it out yet. So if you are seeking more resources to learn about this architecture,
+    I’m referring you to some of them; otherwise, you can just keep reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources to know more about Transformer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you are looking for a more detailed Transformer architecture overview, take
+    a look at these materials (note that there are plenty of other recourses on the
+    Internet, I just personally like these):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, [the official paper](https://arxiv.org/abs/1706.03762). It may
+    be not the best way for the first time, but it is not as complex as it seems.
+    You can try [Explainpaper to help you read this](https://www.explainpaper.com/papers/attention)
+    or [other papers](https://www.explainpaper.com/) (*it is an AI-based tool that
+    can explain the text you highlight*).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Great [Illustrated Transformer article by Jay Alammar](https://jalammar.github.io/illustrated-transformer/).
+    If you do not enjoy the reading, watch the [YouTube video](https://youtu.be/-QH8fRhqFHM)
+    by the same author.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Awesome [Tensor2Tensor talk by Lukasz Kaiser from Google Brain](https://www.youtube.com/watch?v=rBCqOTEfxvg).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you want to go straight to practice and use various Transformer models to
+    build real applications, check the [Hugging Face course](https://huggingface.co/course/chapter1/1).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Original Transformer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To begin with, let’s remember Transformer basics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The architecture of the Transformer consists of two components: the encoder
+    (on the left) and the decoder (on the right). The encoder takes a sequence of
+    input tokens and produces a sequence of hidden states, while the decoder takes
+    this sequence of hidden states and produces a sequence of output tokens.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e05a6b25c3b4e8beaa9d36c81fa96568.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer architecture. Figure 1 from the [public domain paper](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both the encoder and decoder consist of a stack of identical layers. For the
+    encoder, this layer includes ***multi-head attention*** *(1 — here, and later
+    numbers refer to the image below)* and a ***feed-forward neural network*** *(2)*
+    with some ***layer normalizations*** *(3)* and skip connections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The decoder is similar to the encoder, but in addition to the *first* ***multi-head
+    attention*** *(4)* (which is *masked* for machine translation task so the decoder
+    doesn’t cheat by looking at the future tokens) and a ***feedforward network (5)***,
+    it also has a *second* ***multi-head attention*** *mechanism (6)*. Itallows the
+    decoder to use the context provided by the encoder when generating output. As
+    the encoder, the decoder also has some ***layer normalization*** *(7)* and skip
+    connections components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3698ec4a74fda435a95004c2a20e00d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer architecture with signed components. Adapted from figure 1 from
+    the [public domain paper](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will not consider the input embedding layer with positional encoding and final
+    output layer (linear + softmax) as Transformer components, focusing only on Encoder
+    and Decoder blocks. I do so since these components are specific to the task and
+    embedding approach, while both Encoder and Decoder stacks formed the basis of
+    many other architectures later.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Examples of such architectures include BERT-based models for the Encoder ([BERT](https://arxiv.org/abs/1810.04805),
+    [RoBERTa](https://arxiv.org/abs/1907.11692), [ALBERT](https://arxiv.org/abs/1909.11942),
+    [DeBERTa](https://arxiv.org/abs/2006.03654), etc.), GPT-based models for the Decoder
+    ([GPT](https://paperswithcode.com/paper/improving-language-understanding-by),
+    [GPT-2](https://paperswithcode.com/paper/language-models-are-unsupervised-multitask),
+    [GPT-3](https://arxiv.org/abs/2005.14165v4), [ChatGPT](https://openai.com/blog/chatgpt/)),
+    and models built on the full Encoder-Decoder framework ([T5](https://arxiv.org/abs/1910.10683v3),
+    [BART](https://arxiv.org/abs/1910.13461), and others).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Although we counted *seven* components in this architecture, we can see that
+    there are only *three* unique ones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-head attention;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Feed-forward network;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Layer normalization.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/b23d6dff8e208ddadec792f1e2115217.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer building blocks. Adapted from figure 1 from the [public domain paper](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Together they form the basis of a Transformer. Let’s look at them in more detail!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformer Building Blocks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s consider the internal structure of each block and how many parameters
+    it requires. In this section, we will also start using [PyTorch](https://pytorch.org/)
+    to validate our calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To check the number of parameters of a certain model block, I will use [the
+    following one-line function](https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325/9):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we start, pay attention to the fact that all blocks **are standardized**
+    and used with skip connections. This means that ***the shape*** *(more precisely,
+    its last number, since the batch size and the number of tokens may vary)* ***of
+    all inputs and outputs must be the same***. For the original paper, this number
+    (*d_model*) is 512.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-Head Attention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A famous attention mechanism is a key to Transformer architecture. But putting
+    aside all motivations and technical details it is just a few matrix multiplications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2bbff8eb952d341cdd39a0b685a7a26d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer multi-head attention. Adapted from figure 2 from the [public domain
+    paper](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After calculating attention for every *head*, we concatenate all heads together
+    and pass it through a linear layer (*W_O matrix*). In turn, each head is *scaled
+    dot-product attention* with three separate matrix multiplications for the query,
+    key, and value (*W_Q*, *W_K*, *and W_V matrices respectively*). These three matrices
+    are *different for each head*, which is why subscript *i* is present.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The shape of the final linear layer (*W_O*) is *d_model to d_model*. The shape
+    of the rest three matrices (*W_Q*, *W_K*, *and W_V)* is the same: *d_model to
+    d_qkv*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that **d_qkv** in the image above is denoted as **d_k** or **d_v** in the
+    original paper. I just find this name more intuitive, because although these matrices
+    may have different shapes, it is almost always the same.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Also, note that **d_qkv** = **d_model** / **num_heads** (**h** in the paper).
+    That’s why **d_model** must be divisible by **num_heads**:to ensure correct concatenation
+    later.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You can test yourself by checking the shapes in all the intermediate phases
+    in the picture above (the correct ones are indicated at the bottom right).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, we need three smaller matrices for each head and one large final
+    matrix. How many parameters do we need (do not forget biases)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95dfd1dcbc52d9035f58ee25b56edec4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The formula for calculating the number of parameters in the Transformer attention
+    module. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope it’s not too tedious — I tried to make the deduction as clear as possible.
+    Don’t worry! The future formulas will be much smaller.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approximate number of parameters is such because we can neglect `4*d_model`
+    compared to `4*d_model^2`. Let’s test ourselves using PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The numbers match, meaning we are good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feed-forward Network
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The feed-forward network in Transformer consists of two fully connected layers
+    with a ReLU activation function in between. The network is built in such a way
+    that its internal part is more expressive than input and output (which, as we
+    remember, must be the same).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In general case, it is *MLP(d_model, d_ff) -> ReLU -> MLP(d_ff, d_model)*, and
+    for original paper *d_ff* = 2048.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea1ffe4e4242074997ba1b1160766feb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feed-forward neural network description. [Public domain paper](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A little visualization never hurts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/713ed89b5d5b0d1c210b5a8b20651879.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer feed-forward network. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The calculation of parameters is quite easy, the main thing, again, is not to
+    get entangled by biases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d91d8182ceafce4606125912c86afbc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The formula for calculating the number of parameters in the Transformer feed-forward
+    net. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can describe such a simple network and check the number of its parameters
+    using the following code (*note that official PyTorch implementation also uses*
+    ***dropout****, which we will see later in Encoder/Decoder code. But as we know,
+    the dropout layer does not have trainable parameters, so I omit it here for simplicity)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The numbers match again, and only one component remains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Layer Normalization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last building block of the Transformer architecture is [layer normalization](https://arxiv.org/abs/1607.06450).
+    Long story short, it is just an intelligent (i.e. *learnable*) way of *normalization
+    with scaling*, that improves the stability of the training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/053d5bd1d841ee3bcee9ef0e91c1265d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer layer normalization. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trainable parameters here are two vectors *gamma* and *beta*, each of which
+    has a *d_model* dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fae096125fcc0f4066499a5df89dcd3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The formula for calculating the number of parameters in the Transformer layer
+    normalization module. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s check our assumptions with code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Good! In approximate calculations, this number can be neglected, since layer
+    normalization has dramatically fewer parameters than feed-forward network or multi-head
+    attention block (despite the fact that this module occurs several times).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Derive Complete Formulas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we have everything to count the parameters for the entire Encoder/Decoder
+    block!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Encoder and Decoder in PyTorch**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s remember that the Encoder consists of an attention block, feed-forward
+    net, and two layer normalizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce41cc3bda830f558c502de939225f9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer Encoder. Adapted from figure 1 from the [public domain paper](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can verify that all components are in place by looking inside the PyTorch
+    code. Here *multi-head attention* is indicated *in red* (on the left), *the feed-forward
+    network* *in blue* and *layer normalizations in green* (screenshot of the Python
+    console in PyCharm).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e2cb88d31d9cd297995b48a6c24676a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PyTorch TransformerEncoderLayer. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As noted above, this implementation includes *dropout* in the feed-forward net.
+    Now we can see the dropout layers related to layer normalizations as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The decoder, in turn, consists of two attention blocks, a feed-forward net,
+    and three layer normalizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55cc840de8bd34c145efcb9fbc32c22b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer Decoder. Adapted from figure 1 from the [public domain paper](https://arxiv.org/pdf/1706.03762.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at PyTorch again (the colors are the same).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd02ab95ca05c2166633f362d48a5ebe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PyTorch TransformerDecoderLayer. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Formula
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After making sure, we can write the following function to calculate the number
+    of parameters. In fact, these are just three lines of code that can even be combined
+    into one. The rest of the function is a docstring for clarification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now it’s time to test it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The exact formulas are correct, meaning we have correctly identified all building
+    blocks and deconstructed them into their components. Interestingly, since we ignored
+    relatively small values (*thousands compared to millions*) in the approximate
+    formulas, **the error is only about 0.2%** compared to the exact results! But
+    there is a way to make these formulas even simpler.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approximate number of parameters for the attention block is `4*d_model^2`.
+    It sounds pretty simple, considering that *d_model* is an important hyperparameter.
+    But for the feed-forward network, we need to know *d_ff*, since the formula is
+    `2*d_model*d_ff`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*d_ff* is a separate hyperparameter that you have to memorize in the formula,
+    so let’s think about how to get rid of it. In fact, as we saw above, *d_ff = 2048*
+    when *d_model = 512*, so ***d_ff = 4*d_model***.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For many Transformer models, such an assumption will make sense, *greatly simplifying
+    the formula*, and still giving you an **estimate** of the approximate number of
+    parameters. After all, no one wants to know the precise amount, it’s just useful
+    to understand whether this number is in the *hundreds of thousands* or *tens of
+    millions*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d63ab6f245d5b9ce7712f19b7d15e2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Approximate Encoder-Decoder formulas. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get an understanding of *the order of magnitude* you are dealing with, you
+    can also round the multipliers and you will get `10*d_model^2` for every Encoder/Decoder
+    layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here is a summary of all the formulas that we have deduced today.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e170b5192082a059743fe34ef2c5a4c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formulas recap. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ve calculated the number of parameters in Transformer Encoder/Decoder
+    blocks, but of course, I don’t invite you to count the parameters of all new models.
+    I have just chosen this method because I was surprised that I didn’t find such
+    an article when I started studying Transformers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While the number of parameters can give us an indication of the complexity
+    of the model and the amount of data it will require to train, it is just one way
+    to gain a deeper understanding of the architecture. I want to encourage you to
+    explore and experiment: take a look at implementation, run the code with different
+    hyperparameters, etc. So, keep learning and have fun!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope these materials were useful to you. [Follow me on Medium](https://medium.com/@andimid)
+    to get more articles like this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you have any questions or comments, I will be glad to get any feedback. Ask
+    me in the comments, or connect via [LinkedIn](https://www.linkedin.com/in/andimid/)
+    or [Twitter](https://twitter.com/dimid_ml).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To support me as a writer and to get access to thousands of other Medium articles,
+    get Medium membership using [my referral link](https://medium.com/@andimid/membership)
+    (no extra charge for you).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

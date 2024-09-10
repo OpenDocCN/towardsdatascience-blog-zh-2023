@@ -1,0 +1,377 @@
+- en: Building a Smart Travel Itinerary Suggester with LangChain, Google Maps API,
+    and Gradio (Part 1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to build an application that might inspire your next road trip
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)[![Robert
+    Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)
+    [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----4175ff480b74---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)
+    ·13 min read·Sep 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4175ff480b74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=-----4175ff480b74---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4175ff480b74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&source=-----4175ff480b74---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This article is part 1 of a three part series where we build a travel itinerary
+    suggester application using OpenAI and Google APIs and display it in a simple
+    UI generated with gradio. In this part, we start by discussing prompt engineering
+    for this project. Just want see the code? Find it** [**here**](https://github.com/rmartinshort/travel_mapper)**.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**1\. Motivation**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since the launch of ChatGPT in late 2022, there has been an explosion of interest
+    in large language models (LLMs) and their application in consumer-facing products
+    such as chatbots and search engines. Less than a year later, we have access to
+    a plethora of open source LLMs available from model hubs such as [Hugging Face](https://huggingface.co/models),
+    model hosting services such as [Lamini](https://www.lamini.ai/) and paid APIs
+    such as OpenAI and PaLM. It is both exciting and somewhat overwhelming to see
+    how fast this field is advancing, with new tools and development paradigms seemingly
+    emerging every few weeks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here we’ll be sampling just a fraction of this zoo of tools to build a useful
+    application that could help us with travel planning. When planning a vacation
+    its often nice to get suggestions from someone who’s been there before, and even
+    better to see those suggestions laid out on a map. In the absence of this advice,
+    sometimes I’ll just browse Google Maps in the general area that I want to visit
+    and haphazardly select a few places that look interesting. Maybe this process
+    is fun, but its inefficient and likely to miss something. Wouldn’t it be nice
+    to have a tool that could give you a bunch of suggestions with just a few high
+    level preferences?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thats exactly what we’ll try to build: A system that can provide travel itinerary
+    suggestions given some high level preferences, something like *“I have 3 days
+    to explore the San Francisco and love art museums”*. Google Search’s generative
+    AI feature and ChatGPT can already produce creative results for queries like this,
+    but we want to go a step further and produce an actual itinerary with travel times
+    and a nice map to help the user get orientated.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0aab314c7aca0e6ff37fec3053974304.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This is what we’ll build: A system to generate travel suggestions with a basic
+    map showing the route and waypoints provided by the LLM'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal is more to get acquainted with the tools needed to build a service
+    like this rather than actually deploy the application, but along the way we’ll
+    learn a bit about prompt engineering, LLM orchestration with LangChain, using
+    the Google Maps API to extract directions and displaying the results with [leafmap](https://leafmap.org/)
+    and [gradio](https://www.gradio.app/). It’s amazing how quickly these tools allow
+    you to build a POC for systems like this, but as always the real challenges lie
+    in evaluation and edge case management. The tool we’ll build is far from perfect
+    and if anyone is interested in helping me develop it further that would be fantastic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Prompting strategy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This project will make use of the OpenAI and Google PaLM API. You can get make
+    API keys by making accounts [here](https://platform.openai.com/account/members)
+    and [here](https://makersuite.google.com/app/home). At the time of writing, the
+    Google API has limited general availability and has a waitlist, but it should
+    only take a few days to get access.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use of `[dotenv](https://pypi.org/project/python-dotenv/)` is an easy way to
+    avoid having to copy and paste API keys into your development environment. After
+    making a .env file with the following lines
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can use this function to load the variables ready for downstream use by `LangChain`
+    for example
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, how should we design the prompts for a travel agent service? The user will
+    be free to enter any text they want, so we first want to be able to determine
+    whether or not their query is valid. We definitely want to flag any query that
+    contain harmful content, such requests for an itinerary with malicious intent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also want to filter out questions unrelated to travel — no doubt the LLM
+    could provide an answer to such questions, but they are beyond the scope of this
+    project. Finally, we also want to identify requests that are unreasonable like
+    *“I want to fly to the moon”* or *“I want to do a three day road trip from New
+    York to Tokyo”*. Given an unreasonable request like this, it would be great of
+    the model could explain why it was unreasonable and suggest a modification that
+    would help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the request is validated we can proceed to providing a suggested itinerary,
+    which ideally should contain specific addresses of the waypoints so that they
+    can be sent to a mapping or directions API such as Google Maps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The itinerary should be human-readable, with enough detail for the user to to
+    find it useful as a stand-alone suggestion. Large, instruction-tuned LLMs such
+    as ChatGPT seem to be great at providing such responses, but we need to make sure
+    that the waypoint addresses are extracted in a consistent way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So there are three distinct stages here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validate the query
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Produce the itinerary
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Extract the waypoints in a format that can be understood by the Google Maps
+    API
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It may be possible to design a prompt that can do all three in one call, but
+    for ease of debugging we will split them up into three LLM calls, one for each
+    part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately LangChain’s `[PydanticOutputParser](https://python.langchain.com/docs/modules/model_io/output_parsers/pydantic)`
+    can really help here, by providing a set of pre-made prompts that encourage LLMs
+    to format their responses in a way that conforms with an output schema.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. The validation prompt**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s take a look at the validation prompt, which we can wrap in a template
+    class to make it easier to contain and iterate on different versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our `Validation` class contains the output schema definitions for the query,
+    which will be a JSON object with two keys `plan_is_valid` and `updated_request`.
+    Inside`ValidationTemplate` we use LangChain’s helpful template classes to construct
+    our prompt and also create a parser object with `PydanicOutputParser`. This converts
+    the `Pydantic` code in `Validation` into a set of instructions that can be passed
+    to the LLM along with the query. We can then include reference to these format
+    instructions in the system template. Every time the API is called, we want the
+    both the `system_message_prompt`and the `human_message_prompt` to be sent to the
+    LLM, which is why we package them together in the `chat_prompt`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since this isn’t really a chatbot application (although it could be made into
+    one!) we could just put both the system and human templates into the same string
+    and get the same response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we can make an `Agent` class that uses LangChain to call the LLM API with
+    the template defined above. Here we’re using `ChatOpenAI` , but it can be replaced
+    with `GooglePalm` if you prefer that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that we also make use of `LLMChain` and `SequentialChain` from Langchain
+    here, even though we’re only making a single call to the LLM. This is probably
+    overkill, but it could be helpful for extensibility in future of we wanted to
+    add another call , for example to the [OpenAI moderation API](https://platform.openai.com/docs/guides/moderation/overview?lang=python)
+    before the validation chain runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: To run an example, we can try the following code. Setting `debug=True` will
+    activate LangChain’s debug mode, which prints the progression of the query text
+    at is moves though the various LangChain classes on its way too and from the LLM
+    call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This query seems reasonable, so we get a result like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we test by changing the query to something less reasonable, such as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The response time is longer because ChatGPT is trying to provide an explanation
+    for why the query is not valid and therefore generating more tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. The itinerary prompt
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If a query is valid, it can pass on to the next stage, which is the itinerary
+    prompt. Here, we want to the model to return a detailed suggested travel plan,
+    which should take the form of a bulleted list with waypoint addresses and some
+    advice about what to do in each place. This is really the main “generative” part
+    of the project, and there are many ways to design a query to give good results
+    here. Our `ItineraryTemplate` looks like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that there is no need for a `Pydantic` parser here because we want the
+    output to be a string rather than a JSON object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To use this, we can add a new LLMChain to the `Agent` class, which looks like
+    this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We did not set the`max_tokens` argument when instantiating the `chat_model`
+    here, which allows the model to decide the length of its output. With GPT4 in
+    particular this can make the response time rather long (30s+ in some cases). Interestingly,
+    the response times of PaLM are considerably shorter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**5\. The waypoint extraction prompt**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using the itinerary prompt might give us a nice list of waypoints, perhaps something
+    like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we need to extract the addresses of the waypoints so that we can proceed
+    to the next step, which is going to be plotting them on a map and calling the
+    Google Maps directions API to obtain directions between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do this, we will make another LLM call and use `PydanicOutputParser` again
+    to make sure our output is formatted correctly. To understand the format here,
+    it’s useful to briefly consider what we want to do at the next stage of this project
+    (covered in part 2). We will be making a call to the [Google Maps Python API](https://github.com/googlemaps/google-maps-services-python),
+    which looks like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Where start and end are addresses as strings, and waypoints is a list of addresses
+    to be visited in between.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our requested schema for the waypoint extraction prompt therefore looks like
+    this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which will enable us plug the outputs of the LLM call into the directions call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this prompt, I found that adding a one-shot example really helped the model
+    conform to the desired output. Fine-tuning of a smaller, open source LLM to extract
+    lists of waypoints using these results from ChatGPT/PaLM might be an interesting
+    spinoff project here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, lets add a new method to the `Agent` class that can call the LLM with `ItineraryTemplate`
+    and `MappingTemplate` sequentially using SequentialChain
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: To make these calls, we can use the following code
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The addresses in `waypoints_dict` should be sufficiently formatted for use with
+    Google Maps, but they can also be geocoded to reduce the likelihood of errors
+    when calling the directions API. The waypoints dictionary should look something
+    like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**6\. Putting it all together**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now have the ability to use an LLM to validate a travel query, generate a
+    detailed itinerary and extract the waypoints as a JSON object that can be passed
+    down steam. You’ll see that in the code, almost all of this functionality is handled
+    by the `Agent` class, which is instantiated inside `TravelMapperBase` and used
+    as follows
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using LangChain makes it very easy to swap out the LLM that is being used. For
+    PALM, we simply need to declare
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: And for OpenAI, we can either use `ChatOpenAI` or `OpenAI` as described in the
+    sections above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we’re ready to move onto the next stage: How to we convert the list of
+    places into a set of directions and plot them on a map for the user to examine?
+    This will be covered in [part 2](https://medium.com/towards-data-science/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5)
+    of this three part series.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading! Please feel free to explore the full codebase here [https://github.com/rmartinshort/travel_mapper](https://github.com/rmartinshort/travel_mapper).
+    Any suggestions for improvement or extensions to the functionality would be much
+    appreciated!
+  prefs: []
+  type: TYPE_NORMAL

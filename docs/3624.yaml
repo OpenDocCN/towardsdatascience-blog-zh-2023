@@ -1,0 +1,319 @@
+- en: Create Many-To-One relationships Between Columns in a Synthetic Table with PySpark
+    UDFs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/create-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936?source=collection_archive---------3-----------------------#2023-12-09](https://towardsdatascience.com/create-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936?source=collection_archive---------3-----------------------#2023-12-09)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Leverage some simple equations to generate related columns in test tables.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)[![Matt
+    Collins](../Images/b28ac8100d6fb287e3fa6926eec7939a.png)](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)[](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------)
+    [Matt Collins](https://medium.com/@mc12338?source=post_page-----41e39d97c936--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----41e39d97c936---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----41e39d97c936--------------------------------)
+    ·7 min read·Dec 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F41e39d97c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&user=Matt+Collins&userId=d1970f1605f1&source=-----41e39d97c936---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F41e39d97c936&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreate-many-to-one-relationships-between-columns-in-a-synthetic-table-with-pyspark-udfs-41e39d97c936&source=-----41e39d97c936---------------------bookmark_footer-----------)![](../Images/8f6ff1c8009d98db1eaa04ccfe19ff4e.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image generated with DALL-E 3
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve recently been playing around with Databricks Labs Data Generator to create
+    completely synthetic datasets from scratch. As part of this, I’ve looked at building
+    sales data around different stores, employees, and customers. As such, I wanted
+    to create relationships between the columns I was artificially populating — such
+    as mapping employees and customers to a certain store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Through using PySpark UDFs and a bit of logic, we can generate related columns
+    which follow a many-to-one relationship. With a bit of magic, we are even able
+    to extend the logic to give some variance in this mapping — like a customer generally
+    buying from their local store but sometimes from a different store.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use Databricks Labs Data Generator to generate our basic DataFrame**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '***Note: You can skip this section if not required!***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First up, we need to create a DataFrame with our first randomly-generated column.
+    In our case, we’re going to start with the store, as logically we will have “many
+    employees per store” and “many customers repeatedly shopping at a store”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With a Star Schema Data Model in mind, we’re going to start with our Sales Fact
+    table — a transactional table which will contain key values for the Sale Id, Store
+    Id, Employee Id and Customer Id, the Sale Amount along with some datetime data
+    for the purchase. We can then fill out the specifics about the Store, Employee
+    and Customer in dimension tables further down the line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll start small — a table with 1000 sales will do. We now need to decide
+    how to split these sales up between stores, employees and customers. Let’s suggest
+    the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stores = 20
+  prefs:
+  - PREF_UL
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Employees = 100
+  prefs:
+  - PREF_UL
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Customers = 700
+  prefs:
+  - PREF_UL
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can also say that the sales will be recorded over the course of last month:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First Sale Date = 2023–11–01
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Last Sale Date = 2023–11–30
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Sale Id needs to be a unique column so we can generate an Id column for
+    this. We now need to distribute the 1000 sales across the 20 stores. For simplicity
+    we will assume this is random.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using Databricks Lab Generator we can do this with the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now add some code to record when the sales were made and their amount. To keep
+    things simple, we’ll round the timestamp of the sale to the nearest hour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To calculate the sale amount, we can use the “expr” parameter in our withColumn
+    expression to allow us to generate a random number, with some rules/boundaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this case, the expression is quite straight-forward: produce a random number
+    (between 0 and 1), add 0.1 (ensuring sale values are not 0) and multiply by 350.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ve got our basic shape for the DataFrame now, so put it all together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can create a quick Data Profile to look at the distribution of values in
+    the columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a82e88e7cd291b288a0986f984fac0b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Data profile generated in Databricks'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the StoreId distribution is relatively even across the 20 stores,
+    with no missing values and averages around the centre as we would expect. The
+    same follows for the Timestamps and amount values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Add a dependent Many-To-One column**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we can add our Employee Id column to the DataFrame. We’re done with Databricks
+    Lab Data Generator now, so will just use PySpark operations to add columns to
+    the DataFrame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stepping back from the code, we want to model this as the following statements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are 20 stores.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each store has more than 1 employee.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each employee works at a single store only.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'First we need to split the employees between the stores. The following python
+    function can be used to do so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have our distribution of employees for each store, let’s start assigning
+    Ids!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The employeesPerStore list ensures that the employee Ids per store do not overlap.
+    We can use this to randomly assign an employee Id to a sale in the table with
+    the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This function currently only works for a single value — we need to put this
+    into something that a PySpark DataFrame can work with (functionally, and quickly!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can pass PySpark UDFs to the *withColumn* method, so let’s reformat this
+    logic into a function and set it to a UDF:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now call this as a new column in the DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can quickly test this looks correct by using the Visualisation tool in Databricks
+    to see the distinct count of Employee Ids per Store Id. This is my preference
+    but you could also use group by logic or other plotting modules, if desired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/159ea138f058375b07f161e8b09a7df3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Distinct count of Employee Ids per Store'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Important Note:** This logic allows for employees to be **missed** from the
+    results. This means that it is possible for an employee to make 0 sales, and thus
+    not be included in the DataFrame. We’ll look at how to ensure all customers have
+    sales recorded against them in the next section.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Add the customers column
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The customers column is a bit different… while our use-case suggests it is common
+    for a customer to shop at a single store multiple times, it is entirely possible
+    that they got to a different store one day. How do we model this?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ve got the starting points with the work done for our employees column,
+    so can repeat the *get_employees* function and UDF logic for customers as below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ve again potentially missed a few customers off here. Here are a few approaches
+    to rectify this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recalculate in *while* loop until you converge on a DataFrame which contains
+    all customers (inefficient, costly, could run indefinitely)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Randomly update customer Ids in *while* loop until all customers in DataFrame
+    (requires logic to only overwrite same stores, could also run indefinitely)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Return a list of all customer Ids with more than 1 record in the sales table,
+    and randomly overwrite until all missing Ids are added (also needs logic for overwriting
+    customers in same store, may also require *while* loop logic)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Reverse the process and start with employees. This ensures each employee
+    is randomly assigned to rows. We can then use the mapping and apply the store
+    Id.**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hopefully it is clear why the last option is the lowest effort to compute —
+    we have all the code required so just need to reformat things slightly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our new scripts looks as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5bc57b56200b1ece8e679b6be856c58.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Databricks Data Profile for the new DataFrame'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding Randomness to the customers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'What we now need is a bit of randomness, which we need to define. For our example,
+    let’s say that each customer has a 90% chance of shopping at the usual store (the
+    “local” store). If we do not need all customers to be returned in the results
+    set, we can simply adjust our *customers_udf* as follows, and use *df2*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The logic involves using the *random.choices* function to supply a weighted
+    list and return a single value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To compute the weighted list, we have the weight of our “local” store for the
+    customer, in this case 90%, so need to assign the remaining 10% to the other stores,
+    in this case 19 stores. The probability of each other store being selected will
+    therefore be 10/19 = 0.526%. We can populate an array with these percentages,
+    which would look something like the following:[0.526,0.526,0.526,…,90,0.526,…0.526]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Passing this into random.choices, we then randomly select a store Id from the
+    list with the corresponding weights and use this as the input for the *customer_id*
+    variable, as before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** The output of random.choices returns a list (as you can request k
+    results), so access the 0th element of the list to get the store_id as an integer
+    value.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we need to combine this logic with a DataFrame including all customers,
+    we can reverse the process slightly. The weights logic is still valid so we can
+    just plug this into randomly select a store and return this as the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/abaf37bd9c9efc775dda58e0503258df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Sample of final DataFrame in Databricks'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There we have it! A synthetically created DataFrame with both strict and loose
+    mappings between columns. You can now progress the next steps to populate related
+    tables which may contain more descriptive information, such as dimension tables
+    of store names, addresses, employee names, roles, etc. This can also be done using
+    Databricks Labs Data Generator or any other tool/process you are comfortable with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are some great examples on the Databricks Labs Data Generator [GitHub
+    Repo](https://github.com/databrickslabs/dbldatagen) along with documentation,
+    so please do take a look at this if you are curious to learn more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of my code can be accessed from the following [GitHub Repo](https://github.com/MattPCollins/Dbldatagen-Related-Tables).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have any thoughts, comments or alternatives to this demo, please reach
+    out in the comments. Thanks!
+  prefs: []
+  type: TYPE_NORMAL

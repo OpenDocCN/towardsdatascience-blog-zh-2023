@@ -1,0 +1,309 @@
+- en: Efficient semantic search over unstructured text in Neo4j
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/efficient-semantic-search-over-unstructured-text-in-neo4j-8179ad7ff451?source=collection_archive---------1-----------------------#2023-08-23](https://towardsdatascience.com/efficient-semantic-search-over-unstructured-text-in-neo4j-8179ad7ff451?source=collection_archive---------1-----------------------#2023-08-23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Integrate the newly added vector index into LangChain to enhance your RAG applications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://bratanic-tomaz.medium.com/?source=post_page-----8179ad7ff451--------------------------------)[![Tomaz
+    Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----8179ad7ff451--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8179ad7ff451--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8179ad7ff451--------------------------------)
+    [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----8179ad7ff451--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-semantic-search-over-unstructured-text-in-neo4j-8179ad7ff451&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----8179ad7ff451---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8179ad7ff451--------------------------------)
+    ·7 min read·Aug 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8179ad7ff451&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-semantic-search-over-unstructured-text-in-neo4j-8179ad7ff451&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----8179ad7ff451---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8179ad7ff451&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fefficient-semantic-search-over-unstructured-text-in-neo4j-8179ad7ff451&source=-----8179ad7ff451---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the advent of ChatGPT six months ago, the technology landscape has undergone
+    a transformative shift. ChatGPT’s exceptional capacity for generalization has
+    diminished the requirement for specialized deep learning teams and extensive training
+    datasets to create custom NLP models. This has democratized access to a range
+    of NLP tasks, such as summarization and information extraction, making them more
+    readily available than ever before. However, we soon realized the [limitations
+    of ChatGPT-like models](https://medium.com/neo4j/knowledge-graphs-llms-fine-tuning-vs-retrieval-augmented-generation-30e875d63a35),
+    such as knowledge date cutoff and not having access to private information. In
+    my opinion, what followed was the second wave of generative AI transformation
+    with the rise of Retrieval Augmented Generation (RAG) applications, where you
+    feed relevant information to the model at query time to construct better and more
+    accurate answers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83f907ab327cbc66de48a587422a5183.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RAG application flow. Image by the author. Icons from [https://www.flaticon.com/](https://www.flaticon.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned, the RAG applications require a smart search tool that is able
+    to retrieve additional information based on the user input, which allows the LLMs
+    to produce more accurate and up-to-date answers. At first, the focus was mostly
+    on retrieving information from unstructured text using semantic search. However,
+    it soon became evident that a combination of structured and unstructured data
+    is the best approach to RAG applications if you want to [move beyond “Chat with
+    your PDF” applications](https://medium.com/neo4j/knowledge-graphs-llms-real-time-graph-analytics-89b392eaaa95).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neo4j was and is an excellent fit for handling structured information, but it
+    struggled a bit with semantic search due to its brute-force approach. However,
+    the struggle is in the past as Neo4j has [introduced a new vector index in version
+    5.11](https://neo4j.com/blog/vector-search-deeper-insights/) designed to efficiently
+    perform semantic search over unstructured text or other embedded data modalities.
+    The newly added vector index makes Neo4j a great fit for most RAG applications
+    as it now works great with both structured and unstructured data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post I will show you how to setup a vector index in Neo4j and integrate
+    it into the [LangChain ecosystem](https://www.langchain.com/). The code is available
+    on [GitHub](https://github.com/tomasonjo/blogs/blob/master/llm/Neo4j_vector_index_%26_Langchain.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neo4j Environment setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You need to setup a Neo4j 5.11 or greater to follow along with the examples
+    in this blog post. The easiest way is to start a free instance on [Neo4j Aura](https://neo4j.com/cloud/platform/aura-graph-database/),
+    which offers cloud instances of Neo4j database. Alternatively, you can also setup
+    a local instance of the Neo4j database by downloading the [Neo4j Desktop](https://neo4j.com/download/)
+    application and creating a local database instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After you have instantiated the Neo4j database, you can use the LangChain library
+    to connect to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Setting up the Vector Index
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Neo4j vector index is powered by Lucene](https://neo4j.com/docs/cypher-manual/current/indexes-for-vector-search/),
+    where Lucene implements a Hierarchical Navigable Small World (HNSW) Graph to perform
+    a approximate nearest neighbors (ANN) query over the vector space.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neo4j’s implementation of the vector index is designed to index a single node
+    property of a node label. For example, if you wanted to index nodes with the label
+    `Chunk` on their node property `embedding` , you would use the following Cypher
+    procedure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Along with the index name, node label, and property, you must specify the vector
+    size (embedding dimension), and the similarity metric. We will be using OpenAI’s
+    text-embedding-ada-002 embedding model, which uses vector size **1536** to represent
+    text in the embedding space. At the moment, only the **cosine** and **Euclidean**
+    similarity metrics are available. OpenAI suggests using the cosine similarity
+    metric when using their embedding model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Populating the Vector index
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Neo4j is schema-less by design, which means it doesn’t enforce any restrictions
+    what goes into a node property. For example, the `embedding` property of the `Chunk`
+    node could store integers, list of integers or even strings. Let’s try this out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This query creates a `Chunk`node for each element in the list and uses the element
+    as the `embedding`property value. For example, the first `Chunk` node will have
+    the `embedding` property value **1**, the second node **[1,2,3]**, and so on.
+    Neo4j doesn’t enforce any rules on what you can store under node properties. However,
+    the vector index has clear instructions about the type of values and their embedding
+    dimension it should index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can test which values were indexed by performing a vector index search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you run this query, you will get only a single node returned, even though
+    you requested the top **3** neighbors to be returned. Why is that so? The vector
+    index only indexes property values, where the value is a list of floats with the
+    specified size. In this example, only one `embedding`property value had the list
+    of floats type with the selected length 1536.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A node is indexed by the vector index if all the following are true:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The node contains the configured label.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The node contains the configured property key.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The respective property value is of type `LIST<FLOAT>`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `[size()](https://neo4j.com/docs/cypher-manual/current/functions/scalar/#functions-size)`
+    of the respective value is the same as the configured dimensionality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The value is a valid vector for the configured similarity function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Integrating the vector index into the LangChain ecosystem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we will implement a simple custom LangChain class that will use the Neo4j
+    Vector index to retrieve relevant information to generate accurate and up-to-date
+    answers. But first, we have to populate the vector index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c74118be178b79f9f3609665c6658ed2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data flow using the Neo4j vector index in RAG applications. Image by the author.
+    Icons from flaticons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The task will consist of the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieve a Wikipedia article
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Chunk the text
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Store the text along with its vector representation in Neo4j
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implement a custom LangChain class to support RAG applications
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this example, we will fetch only a single Wikipedia article. I have decided
+    to use [Baldur’s Gate 3 page](https://en.wikipedia.org/wiki/Baldur%27s_Gate_3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we need to chunk and embed the text. We will split the text by section
+    using the double newline delimiter and then use OpenAI’s embedding model to represent
+    each section with an appropriate vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before we move on to the LangChain class, we need to import the text chunks
+    into Neo4j.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: One thing you can notice is that I used the `db.create.setVectorProperty` procedure
+    to store the vectors to Neo4j. This procedure is used to verify that the property
+    value is indeed a list of floats. Additionally, it has the added benefit of reducing
+    the storage space of vector property by approximately 50%. Therefore, it is recommended
+    always to use this procedure to store vectors to Neo4j.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can go and implement the custom LangChain class used to retrieve information
+    from Neo4j vector index and use it to generate answers. First, we will define
+    the Cypher statement used to retrieve information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, I have hardcoded the index name. You can make this dynamic by
+    adding appropriate parameters if you wish.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The custom LangChain class is implemented pretty straightforward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I have omitted some boilerplate code to make it more readable. Essentially,
+    when you can call the Neo4jVectorChain, the following steps are executed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embed the question using the relevant embedding model
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the text embedding value to retrieve most similar content from the vector
+    index
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the provided context from similar content to generate the answer
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can now test our implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Response*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/21517a69c90aea570d61228bfebc4243.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generated response. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By using the `verbose` option, you can also evaluate the retrieved context from
+    the vector index that was used to generate the answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Leveraging Neo4j’s new vector indexing capabilities, you can create a unified
+    data source that powers Retrieval Augmented Generation applications effectively.
+    This allows you to not only implement “Chat with your PDF or documentation” solutions
+    but also to conduct real-time analytics, all from a single, robust data source.
+    This multi-purpose utility can streamline your operations and enhances data synergy,
+    making Neo4j a great solution for managing both structured and unstructured data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the code is available on [GitHub](https://github.com/tomasonjo/blogs/blob/master/llm/Neo4j_vector_index_%26_Langchain.ipynb).
+  prefs: []
+  type: TYPE_NORMAL

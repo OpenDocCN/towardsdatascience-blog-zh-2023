@@ -1,0 +1,363 @@
+- en: How to Optimize Object Detection Models for Specific Domains
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-optimize-object-detection-models-for-specific-domains-d8512c63a9c3?source=collection_archive---------3-----------------------#2023-10-19](https://towardsdatascience.com/how-to-optimize-object-detection-models-for-specific-domains-d8512c63a9c3?source=collection_archive---------3-----------------------#2023-10-19)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Design better and faster models to solve your specific problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://alvaroleandrocavalcante.medium.com/?source=post_page-----d8512c63a9c3--------------------------------)[![Alvaro
+    Leandro Cavalcante Carneiro](../Images/d23fc10840c906a43ae002185a100e40.png)](https://alvaroleandrocavalcante.medium.com/?source=post_page-----d8512c63a9c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d8512c63a9c3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d8512c63a9c3--------------------------------)
+    [Alvaro Leandro Cavalcante Carneiro](https://alvaroleandrocavalcante.medium.com/?source=post_page-----d8512c63a9c3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F948868831251&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-optimize-object-detection-models-for-specific-domains-d8512c63a9c3&user=Alvaro+Leandro+Cavalcante+Carneiro&userId=948868831251&source=post_page-948868831251----d8512c63a9c3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d8512c63a9c3--------------------------------)
+    ·13 min read·Oct 19, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd8512c63a9c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-optimize-object-detection-models-for-specific-domains-d8512c63a9c3&user=Alvaro+Leandro+Cavalcante+Carneiro&userId=948868831251&source=-----d8512c63a9c3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd8512c63a9c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-optimize-object-detection-models-for-specific-domains-d8512c63a9c3&source=-----d8512c63a9c3---------------------bookmark_footer-----------)![](../Images/2db005eef3f79d4f5f0e360dbbcd6ec6.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [paolo candelo](https://unsplash.com/@paolocandelo?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Object detection is widely employed across different domains, from academia
+    to industry sectors, thanks to its ability to provide great results at a low computational
+    cost. However, despite the abundance of open-source architectures publicly available,
+    most of these models are designed to address general-purpose problems and may
+    not be a good fit for specific contexts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, we can mention the [Common Objects in Context](https://arxiv.org/pdf/1405.0312v3.pdf)
+    (COCO) dataset, which is typically used as a baseline for research in this field,
+    influencing the hyperparameters and architectural details of the models. This
+    dataset comprises 90 distinct classes under various lighting conditions, backgrounds,
+    and sizes. It turns out that, sometimes, the detection problem you are facing
+    is relatively simple. You may want to detect just a few distinct objects without
+    many scene or size variations. In this case, if you train your model using a generic
+    set of hyperparameters, you would likely end up with a model that incurs unnecessary
+    computational costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this perspective in mind, the primary goal of this article is to provide
+    guidance on optimizing various object detection models for less complex tasks.
+    I want to assist you in selecting a more efficient configuration that reduces
+    computational costs without prejudicing the mean Average Precision (mAP).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Providing some context
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One of the goals of my master’s degree was to develop a [sign language recognition
+    system](https://www.esann.org/sites/default/files/proceedings/2023/ES2023-185.pdf)
+    with minimal computational requirements. A crucial component of this system is
+    the preprocessing stage, which involves the detection of the interpreter’s hands
+    and face, as depicted in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f1367786a2c8281270592926b136d9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Samples from the HFSL dataset that were created in this work. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As illustrated, this problem is relatively straightforward, involving only two
+    distinct classes and three concurrently appearing objects in the image. For this
+    reason, my aim was to optimize the models' hyperparameters to maintain a high
+    mAP while reducing the computational cost, thus enabling efficient execution on
+    edge devices such as smartphones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Object detection architectures and setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this project, the following object detection architectures were tested:
+    **EfficientDetD0, Faster-RCNN, SDD320, SDD640, and YoloV7**. However, the concepts
+    presented here can be applied to adapt various other architectures.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For model development, I primarily utilized Python 3.8 and the TensorFlow framework,
+    with the exception of YoloV7, where PyTorch was employed. While most examples
+    provided here relate to TensorFlow, you can adapt these principles to your preferred
+    framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In terms of hardware, the testing was conducted using an RTX 3060 GPU and an
+    Intel Core i5–10400 CPU. All the source code and models are available on [GitHub](https://github.com/AlvaroCavalcante/hand-face-detector).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning of object detectors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When using TensorFlow for object detection, it’s essential to understand that
+    all the hyperparameters are stored in a file named “[**pipeline.config**](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/configuring_jobs.md)”.
+    This protobuf file holds the configurations used to train and evaluate the model,
+    and you’ll find it in any pre-trained model downloaded from [TF Model Zoo](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf2_detection_zoo.md),
+    for instance. In this context, I will describe the modifications I’ve implemented
+    in the pipeline files to optimize the object detectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to note that the hyperparameters provided here were specifically
+    designed for hand and face detection (2 classes, 3 objects). Be sure to adapt
+    them for your own problem domain.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: General simplifications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first change that can applied to all models is reducing the maximum number
+    of predictions per class and the number of generated bounding boxes from 100 to
+    2 and 4, respectively. You can achieve this by adjusting the “**max_number_of_boxes**”
+    property inside the “**train_config**” object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After that, change the “**max_total_detections**” and the “**max_detections_per_class**”
+    that are inside the “**post_processing”** of the object detector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Those changes are important, especially in my case, as there are only three
+    objects and two classes appearing in the image simultaneously. By decreasing the
+    number of predictions, fewer iterations are required to eliminate overlapping
+    bounding boxes through Non-maximum Suppression (NMS). Therefore, if you have a
+    limited number of classes to detect and objects appearing in the scene, it could
+    be a good idea to change this hyperparameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional adjustments were applied individually, taking into account the specific
+    architectural details of each object detection model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Single Shot Multibox Detector (SSD)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s always a good idea to test different resolutions when working with object
+    detection. In this project, I utilized two versions of the model, SSD320 and SSD640,
+    with input image resolutions of 320x320 and 640x640 pixels, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For both models, one of the primary modifications was to reduce the depth of
+    the [**Feature Pyramid Network**](https://jonathan-hui.medium.com/understanding-feature-pyramid-networks-for-object-detection-fpn-45b227b9106c)
+    **(FPN)** from 5 to 4 by removing the most superficial layer. FPN is a powerful
+    feature extraction mechanism that operates on multiple feature map sizes. However,
+    for larger objects, the most superficial layer, designed for higher image resolutions,
+    might not be necessary. That said, if the objects that you are trying to detect
+    are not too small, it’s probably a good idea to remove this layer. To implement
+    this change, adjust the “**min_level**” attribute from 3 to 4 within the “**fpn**”
+    object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I also simplified the higher-resolution model (SSD640) by reducing the “**additional_layer_depth**”
+    from 128 to 108\. Likewise, I adjusted the “**multiscale_anchor_generator**” depth
+    from 5 to 4 layers for both models, as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, the network responsible for generating the bounding box predictions
+    (“**box_predictor**”) had the number of layers reduced from 4 to 3\. Regarding
+    SSD640, the box predictor depth was also decreased from 128 to 96, as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: These simplifications were driven by the fact that we have a limited number
+    of distinct classes with relatively straightforward patterns to detect. Therefore,
+    it’s possible to reduce the number of layers and the depth of the model, since
+    even with fewer feature maps we can still effectively extract the desired features
+    from the images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: EfficinetDet-D0
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Concerning EfficientDet-D0, I reduced the depth of the [**Bidirectional Feature
+    Pyramid Network**](https://paperswithcode.com/method/bifpn) **(**Bi-FPN**)** from
+    5 to 4\. Additionally, I decreased the Bi-FPN iterations from 3 to 2 and feature
+    map kernels from 64 to 48\. Bi-FPN is a sophisticated technique of multi-scale
+    feature fusion, which can yield excellent results. However, it comes at the cost
+    of higher computational demands, which can be a waste of resources for simpler
+    problems. To implement the aforementioned adjustments, simply update the attributes
+    of the “**bifpn**” object as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Besides that, it’s also important to reduce the depth of the “**multiscale_anchor_generator**”
+    in the same manner as we did with SSD. Lastly, I reduced the layers of the box
+    predictor network from 3 to 2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Faster R-CNN
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Faster R-CNN model relies on the [**Region Proposal Network**](https://paperswithcode.com/method/rpn#:~:text=A%20Region%20Proposal%20Network%2C%20or,generate%20high%2Dquality%20region%20proposals.)
+    (RPN) and anchor boxes as its primary techniques. Anchors are the central point
+    of a sliding window that iterates over the last feature map of the backbone CNN.
+    For each iteration, a classifier determines the probability of a proposal containing
+    an object, while a regressor adjusts the bounding box coordinates. To ensure the
+    detector is translation-invariant, it employs three different scales and three
+    aspect ratios for the anchor boxes, which increases the number of proposals per
+    iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although this is a shallow explanation, it’s apparent that this model is considerably
+    more complex than the others due to its two-stage detection process. However,
+    it’s possible to simplify it and enhance its speed while retaining its high accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do so, the first important modification involves reducing the number of
+    generated proposals from 300 to 50\. This reduction is feasible because there
+    are only a few objects present in the image simultaneously. You can implement
+    this change by adjusting the “**first_stage_max_proposals**” property, as demonstrated
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After that, I eliminated the largest anchor box scale (**2.0**) from the model.
+    This change was made because the hands and face maintain a consistent size due
+    to the interpreter’s fixed distance from the camera, and having large anchor boxes
+    might not be useful for proposal generation. Additionally, I removed one of the
+    aspect ratios of the anchor boxes, given that my objects have similar shapes with
+    minimal variation in the dataset. These adjustments are visually represented below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: That said, it’s crucial to consider the size and aspect ratios of your target
+    objects. This consideration allows you to eliminate less useful anchor boxes and
+    significantly decrease the computational cost of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: YoloV7
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In contrast, minimal changes were applied to YoloV7 to preserve the architecture’s
+    functionality. The main modification involved simplifying the CNN responsible
+    for feature extraction, in both the backbone and the model’s head. To achieve
+    this, I decreased the number of kernels/feature maps for nearly every convolutional
+    layer, creating the following model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: As discussed earlier, removing some layers and feature maps from the detectors
+    is typically a good approach for simpler problems, since feature extractors are
+    initially designed to detect dozens or even hundreds of classes in diverse scenarios,
+    requiring a more robust model to address these complexities and ensure high accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With these adjustments, I decreased the number of parameters from 36.4 million
+    to just 14.1 million, representing a reduction of approximately 61%. Furthermore,
+    I used an input resolution of 512x512 pixels instead of the suggested 640x640
+    pixels in the original paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional tip
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another valuable tip in the training of object detectors is to utilize the [Kmeans
+    model for unsupervised adjustment of the anchor box proportions](https://github.com/tensorflow/models/blob/master/research/object_detection/colab_tutorials/generate_ssd_anchor_box_aspect_ratios_using_k_means_clustering.ipynb),
+    fitting the width and height of the figures to maximize the ratio of Intersection
+    over Union (IoU) within the training set. By doing this, we can better adapt the
+    anchors to the given problem domain, thereby enhancing model convergence by starting
+    with adequate aspect ratios. The figure below exemplifies this process, comparing
+    three anchor boxes used by default in the SSD algorithm (in red) next to three
+    boxes with optimized proportions for the hand and face detection task (in green).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bec419cc78db42499e6ebebf3fcd54c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparing different bounding boxes' aspect ratios. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Showing the results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I trained and evaluated each detector using my own dataset, called the [Hand
+    and Face Sign Language](https://github.com/AlvaroCavalcante/hand-face-detector)
+    (HFSL) dataset, considering the mAP and the Frames Per Second (FPS) as the main
+    metrics. The table below provides a summary of the results, with values in parentheses
+    representing the FPS of the detector before implementing any of the described
+    optimizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b70a868c04ab549fc667045dddee8b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Object detection results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can observe that most of the models showed a significant reduction in inference
+    time while maintaining a high mAP across various levels of [Intersection over
+    Union](https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/)
+    (IoU). More complex architectures, such as Faster R-CNN and EfficientDet, increased
+    the FPS on GPU by 200.80% and 231.78%, respectively. Even SSD-based architectures
+    showed a huge increase in performance, with 280.23% and 159.59% improvements for
+    the 640 and 320 versions, respectively. Considering YoloV7, although the FPS difference
+    is most noticeable on the CPU, the optimized model has 61% fewer parameters, reducing
+    memory requirements and making it more suitable for edge devices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are instances when computational resources are limited, or tasks must
+    be executed quickly. In such scenarios, we can further optimize the open-source
+    object detection models to find a combination of hyperparameters that can reduce
+    the computational requirements without affecting the results, thereby offering
+    a suitable solution for diverse problem domains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article has assisted you in making better choices to train your
+    object detectors, resulting in significant efficiency gains with minimal effort.
+    If you didn’t understand some of the explained concepts, I recommend you dive
+    deeper into how your object detection architecture works. Additionally, consider
+    experimenting with different hyperparameter values to further streamline your
+    models based on the specific problem you are addressing!
+  prefs: []
+  type: TYPE_NORMAL

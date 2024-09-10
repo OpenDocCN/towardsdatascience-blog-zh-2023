@@ -1,0 +1,639 @@
+- en: Nine Rules for Creating Fast, Safe, and Compatible Data Structures in Rust (Part
+    2)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7?source=collection_archive---------8-----------------------#2023-04-12](https://towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7?source=collection_archive---------8-----------------------#2023-04-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Lessons from RangeSetBlaze
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@carlmkadie?source=post_page-----da5e6961a0b7--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----da5e6961a0b7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da5e6961a0b7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----da5e6961a0b7--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----da5e6961a0b7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----da5e6961a0b7---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da5e6961a0b7--------------------------------)
+    ·14 min read·Apr 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda5e6961a0b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----da5e6961a0b7---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda5e6961a0b7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7&source=-----da5e6961a0b7---------------------bookmark_footer-----------)![](../Images/f0769b1a5bf56fdbbe9a841255f915a1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Storing numbers in a tree — Source: [Bing Image Creator](https://www.bing.com/create)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is Part 2 of an article about creating data structures in Rust. We’ll
+    look at rules 6 to 9:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Define operators and fast operations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 7\. Follow the “Nine Rules of Good API Design” especially “write good documentation”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 8\. Optimize performance using representative data, Criterion Benchmarking,
+    and profiling.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 9\. Test coverage, docs, traits, compiler errors, and correctness.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: See [Part 1](https://medium.com/towards-data-science/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3)
+    for rules 1 to 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plagiarize your API, documentation, and even code — from the standard library.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Design constructors for ease-of-use, compatibility, and speed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create more Rust iterators than you expect.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make illegal values unpresentable with traits.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define generic iterators with guaranteed properties and useful methods.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These rules are informed by my experience creating `[range-set-blaze](https://crates.io/crates/range-set-blaze)`,
+    a new range-set crate. A range set is a data structure that represents sets of,
+    for example, integers as sorted & disjoint ranges. For example, `0..=5, 10..=10`.
+    Compared to other range-set crates, `range-set-blaze` offers a full collection
+    of set operations and is performant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by looking at how the crate offers set operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 6: Define Operators and Fast Operations'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The standard `BTreeSet` offers set operators, for example, if `a` and `b` are
+    each a `BTreeSet`, then `a | b` will be a `BTreeSet` of their union. Decide if
+    operators make sense for your data structure. Operators can be logical such as
+    `|`,`&`,`!` and/or arithmetic such as `+`,`-`,`*`,`/`,`^`. [This table](https://doc.rust-lang.org/book/appendix-02-operators.html)
+    lists Rust’s “overloadable” operators and their method names.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `range-set-blaze` crate offers set-related operators on both the `RangeSetBlaze`
+    struct:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and any iterators implementing the `SortedDisjoint` trait (see Rule 5 in [Part
+    1](https://medium.com/towards-data-science/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`BitOr` is Rust’s method name for the `|` operator (again, see [table](https://doc.rust-lang.org/book/appendix-02-operators.html)).
+    Here is the definition of the union operator on `RangeSetBlaze`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says that for all `RangeSetBlaze`, we define a `|` operator that takes
+    a `RangeSetBlaze` as a second input and that returns a `RangeSetBlaze`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #1: Support Borrowed Inputs**: The definition above lets users do
+    `a | b`, but not `&a | &b`, `&a | b`, or `a | &b`. Those “borrow combinations”
+    require three additional definitions of this form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Alternatively, you can use the `[gen_ops](https://crates.io/crates/gen_ops)`
+    crate. It lets you define all borrow combinations across multiple operators in
+    one statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #2: Offer Operators on Traits (Kind of):** Set-related methods, such
+    as `complement` and `union`, can be defined efficiently on our generic `SortedDisjoint`
+    iterators. The methods run in one pass and require minimal memory. (In Rule 5
+    in [Part 1](https://medium.com/towards-data-science/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3),
+    we saw the definition of `complement`.) Instead of `a.complement()`, however,
+    we’d like to say `!a`. Can we? No and yes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: No, you can’t implement trait `ops::Not` (the `!` operator) on `SortedDisjoint`
+    — [see Internet discussion](https://stackoverflow.com/questions/61108590/default-implementation-of-supertrait).
+    (You could but should not make `ops::Not` a supertype of `SortedDisjoint`, because
+    that would make it impossible to implement `SortedDisjoint` on outside types,
+    such as `[Itertools::Tee](https://docs.rs/itertools/latest/itertools/trait.Itertools.html#method.tee)`.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can and should, however, define the operators on as many of your own types
+    as you can.For example, here is the implementation of `ops::Not` for `CheckSortedDisjoint`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which lets us use `!` in this function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Aside: This example function runs in constant time and memory.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Subrule #3: Exploit Ownership:** I originally did not support the `|=` (`BitOrAssign`)
+    operator. I figured that if users wanted to union two `RangeSetBlaze` objects
+    and put the results in the first, they could just write `a = a | b`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Later, however, I noticed a potential speed-up. Specifically, when the number
+    of ranges in `b` is very small relative to `a`, we should add the ranges of `b`
+    to `a`, one at a time, rather than merging together their two `ranges` iterators.
+    So, I implemented the `BitOrAssign`. (I have no such speed-up for intersection,
+    so I haven’t implemented `BitAndAssign`.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But wait there is more! When a user calls `a | &b`, the operator owns the first
+    input. This means the code can modify the first input in place (if it so desires)
+    and return it as the result. Here is the definition of that operator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: I ended up creating special, optimized implementations for `a | &b` and `a |
+    b,` and `&a | b`. Rust even allowed me to optimize `&mut a |= b` both when `b`
+    is smaller (as before) and when `a` is smaller (we put `a` into the owned `b`,
+    one range at a time, and then assign `a` to `b`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #4: Offer fast multiway operations:** We can define the intersection
+    (operator `&`) of two `RangeSetBlaze` objects in terms the intersection of their
+    `ranges:`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And, thanks to the miracle of [Boolean algebra](https://en.wikipedia.org/wiki/Boolean_algebra),
+    we can define the intersection of two `RangesIter` in terms of complement and
+    union:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives us a constant-memory one-pass intersection for all `SortedDisjoint`
+    iterators. (The same trick works for set difference. Symmetric difference requires
+    two passes, but still only constant memory.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: `BTreeSet` doesn’t offer `complement`. Why? Because its complement of,
+    for example, `[0, 3, 4, 5, 10]` would require 4 billion entries. Range-based representations,
+    however, store just 4 entries: `-2147483648..=-1, 1..=2, 6..=9, 11..=2147483647`.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'What about the intersection of more than two `RangeSetBlaze` objects? We could
+    do them two at a time but that would create unnecessary intermediate objects.
+    Instead, we can offer multiway intersection, so users can do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Multiway intersection is defined as a method on an iterator of `RangeSetBlaze`
+    objects:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which calls a new multiway `SortedDisjoint` `intersection` and `union`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Putting this all together, we get the ability to intersect any number of `RangeSetBlaze`
+    objects in one-pass and with constant memory (plus the memory for the final `RangeSetBlaze`
+    result).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #5: If needed, use** `**Box<dyn**` **…**`**>**` **types to offer
+    multiway operations across different types:** Multiway operators on `SortedDisjoint`
+    can have a problem. You can union inputs of the same type, here `RangesIter<T>`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: But not inputs of mixed type, here `NotIter<T, RangesIter<T>>` and `RangesIter<T>:`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The fix is to wrap all the inputs in a new common type (details on [GitHub](https://github.com/CarlKCarlK/range-set-blaze/blob/main/src/dyn_sorted_disjoint.rs)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can use the new type either explicitly or via a macro.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Rule 7: Follow the Nine Rules of Good API Design especially “Write Good Documentation”'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'All the rules from the article [Nine Rules for Elegant Rust Library APIs](/nine-rules-for-elegant-rust-library-apis-9b986a465247)
+    apply. Here is a discussion of the most interesting six, starting with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Write good documentation to keep your design honest.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Create examples that don’t embarrass you.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You should put `#![warn(missing_docs)]` in your `lib.rs`. This will remind you
+    to write documentation for every public type, trait, and method. Include an example
+    in (almost) every bit of documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In one case, I got tired of writing warnings to users that some iterators should
+    contain only sorted & disjoint ranges. This led me to Rule 5 and having the compiler
+    enforce the needed guarantee.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In another case, I found myself explaining in multiple places how to call union.
+    Specifically, I told users to use the `extend` method with short second inputs
+    and the `| (union)` operator, otherwise. I found this embarrassing to explain.
+    This led me to offering a `|=` operator which always does the fastest thing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use [Clippy](https://doc.rust-lang.org/stable/clippy/usage.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This rule is important. I now take it for granted. So, use [Clippy](https://doc.rust-lang.org/stable/clippy/usage.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accept all types of types.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I mostly tried to follow this rule, but with one big exception. Although Rust
+    offers [many range types](https://doc.rust-lang.org/reference/expressions/range-expr.html),
+    I only accept ranges of the form `start..=end`. This not only simplifies the code,
+    but I think it also simplifies the documentation and examples. (Given user requests,
+    I’d revisit this.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define and return nice errors.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Surprisingly, this rule doesn’t come up much in many data structures. For example,
+    the standard `BTreeSet` doesn’t return any results that might be errors. Likewise,
+    `RangeSetBlaze` has a few places where it might panic — for example, if `CheckSortedDisjoint`
+    finds a problem — but it never returns error results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Know your users’ needs, ideally by eating your own dogfood.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I feel bad that I didn’t follow this rule. I created `RangeSetBlaze` for fun.
+    None of my current projects need it. I hope other folks will use it in their projects
+    and give me feedback on what they need from it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 8: Optimize Performance using Representative Data, Criterion Benchmarking,
+    and Profiling'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Aside: The [latest version of the benchmark report](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)
+    shows the most recent results, including comparisons with the popular Roaring
+    Compressed Bitmaps.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Subrule #1: Use Representative Data:** On some data, `RangeSetBlaze` will
+    be worse than the standard `HashSet` and `BTreeSet`. For example, its construction
+    from random integers (uniform and with replacement) is about 2.5 times slower
+    than `HashSet`''s. Here is a plot of construction time as a function of the number
+    of random integers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09edd05de2bff783c9e533a2f9d5e3a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: But what if the integers are ‘clumpy’? For example, 12, 13, 14, 998, 999, 1000,
+    1001, -333, -332, etc. To see, we’ll construct 1 million clumpy integers. We’ll
+    vary the average clump size from 1 (no clumps) to 100K (ten big clumps). (For
+    more details, see [Benchmarks for (some) Range-Related Rust Crate](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)s.)
+    With this data, as clump sizes reach 100, `RangeSetBlaze` is 30 times faster than
+    `HashTable` and 15 times faster than `BTreeSet`. And if we’re allowed to provide
+    the clumps as ranges (instead of as individual integers), `RangeSetBlaze` is 700
+    times faster than the standard data types when the clump size is 1000.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32f98d86f37b16ade7c3565eb2e6d2ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The advice here is to test on data (either real or synthetic) that you believe
+    to be interesting. For this project, I created “random clumpy integer iterators”
+    with control over:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the span of the integers (for example, all integers will be in `0..=9_999_999`)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of integers (for example, 1 million)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the average clump size (for example, 100)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: number of iterators (for example, 1)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: coverage, this is the fraction of the span expected to be covered by the iterators
+    (unioned or intersected, if more than one) — (for example, 10% coverage).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Subrule #2: Use the** [**Criterion crate**](https://docs.rs/criterion/latest/criterion/)
+    **to benchmark programs in Rust:** Here are some tips:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get good HTML reports and excellent plots, put `criterion = { version = "`Current
+    version`", features = ["html_reports"] }` in the `[dev-dependencies]` section
+    of your `Cargo.toml`. (This instruction is currently [missing from the Criterion
+    documentation](https://stackoverflow.com/questions/75808243/rust-criterion-wont-create-html-report).)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Put the following in your `Cargo.toml`. It declares a benchmark called “bench”
+    with a 3rd party benchmarking harness, namely, Criterion.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: At the top level of your project create folder `benches` and file `bench.rs`.
+    Make the last line of the file `criterion_main!(benches);`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create benchmarks as described in the [Criterion users guide](https://bheisler.github.io/criterion.rs/book/index.html).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Don’t fight Criterion. It may complain that your benchmarks are too slow. If
+    you can, listen to it and make them faster. This lets it generate better statistics.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Aside: You can run Criterion experiments under a debugger and as integration
+    tests. See `[fn debug_k_play](https://github.com/CarlKCarlK/range-set-blaze/blob/main/tests/integration_test.rs#L634)`
+    in `[tests/integration.rs](https://github.com/CarlKCarlK/range-set-blaze/blob/main/tests/integration_test.rs)`
+    for an example. The key is to put common code into its own project (for example,
+    `[tests_common](https://github.com/CarlKCarlK/range-set-blaze/tree/main/tests_common)`)
+    and then create a workspace in your main `[Cargo.toml](https://github.com/CarlKCarlK/range-set-blaze/blob/main/Cargo.toml#LL16C1-L18C32)`.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Subrule #3: Use benchmarks to drive design decisions**: Eight years ago,
+    when I created the [Python version of this data structure](https://fastlmm.github.io/PySnpTools/#util-intrangeset),
+    I stored the sorted ranges in a vector. For the new version, I wondered if using
+    Rust’s standard `BTreeMap` would be faster. To see, let’s compare two `BTreeMap`-based
+    crates — `[rangemap](https://crates.io/crates/rangemap)` and `RangeSetBlaze —`
+    to two `SmallVec`-based crates — `[Range-collections](https://crates.io/crates/range-collections)`
+    and `[range-set](https://crates.io/crates/range-set)`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a9464c61a2b308d82806ef7d34df6e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Please see [the benchmark report](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)
+    for details.) In summary, the fastest vector-based method is 14 times slower than
+    the slowest tree-based method. It is also 50 times slower than `RangeSetBlaze`.
+    We should not be surprised because vector-based methods are not designed for the
+    large numbers of inserts required by our data of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is another example. When we intersect (or union) many `RangeSet` objects
+    together, is it OK to do it two-at-a-time or is multiway faster? The benchmark
+    gives the answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0288dffabbcc82ca0ebc572912515a2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: On two sets, all methods are similar but as the number of sets increases two-at-a-time
+    falls behind. At 100 sets, two-at-a-time must create about 100 intermediate sets
+    and is about 14 times slower than multiway. Dynamic multiway is not used by `RangeSetBlaze`
+    but is sometimes needed by `SortedDisjoint` iterators. It is 5% to 10% slower
+    than static multiway. ([Details](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #4: Profile your code to find bottlenecks:** The most popular profiler
+    for Rust is `[flamegraph](https://github.com/flamegraph-rs/flamegraph)`. I found
+    it easy to use but I missed being able to zoom in and manipulate the results interactively.
+    It turns out; however, that you can use almost any profiler with Rust.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, I have a paid subscription to Visual Studio 2022\. I previously
+    used its full-featured profiler on C++ and C# code. To use it on Rust, I just
+    add this (temporarily) to my `Cargo.toml` file and recompile in release mode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Other full-featured profilers that I haven’t used but look like they would work
+    with Rust include [AMD μProf](https://www.amd.com/en/developer/uprof.html) and,
+    on Windows, [Superluminal](https://superluminal.eu/rust/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 9: Test Coverage, Docs, Traits, Compiler Errors, and Correctness'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data structures typically support many methods and are used by other projects.
+    They, thus, require extensive testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #1: Combine integration and coverage tests:** Integration tests see
+    only the public interface of your data structure. I put mine in `tests/integration_test.rs`.
+    Each test function is prefaced with `#[test]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Coverage tests ensure that every line of your code is run at least once by
+    your tests. Use the powerful and easy `[llvm-cov](https://github.com/taiki-e/cargo-llvm-cov#)`
+    to measure coverage. Installation instructions are [here](https://github.com/taiki-e/cargo-llvm-cov#installation).
+    Run it with the command: `cargo llvm-cov --open.`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get your coverage to 100%, you’ll need to add tests. I suggest that, to the
+    degree possible, make these coverage tests part of your integration tests. This
+    will let you experience the usability of your public interface.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To create coverage (and other) tests across the types you support, use the
+    wonderful [syntactic-for](https://crates.io/crates/syntactic-for) crate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Subrule #2: Put many examples in your documentation and run them as tests**:
+    Here is an example from the documentation for `SortedDisjoint::equals`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: /// use range_set_blaze::prelude::*;
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ///
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: /// let a = CheckSortedDisjoint::from([1..=2]);
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: /// let b = RangeSetBlaze::from_iter([1..=2]).into_ranges();
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: /// assert!(a.equal(b));
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: /// [PRE20]
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: This runs with `cargo test` or `cargo test --doc`. (It doesn’t, however, run
+    when measuring coverage.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #3: Test all structs and enums for missing traits:** I want `RangeSetBlaze::Iter`
+    to (generally) support the same traits as the standard `BTreeSet::Iter`. Also,
+    all types should, if practical, auto implement `Sized`, `Send`, `Sync`, and `Unpin`.
+    (See this [Let’s Get Rusty](https://www.youtube.com/watch?v=Nzclc6MswaI&t=528s)
+    video). Here is how to test traits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: When I first did this, I found that I was missing `Debug`, `FusedIterator`,
+    `DoubleEndedIterator`, and `ExactSizeIterator`. I added the first two and decided
+    not to add the second two for now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, a test that compared the traits of `RangeSetBlaze` to those of the
+    standard `BTreeSet` reminded me to implement `Clone`, `PartialOrd`, `Hash`, `Eq`,
+    `Ord`, and `IntoIterator`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #4: Test that Illegal Values really are Unrepresentable:** You want
+    your data structure to raise a compiler error if a user applies it to the wrong
+    types (for example, tries to create a set of characters rather than integers).
+    Likewise, some of your methods should raise a compiler error if the user gives
+    them a regular iterator rather than an iterator like `SortedDisjoint`. How do
+    we test this?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use `[trybuild](https://docs.rs/trybuild/latest/trybuild/)` to create “ui”
+    tests. First, create an integration test like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then in `tests/ui`, create files such as `untrusted_pairs.rs` that test the
+    compiler error messages of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Set the environment variable `TRYBUILD=overwrite` to record the expected compiler
+    error message. See `[trybuild](https://docs.rs/trybuild/latest/trybuild/)` for
+    details. If you have touble getting the same results locally as on CI (for example,
+    GitHub Action), see [this thread](https://github.com/dtolnay/trybuild/issues/236#issuecomment-1620950759).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Subrule #5: Test correctness with automatic QuickCheck tests:** As recommended
+    by [Rüdiger Klaehn](https://github.com/rklaehn/sorted-iter), I implemented automatic
+    `[QuickCheck](https://github.com/BurntSushi/quickcheck)` tests. Here is a test
+    that checks that `RangeSetBlaze::is_disjoint` gets the same answer as `BTreeSet::is_disjoint`
+    over values that `QuickCheck` generates.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, there you have it, nine rules for creating a data structure in Rust. Creating
+    a data structure in Rust took more time than I expected. Half of this was my fault
+    for creating a full `SortedDisjoint` sub-library. Half was Rust’s fault for, for
+    example, requiring me to define 13 public iterator structs. The payoff — in terms
+    of Rust’s speed and safety — however, makes the time worthwhile. Follow these
+    nine rules to create your own powerful Rust data structures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Aside: If you’re interested in future articles, please* [*follow me on Medium*](https://medium.com/@carlmkadie)*.
+    I write on scientific programming in Rust and Python, machine learning, and statistics.
+    I tend to write about one article per month.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

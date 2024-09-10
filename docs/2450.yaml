@@ -1,0 +1,417 @@
+- en: 4-bit Quantization with GPTQ
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/4-bit-quantization-with-gptq-36b0f4f02c34?source=collection_archive---------0-----------------------#2023-07-31](https://towardsdatascience.com/4-bit-quantization-with-gptq-36b0f4f02c34?source=collection_archive---------0-----------------------#2023-07-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Quantize your own LLMs using AutoGPTQ
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne?source=post_page-----36b0f4f02c34--------------------------------)[![Maxime
+    Labonne](../Images/a7efdd305e3cc77d5509bbb1076d57d8.png)](https://medium.com/@mlabonne?source=post_page-----36b0f4f02c34--------------------------------)[](https://towardsdatascience.com/?source=post_page-----36b0f4f02c34--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----36b0f4f02c34--------------------------------)
+    [Maxime Labonne](https://medium.com/@mlabonne?source=post_page-----36b0f4f02c34--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdc89da634938&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-bit-quantization-with-gptq-36b0f4f02c34&user=Maxime+Labonne&userId=dc89da634938&source=post_page-dc89da634938----36b0f4f02c34---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----36b0f4f02c34--------------------------------)
+    ·10 min read·Jul 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F36b0f4f02c34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-bit-quantization-with-gptq-36b0f4f02c34&user=Maxime+Labonne&userId=dc89da634938&source=-----36b0f4f02c34---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F36b0f4f02c34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F4-bit-quantization-with-gptq-36b0f4f02c34&source=-----36b0f4f02c34---------------------bookmark_footer-----------)![](../Images/c14c3bcded8e89b92f862c1114cba7ff.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recent advancements in weight quantization allow us to run massive large language
+    models on consumer hardware, like a LLaMA-30B model on an RTX 3090 GPU. This is
+    possible thanks to novel 4-bit quantization techniques with minimal performance
+    degradation, like [GPTQ](https://arxiv.org/abs/2210.17323), [GGML](https://github.com/ggerganov/ggml),
+    and [NF4](https://huggingface.co/blog/4bit-transformers-bitsandbytes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [previous article](https://medium.com/towards-data-science/introduction-to-weight-quantization-2494701b9c0c),
+    we introduced naïve 8-bit quantization techniques and the excellent LLM.int8().
+    In this article, we will explore the popular **GPTQ algorithm** to understand
+    how it works and implement it using the [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the code on [Google Colab](https://colab.research.google.com/drive/1lSvVDaRgqQp_mWK_jC9gydz6_-y6Aq4A?usp=sharing)
+    and [GitHub](https://github.com/mlabonne/llm-course/tree/main).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🧠 Optimal Brain Quantization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start by introducing the problem we’re trying to solve. For every layer
+    ℓ in the network, we want to find a quantized version **Ŵₗ** *of the original
+    weights* **Wₗ**. This is called the **layer-wise compression problem**. More specifically,
+    to minimize performance degradation, we want the outputs (**Ŵ**ᵨ**X**ᵨ) of these
+    new weights to be as close as possible to the original ones (**W**ᵨ**X**ᵨ). In
+    other words, we want to find:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bea35e882148e389c0c3d23f956d46d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Different approaches have been proposed to solve this problem, but we’re interested
+    in the [**Optimal Brain Quantizer**](https://arxiv.org/abs/2208.11580) (OBQ) framework
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This method is inspired by a **pruning technique** to carefully remove weights
+    from a fully trained dense neural network (Optimal Brain Surgeon). It uses an
+    approximation technique and provides explicit formulas for the best single weight
+    *w𐞥* to remove and optimal update *δ*ꟳ to adjust the set of remaining non-quantized
+    weights *F* to make up for the removal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c28f4ed29652a4fba9e7411172489f2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where quant(*w*) is the weight rounding given by the quantization and **H**ꟳ
+    is the Hessian.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using OBQ, we can quantize the easiest weight first and then adjust all remaining
+    non-quantized weights to **compensate for this precision loss**. Then we pick
+    the next weight to quantize, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A potential issue with this approach is when there are outlier weights, which
+    can result in high **quantization error**. Usually, these outliers would be quantized
+    last, when there are few non-quantized weights left that could be adjusted to
+    compensate for the large error. This effect can worsen when some weights are pushed
+    further outside the grid by intermediate updates. A simple heuristic is applied
+    to prevent this: outliers are quantized as soon as they appear.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This process could be computationally heavy, especially for LLMs. To deal with
+    this, the OBQ method uses a trick that avoids redoing the entire computation each
+    time a weight is simplified. After quantizing a weight, it adjusts the matrix
+    used in calculations (the Hessian) by **removing the row and column** associated
+    with that weight (using Gaussian elimination):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04c24c3d6a72907b1b3508009c8a72d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The method also employs vectorization to process multiple rows of the weight
+    matrix at once. Despite its efficiency, the OBQ’s computation time increases significantly
+    as the size of the weight matrix increases. This cubic growth makes it difficult
+    to use OBQ on very large models with billions of parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🧮 The GPTQ Algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Introduced by Frantar et al. (2023), the [GPTQ algorithm](https://arxiv.org/abs/2210.17323)
+    takes inspiration from the OBQ method, but with significant improvements to scale
+    it for (very) large language models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Arbitrary Order Insight'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The OBQ method selects weights (parameters in a model) for quantization in a
+    certain order, determined by which will **add the least additional error**. However,
+    GPTQ observes that for large models, quantizing weights in any fixed order can
+    perform just as well. This is because even though some weights might introduce
+    more error individually, they are quantized later in the process when there are
+    few other weights left that could increase the error. So the order doesn’t matter
+    as much as we thought.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on this insight, GPTQ aims to quantize all weights in the **same order
+    for all rows** of a matrix. This makes the process faster because certain computations
+    have to be done only once for each column, rather than once for each weight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd7b329f93ed489449b8f138e55b63b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Lazy Batch-Updates'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This scheme won’t be fast because it requires updating a **huge matrix** with
+    very few computations for each entry. This type of operation can’t utilize the
+    full compute capabilities of GPUs and will be slowed down by memory limitations
+    (memory throughput bottleneck).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To resolve this, GPTQ introduces “lazy batch” updates. It turns out that the
+    final rounding decisions for a given column are only affected by updates performed
+    on that column, not on later columns. Therefore, GPTQ can apply the algorithm
+    to a **batch of columns at a time** (like 128 columns), updating only those columns
+    and a corresponding block of the matrix. After a block is fully processed, the
+    algorithm performs global updates on the entire matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fe33b573159cfae9d1247d3073088cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Step 3: Cholesky Reformulation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: However, there’s one more issue to address. When the algorithm scales up to
+    very large models, numerical inaccuracies can become a problem. Specifically,
+    repeated applications of a certain operation can **accumulate numerical errors**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To tackle this, GPTQ uses a [Cholesky decomposition](https://en.wikipedia.org/wiki/Cholesky_decomposition),
+    a numerically stable method for solving certain mathematical problems. It involves
+    precomputing some required information from the matrix using the Cholesky method.
+    This approach, combined with a slight “dampening” (adding a small constant to
+    diagonal elements of the matrix), helps the algorithm to avoid numerical issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full algorithm can be summarized in a few steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The GPTQ algorithm begins with a Cholesky decomposition of the Hessian inverse
+    (a matrix that helps decide how to adjust the weights)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It then runs in loops, handling batches of columns at a time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each column in a batch, it quantizes the weights, calculates the error,
+    and updates the weights in the block accordingly.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: After processing the batch, it updates all remaining weights based on the block’s
+    errors.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The GPTQ algorithm was tested on various language generation tasks. It was compared
+    with other quantization methods, like rounding all weights to the nearest quantized
+    value (RTN). GPTQ was used with the BLOOM (176B parameters) and OPT (175B parameters)
+    model families, and models were quantized using a **single NVIDIA A100 GPU**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 💻 Quantize an LLM with AutoGPTQ
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: GPTQ has been very popular to create models in 4-bit precision that can efficiently
+    run on GPUs. You can find many examples on the Hugging Face Hub, especially from
+    [TheBloke](https://huggingface.co/TheBloke). If you’re looking for an approach
+    that is more CPU-friendly, [GGML](https://github.com/ggerganov/ggml) is currently
+    your best option. Finally, the `transformers` library with `bitsandbytes` allows
+    you to quantize a model when it's loaded using the `load_in_4bit=true` argument,
+    which requires downloading full models and storing them in your RAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s implement the GPTQ algorithm using the AutoGPTQ library and quantize a
+    GPT-2 model. This requires a GPU, but a free T4 on Google Colab will do. We start
+    by loading the libraries and defining the model we want to quantize (in this case,
+    GPT-2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now want to load the model and the tokenizer. The tokenizer is loaded using
+    the classic `AutoTokenizer` class from the `transformers` library. On the other
+    hand, we need to pass a specific configuration (`BaseQuantizeConfig`) to load
+    the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this configuration, we can specify the number of bits to quantize (here,
+    `bits=4`) and the group size (size of the lazy batch). Note that this group size
+    is optional: we could also use **one set of parameters** for the entire weight
+    matrix. In practice, these groups generally improve the quality of the quantization
+    at a very low cost (especially with `group_size=1024`). The `damp_percent` value
+    is here to help the Cholesky reformulation and should not be changed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the `desc_act` (also called act order) is a tricky parameter. It allows
+    you to **process rows based on decreasing activation**, meaning the most important
+    or impactful rows (determined by sampled inputs and outputs) are processed first.
+    This method aims to place most of the quantization error (inevitably introduced
+    during quantization) on less significant weights. This approach improves the overall
+    accuracy of the quantization process by ensuring the most significant weights
+    are processed with greater precision. However, when used alongside group size,
+    `desc_act` can lead to performance slowdowns due to the need to frequently reload
+    quantization parameters. For this reason, we won't use it here (it will probably
+    be fixed in the future, however).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The quantization process **relies heavily on samples** to evaluate and enhance
+    the quality of the quantization. They provide a means of comparison between the
+    outputs produced by the origina and the newly quantized model. The larger the
+    number of samples provided, the greater the potential for more accurate and effective
+    comparisons, leading to improved quantization quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of this article, we utilize the [**C4 (Colossal Clean Crawled
+    Corpus) dataset**](https://huggingface.co/datasets/c4) to generate our samples.
+    The C4 dataset is a large-scale, multilingual collection of web text gathered
+    from the Common Crawl project. This expansive dataset has been cleaned and prepared
+    specifically for training large-scale language models, making it a great resource
+    for tasks such as this. The WikiText dataset is another popular option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following code block, we load 1024 samples from the C4 dataset, tokenize
+    them, and format them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that dataset is ready, we can start the quantization process with a batch
+    size of 1\. Optionally, we also use [OpenAI Triton](https://github.com/openai/triton),
+    a CUDA alternative, to communicate with the GPU. Once this is done, we save the
+    tokenizer and the model in a safetensors format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: As per usual, the model and tokenizer can then be loaded from the output directory
+    using the `AutoGPTQForCausalLM` and `AutoTokenizer` classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s check that the model is working correctly. The AutoGPTQ model (mostly)
+    works as a normal `transformers` model, which makes it compatible with inference
+    pipelines, as shown in the following example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We managed to get a convincing completion from our quantized GPT-2 model. A
+    more in-depth evaluation would require **measuring the perplexity** of the quantized
+    model versus the original one. However, we will leave it out of the scope of this
+    article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we introduced the GPTQ algorithm, a state-of-the-art quantization
+    technique to run LLMs on consumer-grade hardware. We showed how it addresses the
+    layer-wise compression problem, based on an improved OBS technique with arbitrary
+    order insight, lazy batch updates, and Cholesky reformulation. This novel approach
+    **significantly reduces memory and computation requirements**, making LLMs accessible
+    to a broader audience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition, we **quantized our own LLM model** on a free T4 GPU and ran it
+    to generate text. You can push your own version of a GPTQ 4-bit quantized model
+    on the Hugging Face Hub. As mentioned in the introduction, GPTQ is not the only
+    4-bit quantization algorithm: [GGML](https://github.com/ggerganov/ggml) and [NF4](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
+    are excellent alternatives with slightly different scopes. I encourage you to
+    learn more about them and give them a shot!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re interested in more technical content around LLMs, follow me on Twitter
+    [@maximelabonne](https://twitter.com/maximelabonne).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'B. Hassibi, D. G. Stork and G. J. Wolff, [“Optimal Brain Surgeon and general
+    network pruning,”](https://ieeexplore.ieee.org/document/298572) IEEE International
+    Conference on Neural Networks, San Francisco, CA, USA, 1993, pp. 293–299 vol.1,
+    doi: 10.1109/ICNN.1993.298572.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Elias Frantar, Sidak Pal Singh, & Dan Alistarh. (2023). [Optimal Brain Compression:
+    A Framework for Accurate Post-Training Quantization and Pruning](https://arxiv.org/abs/2208.11580).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Elias Frantar, Saleh Ashkboos, Torsten Hoefler, & Dan Alistarh. (2023). [GPTQ:
+    Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael
+    Matena, Yanqi Zhou, Wei Li, & Peter J. Liu. (2020). [Exploring the Limits of Transfer
+    Learning with a Unified Text-to-Text Transformer](https://arxiv.org/abs/1910.10683v3).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Related articles
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----36b0f4f02c34--------------------------------)
+    [## Introduction to Weight Quantization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reducing the size of Large Language Models with 8-bit quantization
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/introduction-to-weight-quantization-2494701b9c0c?source=post_page-----36b0f4f02c34--------------------------------)
+    [](/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32?source=post_page-----36b0f4f02c34--------------------------------)
+    [## Fine-Tune Your Own Llama 2 Model in a Colab Notebook
+  prefs: []
+  type: TYPE_NORMAL
+- en: A practical introduction to LLM fine-tuning
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/fine-tune-your-own-llama-2-model-in-a-colab-notebook-df9823a04a32?source=post_page-----36b0f4f02c34--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Learn more about machine learning and support my work with one click — become
+    a Medium member here:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mlabonne/membership?source=post_page-----36b0f4f02c34--------------------------------)
+    [## Join Medium with my referral link — Maxime Labonne'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a Medium member, a portion of your membership fee goes to writers you read,
+    and you get full access to every story…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@mlabonne/membership?source=post_page-----36b0f4f02c34--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If you’re already a member, you can* [*follow me on Medium*](https://medium.com/@mlabonne)*.*'
+  prefs: []
+  type: TYPE_NORMAL

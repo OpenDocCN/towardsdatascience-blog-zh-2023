@@ -1,0 +1,520 @@
+- en: 'LLM Output Parsing: Function Calling vs. LangChain'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/llm-output-parsing-function-calling-vs-langchain-63b80545b3a7?source=collection_archive---------2-----------------------#2023-09-21](https://towardsdatascience.com/llm-output-parsing-function-calling-vs-langchain-63b80545b3a7?source=collection_archive---------2-----------------------#2023-09-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'How to consistently parse outputs from LLMs using Open AI API and LangChain
+    function calling: evaluating the methods’ advantages and disadvantages'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)[![Gabriel
+    Cassimiro](../Images/2cf8a09a706236059c46c7f0f20d4365.png)](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------)
+    [Gabriel Cassimiro](https://gabrielcassimiro17.medium.com/?source=post_page-----63b80545b3a7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3692fb93d7e5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&user=Gabriel+Cassimiro&userId=3692fb93d7e5&source=post_page-3692fb93d7e5----63b80545b3a7---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----63b80545b3a7--------------------------------)
+    ·11 min read·Sep 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F63b80545b3a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&user=Gabriel+Cassimiro&userId=3692fb93d7e5&source=-----63b80545b3a7---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F63b80545b3a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-output-parsing-function-calling-vs-langchain-63b80545b3a7&source=-----63b80545b3a7---------------------bookmark_footer-----------)![](../Images/affa0a341f50bd362761ff3898004072.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by [Victor Barrios](https://unsplash.com/pt-br/@thevictorbarrios?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    at [Unsplash](https://unsplash.com/pt-br/fotografias/yjygDnvRuaI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating tools with LLMs requires multiple components, such as vector databases,
+    chains, agents, document splitters, and many other new tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, one of the most crucial components is the LLM output parsing. If you
+    cannot receive structured responses from your LLM, you will have a hard time working
+    with the generations. This becomes even more evident when we want a single call
+    to the LLM to output more than one piece of information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s illustrate the problem with a hypothetical scenario:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want the LLM to output from a single call the **ingredients** and the **steps**
+    to make a certain recipe. But we want to have both of these items separately to
+    use in two different parts of our system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This returns the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is a huge string and parsing it would be hard because the LLM can return
+    slightly different structures breaking whatever code you write. You could argue
+    that asking in the prompt to always return “Ingredients:” and “Steps:” could resolve
+    and you are not wrong. This could work, however you would still need to process
+    the string manually and be open to eventual variations and hallucinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are a couple of ways we could solve this problem. One was mentioned above,
+    but there are a couple of tested ways that might be better. In this article, I
+    will show two options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open AI Function calling;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: LangChain Output Parser.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Open AI Function calling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is a method that I have been trying and is giving the most consistent results.
+    We use the Function Calling capability of the Open AI API so that the model returns
+    the response as a structured JSON.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This functionality has the objective of providing the LLM the ability to call
+    an external function by providing the inputs as a JSON. The models were fine-tuned
+    to understand when they need to use a given function. An example of this is a
+    function for current weather. If you ask GPT for the current weather, it won’t
+    be able to tell you, but you can provide a function that does this and pass it
+    to GPT so it will know that it can be accessed given some input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to dive deeper into this functionality here is the [announcement
+    from Open AI](https://openai.com/blog/function-calling-and-other-api-updates)
+    and here is a [great article](/how-to-use-openais-function-calling-e35bdac88ae7).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So let’s look in the code at what this would look like given our problem at
+    hand. Let’s break down the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first thing we need to do is declare the functions that will be available
+    to the LLM. We have to give it a name and a description so that the model understands
+    when it should use the function. Here we tell it the this function is used to
+    return the recipe asked.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we go into the parameters. First, we say that it is of type object and
+    the properties it can use are ingredients and steps. Both of these also have a
+    description and a type to guide the LLM on the output. Finally, we specify which
+    of those properties are required to call the function (this means we could have
+    optional fields that the LLM would judge if it wanted to use them).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s use that now in a call to the LLM:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we start by creating our query to the API by formatting a base prompt with
+    what could be a variable input (recipe). Then, we declare our API call using “gpt-3.5-turbo-0613”,
+    we pass our query in the messages argument, and now we pass our functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two arguments regarding our functions. The first one we pass the
+    list of objects in the format shown above with the functions the model has access
+    to. And the second argument “function_call” we specify how the model should use
+    those functions. There are three options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Auto” -> the model decides between user response or function calling;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: “none” -> the model does not call the function and returns the user response;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '{“name”: “my_function_name”} -> specifying a function name forces the model
+    to use it.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You can find the official documentation [here](https://platform.openai.com/docs/api-reference/chat/create).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our case and for using as output parsing we used the latter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So now we can look at our responses. The response we get (after this filter
+    [“choices”][0][“message”]) is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we parse it further into the “function_call” we can see our intended structured
+    response:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion for function calling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is possible to use the feature of function calling straight from the Open
+    AI API. This allows us to have a dictionary format response with the same keys
+    every time the LLM is called.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To use it is pretty straightforward, you just have to declare the functions
+    object specifying the name, description, and properties focused on your task but
+    specifying (in the description) that this should be the response of the model.
+    Also, when calling the API we can force the model to use our function, making
+    it even more consistent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main downside of this method is that it is not supported by all LLM models
+    and APIs. So if we wanted to use Google PaLM API we would have to use another
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain Output Parsers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One alternative we have that is model-agnostic is using LangChain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, what is LangChain?
+  prefs: []
+  type: TYPE_NORMAL
+- en: LangChain is a framework for developing applications powered by language models.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: That is the official definition of LangChain. This framework was created recently
+    and is already used as the industry standard for building tools powered by LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It has a functionality that is great for our use case called “Output Parsers”.
+    In this module, there are multiple objects that can be created to return and parse
+    different types of formats from LLM calls. It achieves this, by first declaring
+    what the format is and passing it in the prompt to the LLM. Then it uses the object
+    created previously to parse the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s break down the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first thing we do here is create our Response Schema that will be the input
+    for our parser. We create one for the ingredients and one for the steps, each
+    containing a name that will be the key of the dictionary and a description that
+    will guide the LLM on the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we create our StructuredOutputParser from those response schemas. There
+    are multiple ways to do this, with different styles of parsers. Look [here](https://python.langchain.com/docs/modules/model_io/output_parsers/)
+    to learn more about them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lastly, we get our format instructions and define our prompt that will have
+    the recipe name and the format instructions as inputs. The format instructions
+    are these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]json" and "[PRE9]json'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"ingredients": string  // The ingredients from recipe, as a unique string.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"steps": string  // The steps to prepare the recipe, as a unique string.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"""'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: llm_openai = OpenAI()
+  prefs: []
+  type: TYPE_NORMAL
+- en: llm_palm = GooglePalm()
+  prefs: []
+  type: TYPE_NORMAL
+- en: recipe = 'Fish and chips'
+  prefs: []
+  type: TYPE_NORMAL
+- en: formated_prompt = prompt.format(**{"recipe":recipe, "format_instructions":output_parser.get_format_instructions()})
+  prefs: []
+  type: TYPE_NORMAL
+- en: response_palm = llm_palm(formated_prompt)
+  prefs: []
+  type: TYPE_NORMAL
+- en: response_openai = llm_openai(formated_prompt)
+  prefs: []
+  type: TYPE_NORMAL
+- en: print("PaLM:")
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(response_palm)
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(output_parser.parse(response_palm))
+  prefs: []
+  type: TYPE_NORMAL
+- en: print("Open AI:")
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(response_openai)
+  prefs: []
+  type: TYPE_NORMAL
+- en: print(output_parser.parse(response_openai))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'PaLM:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '''ingredients'': ''''''- 1 cup all-purpose flour\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- 1 teaspoon baking powder\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- 1/2 teaspoon salt\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- 1/2 cup cold water\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- 1 egg\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- 1 pound white fish fillets, such as cod or haddock\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Vegetable oil for frying\n- 1 cup tartar sauce\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- 1/2 cup malt vinegar\n- Lemon wedges'''''','
+  prefs: []
+  type: TYPE_NORMAL
+- en: '''steps'': ''''''1\. In a large bowl, whisk together the flour, baking powder,
+    and salt.\n'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. In a separate bowl, whisk together the egg and water.\n
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Dip the fish fillets into the egg mixture, then coat them in the flour mixture.\n
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Heat the oil in a deep fryer or large skillet to 375 degrees F (190 degrees
+    C).\n
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Fry the fish fillets for 3-5 minutes per side, or until golden brown and
+    cooked through.\n
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Drain the fish fillets on paper towels.\n
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Serve the fish fillets immediately with tartar sauce, malt vinegar, and
+    lemon wedges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ''''''''
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open AI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '''ingredients'': ''1 ½ pounds cod fillet, cut into 4 pieces,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2 cups all-purpose flour,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2 teaspoons baking powder,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 teaspoon salt,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 teaspoon freshly ground black pepper,
+  prefs: []
+  type: TYPE_NORMAL
+- en: ½ teaspoon garlic powder,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 cup beer (or water),
+  prefs: []
+  type: TYPE_NORMAL
+- en: vegetable oil, for frying,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tartar sauce, for serving',
+  prefs: []
+  type: TYPE_NORMAL
+- en: '''steps'': ''1\. Preheat the oven to 400°F (200°C) and line a baking sheet
+    with parchment paper.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. In a medium bowl, mix together the flour, baking powder, salt, pepper and
+    garlic powder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Pour in the beer and whisk until a thick batter forms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Dip the cod in the batter, coating it on all sides.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Heat about 2 inches (5 cm) of oil in a large pot or skillet over medium-high
+    heat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Fry the cod for 3 to 4 minutes per side, or until golden brown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Transfer the cod to the prepared baking sheet and bake for 5 to 7 minutes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8\. Serve warm with tartar sauce.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '```'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion: LangChain Output parsing'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This method is really good as well and has as its main characteristic flexibility.
+    We create a couple of structures such as Response Schema, Output Parser, and Prompt
+    Templates that can be pieced together easily and used with different models. Another
+    good advantage of this is the support for multiple output formats.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main disadvantage comes from passing the format instructions via the prompt.
+    This allows for random errors and hallucinations. One real example was from this
+    specific case where I had to specify “ as a unique string” in the description
+    of the response schema. If I did not specify this, the model was returning a list
+    of strings with the steps and instructions and this caused an error of parsing
+    in the Output Parser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are multiple ways of using an output parser for your LLM-powered application.
+    However, your choice may change depending on the problem at hand. For myself,
+    I like to follow this idea:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I always use an output parser, even if I have only one output from the LLM.
+    This allows me to control and specify my outputs. If I am working with Open AI,
+    Function Calling is my choice because it has the most control and will avoid random
+    errors in a production application. However, if I am using a different LLM or
+    need a different output format, my choice is LangChain, but with a lot of testing
+    on the outputs, in order to craft the prompt with the least mistakes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code can be found [here](https://github.com/gabrielcassimiro17/llm-output-parsing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you like the content and want to support me, you can buy me a coffee:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.buymeacoffee.com/cassimiro?source=post_page-----63b80545b3a7--------------------------------)
+    [## Gabriel Cassimiro is a Data Scientist sharing free content to the community'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I love supporting creators!
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.buymeacoffee.com](https://www.buymeacoffee.com/cassimiro?source=post_page-----63b80545b3a7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are a few other articles you might be interested in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/async-calls-for-chains-with-langchain-3818c16062ed?source=post_page-----63b80545b3a7--------------------------------)
+    [## Async calls for Chains with Langchain'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to make Langchain chains work with Async calls to LLMs, speeding up the
+    time it takes to run a sequential long…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/async-calls-for-chains-with-langchain-3818c16062ed?source=post_page-----63b80545b3a7--------------------------------)
+    [](/solving-unity-environment-with-deep-reinforcement-learning-836dc181ee3b?source=post_page-----63b80545b3a7--------------------------------)
+    [## Solving Unity Environment with Deep Reinforcement Learning
+  prefs: []
+  type: TYPE_NORMAL
+- en: End to End Project with code of a PyTorch implementation of Deep Reinforcement
+    Learning Agent.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/solving-unity-environment-with-deep-reinforcement-learning-836dc181ee3b?source=post_page-----63b80545b3a7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

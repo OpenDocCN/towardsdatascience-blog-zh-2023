@@ -1,0 +1,469 @@
+- en: How to Measure Drift in ML Embeddings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-measure-drift-in-ml-embeddings-ee8adfe1e55e?source=collection_archive---------0-----------------------#2023-06-14](https://towardsdatascience.com/how-to-measure-drift-in-ml-embeddings-ee8adfe1e55e?source=collection_archive---------0-----------------------#2023-06-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We evaluated five embedding drift detection methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@elena.samuylova?source=post_page-----ee8adfe1e55e--------------------------------)[![Elena
+    Samuylova](../Images/bc3024500f8b90a97f13d82ecaa1c9e7.png)](https://medium.com/@elena.samuylova?source=post_page-----ee8adfe1e55e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ee8adfe1e55e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ee8adfe1e55e--------------------------------)
+    [Elena Samuylova](https://medium.com/@elena.samuylova?source=post_page-----ee8adfe1e55e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9621354b583a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-drift-in-ml-embeddings-ee8adfe1e55e&user=Elena+Samuylova&userId=9621354b583a&source=post_page-9621354b583a----ee8adfe1e55e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ee8adfe1e55e--------------------------------)
+    ·10 min read·Jun 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fee8adfe1e55e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-drift-in-ml-embeddings-ee8adfe1e55e&user=Elena+Samuylova&userId=9621354b583a&source=-----ee8adfe1e55e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fee8adfe1e55e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-measure-drift-in-ml-embeddings-ee8adfe1e55e&source=-----ee8adfe1e55e---------------------bookmark_footer-----------)![](../Images/1b687c02077cf4d863483344e04b819a.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why monitor embeddings drift?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When ML systems are in production, you often do not immediately get the ground
+    truth labels. The model predicts or classifies something, but you do not know
+    how accurate it is. You must wait a bit (or a lot!) to get the labels to measure
+    the true model quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, nothing beats measuring the actual performance. But if it is not
+    possible due to feedback delay, there are valuable proxies to look at. One is
+    detecting drift in model predictions (“Is the model output looking differently
+    from before?”) and model inputs (“Is the data fed to the model different”?)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Detecting prediction and data drift can serve as an early warning.** It is
+    helpful to see if the model is getting new inputs it might be ill-equipped to
+    handle. Understanding that there is a change in the environment can also help
+    identify ways to improve the model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What type of issues can you detect? For example, if your model is doing text
+    classification, you might want to notice if there is a new topic, shift in sentiments,
+    change in class balance, texts in new language, or when you start getting a lot
+    of spam or corrupted inputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96557e301472fcbb62b476ded9108921.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But how exactly to detect this change?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you work with structured data, there are a lot of methods you can use to
+    detect drift: from tracking the descriptive statistics of the model outputs (min-max
+    ranges, the share of predicted classes, etc.) to more [sophisticated distribution
+    drift detection](https://www.evidentlyai.com/blog/data-drift-detection-large-datasets)
+    methods, from statistical tests like Kholmogorov-Smirnov to distance metrics like
+    Wasserstein distance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, if you are working with NLP or LLM-powered applications, you deal with
+    unstructured data. Often in the form of numerical representations — embeddings.
+    How can you detect drift in these numerical representations?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc480957080e9c871af1ce9773d06c4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a fairly new topic, and there are no “best practice” methods yet. To
+    help shape the intuition about different embedding drift detection approaches,
+    we ran a set of [experiments](https://www.evidentlyai.com/blog/embedding-drift-detection).
+    In this article, we will give an overview of the methods we evaluated and introduce
+    [Evidently](https://github.com/evidentlyai/evidently), an open-source Python library
+    to detect embedding drift — among other things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Drift detection basics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The idea behind [drift detection](https://www.evidentlyai.com/blog/machine-learning-monitoring-data-and-concept-drift)
+    is to get an alert when “the data changes significantly.” The focus is on the
+    overall distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is different from [outlier detection](https://www.evidentlyai.com/blog/ml-monitoring-drift-detection-vs-outlier-detection),
+    when you want to detect individual data points that are different from the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**To measure drift, you need to decide what your reference dataset is.** Often,
+    you can compare your current production data to the validation data or some past
+    period that you consider representative. For example, you can compare this week’s
+    data to the previous week and move the reference as you go.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This choice is specific to the use case: you need to formulate an expectation
+    on how stable or volatile your data is and choose the reference data that adequately
+    captures what you expect to be a “typical” distribution of the input data and
+    model responses.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You must also choose the drift detection method and tune the alert threshold.**
+    There are different ways to compare datasets between each other and the degrees
+    of changes you consider meaningful. Sometimes you care about a tiny deviation,
+    and sometimes only about a significant shift. To tune it, you can model your drift
+    detection framework [using historical data](https://www.evidentlyai.com/blog/tutorial-3-historical-data-drift)
+    or, alternatively, start with some sensible default and then adjust it on the
+    go.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get to the details of “how.” Say, you are working with a text classification
+    use case and want to compare how your datasets (represented as embeddings) shift
+    week by week. You have two embedding datasets to compare. How exactly do you measure
+    the “difference” between them?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll review the five possible approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Euclidean distance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/d6a6ea85e1bbe82cd7c2529a1ae9ca5c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can average the embeddings in two distributions and get a representative
+    embedding for each dataset. Then, you measure the [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance)
+    between them. This way, you compare “how far” two vectors are from each other
+    in a multi-dimensional space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Euclidean distance is a straightforward and familiar metric: it measures the
+    length of the line connecting the two embeddings. There are also other distance
+    metrics that you can use, such as Cosine, Manhattan, or Chebyshev distance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a drift score, you will receive a number that can go from 0 (for identical
+    embeddings) to infinity. The higher the value, the further apart the two distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This behavior is intuitive, but one possible downside is that Euclidean distance
+    is an absolute measure. This makes setting a specific drift alert threshold harder:
+    the definition of “far” will vary based on the use case and the embedding model
+    used. You need to tune the threshold individually for different models you monitor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cosine distance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/9a9b249d11fe71a3d725c563924b897c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cosine distance is another popular distance measure. Instead of measuring the
+    “length,” it calculates the cosine of the angle between vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cosine similarity is widely used in machine learning in tasks like search, information
+    retrieval, or recommendation systems. To measure distance, you must subtract the
+    cosine from 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Cosine distance = 1 — Cosine similarity*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the two distributions are the same, the Cosine similarity will be 1, and
+    the distance will be 0\. The distance can take values from 0 to 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our [experiments](https://www.evidentlyai.com/blog/embedding-drift-detection),
+    we found that the threshold might be not very intuitive to tune, since it can
+    take values as low as 0.001 for a change that you already want to detect. Choose
+    the threshold wisely! Another downside is that it does not work if you apply dimensionality
+    reduction methods like PCA, leading to unpredictable results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model-based drift detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/16348f9132065c602e2c5064a32022d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The classifier-based drift detection method follows a different idea. Instead
+    of measuring the distance between the average embeddings, you can train a classification
+    model that tries to identify to which distribution each embedding belongs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the model can confidently predict from which distribution the specific embedding
+    comes, it is likely that the two datasets are sufficiently different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can measure the [ROC AUC score](https://www.evidentlyai.com/classification-metrics/explain-roc-curve)
+    of the classifier model computed on a validation dataset as a drift score and
+    set a threshold accordingly. A score above 0.5 shows at least some predictive
+    power, and a score of 1 corresponds to “absolute drift” when the model can always
+    identify to which distribution the data belongs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can read more about the method in the [paper](https://arxiv.org/pdf/1810.11953.pdf)
+    “Failing Loudly: An Empirical Study of Methods for Detecting Dataset Shift.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on our experiments, this method is an excellent default. It works consistently
+    for different datasets and embedding models we tested, both with and without PCA.
+    It also has an intuitive threshold that any data scientist is familiar with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Share of drifted components
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/e705ca52602ced8c120b51d8c618f5b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea behind this method is to treat embeddings as structured tabular data
+    and apply numerical drift detection methods — the same you would use to detect
+    drift in numerical features. The individual components of each embedding are treated
+    as “columns” in a structured dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, unlike numerical features, these “columns” do not have interpretable
+    meaning. They are *some* coordinates of the input vector. However, you can still
+    measure how many of these coordinates drift. If many do, there is likely a meaningful
+    change in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To apply this method, you first must compute the drift in each component. In
+    our experiments, we used [Wasserstein (Earth-Mover) distance](https://www.evidentlyai.com/blog/data-drift-detection-large-datasets#wasserstein-distance-earth-mover-distance)
+    with the 0.1 threshold. The intuition behind this metric is that when you set
+    the threshold to 0.1, you will notice changes in the size of the “0.1 standard
+    deviations” of a given value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, you can measure the overall share of drifting components. For example,
+    if your vector length is 400, you can set the threshold to 20%. If over 80 components
+    drift, you will get a drift detection alert.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The benefit of this method is that you can measure drift on a scale of 0 to
+    1\. You can also reuse familiar techniques that you might be using to detect drift
+    on tabular data. (There are [different](https://www.evidentlyai.com/blog/data-drift-detection-large-datasets#kolmogorov-smirnov-ks-test)
+    methods like K-L divergence or various statistical tests).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, for some, this might be a limitation: you have a lot of parameters
+    to set. You can tweak the underlying drift detection method, its threshold, and
+    the share of drifting components to react to.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All in all, we believe this method has its merits: it is also consistent with
+    different embedding models and has a reasonable computation speed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Maximum mean discrepancy (MMD)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/45ff746998ce6b822ce334537c71a135.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use MMD to measure the multi-dimensional distance between the means
+    of the vectors. The goal is to distinguish between two probability distributions
+    p and q based on the mean embeddings µp and µq of the distributions in the [reproducing
+    kernel Hilbert space](https://en.wikipedia.org/wiki/Reproducing_kernel_Hilbert_space)
+    F.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Formally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13703b67d74abda53b1926fae7b46eb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here is another way to represent MMD, where K is a reproducing kernel Hilbert
+    space:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/076037e1f773594e6850a0dc6fd42042.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: You can think of K as some measure of closeness. The more similar the objects,
+    the larger this value. If the two distributions are the same, MMD should be 0\.
+    If the two distributions are different, MMD will increase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38a3b4059b10afd1bbcb7e934595c9bf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. *Comparing different distributions with MMD.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can read more in the paper “[A Kernel Method for the Two-Sample Problem](https://arxiv.org/abs/0805.2368).”
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use the MMD measure as a drift score. The downside of this approach
+    is that many are not familiar with the method, and the threshold is non-interpretable.
+    The computation is typically longer than with other methods. We recommend using
+    it if you have a reason to and a solid understanding of the math behind it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which method to choose?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To shape some intuition behind the methods, we ran a set of experiments by introducing
+    an artificial shift to three datasets and estimating the drift results as we increased
+    it. We also tested the computation speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find all the code and experiment details in a [separate blog](https://www.evidentlyai.com/blog/embedding-drift-detection).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Here are our suggestions:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model-based drift detection and using ROC AUC score as a drift detection threshold
+    is an excellent default.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tracking the share of drifted embedding components on a scale from 0 to 1 is
+    a close second. Just remember to tweak the thresholds if you apply dimensionality
+    reduction.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you want to measure the “size” of drift in time, a metric like Euclidean
+    distance is a good choice. However, you need to decide how you design alerting
+    since you will deal with absolute distance values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/55710a84105e151bb3693f23442fbd97.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Summary from the [research blog](https://www.evidentlyai.com/blog/embedding-drift-detection).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**It’s important to keep in mind that drift detection is a heuristic.** It
+    is a proxy for possible issues. You might need to experiment with the approach:
+    not only pick the method but also tune the threshold to your data. You also must
+    think through the choice of reference window and make an informed assumption about
+    what change you consider meaningful. This will depend on your error tolerance,
+    use case, and expectations on how well the model generalizes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You can also separate drift detection from debugging.** Once you get an alert
+    on the possible embedding drift, the next step is to investigate what changed
+    exactly. In this case, you must inevitably look back at the raw data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**If possible, you can even start with evaluating the drift in raw data in
+    the first place.** This way, you can get valuable insights: such as [identifying
+    top words](https://www.evidentlyai.com/blog/tutorial-detecting-drift-in-text-data)
+    that help the classifier model decide to which distribution the texts belong,
+    or tracking interpretable text descriptors — such as length, or share of OOV words.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e345ca8e2a9a26df805ac6b1616a1bb7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Example of drift detection with Evidently using raw data.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evidently open-source
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We implemented all the mentioned drift detection methods in [Evidently](https://github.com/evidentlyai/evidently),
+    an open-source Python library to evaluate, test and monitor ML models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can run it in any Python environment. Simply pass a DataFrame, select which
+    columns contain embeddings, and choose the drift detection method (or go with
+    defaults!) You can also implement these checks as part of a pipeline, and use
+    100+ other checks for data and model quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e91df16a7707701e796b30111d22186.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Source: example notebook on* [*embedding drift detection*](https://github.com/evidentlyai/evidently/blob/main/examples/how_to_questions/how_to_calculate_embeddings_drift.ipynb)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can explore the [Getting Started tutorial](https://docs.evidentlyai.com/get-started/tutorial/?utm_source=website&utm_medium=referral&utm_campaign=blog_text&utm_content=embedding-drift-detection)
+    to understand the Evidently capabilities or jump directly to a [code example](https://github.com/elenasamuylova/evidently/blob/main/examples/how_to_questions/how_to_calculate_embeddings_drift.ipynb)
+    on embedding drift detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Drift detection is a valuable tool for production ML model monitoring. It helps
+    detect changes in the input data and model predictions. You can rely on it as
+    a **proxy indicator of the model quality** and a way to alert you about potential
+    changes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Drift detection is not limited to working with tabular data. You can also **monitor
+    for drift in ML embedding**s — for example, when running NLP or LLM-based applications.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this article, we introduced **5 different methods for embedding monitoring**,
+    including Euclidean and Cosine distance, Maximum Mean Discrepancy, model-based
+    drift detection, and tracking the share of drifted embeddings using numerical
+    drift detection methods. All these methods are implemented in the open-source
+    Evidently Python library.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We recommend **model-based drift detection** as a sensible default approach.
+    This is due to the ability to use ROC AUC score as an interpretable drift detection
+    measure that is easy to tweak and work with. This method also performs consistently
+    across different datasets and embeddings models, which makes it convenient to
+    use in practice across different projects.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article is based on the research published on the Evidently* [*blog*](https://www.evidentlyai.com/blog/embedding-drift-detection)*.
+    Thanks to* [*Olga Filippova*](https://www.evidentlyai.com/author/olga-fillipova)
+    *for co-authoring the article.*'
+  prefs: []
+  type: TYPE_NORMAL

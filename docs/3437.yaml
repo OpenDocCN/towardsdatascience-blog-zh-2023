@@ -1,0 +1,434 @@
+- en: 'Parallelising Python on Spark: Options for Concurrency with Pandas'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/parallelising-python-on-spark-options-for-concurrency-with-pandas-7ca553b9f265?source=collection_archive---------8-----------------------#2023-11-18](https://towardsdatascience.com/parallelising-python-on-spark-options-for-concurrency-with-pandas-7ca553b9f265?source=collection_archive---------8-----------------------#2023-11-18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Leverage the benefits of Spark when working with Pandas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mc12338?source=post_page-----7ca553b9f265--------------------------------)[![Matt
+    Collins](../Images/b28ac8100d6fb287e3fa6926eec7939a.png)](https://medium.com/@mc12338?source=post_page-----7ca553b9f265--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ca553b9f265--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ca553b9f265--------------------------------)
+    [Matt Collins](https://medium.com/@mc12338?source=post_page-----7ca553b9f265--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd1970f1605f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparallelising-python-on-spark-options-for-concurrency-with-pandas-7ca553b9f265&user=Matt+Collins&userId=d1970f1605f1&source=post_page-d1970f1605f1----7ca553b9f265---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ca553b9f265--------------------------------)
+    ·8 min read·Nov 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ca553b9f265&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparallelising-python-on-spark-options-for-concurrency-with-pandas-7ca553b9f265&user=Matt+Collins&userId=d1970f1605f1&source=-----7ca553b9f265---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7ca553b9f265&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparallelising-python-on-spark-options-for-concurrency-with-pandas-7ca553b9f265&source=-----7ca553b9f265---------------------bookmark_footer-----------)![](../Images/e140d141606ab77d4bea08c31fd28d36.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Florian Steciuk](https://unsplash.com/@flo_stk?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my previous role, I spent some time working on an internal project to predict
+    future disk storage space usage for our Managed Services customers across thousands
+    of disks. Each disk is subject to its own usage patterns and this means we need
+    a separate machine learning model for each disk which takes historical data to
+    predict future usage on a disk-by-disk basis. While performing this prediction
+    and choosing the correct algorithm for the job is a challenge in itself, performing
+    this at scale has its own problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to take advantage of more sophisticated infrastructure, we can look
+    to move away from sequential predictions and speed up the operation of the forecasting
+    by parallelising the workload. This blog post aims to compare Pandas UDFs and
+    the ‘concurrent.futures’ module, two approaches of concurrent processing, and
+    determine use cases for each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Challenge
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Pandas is a gateway package in Python for working with datasets in the analytics
+    space. Through working with DataFrames, we’re able to profile data and evaluate
+    data quality, perform exploratory data analysis, build descriptive visualisations
+    of the data and predict future trends.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this is certainly a great tool, the single-threaded nature of Python means
+    it can scale poorly when working with larger data sets, or when you need to perform
+    the same analysis across multiple subsets of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the world of big data, we expect a bit more sophistication in our approach,
+    as we have the additional focus on scalability to keep great performance. Spark,
+    amongst other languages, allows us to take advantage of distributed processing
+    to help us process larger and more complicated data structures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before digging into this specific example, we can generalise some use cases
+    which summarise the need for concurrency in data processing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply uniform transformations to multiple data files
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Forecast future values for several subsets of data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tune hyperparameters for machine learning model and select most efficient configuration
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When escalating our requirement to perform workloads like those suggested above
+    and in our case, the most straightforward approach in Python and Pandas is to
+    process this data sequentially. For our example, we would run the above flow for
+    one disk at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In our example, we have data for thousands of disks that show the free space
+    recorded over time and we want to predict future free space values for each of
+    the disks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To paint the picture a bit more clearly, I’ve provided a csv file containing
+    1,000 disks each with one month of historical data for free space measured in
+    GB. This is of sufficient size for us to see the impact of the different approaches
+    to predicting at scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e992deee09e07e1de9e148a170ee1aa3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Example DataFrame'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a time-series problem like this, we’re looking to use historical data to
+    predict future trends and we want to understand which Machine Learning (ML) algorithm
+    is going to be most appropriate for each disk. Tools like AutoML are great for
+    this when looking to determine the appropriate model for one dataset, but we’re
+    dealing with 1,000 datasets here — so this is excessive for our comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this case, we’ll limit the number of algorithms we want to compare to two
+    and see which is the most appropriate model to use, for each disk, using the Root
+    Mean Squared Error (RMSE) as a validation metric. Further information on RMSE
+    can be found [here](https://www.statology.org/how-to-interpret-rmse/) . These
+    algorithms are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fbprophet (fitting the data to a more complex line)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Facebook’s time-series forecasting model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Built for more complex predictions with hyperparameters for seasonality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We’ve got all the components ready now if we wanted to predict a single disk’s
+    future free space. The set of actions follows the below flow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a783b1227a738d2c25c1db93079c43b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by Author: Data Lifecycle'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now want to scale this out, performing this flow for multiple disks, 1,000
+    in our example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As part of our review, we’ll compare the performance of calculating RMSE values
+    for the different algorithms at different scales. As such, I’ve created a subset
+    of the first 100 disks to mimic this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This should give some interesting insights into performance on different-sized
+    datasets, performing operations of varying complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing concurrency
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Python is famously single-threaded and subsequently does not make use of all
+    the compute resources available at a point in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a result, I saw three options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implement a for loop to calculate the predictions sequentially, taking the single-threaded
+    approach.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Python’s [futures](https://docs.python.org/3/library/concurrent.futures.html)
+    module to run multiple processes at once.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Pandas UDFs (user-defined functions) to leverage distributed computing in
+    PySpark while maintaining our Pandas syntax and compatible packages.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I wanted to do a fairly in-depth comparison under different environment conditions,
+    so have used a single-node Databricks cluster and another Databricks cluster with
+    4 worker nodes to leverage Spark for our Pandas UDF approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll follow the following approach to evaluate the suitability of the Linear
+    Regression and fbprophet models for each disk:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split the data into train and test sets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use the training set as input and predict over the test set dates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compare the predicted values with the actual values in the test set to get an
+    Root Mean Squared Error (RMSE) score
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We’re going to return two things in our outputs: a modified DataFrame with
+    the predictions, giving us the additional benefit of plotting and comparing the
+    predicted vs actual values, and a DataFrame containing the RMSE scores for each
+    disk and algorithm.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The functions to do so look like the below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’re going to compare the three approaches outlined above. We’ve got a few
+    different scenarios, so we can fill out a table of what we’re collecting results
+    against:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the following combinations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sequential
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: futures
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pandas UDFs
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Linear regression
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fbprophet
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Combined (both algorithms for each disk) — most efficient way to gather a comparison.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cluster mode
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Single Node Cluster
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Standard Cluster with 4 workers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Number of disks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '100'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '1000'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The results are presented in this format in the appendix of this blog, should
+    you wish to take a further look.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Methods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Method 1: Sequential'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Method 2: concurrent.futures'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There are two options in using this module: parallelising memory-intensive
+    operations (using ThreadPoolExecutor) or CPU-intensive operations (ProcessPoolExecutor).
+    One descriptive explanation of this is found in the following [blog](https://medium.com/@bfortuner/python-multithreading-vs-multiprocessing-73072ce5600b).
+    As we’re going to be working on a CPU intensive problem, ProcessPoolExecutor is
+    fitting for what we’re trying to achieve.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Method 3: Pandas UDFs'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now we’re going to switch gear and use Spark and leverage distributed computing
+    to help with our efficiency. Since we’re using Databricks, most of our Spark configuration
+    is done for us but there are some tweaks to our general handling of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, import the data to a PySpark DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’re going to make use of the Pandas grouped map UDF (PandasUDFType.GROUPED_MAP),
+    since we want to pass in a DataFrame and return a DataFrame. Since [Apache Spark
+    3.0](https://databricks.com/blog/2020/05/20/new-pandas-udfs-and-python-type-hints-in-the-upcoming-release-of-apache-spark-3-0.html)
+    we don’t need to explicitly declare this decorator anymore!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to split out our fbprophet, regression and RMSE functions for Pandas
+    UDFs due to DataFrame structuring in PySpark, but don’t require a massive code
+    overhaul to achieve this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can then use applyInPandas to produce our results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: the examples above are only demonstrating the process for using Linear
+    Regression for readability. Please see the full [notebook](https://github.com/MattPCollins/ConcurrentModelTraining/blob/main/concurrent_model_training.ipynb)
+    for the complete demonstration of this.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting the results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/3098a8f18ce7b30e907ab60668ebf311.png)![](../Images/46707ea00c9a1d05785f17a06739cae1.png)![](../Images/2fd9e8b2bbc38d819d3cdec9eb645ec0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Images by Author: Execution durations for forecasting algorithms, for each
+    suggested method'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve created plots for the different methods and different environment set-ups,
+    then grouped the data by algorithm and number of disks for easy comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please note that the tabular results are found in the appendix of this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I’ve summarised the highlights of these findings below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As expected, predicting 1,000 disks compared to 100 disks is (generally) a more
+    time-consuming process.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The sequential approach is generally the slowest, being unable to take advantage
+    of underlying resources in an efficient manner.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Pandas UDFs are quite inefficient on the smaller, simpler tasks. The overhead
+    of transforming the data is more expensive — parallelising helps to compensate
+    for this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Both sequential and concurrent.futures approaches are oblivious to the clustering
+    available in Databricks — missing out on additional compute.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Closing thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Context certainly plays a big part in which approach is most successful, but
+    given Databricks and Spark are often used for Big Data problems, we can see the
+    benefit of using Pandas UDFs with those larger, more complex datasets that we’ve
+    seen here today.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a Spark environment for smaller datasets can be done just as efficiently
+    on a smaller (and less expensive!) compute configuration at great efficiency as
+    demonstrated by the use of the concurrent.futures module, so do bear this in mind
+    when architecting your solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re familiar with Python a­nd Pandas then neither approach should be a
+    strenuous learning curve to move away from the sequential for loop approach seen
+    in beginner tutorials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve not investigated it in this post as I have found discrepancies and incompatibilities
+    with the current version, but the recent pyspark.pandas module will certainly
+    be more common in the future, and one approach to look out for. This API (along
+    with Koalas, developed by the guys at Databricks, but now retired) leverages the
+    familiarity of Pandas with the underlying benefits of Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For demonstrating the effect we are trying to achieve, we’ve only gone as far
+    as to look at the RMSE values produced for each disk, rather than actually predict
+    a future time-series set of values. The framework we’ve set up here can be applied
+    in the same way for this, with logic to determine if the evaluation metric (along
+    with other logic, such as physical limitations of a disk) is appropriate in each
+    case and to predict the future values, where possible, using the determined algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, the notebook can be found in my [GitHub](https://github.com/MattPCollins/ConcurrentModelTraining)
+    .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*https://blog.coeo.com*](https://blog.coeo.com/parallelising-python-on-spark-different-approaches),
+    adapted for this repost*.*'
+  prefs: []
+  type: TYPE_NORMAL

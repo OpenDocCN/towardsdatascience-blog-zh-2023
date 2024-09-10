@@ -1,0 +1,178 @@
+- en: Deep Learning Training on AWS Inferentia
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/dl-training-on-aws-inferentia-53e103597a03?source=collection_archive---------7-----------------------#2023-08-30](https://towardsdatascience.com/dl-training-on-aws-inferentia-53e103597a03?source=collection_archive---------7-----------------------#2023-08-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Yet another money-saving AI-model training hack
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----53e103597a03--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----53e103597a03--------------------------------)[](https://towardsdatascience.com/?source=post_page-----53e103597a03--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----53e103597a03--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----53e103597a03--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdl-training-on-aws-inferentia-53e103597a03&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----53e103597a03---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----53e103597a03--------------------------------)
+    ·5 min read·Aug 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F53e103597a03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdl-training-on-aws-inferentia-53e103597a03&user=Chaim+Rand&userId=9440b37e27fe&source=-----53e103597a03---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F53e103597a03&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdl-training-on-aws-inferentia-53e103597a03&source=-----53e103597a03---------------------bookmark_footer-----------)![](../Images/7a5f4d5ad988b426fd86cf773160ec04.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Lisheng Chang](https://unsplash.com/@changlisheng?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The topic of this post is AWS’s home-grown AI chip, [AWS Inferentia](https://aws.amazon.com/machine-learning/inferentia/)
+    — more specifically, the second-generation AWS Inferentia2\. This is a sequel
+    to [our post](/a-first-look-at-aws-trainium-1e0605071970) from last year on [AWS
+    Trainium](https://aws.amazon.com/machine-learning/trainium/) and joins a series
+    of posts on the topic of dedicated AI accelerators. Contrary to the chips we have
+    explored in our previous posts in the series, AWS Inferentia was designed for
+    AI model **inference** and is targeted *specifically* for deep-learning inference
+    applications. However, the fact that AWS Inferentia2 and AWS Trainium both share
+    the same underlying [NeuronCore-v2](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/arch/neuron-hardware/neuron-core-v2.html#neuroncores-v2-arch)
+    architecture and the same software stack (the [AWS Neuron SDK](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/index.html)),
+    begs the question: **Can AWS Inferentia be used for AI training workloads, as
+    well?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Granted, there are some elements of the [Amazon EC2 Inf2 instance](https://aws.amazon.com/ec2/instance-types/inf2/)
+    family specifications (which are powered by AWS Inferentia accelerators) that
+    might make them less appropriate for some training workloads when compared to
+    the [Amazon EC2 Trn1 instance](https://aws.amazon.com/ec2/instance-types/trn1/)
+    family. For example, although both Inf2 and support high-bandwidth and low-latency
+    NeuronLink-v2 device-to-device interconnect, the Trainium devices are connected
+    in a [2D Torus topology](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/arch/neuron-features/collective-communication.html#trn1-32xlarge-topology)
+    rather than a [ring topology](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/arch/neuron-features/collective-communication.html#inf2-48xlarge-topology)
+    which can potentially impact the performance of Collective Communication operators
+    (see [here](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/arch/neuron-features/collective-communication.html)
+    for more details). However, some training workloads may not require the unique
+    features of the Trn1 architecture and may perform equally well on the Inf1 and
+    Inf2 architectures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, the ability to train on both Trainium *and* Inferentia accelerators
+    would greatly increase the variety of training instances at our disposal and our
+    ability to tune the choice of training instance to the specific needs of each
+    DL project. In our recent post, [Instance Selection for Deep Learning](/instance-selection-for-deep-learning-7463d774cff0),
+    we elaborated on the value of having a wide variety of diverse instance types
+    for DL training. While the Trn1 family includes just two instance types, enabling
+    training on Inf2 would add four additional instance types. Including Inf1 in the
+    mix would add four more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our intention in this post is to demonstrate the opportunity of training on
+    AWS Inferentia. We will define a toy vision model and compare the performance
+    of training it on the Amazon EC2 Trn1 and Amazon EC2 Inf2 instance families. Many
+    thanks to [Ohad Klein](https://www.linkedin.com/in/ohad-klein-947aaa187/?originalSubdomain=il)
+    and [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/) for their
+    contributions to this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disclaimers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Note that, as of the time of this writing, there are some DL model architectures
+    that remain unsupported by the Neuron SDK. For example, while model inference
+    of CNN models is supported, training CNN models is [still unsupported](https://github.com/orgs/aws-neuron/projects/1/views/1?filterQuery=cnn&pane=issue&itemId=12024107).
+    The SDK documentation includes a [model support matrix](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/general/arch/model-architecture-fit.html#aws-trainium-neuroncore-v2)
+    detailing the supported features per model architecture, training framework (e.g.,
+    TensorFlow and PyTorch), and Neuron architecture version.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The experiments that we will describe were run on Amazon EC2 with the most recent
+    version of the [Deep Learning AMI for Neuron](https://aws.amazon.com/releasenotes/aws-deep-learning-ami-neuron-pytorch-1-13-ubuntu-20-04/)
+    available at the time of this writing, “Deep Learning AMI Neuron PyTorch 1.13
+    (Ubuntu 20.04) 20230720”, which includes version 2.8 of the Neuron SDK. Being
+    that the Neuron SDK remains under active development, it is likely that the comparative
+    results that we achieved will change over time. It is highly recommended that
+    you reassess the findings of this post with the most up-to-date versions of the
+    underlying libraries.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Our intention in this post is to demonstrate the potential of training on AWS
+    Inferentia powered instances. Please do **not** view this post as an endorsement
+    for the use of these instances or any of the other products we might mention.
+    There are many variables that factor into how to choose a training environment
+    which may vary greatly based on the particulars of your project. In particular,
+    different models might exhibit wholly different relative price-performance results
+    when running on two different instance types.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Toy Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Similar to the experiments we described in [our previous post](/a-first-look-at-aws-trainium-1e0605071970),
+    we define a simple [Vision Transformer](https://en.wikipedia.org/wiki/Vision_transformer)
+    (ViT)-backed classification model (using the [timm](https://pypi.org/project/timm/)
+    Python package version 0.9.5) along with a randomly generated dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the table below we compare the speed and price performance of various Amazon
+    EC2 Trn1 and Amazon EC2 Inf2 instance types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9834da39bbe4c3cee701baced5dff67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance comparison of ViT-based classification model (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While it is clear that the Trainium-powered instance types support better absolute
+    performance (i.e., increased training speeds), training on the Inferentia-powered
+    instances resulted in ~39% better **price** performance (for the two-core instance
+    types) and higher (for the larger instance types).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, we caution against making any design decisions based solely on these
+    results. Some model architectures might run successfully on Trn1 instances but
+    break down on Inf2\. Others might succeed on both but exhibit very different comparative
+    performance results than the ones shown here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that we have omitted the time required for compiling the DL model. Although
+    this is only required the first time the model is run, compilation times can be
+    quite high (e.g., upward of ten minutes for our toy model). Two ways to reduce
+    the overhead of model compilation are [parallel compilation](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/frameworks/torch/torch-neuronx/api-reference-guide/training/pytorch-neuron-parallel-compile.html#pytorch-neuronx-parallel-compile-cli)
+    and [offline compilation](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/compiler/neuronx-cc/faq.html#where-can-i-compile-to-neuron).
+    Importantly, make sure that your script does not include operations (or graph
+    changes) that trigger frequent recompilations. See the [Neuron SDK documentation](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/compiler/index.html)
+    for more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although marketed as an AI **inference** chip, it appears that AWS Inferentia
+    offers yet another option for **training** deep learning models. In our [previous
+    post](/a-first-look-at-aws-trainium-1e0605071970) on AWS Trainium we highlighted
+    some of the challenges that you might encounter when adapting your models to train
+    on a new AI ASIC. The possibility of training the same models on AWS Inferentia-powered
+    instance types, as well, could increase the potential reward of your efforts.
+  prefs: []
+  type: TYPE_NORMAL

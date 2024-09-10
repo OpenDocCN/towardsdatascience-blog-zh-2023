@@ -1,0 +1,327 @@
+- en: A Serverless Query Engine from Spare Parts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27](https://towardsdatascience.com/a-serverless-query-engine-from-spare-parts-bd6320f10353?source=collection_archive---------0-----------------------#2023-04-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***An open-source implementation of a Data Lake with DuckDB and AWS Lambdas***'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)[![Ciro
+    Greco](../Images/4a20e5d435998e8d8ff7aeac1f8ff60d.png)](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)
+    [Ciro Greco](https://medium.com/@ciro.greco?source=post_page-----bd6320f10353--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1a8912e69301&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=post_page-1a8912e69301----bd6320f10353---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bd6320f10353--------------------------------)
+    ·9 min read·Apr 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&user=Ciro+Greco&userId=1a8912e69301&source=-----bd6320f10353---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbd6320f10353&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-serverless-query-engine-from-spare-parts-bd6320f10353&source=-----bd6320f10353---------------------bookmark_footer-----------)![](../Images/85ce8738302baf64cec9764042261d18.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A duck in the cloud. Photo by [László Glatz](https://unsplash.com/ko/@glatz0?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post we will show how to build a simple end-to-end application in the
+    cloud on a serverless infrastructure. The purpose is simple: we want to show that
+    we can develop directly against the cloud while minimizing the cognitive overhead
+    of designing and building infrastructure. Plus, we will put together a design
+    that minimizes costs compared to modern data warehouses, such as Big Query or
+    Snowflake.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As data practitioners we want (and love) to build applications on top of our
+    data as seamlessly as possible. Whether you work in BI, Data Science or ML all
+    that matters is the final application and how fast you can see it working end-to-end.
+    The infrastructure often gets in the way though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine, as a practical example, that we need to build a new customer-facing
+    analytics application for our product team. Because it’s client-facing we have
+    performance constraints we need to respect, such as low latency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can start developing it directly in the cloud, but it would immediately
+    bring us to some infra questions: where do we run it? How big a machine do we
+    need? Because of the low-latency requirement, do we need to build a caching layer?
+    If so, how do we do it?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatively, we can develop our app locally. It will probably be more intuitive
+    from the developer experience point of view but it only postpones the infra questions,
+    since in the end we will have to find a way to go from our local project to actual
+    pipelines. Moreover, the data will need to leave the cloud env to go on our machine,
+    which is not exactly secure and auditable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make the cloud experience as smooth as possible we designed a data lake architecture
+    where data are sitting in a simple cloud storage (AWS S3) and a serverless infrastructure
+    that embeds DuckDB works as a query engine. At the end of the cycle, we will have
+    an analytics app that can be used to both visualize and query the data in real
+    time with virtually no infra costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course, this is a bit of a simplification, as some tweaks would be needed
+    to run this project in real production scenarios. What we provide is a general
+    blueprint to leverage the separation of storage and compute to build a data lake
+    with a query engine in the cloud. We show how to power an interactive data app
+    with an (almost) free cloud endpoint, no warehouse setup, and lighting fast performance.
+    In our implementation, the final application is a simple [Streamlit](https://streamlit.io/)
+    app, but that’s merely for explanatory purposes: you can easily think of plugging
+    in your favorite BI tool.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b264fdda718c5e216ad75968adfa68a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A lightinign fast analytics app built with our system. Image from the authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ducks go serverless**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Y’all know DuckDB at this point. It is an open-source in-process SQL OLAP database
+    built specifically for analytical queries. It is somewhat still unclear how much
+    DuckDB is actually [used in production](https://dlthub.com/docs/blog/duckdb-1M-downloads-users),
+    but for us today the killer feature is the possibility of querying parquet files
+    directly in S3 with SQL syntax.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So most practitioners seem to be using it right now as a local engine for data
+    exploration, *ad hoc* analysis, POCs and prototyping (with some [creative ideas](https://duckdb.org/2022/10/12/modern-data-stack-in-a-box.html)
+    on how to extend its initial purpose to cover more surface). People create notebooks
+    or small data apps with embedded DuckDB to prototype and experiment with production
+    data locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cloud is better. And if we often feel it isn’t, it’s because something is
+    wrong with the tool chain we use, but there is a very big difference between a
+    [bad idea](https://www.facebook.com/CoachBillHart/videos/yep-worst-idea-ever/682926339663235/)
+    and a [good idea badly executed](https://www.ebay.com/itm/256040369567).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we combine a data lake architecture, a serverless design, DuckDB and a bit
+    of ingenuity we can build a very fast data stack from spare parts: no warehouse
+    setup, lighting fast performance and outrageously cheap costs — S3 most expensive
+    standard pricing is $0.023 per GB, AWS Lambda is very fast and scales to zero
+    when not in use, so it is a no-fat computation bill, plus AWS gives you 1M calls
+    for free.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Buckle up, [clone the repo](https://github.com/BauplanLabs/quack-reduce/), sing
+    along and for more details, please refer to the [README](https://github.com/BauplanLabs/quack-reduce#quack-reduce).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Architecture**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This project is pretty self-contained and requires only introductory-level familiarity
+    with cloud services and Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The idea is to start from a Data Lake where our data are stored. Once the data
+    is uploaded in our S3 in a parquet format, we can then trigger the lambda with
+    a SQL query. At that point, our lambda goes up, spins up a DuckDB instance in
+    memory, computes the query and gets back to the user with the results, which can
+    be directly rendered as tables in the Terminal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The architecture has a number of advantages mostly coming from the serverless
+    design: speed, proximity to the data and one line deployment are nice; plus, of
+    course, the system scales to zero when not used, so we only pay per query.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71a6d21d82c6f47b8725b63078a62a92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: General architecture of our system. Image from the authors
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Your first query engine + data lake from spare parts**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We provide a simple script that will create an S3 bucket and populate it with
+    a portion of the [NYC TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)
+    (available under the [nyc.gov terms of use](https://www.nyc.gov/home/terms-of-use.page)),
+    both as a unique file and as a hive-partitioned directory (you can run it with
+    [Make](https://github.com/BauplanLabs/quack-reduce/blob/74846468fd7b5dd2087691d1bc3d7aaa8417aa39/src/Makefile#L15)).
+    Once the data are in the data lake we can set up and use our lambda: if you have
+    the Serverless CLI setup correctly, deploying the lambda is [one command of Make
+    again](https://github.com/BauplanLabs/quack-reduce/blob/74846468fd7b5dd2087691d1bc3d7aaa8417aa39/src/Makefile#L7).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The lambda can be invoked in any of the usual ways, and accepts a query as
+    its main payload: when it runs, it uses DuckDB (re-using an instance if on a warm
+    start) to execute the query on the data lake. DuckDb does not know anything about
+    the data before and after the execution, making the lambda purely stateless as
+    far as data semantics is concerned.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instance, you can use the simple Python script in the project to send this
+    query to the lambda, and display the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/921e7cc43ed0ce165484df9dbcb1bfcc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The results are visualized directly in your terminal. Image from the authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Et voilà! You can now query your data lake, securely in the cloud. This very
+    simple design addresses directly two of the typical frictions for working in cloud
+    data warehouses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The setup is significantly simplified since all the user needs to do is to
+    have her AWS credential. Once the setup is done, the user only needs access to
+    the lambda (or any proxy to it!): that is good, as it gives the user full query
+    capabilities without access to the underlying storage.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The performances are so good that it feels like developing locally, even if
+    we always go through the cloud. A snappy cloud experience helps tame the too familiar
+    feeling that advantages of working on remote machines is paid in the coin of good
+    developer experience.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**(Almost) Free Analytics**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s all good and boujee, but let us say that we want to do a bit more than
+    query data on the fly. Let’s say that we want to build an application on top of
+    a table. It’s a very simple app, there is no orchestration and no need to calibrate
+    the workload.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At the same time, let’s say that this application needs to be responsive, it
+    needs to be fast. Anyone who deals with clients directly, for instance, knows
+    how it is important to provide a fresh responsive experience to the clients who
+    want to see their data. The one thing nobody likes is a dashboard that takes minutes
+    to load.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To see how this architecture can bridge the gap between data pipelines and real-time
+    querying for analytics, we provide a small dbt DAG to simulate running some offline
+    SQL transformations over the original dataset resulting in a new artifact in the
+    data lake (the equivalent of a dashboard view).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To keep things as self contained as possible, we included a version that you
+    can run locally on your machine (see README for more details — nor dbt nor the
+    engine behind it matter for this pattern to work). However, you can use a different
+    runtime for dbt and export the final artifact as a parquet file, with [Snowflake](https://docs.snowflake.com/en/user-guide/script-data-load-transform-parquet)
+    or [BigQuery](https://cloud.google.com/dataflow/docs/guides/templates/provided/bigquery-to-parquet).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba65662b5f905758611fba300eb28d9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Architecture of our system paired with a dbt project. Image from the authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the time being, we’ll stick to our super simple DAG made of two nodes.
+    The first node takes the pickup_location_id from our data lake and order them
+    by the number of trips:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The second that gives as the top 200 pick up locations in our data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can visualize the DAG with dbt docs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1fd934196a5b64422be3235ad0c551a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Once our pipeline is done, the final artifact is uploaded back to our data
+    lake in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can then reuse the query engine we built before to query the second (and
+    final) node of our DAG to visualize the data in a Streamlit app, simply by running
+    in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Every time we hit the dashboard, the dashboard hits the lambda behind the scenes.
+    If you like this simple architecture, the same pattern can be used in your own
+    Streamlit app, or in your favorite BI tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A few remarks on the “Reasonable Scale”**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[A while ago](https://tenor.com/view/yeah-i-member-memberberries-south-park-i-remember-oh-yeah-gif-20408218),
+    we wrote a series of posts on what we called [MLOps at Reasonable Scale](https://towardsdatascience.com/tagged/mlops-without-much-ops)
+    where we talked about the best strategies to build reliable ML applications in
+    companies that do not process data at internet scale and have a number of constraints
+    that truly Big-Data companies typically do not have. We mostly talked about it
+    from the point of view of ML and MLOps because operationalizing successfully ML
+    was a major problem for organizations at the time (maybe it still is, I am not
+    sure), but one general observation remains: most data organizations are “Reasonable
+    Scale” and they should design their systems around this assumption. Note that
+    being a reasonable scale organization does not necessarily mean being a small
+    company. The enterprise world is full of data teams who deal with a lot of complexity
+    within large — sometimes enormous — organizations and yet have many reasonable
+    scale pipelines, often for internal stakeholders, ranging from a few GB to at
+    most a TB.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, we happily witnessed a growing debate around whether companies need
+    Big Data systems to deal with their data problems,. The most important takeaway
+    from our point of view remains that, if you are a Reasonable Scale organization,
+    dealing with unnecessary infrastructure can be a very serious burden with plenty
+    of nefarious ramifications in your organization processes. You could in principle
+    build an entire data stack to support low latency dashboards — maybe you could
+    use a Data Warehouse and a caching layer -, but since your resources are limited,
+    wouldn’t it be nice to have a simpler and cheaper way?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we showed that the combination of data-first storage formats,
+    on-demand compute and in-memory OLAP processing opens up for new possibilities
+    at Reasonable Scale. The system is far from perfect and [could use many improvements](https://github.com/BauplanLabs/quack-reduce#whats-next),
+    but it shows that one can build an interactive data app with no warehouse setup,
+    lighting fast performances and virtually no costs. By removing the db from DuckDB,
+    we can combine what is fundamentally right about local (“single node processing
+    is all you need”) with what is fundamentally right about the cloud (“data is better
+    processed elsewhere”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am spending most of my time thinking about serverless data infra. If you are
+    interested, you have feedback on this post or simply want to chat, drop me a line
+    at ciro.greco@bauplanlabs.com
+  prefs: []
+  type: TYPE_NORMAL

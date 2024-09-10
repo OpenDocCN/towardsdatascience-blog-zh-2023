@@ -1,0 +1,323 @@
+- en: Validate a String as HTML Using SQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/validate-a-string-as-html-using-sql-d70e81149a2?source=collection_archive---------14-----------------------#2023-01-19](https://towardsdatascience.com/validate-a-string-as-html-using-sql-d70e81149a2?source=collection_archive---------14-----------------------#2023-01-19)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Is it possible to check if a string contains valid HTML using just SQL?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)[![Dhruv
+    Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------)
+    [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----d70e81149a2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----d70e81149a2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d70e81149a2--------------------------------)
+    ·10 min read·Jan 19, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd70e81149a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&user=Dhruv+Matani&userId=63f5d5495279&source=-----d70e81149a2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd70e81149a2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvalidate-a-string-as-html-using-sql-d70e81149a2&source=-----d70e81149a2---------------------bookmark_footer-----------)![](../Images/4b8989017ebbf485a08036972b5fc19a.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Valery Sysoev](https://unsplash.com/@valerysysoev?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Checking if a string is valid HTML is a really complex task, and isn’t something
+    that can be accomplished trivially. In fact, writing a generic HTML string validator
+    is a fairly involved task and isn’t something I hope to cover here. If you want
+    to validate a string a containing valid XML/HTML in PostgreSQL, you should probably
+    be using the [XML data type](https://p2d2.cz/files/xml.pdf) or [XML functions](https://www.postgresql.org/docs/9.1/functions-xml.html)
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Previous Articles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Validate Balanced Parenthesis using SQL](/validate-balanced-parenthesis-using-sql-5bb79732d772)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Minimum Meeting Rooms Problem in SQL](https://medium.com/towards-data-science/minimum-meeting-rooms-problem-in-sql-4d3a92365bdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Problem Statement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We would like to write a SQL query which when fed an input string is able to
+    return TRUE or FALSE based on whether the provided string is valid HTML or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, let’s dive into the restricted problem of validating if a string
+    is valid HTML as defined by us. What do we consider valid HTML for the purposes
+    of this article?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Should contain balanced open and close named tags. For example, <html> should
+    be paired with </html> after it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Correct pairing of balanced tags. For example <a><b></b></a> is valid, whereas
+    <a><b></a></b> is invalid.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The only unpaired tags allowed are<br> and <br/>.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We assume that there aren’t any malformed tags such as <a/b>.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We assume that the text itself doesn’t contain the < and > characters, and that
+    they are properly escaped as *&lt;* and *&gt;* respectively.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: There are no attributed inside HTML tags. For example, *<body>* is valid, but
+    *<body class=”foo”>* is invalid.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Additional Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: XML/[HTML can not be parsed using regular expressions](https://blog.codinghorror.com/parsing-html-the-cthulhu-way/),
+    since HTML is not a regular language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We would like to be able to validate the following HTML documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Valid documents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Invalid documents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] In the document below, the *</head>* tag is missing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[2] In the document below, the *</html>* tag appears before the *</head>* tag.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Preprocessing common to both solutions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, we tokenize the input string and extract the open and close tags as they
+    appear in the document string. We use the below to extract the HTML tags into
+    a separate table with one row per HTML tag in the document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This table is then again processed to assign the following to each row:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**row_num**: A row number.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**root_tag**: If the tag is an open tag, it’s the same as **html_tag**, else
+    it’s the tag with the / character removed so that the close tag’s corresponding
+    open tag is present in this column.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**delta**: +1 or -1 depending on whether this is an open or a close HTML tag.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We then remove all the unpaired tags (i.e. tags that are not supposed to have
+    an open and close pair). For this article, there are only 2 such tags, namely
+    <br> and <br/>.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'First solution: Incorrect solution'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first solution is seemingly correct but fails to correctly identify our
+    2nd invalid document above as invalid HTML.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main idea behind this solution is to look at every prefix of the input tags
+    and maintain a separate counter for each type of tag encountered. We can do this
+    by GROUPing on the root_tag column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We compute the running sum for each root tag. If the running sum ever becomes
+    negative (for any prefix of the tags), then it means we have a close tag before
+    an open tag.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We check the running sum for the tags in the last prefix (which is basically
+    the entire document). If this running sum has a value other than 0 for any tag,
+    the document is invalid. We covered the negative case above. In case this sum
+    is positive, it means that we have an unclosed open tag somewhere.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This solution fails to invalidate the 2nd invalid HTML document because we fail
+    to track the order in which the close tags appear relative to other tags in the
+    document. While we correctly check if a close tag appears after its corresponding
+    open tag, we don’t check if there are any OTHER unclosed open tag between this
+    close tag and its corresponding open tag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, in the example below, the <head> tag on line 2 is unclosed whereas
+    the enclosing <html> tag (on line 1) has been closed by the </html> tag (on line
+    3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Runtime complexity**: The runtime complexity of this solution is **O(n²)**,
+    where **n** is the number of tags in the document. This is because we join each
+    tag with every other tag before it in the query above. This is the dominant cost
+    in the entire solution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Second Solution: Inside-out solution'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The “*inside out solution*” processes strings from the innermost matching pair
+    of open and close HTML tags. This solution relies on the fact that there is at
+    least 1 matching open/close pair of tags that appear next to each other (on adjacent
+    rows) in a valid HTML document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we remove this matching pair, then we can find and eliminate the next matching
+    pair, till no more tags remain (in a valid HTML document). We know that in a document
+    with 2N tags, we will perform this matching and eliminate process at most N times
+    to reach an empty list of tags. If after N rounds of matching and elimination,
+    we still have some tags left, it indicates an invalid HTML document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example-1**: For the input below,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is what the recursive execution looks like and the animation below shows
+    the order in which the pairs of open/close tags are matched and eliminated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e56b2c482547e245dc3ed2d77af48ead.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Second solution processing a valid HTML string (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example-2**: For the input below,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is what the recursive execution looks like and the animation below shows
+    the order in which the pairs of open/close tags are matched and eliminated. Since
+    this is invalid input, the processing stops when there’s no matching pair of adjacent
+    tags left to process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9d91a11b5196c20ff44edca11d7e897.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Second solution processing an invalid HTML string (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Runtime complexity**: The runtime complexity of this solution is **O(n²)**,
+    where **n** is the number of tags in the document. We analyze the cost on both
+    a valid as well as an invalid input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Valid Input**: In the worst case, we will eliminate a single pair of tags,
+    and we need **O(n)** rounds to eliminate all the **n/2** pairs of tags in the
+    document. In each round, we need to retain and re-process all the remaining rows.
+    We start with n rows of data and in the worst case reduce 2 rows in every recursive
+    step. Hence, the number of rows shrinks as n, n-2, n-4, n-6, …, 0 (n/2 times),
+    which sums up to O(n²).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Invalid Input**: In case of an invalid input, we will fail to match a pair
+    of open/close tags, and we will not eliminate any row for the entire duration
+    of the **n** recursive rounds. Hence, the number of rows in each of the n rounds
+    looks like n, n, n, …, n (n-times), which sums up to O(n²).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: SQL Fiddle
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The SQL Fiddle link to all the solutions in this post can be found [here](http://sqlfiddle.com/#!17/e7d84/26).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We saw a way to check if a string is valid HTML or not. This method utilizes
+    recursive CTEs to iteratively reduce the problem set size at every step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recursive CTEs in SQL are powerful tools that can solve a variety of problems
+    if used creatively. However, recursive CTEs aren’t very space efficient. Where
+    traditional imperative programming languages allow you to perform in-place updates,
+    recursive CTEs require you to copy the data at every step.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,527 @@
+- en: 'Speaking Probes: Self-Interpreting Models?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/speaking-probes-self-interpreting-models-7a3dc6cb33d6?source=collection_archive---------20-----------------------#2023-01-16](https://towardsdatascience.com/speaking-probes-self-interpreting-models-7a3dc6cb33d6?source=collection_archive---------20-----------------------#2023-01-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Can language models aid in their interpretation?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)[![Guy
+    Dar](../Images/0a3b1ddd33d595e97e7a0dad551b2708.png)](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------)
+    [Guy Dar](https://guydar.medium.com/?source=post_page-----7a3dc6cb33d6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffab216dbde3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&user=Guy+Dar&userId=fab216dbde3e&source=post_page-fab216dbde3e----7a3dc6cb33d6---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7a3dc6cb33d6--------------------------------)
+    ·16 min read·Jan 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7a3dc6cb33d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&user=Guy+Dar&userId=fab216dbde3e&source=-----7a3dc6cb33d6---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7a3dc6cb33d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspeaking-probes-self-interpreting-models-7a3dc6cb33d6&source=-----7a3dc6cb33d6---------------------bookmark_footer-----------)![](../Images/cd19726fc34b00c30807dcb8a268bad7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Kane Reinholdtsen](https://unsplash.com/@kanereinholdtsen?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In this post, I experiment with the idea that language models can be coaxed
+    to explain vectors coming from their parameters. It turns out to work better than
+    you might expect, but still much work needs to be done.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*As is customary in scientific papers, I use “we” instead of “I” (among other
+    reasons, because it makes the text sound a bit less self-centered..).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This is not really a complete work, but more like a preliminary report on
+    an idea I believe might be useful, and should be shared. As a result, I only carried
+    out basic experiments to sanity-check the method. I hope other researchers would
+    take up the work from where I started, and see if the limitations of the methods
+    I suggest are surmountable. This work is aimed at professionals, but anyone with
+    decent knowledge of transformers should be comfortable reading it.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In recent years, many interpretability methods have been developed in Natural
+    Language Processing [*Kadar et al., 2017; Na et al., 2019; Geva et al., 2020;
+    Dar et al., 2022*]. In parallel, strong language models have taken the field by
+    storm. One may wonder if strong language skills allow language models to communicate
+    about their inner state. This work is a brief report on our explorations of this
+    conjecture. In this work, we will design natural language prompts and inject model
+    parameters as virtual tokens in the input. The prompts are designed to instruct
+    the model to explain words — but instead of a real word they are given a virtual
+    token representing a model parameter. The model then generates a sequence continuing
+    the prompt. We will observe this technique’s ability to explain model parameters
+    which we have existing explanations for. We call the new technique *“speaking
+    probes”*. We will also discuss on a high-level possible justifications for why
+    one might expect the method to work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd43ad0917dede573b6130631c936a7a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure: Illustration of a speaking probes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretability researchers are encouraged to use speaking probes as a tool
+    to guide their analysis. We *do* *not* suggest relying on their answers indiscriminately,
+    as they are not sufficiently grounded. However, they have the important advantage
+    of possessing the expressive power of natural language. Our queries are out of
+    distribution for the model in the zero-shot case as it was only trained with real
+    tokens. However, we hypothesize its inherent skills at manipulating its representations
+    will make it easy to learn the new task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We provide the following two resources for researchers interested in exploring
+    this technique for themselves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Code:** [https://github.com/guyd1995/speaking-probes](https://github.com/guyd1995/speaking-probes)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://github.com/guyd1995/speaking-probes?source=post_page-----7a3dc6cb33d6--------------------------------)
+    [## GitHub - guyd1995/speaking-probes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/guyd1995/speaking-probes?source=post_page-----7a3dc6cb33d6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Demo** (🤗 *HuggingFace*): [https://huggingface.co/spaces/guy-tau/speaking-probes](https://huggingface.co/spaces/guy-tau/speaking-probes)
+    — This can be slow, so apart from basic experimentation, it is better to open
+    one of the notebooks in the repository on Colab'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Background: The Residual Stream'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*This has been explained in more detail in the background section of my previous
+    post:* [*Analyzing Transformers in Embedding Space — Explained*](/analyzing-transformers-in-embedding-space-explained-ef72130a6844)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We rely on a useful view of the transformer through its residual connections
+    originally introduced in *nostalgebraist* [*2020*]. Specifically, each layer takes
+    a hidden state as input and adds information to the hidden state through its residual
+    connection. Under this view, the hidden state is a residual stream passed along
+    the layers, from which information is read, and to which information is written
+    at each layer. *Elhage et al.* [*2021*] and *Geva et al.* [*2022b*] observed that
+    the residual stream is often barely updated in the last layers, and thus the final
+    prediction is determined in early layers and the hidden state is mostly passed
+    through the later layers. An exciting consequence of the residual stream view
+    is that we can project hidden states in every layer into embedding space by multiplying
+    the hidden state with the embedding matrix *E*, treating the hidden state as if
+    it were the output of the last layer. *Geva et al.* [*2022a*] used this approach
+    to interpret the prediction of transformer-based language models, and we follow
+    a similar approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ddefd4b7d10a39c3803b93127af7134d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure: the residual stream view — visually'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Showcasing Speaking Probes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our intuition builds on the residual stream view. In the residual stream view,
+    parameters of the models are added to the hidden state on a more or less equal
+    footing with token embeddings. More generally, the residual view hints that there’s
+    a good case for considering parameter vectors, hidden states, and token embeddings
+    to be using the same “language”. “Syntactically”, we can use any continuous representation
+    — be it a parameter vector or hidden state — as a virtual token. We will use the
+    term “*neuron”* interchangeably with “*virtual token”*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will focus on parameters in this article, as hidden states seem to be more
+    complicated to analyze — which stands to reason since they are mixtures of parameters.
+    We show that parameter vectors can be used alongside token embeddings in the input
+    prompt and produce meaningful responses. We hypothesize a neuron eventually collapses
+    into a token that is related to the concepts it encodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our goal is to use the strong communication skills language models possess for
+    expressing their latent knowledge. We suggest a few prompts in which the model
+    is requested to explain a word. Instead of a word, it is given a virtual token
+    representing a vector in the parameters. We represent the virtual token in the
+    prompt by the label **<neuron>** (when running the model, its token embedding
+    is simply replaced with the neuron we want to interpret). We then generate the
+    continuation of the prompt, which is the language model’s response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: More examples are available in the repository under **prompts/**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We feed a prompt into the model and generate the continuation of the text with
+    ***<neuron>***’s “token embedding” being the neuron we want to interpret. To produce
+    diverse outputs, we generate with sampling and not just greedy decoding. We will
+    see a few examples below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this work, we will focus on feedforward (FF) keys (the first layer of the
+    feed-forward sublayer), as they seem somewhat easier to interpret than FF values
+    (the second layer). Each layer *l* has a matrix K_*l* (do NOT confuse with *attention*
+    keys) — each of its columns can be considered interpreted *individually*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To test our method, we use models we already have a good idea of what they
+    mean in embedding space. Obviously, these are the easiest cases we can consider
+    — so these experiments are just a sanity check. For syntactic sugar, we use ***<****param****_*i*_*j*>***
+    for a neuron representing the j-th FF key in the i-th layer. All the examples
+    below are from *GPT-2 medium.* The generation hyperparameters we use are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Examples: Comparison With Embedding Space Projection'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***Japanese Names***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*When projected to the embedding space <param_10_8> seems to relate to Japanese
+    names and generally speaking terms associated with Japan (* as far as I can tell):*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s see what the new method gives us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Discussion**: while it hasn''t given us a concise answer, it is not hard
+    to deduce from the above samples that the term is indeed related to Japan and
+    Japanese. As you can see, the model is not very truthful, even without the neuron
+    being involved, spouting strange assertions like in the last sample.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Progress***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*<param_11_2> seems to be related to the idea of progress. If we look at it
+    in the embedding space, we get:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s see if we can get this from the new method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Discussion**:we can consider this one quite good. As the model was trained
+    on data from the internet, some answers might replicate the format of web discussions.
+    Altogether, this parameter seems easy for the speaking probe to interpret.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Words that start with G***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*<param_0_0>* *appears to relate to words that begin with the letter “g”. In
+    the embedding space, we see:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s see what happens with speaking probes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Discussion**: with the first prompt, the probe seems to be very unrelated
+    to the embedding space interpretation of the parameter. The only hint we get in
+    the right direction is “*In the United States, there are many people with names
+    that begin in G and end at g…”* from the second sample. However, it is said in
+    an indirect manner, and not as an answer to the question.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a good place to demonstrate the flexibility of speaking probes, as they
+    let you reformulate the question and maybe get better results. One can arguably
+    say that the second prompt is much better suited to the problem. While it is not
+    too truthful, an overview of the responses can hint at the right direction — one
+    sample responds “G” and then gives a few unrelated words. Another one replies
+    with “gg, go”. While it’s not clear-cut, it can help to begin exploring. It is
+    also generally advisable to work with more samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Synthetic Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is also possible to create neurons that we know what they “should” mean.
+    For example, we take the average of the embeddings of two tokens and see if the
+    model can reconstruct them with an appropriate prompt. This helps us debug the
+    method. We can gauge its reaction to different variants of neurons and improve
+    prompts based on them for the actual neurons we care about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following example, we add together the token embedding of the “children”
+    and “dog”. Then we apply a speaking probe to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use this neuron as a toy example of the way the probe treats such polysemous
+    neurons. Remember, however, the behavior may differ depending on the word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The probe handles the ambiguity in the neuron moderately well. The samples seem
+    to refer to one token, but then they might get confused and talk about the other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see what happens when we combine some more challenging tokens: “google”
+    and “show”. This time we use a different prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It looks like we’ve run out of luck here. The word “show” seems to have been
+    absorbed by the word “google”. Let’s try to see if we can mitigate this by setting
+    a smaller coefficient to the token embedding of “google” — we multiply it by 0.9
+    and get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Seems it can recover “*show”* and *“giggle”* as a distorted version of *“google”*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Potential of the Method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The distinctive features that we want to capitalize on with this method are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Natural language output***: both an advantage and disadvantage, it makes
+    the output harder to evaluate, but it provides much greater flexibility than other
+    methods.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Inherent ability to manipulate latent representations***: we use the model’s
+    own capabilities of manipulating its latent representations. We assume they share
+    the same latent space with the model parameters due to the residual stream view.
+    Other techniques need to be trained or adjusted in some other way to the model’s
+    latent space in order to “understand” it. The model is capable of decoding its
+    own states naturally, which can be useful for interpretation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In general, there is not much research on continuous vectors as first-class
+    citizens in transformers. While ideas like prompt tuning [*Lester et al., 2021*],
+    and exciting ideas like *Hao et al.* [*2022*] pass continuous inputs to the model,
+    they require training to work and they are not used zero-shot. A central motif
+    in this work is the investigation of whether some continuous vectors can be used
+    like natural tokens without further training — under the assumption that they
+    use the same “language” as the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another useful feature of this technique is that it uses the model more or less
+    as a black box, without much technical work involved. It is easy to implement
+    and understand. Casting interpretation as a generation problem, we can leverage
+    literature on generation from mainstream NLP for future work. Similarly, hallucinations
+    are a major concern in speaking probes, but we can hope to be able to apply mainstream
+    research approaches in the future to this method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In total, this is perhaps the *most modular* interpretability method — it does
+    not rely on a specifically tailored algorithm, and it can adopt insights from
+    other areas in NLP to improve, without losing breath. Also, it is easy to experiment
+    with (even for less academically inclined practitioners) and the search space
+    landscape is very different than with other methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Possible Future Directions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***Eloquent. Too Eloquent***: language models are trained to produce eloquent
+    explanations. Factuality is less worrisome to them. These eloquent explanations
+    are not to be taken literally.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Layer Homogeneity***: in this article, we implicitly assume we can take
+    parameters from different layers and they will react similarly to our prompts.
+    It is possible that some layers are more amenable to use with speaking probes
+    than others. We call this *layer homogeneity*. We need to be cautious in assuming
+    that all layers can be treated the same with respect to our method.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Neuron Polysemy***: especially in face of word collapse, it seems that neurons
+    that carry multiple unrelated interpretations will have to be sampled multiple
+    times to account for all their different meanings. We would like to be able to
+    extract the different meanings more faithfully and “in one sitting’’.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Better Prompts***: this is not the main part of our work, but many papers
+    show the benefits of using carefully engineered prompts [e.g., *Liu et al., 2021*].'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Other Types of Concepts***: we have mainly discussed neurons that represent
+    a category or a concept in natural language. We know that language models can
+    work with code, but we haven’t considered this type of knowledge in this article.
+    Also, it is interesting to use speaking probes to locate facts in model parameters.
+    Facts might require a number of parameters working in unison — so it will be interesting
+    to locate them and find prompts that will be able to extract these facts.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If you do follow-up work, please cite as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You are also welcome to follow me on Twitter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://mobile.twitter.com/guy__dar?source=post_page-----7a3dc6cb33d6--------------------------------)
+    [## Guy Dar (guy__dar) / Twitter'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Twitter](https://mobile.twitter.com/guy__dar?source=post_page-----7a3dc6cb33d6--------------------------------)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '*This is not a direct follow-up, but you might be also interested in my other
+    blog post on a related paper I worked on with collaborators:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/analyzing-transformers-in-embedding-space-explained-ef72130a6844?source=post_page-----7a3dc6cb33d6--------------------------------)
+    [## Analyzing Transformers in Embedding Space — Explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I present the paper “Analyzing Transformers in Embedding Space”
+    (2022) by Guy Dar, Mor Geva, Ankit Gupta…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/analyzing-transformers-in-embedding-space-explained-ef72130a6844?source=post_page-----7a3dc6cb33d6--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: D. Dai, L. Dong, Y. Hao, Z. Sui, B. Chang, and F. Wei. *Knowledge neurons in
+    pretrained transformers*, 2021\. URL [https://arxiv.org/abs/2104.08696](https://arxiv.org/abs/2104.08696).
+  prefs: []
+  type: TYPE_NORMAL
+- en: G. Dar, M. Geva, A. Gupta, and J. Berant. *Analyzing transformers in embedding
+    space*, 2022\. URL [https://arxiv.org/abs/2209.02535](https://arxiv.org/abs/2209.02535).
+  prefs: []
+  type: TYPE_NORMAL
+- en: N. Elhage, N. Nanda, C. Olsson, T. Henighan, N. Joseph, B. Mann, A. Askell,
+    Y. Bai, A. Chen, T. Conerly, N. DasSarma, D. Drain, D. Ganguli, Z. Hatfield-Dodds,
+    D. Hernandez, A. Jones, J. Kernion, L. Lovitt, K. Ndousse, D. Amodei, T. Brown,
+    J. Clark, J. Kaplan, S. McCandlish, and C. Olah. *A mathematical framework for
+    transformer circuits*, 2021\. URL [https://transformer-circuits.pub/2021/framework/index.html](https://transformer-circuits.pub/2021/framework/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: M. Geva, R. Schuster, J. Berant, and O. Levy. *Transformer feed-forward layers
+    are key-value memories*, 2020\. URL [https://arxiv.org/abs/2012.14913](https://arxiv.org/abs/2012.14913).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'M. Geva, A. Caciularu, G. Dar, P. Roit, S. Sadde, M. Shlain, B. Tamir, and
+    Y. Goldberg. *Lm-debugger: An interactive tool for inspection and intervention
+    in transformer-based language models*. arXiv preprint arXiv:2204.12130, 2022a.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: M. Geva, A. Caciularu, K. R. Wang, and Y. Goldberg. *Transformer feed-forward
+    layers build predictions by promoting concepts in the vocabulary space*, 2022b.
+    URL [https://arxiv.org/abs/2203.14680](https://arxiv.org/abs/2203.14680).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Y. Hao, H. Song, L. Dong, S. Huang, Z. Chi, W. Wang, S. Ma, and F. Wei. *Language
+    models are general-purpose interfaces*, 2022\. URL [https://arxiv.org/abs/2206.06336](https://arxiv.org/abs/2206.06336).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A. Kadar, G. Chrupala, and A. Alishahi. *Representation of Linguistic Form
+    and Function in Recurrent Neural Networks*. Computational Linguistics, 43(4):761–780,
+    12 2017\. ISSN 0891–2017\. doi: 10.1162/COLI a 00300\. URL [https://doi.org/10.1162/COLI_a_00300](https://doi.org/10.1162/COLI_a_00300).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: B. Lester, R. Al-Rfou, and N. Constant. *The power of scale for parameter-efficient
+    prompt tuning*, 2021\. URL [https://arxiv.org/abs/2104.08691](https://arxiv.org/abs/2104.08691).
+  prefs: []
+  type: TYPE_NORMAL
+- en: J. Liu, D. Shen, Y. Zhang, B. Dolan, L. Carin, and W. Chen. *What makes good
+    in-context examples for gpt-3*? CoRR, abs/2101.06804, 2021\. URL [https://arxiv.org/abs/2101.06804](https://arxiv.org/abs/2101.06804).
+  prefs: []
+  type: TYPE_NORMAL
+- en: S. Na, Y. J. Choe, D.-H. Lee, and G. Kim. *Discovery of natural language concepts
+    in individual units of cnns*, 2019\. URL [https://arxiv.org/abs/1902.07249](https://arxiv.org/abs/1902.07249).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'nostalgebraist. interpreting gpt: the logit lens, 2020\. URL [https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens](https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens).'
+  prefs: []
+  type: TYPE_NORMAL

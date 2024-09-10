@@ -1,0 +1,570 @@
+- en: Inverse Physics-Informed Neural Net
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/inverse-physics-informed-neural-net-3b636efeb37e?source=collection_archive---------2-----------------------#2023-03-27](https://towardsdatascience.com/inverse-physics-informed-neural-net-3b636efeb37e?source=collection_archive---------2-----------------------#2023-03-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: iPINN ~with code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Solving inverse differential equation problems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@john_morrow?source=post_page-----3b636efeb37e--------------------------------)[![John
+    Morrow](../Images/4a8ce62a0b4e1eb1cf77ecaba6b7ddcc.png)](https://medium.com/@john_morrow?source=post_page-----3b636efeb37e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3b636efeb37e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3b636efeb37e--------------------------------)
+    [John Morrow](https://medium.com/@john_morrow?source=post_page-----3b636efeb37e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb4bcd051bb38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finverse-physics-informed-neural-net-3b636efeb37e&user=John+Morrow&userId=b4bcd051bb38&source=post_page-b4bcd051bb38----3b636efeb37e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3b636efeb37e--------------------------------)
+    ·11 min read·Mar 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3b636efeb37e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finverse-physics-informed-neural-net-3b636efeb37e&user=John+Morrow&userId=b4bcd051bb38&source=-----3b636efeb37e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3b636efeb37e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finverse-physics-informed-neural-net-3b636efeb37e&source=-----3b636efeb37e---------------------bookmark_footer-----------)![](../Images/2e92775d892c0d6963e6ba80092035bf.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Daniele Levis Pelusi](https://unsplash.com/@yogidan2012?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(1) Introduction: What is physics-informed?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many relationships in physics, biology, chemistry, economics, engineering, etc.,
+    are defined by differential equations. (Check [here](https://en.wikipedia.org/wiki/List_of_named_differential_equations)
+    for an extensive list.) In general, a differential equation (DE) describes how
+    variables are affected by the rate of change of other variables. For instance,
+    a DE explains how the position of a mass vibrating on spring changes with time
+    in relation to the mass’s velocity and acceleration. A physics-informed neural
+    network (PINN) produces responses that adhere to the relationship described by
+    a DE (whether the subject is physics, engineering, economics, etc.). In contrast,
+    an inverse physics-informed neural network (iPINN) acts on a response and determines
+    the parameters of the DE that produced it. PINNs and iPINNs are trained by including
+    a constraint during training that forces the relationship between the input and
+    output of the neural network to conform to the DE being modeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article begins with the implementation of a PINN, then builds on the PINN
+    model to implement an iPINN. The analytical solution for the modeled DE is included
+    for comparison to the responses produced by the PINN and iPINN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(2) Second-order differential equations**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article focuses on a PINN and iPINN for DEs that describe damped harmonic
+    motion, e.g., a springmass system with damping (Figure 1) and an electronic circuit
+    comprising series-connected components of resistance, inductance, and capacitance
+    (RLC) (Figure 2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc61d01bfaeaaae24a842f60ce35308f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: **Vibrating Mass & Spring**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5b5b1212154e54a8958dc8d85c3f2f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: **RLC Circuit**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These applications are defined by second-order DEs, which include second derivatives
+    with respect to time. Equation 1 is the second-order differential equation for
+    a spring-mass system, where the parameters m, c, and k are, respectively, mass,
+    damping coefficient, and spring constant. The displacement of the mass is represented
+    by x, and time by t. The second derivative of x with respect to t is the acceleration
+    of the mass, and the first derivative is the velocity of the mass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e60ec55bec5f64b3764e35c64ca0cb8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 1**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equation 2 is the second-order DE for the RLC circuit, where R, L, and C are,
+    respectively, resistance, inductance, and capacitance. The current in the circuit
+    is represented by i, and the time by t.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ce837c7a5433b71b222b50c8fc85b74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 2**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both of these DEs produce similar responses, i.e., the motion of the mass when
+    it is displaced from a resting position, then released, and the variation of the
+    current over time when the switch is closed after pre-charging the capacitor with
+    an initial voltage. The following section presents details of the responses of
+    the RLC circuit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(3) RLC circuit response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following is an overview of the possible responses of the RLC circuit in Figure
+    2, including the equation of the analytical solution to Equation 2 for each response.
+    (A derivation of the analytical solution by the author is available for download
+    [here](https://github.com/jmorrow1000/PINN-iPINN/blob/main/RLC_response_Laplace_solutions.pdf?raw=true).)
+    The analytical responses will later be compared to PINN-derived and iPINN-derived
+    responses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Depending upon the values of the components, this RLC circuit can produce three
+    different types of responses: under-damped, critically damped, and over-damped.
+    All three responses are based on the capacitor charged to a voltage, V₀ , prior
+    to switch closure and the following initial conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a498a6aba3ec6d8c74b4f78ff82522bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 3**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aeef250d79309763bf6250afc6cccf11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 4**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(3.1) Under-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An under-damped response occurs when the values of R, L, and C produce the
+    following condition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4a259e5229339f75ab8a576b4911997.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 5**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, let R = 1.2 (ohms), L = 1.5 (henries), C = 0.3 (farads), and
+    V₀ = 12 (volts). The analytically-derived response to Equation 2 with these values
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0613eb2d2e99041dc5e7d015ac470e21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 6**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following is a plot of the response from Equation 6.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c5ddc5d19e742bafe613a1ae968d0aa9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: **Under-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(3.2) Critically damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A critically-damped response occurs when the values of R, L, and C produce
+    the following condition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14b1fda78c81563e855f75a1d55069dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 7**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, let R = 4.47 (ohms), L = 1.5 (henries), C = 0.3 (farads), and
+    V₀ = 12 (volts). The analytically-derived response to Equation 2 with these values
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50773846c1c8db0713fc07ee3d1387df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 8**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following is a plot of the response from Equation 8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6cd77ecdb7016968b9cf77dd577d97dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: **Critically-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(3.3) Over-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An over-damped response occurs when the values of R, L, and C produce the following
+    condition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ddb0c4454e0d9649afa987bf9cbccef2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 9**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, let R = 6.0 (ohms), L = 1.5 (henries), C = 0.3 (farads), and
+    V₀ = 12 (volts). The analytically-derived response to Equation 2 with these values
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/25770dc13c36594089b9d52b189c76a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Equation 10**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following is a plot of the response from Equation 10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2f33e5d568110768bdc8bb590d19a554.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: **Over-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(4) PINN structure**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, a neural network is trained with pairs of known input and output
+    data. The training input data is presented to the neural network, and the resulting
+    output is compared to the training output data using a loss function. The loss
+    returned by this function is used via backpropagation to adjust the network’s
+    weights to reduce the loss. PINNs and iPINNs use custom loss functions that include
+    additional loss components for constraining the neural network to produce outputs
+    that comply with the DE being modeled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A PINN model of the DE in Equation 2 accepts time, *t*, as input to the neural
+    network and produces a corresponding current, *i*, as output. Training the PINN
+    to comply with the DE requires both the first and second derivatives of the output
+    with respect to the input, i.e., *di/dt* and *d²i/dt²* . These derivatives are
+    available in TensorFlow and PyTorch through each platform’s automatic differentiation
+    function. In this article, the PINN and iPINN are developed with TensorFlow [GradientTape](https://www.tensorflow.org/guide/autodiff).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each training input to the PINN, the first and second derivatives from GradientTape
+    are combined with *R*, *L*, and *C* according to the DE in Equation 2 to produce
+    a result that should equal zero. The difference between the actual result and
+    zero is known as the residual. The residual becomes a component of the loss function
+    used to train the PINN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A second-order DE, such as Equation 2, also requires that the solution complies
+    with two initial conditions. In this case, the first condition is the value of
+    *i* at *t = 0* (Equation 3) and the second is the value of *di/dt* at *t = 0*
+    (Equation 4). Each initial condition is included as a component of the loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Figure 6 illustrates the composition of the total loss. Loss 2 is from the residual.
+    Loss 1 and loss 3 are from the initial conditions. During training, backpropagation
+    is used to reduce the total loss. The PINN outputs for *d²i/dt²* and *di/dt* are
+    provided by GradientTape.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0069146d0559d5725933f0ae3764758f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: **PINN loss function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(5) PINN implementation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following is the python code for the PINN implementation. The complete code
+    for the PINN implementation is available [here](https://github.com/jmorrow1000/PINN-iPINN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(5.1) Neural network model definition**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The neural network for the PINN has two fully-connected hidden layers, each
+    with 128 neurons. There is a single input for time points and a single output
+    for the response points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Listing 1: **PINN TensorFlow model**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(5.2) PINN initialization**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the PINN model, the *R*, *L*, and *C* component values and the initial capacitor
+    voltage (lines 2–5) are constants that determine the response of the DE. The co-location
+    points, specified in the time domain (line 8), are the points where the residual
+    is calculated. The initial conditions (lines 11 and 15) are from Equation 3 and
+    Equation 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Listing 2: **PINN initialization**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(5.3) PINN training step**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following is the python code for the training step function. For each training
+    batch, the step function calculates the three components of loss, then uses the
+    total loss to update the weights in the neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**loss 1:** The initial condition from Equation 3 is compared to the output
+    of the network, *pred_y* (line 9). The square of the difference is *model_loss1*
+    (line 10).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**loss 2:** The residual (line 30) is calculated at the co-location points.
+    It uses the first-order gradient, *dfdx* (line 17), and the second-order gradient,
+    *dfdx2* (line 26), from GradientTape, along with the output of the network, *pred_y*
+    (line 29), to calculate the left-hand side of Equation 2\. This value squared
+    is *model_loss2* (line 31).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**loss 3:** The initial condition from Equation 4 compares the product of L
+    and the first-order gradient, *dfdx* (line 17), to v_init2\. The square of the
+    difference is *model_loss3* (line 19).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The total of the three loss components, *model_loss* (line 35), is used to calculate
+    the gradients of the loss with respect to the neural network’s weights (line 38).
+    The optimizer then updates the weights (line 41).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Listing 3: **PINN training step**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(6) PINN results**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results of training a PINN for three test cases follow. The tests are for
+    the conditions of section 3: under-damped, critically-damped, and over-damped.
+    Each plot below presents three traces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the response of the analytical equation (blue)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the co-location points (green)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the output response of the trained PINN (red)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Under-damped test case:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8259d6aad4b1dfb4c5c07e6b54ada22f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: **Under-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Critically-damped test case:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f918185248f2bcfa0784383bb5ffa32d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8: **Critically-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Over-damped test case:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66d01c13d36c5842087c8587941efdae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**(7) iPINN structure**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Figure 10 illustrates the composition of the total loss. Like the PINN model,
+    Loss 2 is from the residual, except that *R*, *L*, and *C* are variables whose
+    values are determined during training. In contrast, *R*, *L*, and *C* are constants
+    in the PINN model. As in the PINN, loss 1 and loss 3 force compliance with the
+    initial conditions of Equation 3 and Equation 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The iPINN model includes an additional loss function, loss 4, that forces the
+    output response to match the response of the DE under investigation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/009c851fccaea1e364c7be30e965998e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 10: **iPINN loss function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(8) iPINN implementation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following is the python code for the PINN implementation. The complete code
+    for the iPINN implementation is available [here](https://github.com/jmorrow1000/PINN-iPINN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The neural network model definition for iPINN is identical to the PINN network
+    (Section 5.1), i.e., two fully-connected hidden layers, each with 128 neurons.
+    There is a single input for time points and a single output for the response points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(8.1) iPINN initialization**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The response of the DE under investigation is loaded in line 4\. The two initial
+    conditions (lines 9 and 13) are the same as in the PINN model. As discussed above,
+    *R*, *L*, and *C* are trainable variables in the iPINN model (lines 18–20).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(8.2) iPINN training step**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**loss 1:** The initial condition from Equation 3 is compared to the output
+    of the network, *pred_y* (line 10). The square of the difference is *model_loss1*
+    (line 11).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**loss 2:** As in the PINN training step function, the residual (line 34) is
+    calculated at the co-location points defined by *t_coloc* to produce *model_loss2*
+    (line 35). *R*, *L*, and *C* are trainable variables.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**loss 3:** The initial condition from Equation 4 compares the product of *L*,
+    a trainable variable, and the first-order gradient, *dfdx* (line 18), to *v_init2*.
+    The square of the difference is *model_loss3* (line 20).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**loss 4:** This loss component compares the output of the network (line 39)
+    to the response of the DE under investigation, *i_coloc*, to produce *model_loss4*
+    (line 40).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The total of the four loss components, *model_loss* (line 43), is used to calculate
+    the gradients of the loss with respect to the neural network’s weights and the
+    three trainable variables: *R*, *L*, and *C* (line 49). The optimizer then updates
+    the network’s weights (line 52), and the *R*, *L*, and *C* values are updated
+    in lines 53–55.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(9) iPINN results**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results of using an iPINN to identify three unknown test responses follow.
+    The test responses presented to the iPINN were generated with the conditions of
+    section 3: under-damped, critically-damped, and over-damped. The tables below
+    compare the *R*, *L*, and *C* component values used to generate the test response
+    to the values determined by the iPINN. Each plot below presents three traces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the response curve of the analytical equation (blue)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the response data (60 points) to be identified by the iPINN (green)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the output response of the trained iPINN (red)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Under-damped test case:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eac1f6e7db6392560e5935420c62ba21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Table 1: **Under-damped test case**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eede3a0349f29cf3456f7b807fabef8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11: **Under-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Critically-damped test case:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f34b9f789f9aacee47b65aa53263268.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Table 2: **Critically-damped test case**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10b1e4c7fdc01752f4d13b1193c5975c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12: **Critically-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Over-damped test case:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9206967325eb2179483ddcf1ee603702.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Table 3: **Over-damped test case**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/475b3a56431ef0faf674af074c57c6c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 13: **Over-damped response**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(10) Conclusion**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This study demonstrates that a neural network can successfully solve differential
+    equations, which describe many relationships in numerous fields of science, engineering,
+    and economics. A physics-informed neural network is trained to solve the second-order
+    differential equation of an electronic circuit resulting in a neural network that
+    produces the same response to an input signal as the actual circuit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This study also demonstrates that a neural network can determine the parameters
+    of an unknown differential equation. Specifically, an inverse physics-informed
+    neural network is trained to determine the unknown component values of an electronic
+    circuit using only a sample response from the circuit. Further, after determining
+    the unknown component values, the resulting neural network can produce the same
+    response to an input signal as the actual circuit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bibliography**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] M. Raissi, P. Perdikaris, and G. E. Karniadakis, “Physics informed deep
+    learning (part i): Data driven solutions of nonlinear partial differential equations,”
+    2017\. [Online]. Available: https://arxiv.org/abs/1711.10561'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] M. Raissi, P. Perdikaris, and G. E. Karniadakis, “Physics informed deep
+    learning (part ii): Data-driven discovery of nonlinear partial differential equations,”
+    2017\. [Online]. Available: [https://arxiv.org/abs/1711.10566](https://arxiv.org/abs/1711.10566)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A pdf of this article is available for download** [**here**](https://github.com/jmorrow1000/PINN-iPINN/blob/main/inverse_physics_informed_neural_net.pdf?raw=true)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images, unless otherwise noted, are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

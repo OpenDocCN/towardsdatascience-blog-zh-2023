@@ -1,0 +1,436 @@
+- en: Solving Autocorrelation Problems in General Linear Model on a Real-World Application
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/solving-autocorrelation-problems-in-general-linear-model-on-a-real-world-application-0bd3eeda20a1?source=collection_archive---------4-----------------------#2023-12-13](https://towardsdatascience.com/solving-autocorrelation-problems-in-general-linear-model-on-a-real-world-application-0bd3eeda20a1?source=collection_archive---------4-----------------------#2023-12-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Delving into one of the most common nightmares for data scientists
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rodrigodamottacc?source=post_page-----0bd3eeda20a1--------------------------------)[![Rodrigo
+    da Motta C. Carvalho](../Images/ed77f9c38a0a40b3d3ec2c119a350bbb.png)](https://medium.com/@rodrigodamottacc?source=post_page-----0bd3eeda20a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----0bd3eeda20a1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----0bd3eeda20a1--------------------------------)
+    [Rodrigo da Motta C. Carvalho](https://medium.com/@rodrigodamottacc?source=post_page-----0bd3eeda20a1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd17b17427c47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-autocorrelation-problems-in-general-linear-model-on-a-real-world-application-0bd3eeda20a1&user=Rodrigo+da+Motta+C.+Carvalho&userId=d17b17427c47&source=post_page-d17b17427c47----0bd3eeda20a1---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----0bd3eeda20a1--------------------------------)
+    ·8 min read·Dec 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F0bd3eeda20a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-autocorrelation-problems-in-general-linear-model-on-a-real-world-application-0bd3eeda20a1&user=Rodrigo+da+Motta+C.+Carvalho&userId=d17b17427c47&source=-----0bd3eeda20a1---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F0bd3eeda20a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-autocorrelation-problems-in-general-linear-model-on-a-real-world-application-0bd3eeda20a1&source=-----0bd3eeda20a1---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the biggest problems in linear regression is autocorrelated residuals.
+    In this context, this article revisits linear regression, delves into the Cochrane–Orcutt
+    procedure as a way to solve this problem, and explores a real-world application
+    in fMRI brain activation analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c9d33986eb472f1f622e71e9a46efa1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Jon Tyson](https://unsplash.com/@jontyson?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).
+  prefs: []
+  type: TYPE_NORMAL
+- en: General Linear Model (GLM) revisited
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Linear regression is probably one of the most important tools for any data scientist.
+    However, it's common to see many misconceptions being made, especially in the
+    context of time series. Therefore, let's invest some time revisiting the concept.
+    The primary goal of a GLM in time series analysis is to model the relationship
+    between variables over a sequence of time points. Where ***Y*** is the target
+    data, ***X*** is the feature data, ***B*** and ***A*** the coefficients to estimate
+    and ***Ɛ*** is the Gaussian error.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/842eb5f64949a0c48d73141f70d52f8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Matrix formulation of the GLM. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The index refers to the time evolution of the data. Writing in a more compact
+    form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ccf97c4d6d99077ecd62a398752be329.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Matrix formulation of the GLM. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The estimation of parameters is done through ordinary least squares (OLS), which
+    assumes that the errors, or **residuals**, between the observed values and the
+    values predicted by the model, **are independent and identically distributed (*i.i.d*)**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that the residuals must be non-autocorrelated to ensure the right
+    estimation of the coefficients, the validity of the model, and the accuracy of
+    predictions.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Autocorrelation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Autocorrelation refers to the correlation between observations within a time
+    series. We can understand it as how each data point is related to lagged data
+    points in a sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autocorrelation functions (ACF) are used to detect autocorrelation. These methods
+    measure the correlation between a data point and its lagged values (*t = 1,2,…,40*),
+    revealing if data points are related to preceding or following values. ACF plots
+    (Figure 1) display correlation coefficients at different lags, indicating the
+    strength of autocorrelation, and the statistical significance over the shade region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc87521957c3d7213075ce8c6804bcd4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. ACF plot. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the coefficients for certain lags significantly differ from zero, it suggests
+    the presence of autocorrelation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Autocorrelation in the residuals
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Autocorrelation in the residuals suggests that there’s a relationship or dependency
+    between current and past errors in the time series. This correlation pattern indicates
+    that the errors are not random and may be influenced by factors not accounted
+    for in the model. For example, autocorrelation can lead to **biased parameter
+    estimates**, especially in the variance, affecting the understanding of the relationships
+    between variables. This results in **invalid inferences drawn from the model**,
+    leading to misleading conclusions about relationships between variables. Moreover,
+    it results in **inefficient predictions**, which means the model is not capturing
+    correct information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cochrane–Orcutt procedure**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Cochrane–Orcutt procedure is a method famous in econometrics and in a variety
+    of areas to address issues of autocorrelation in a time series through a linear
+    model for serial correlation in the error term [1,2]. We already know that this
+    violates one of the assumptions of ordinary least squares (OLS) regression, which
+    assumes that the errors (residuals) are uncorrelated [1]. Later in the article,
+    we're going to use the procedure to remove autocorrelation and check how biased
+    the coefficients are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Cochrane–Orcutt procedure goes as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. Initial OLS Regression:** Start with an initial regression analysis using
+    ordinary least squares (OLS) to estimate the model parameters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/410d77bb413bb3d1e760f6536fca6a28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Initial regression equation. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Residual Calculation:** Calculate the residuals from the initial regression.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3\. Test for Autocorrelation:** Examine the residuals for the presence of
+    autocorrelation using ACF plots or tests such as the Durbin-Watson test. If the
+    autocorrelation is not significant, there is no need to follow the procedure.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**4\. Transformation:** The estimated model is transformed by differencing
+    the dependent and independent variables to remove autocorrelation. The idea here
+    is to make the residuals closer to being uncorrelated.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cbef74b510fb59f6046672a149a2d7e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cochrane–Orcutt formula for autoregressive term AR(1). Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**5\. Regress the Transformed Model:** Perform a new regression analysis with
+    the transformed model and compute new residuals.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**6\. Check for Autocorrelation:** Test the new residuals for autocorrelation
+    again. If autocorrelation remains, go back to step 4 and transform the model further
+    until the residuals show no significant autocorrelation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Final Model Estimation: **Once the residuals exhibit no significant autocorrelation,
+    use the final model and coefficients derived from the Cochrane-Orcutt procedure
+    for making inferences and drawing conclusions!**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Real-world application: Functional Magnetic Resonance Imaging (fMRI) analysis'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A brief introduction to fMRI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Functional Magnetic Resonance Imaging (fMRI) is a neuroimaging technique that
+    measures and maps brain activity by detecting changes in blood flow. It relies
+    on the principle that neural activity is associated with increased blood flow
+    and oxygenation. In fMRI, when a brain region becomes active, it triggers a hemodynamic
+    response, leading to changes in blood oxygen level-dependent (BOLD) signals. **fMRI
+    data typically consists of 3D images representing the brain activation at different
+    time points, therefore each volume (voxel) of the brain has its own time series
+    (Figure 2).**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fdef747a99dff442c7314cb4f866b030.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. Representation of the time series (BOLD signal) from a voxel. Image
+    by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The General Linear Model (GLM)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The GLM assumes that the measured fMRI signal is a linear combination of different
+    factors (features), such as task information mixed with the expected response
+    of neural activity known as the Hemodynamic Response Function (HRF). For simplicity,
+    we're going to ignore the nature of the HRF and just assume that it's an important
+    feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To understand the impact of the tasks on the resulting BOLD signal ***y (dependent
+    variable)***, we're going to use a GLM. This translates to checking the effect
+    through statistically significant coefficients associated with the task information.
+    Hence, ***X1*** and ***X2*** ***(independent variables)*** are information about
+    the task that was executed by the participant through the data collection convolved
+    with the HRF (Figure 3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7aa57affc57e6d951a7aab7f5cdde87f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Matrix formulation of the GLM. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Application on real data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to check this Real-World application, we will use data collected by
+    Prof. João Sato at the Federal University of ABC, which is available on [GitHub](https://github.com/Rodrigo-Motta/GLM_Orcutt).
+    The independent variable *fmri_data* contains data from one voxel (a single time
+    series), but we could do it for every voxel in the brain. The dependent variables
+    that contain the task information are *cong* and *incong*. The explanations of
+    these variables are out of the scope of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualising the task information variables (features).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/761dd5ab1407ffbe445039a52f159032.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Task information mixed with Hemodynamic Response Function (features).
+    Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fitting GLM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using Ordinary Least Square to fit the model and estimate the model parameters,
+    we get to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/89a910122cd6133f86f045fadce3b0fb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: BOLD signal and regression. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9dda86c3cf0f97358e97531c6c851b85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GLM coefficients. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**It''s possible to see that coefficient X1is statistically significant, once
+    P > |t| is less than 0.05\. That could mean that the task indeed impact the BOLD
+    signal.** But before using these parameters to do inference, it’s essential to
+    check if the residuals, which means *y* minus *prediction,* are not autocorrelated
+    in any lag. Otherwise, our estimate is biased.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Checking residuals auto-correlation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As already discussed the ACF plot is a good way to check autocorrelation in
+    the series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f0c39cdc54ef8cb53b822463ad6b3fa2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ACF plot. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at the ACF plot it’s possible to detect a high autocorrelation at lag
+    1\. Therefore, this linear model is biased and it’s important to fix this problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cochrane-Orcutt to solve autocorrelation in residuals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Cochrane-Orcutt procedure is widely used in fMRI data analysis to solve
+    this kind of problem [2]. In this specific case, the lag 1 autocorrelation in
+    the residuals is significant, therefore, we can use the Cochrane–Orcutt formula
+    for the autoregressive term AR(1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbef74b510fb59f6046672a149a2d7e7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cochrane–Orcutt formula for autoregressive term AR(1). Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Fitting the transformed Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Fitting the model again but after the Cochrane-Orcutt correction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e79e530daad8a6d3eb77c4ab2bf14d8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: BOLD signal and transformed GLM. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/646ee3988b330a0f0a2a56cdcdc2b5f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GLM coefficients. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the coefficient X1 is not statistically significant anymore, discarding
+    the hypothesis that the task impact the BOLD signal. The parameters standard error
+    estimate changed significantly, which indicates the high impact of autocorrelation
+    in the residuals to the estimation
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Checking for autocorrelation again
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This makes sense since it's possible to show that the variance is always biased
+    when there is autocorrelation [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b365462849759f43ae251fee7928cc14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ACF Plot. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the autocorrelation of the residuals was removed and the estimate is not
+    biased anymore. If we had ignored the autocorrelation in the residuals, we could
+    consider the coefficient significant. However, **after removing the autocorrelation,
+    turns out that the parameter is not significant, avoiding a spurious inference
+    that the task is indeed related to signal.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Autocorrelation in the residuals of a General Linear Model can lead to biased
+    estimates, inefficient predictions, and invalid inferences. The application of
+    the Cochrane–Orcutt procedure to real-world fMRI data demonstrates its effectiveness
+    in removing autocorrelation from residuals and avoiding false conclusions, ensuring
+    the reliability of model parameters and the accuracy of inferences drawn from
+    the analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Cochrane-Orcutt is just one method to solve autocorrelation in the residuals.
+    However, there are other to address this problem such as Hildreth-Lu Procedure
+    and First Differences Procedure [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Acknowledgement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This project was inspired by Prof. João Ricardo Sato.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The notebook for this article is available** [**here**](https://github.com/Rodrigo-Motta/GLM_Orcutt)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] *Applied Regression Modeling,* Iain Pardoe. Wileyl. 2023.[https://online.stat.psu.edu/stat462/node/189/](https://online.stat.psu.edu/stat462/node/189/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Sato JR, Takahashi DY, Cardoso EF, Martin Mda G, Amaro Júnior E, Morettin
+    PA. [*Intervention models in functional connectivity identification applied to
+    FMRI*](https://pubmed.ncbi.nlm.nih.gov/23165021/). *Int J Biomed Imaging*. 2006;2006:27483\.
+    doi:10.1155/IJBI/2006/27483'
+  prefs: []
+  type: TYPE_NORMAL

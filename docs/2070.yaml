@@ -1,0 +1,321 @@
+- en: Managing the Cloud Storage Costs of Big-Data Applications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/managing-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c?source=collection_archive---------15-----------------------#2023-06-26](https://towardsdatascience.com/managing-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c?source=collection_archive---------15-----------------------#2023-06-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tips for Reducing the Expense of Using Cloud-Based Storage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----e3cbd92cf51c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----e3cbd92cf51c---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e3cbd92cf51c--------------------------------)
+    ·11 min read·Jun 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe3cbd92cf51c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&user=Chaim+Rand&userId=9440b37e27fe&source=-----e3cbd92cf51c---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe3cbd92cf51c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-the-cloud-storage-costs-of-big-data-applications-e3cbd92cf51c&source=-----e3cbd92cf51c---------------------bookmark_footer-----------)![](../Images/c6ef4be9850fa0fcf28ebe2f3ea7e0c7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [JOSHUA COLEMAN](https://unsplash.com/@joshstyle?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/storage?orientation=landscape&license=free&utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the growing reliance on ever-increasing amounts of data, modern day companies
+    are more dependent than ever on high-capacity and highly scalable data-storage
+    solutions. For many companies this solution comes in the form of cloud-based storage
+    service, such as [Amazon S3](https://aws.amazon.com/s3/), [Google Cloud Storage](https://cloud.google.com/storage),
+    and [Azure Blob Storage](https://azure.microsoft.com/en-us/products/category/storage/),
+    each of which come with a rich set of APIs and features (e.g., [multi-tier storage](https://aws.amazon.com/s3/storage-classes/intelligent-tiering/))
+    supporting a wide variety of data storage designs. Of course, cloud storage services
+    also have an associated cost. This cost is usually comprised of a number of components
+    including the overall size of the storage space you use, as well as activities
+    such as transferring data into, out of, or within cloud storage. The price of
+    Amazon S3, for example, includes (as of the time of this writing) [six cost components](https://aws.amazon.com/s3/pricing/?p=pm&c=s3&z=4),
+    each of which need to be taken into consideration. It’s easy to see how managing
+    the cost of cloud storage can get complicated, and designated calculators (e.g.,
+    [here](https://calculator.aws/#/)) have been developed to assist with this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a [recent post](/on-the-importance-of-compressing-big-data-edd4cc7441d2),
+    we expanded on the importance of designing your data and your data usage so as
+    to reduce the costs associated with data storage. Our focus there was on using
+    data compression as a way to reduce the overall size of your data. In this post
+    we focus on a sometimes overlooked cost-component of cloud storage — the [cost
+    of API requests made against your cloud storage buckets and data objects](https://aws.amazon.com/s3/pricing/?nc=sn&loc=4).
+    We will demonstrate, by example, why this component is often underestimated and
+    how it can become a significant portion of the cost of your big data application,
+    if not managed properly. We will then discuss a couple of simple ways to keep
+    this cost under control.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disclaimers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Although our demonstrations will use Amazon S3, the contents of this post are
+    just as applicable to any other cloud storage service. Please do not interpret
+    our choice of Amazon S3 or any other tool, service, or library we should mention,
+    as an endorsement for their use. The best option for you will depend on the unique
+    details of your own project. Furthermore, please keep in mind that any design
+    choice regarding how you store and use your data will have its pros and cons that
+    should be weighed heavily based on the details of your own project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post will include a number of experiments that were run on an [Amazon EC2
+    c5.4xlarge](https://aws.amazon.com/ec2/instance-types/c5/) instance (with 16 vCPUs
+    and [“up to 10 Gbps” of network bandwidth](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-network-bandwidth.html)).
+    We will share their outputs as examples of the comparative results you might see.
+    Keep in mind that the outputs may vary greatly based on the environment in which
+    the experiments are run. Please do not rely on the results presented here for
+    your own design decisions. We strongly encourage you to run these as well as additional
+    experiments before deciding what is best for your own projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Simple Thought Experiment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Suppose you have a data transformation application that acts on 1 MB data samples
+    from S3 and produces 1 MB data outputs that are uploaded to S3\. Suppose that
+    you are tasked with transforming 1 billion data samples by running your application
+    on an appropriate [Amazon EC2 instance](https://aws.amazon.com/ec2/) (in the same
+    region as your S3 bucket in order to avoid data transfer costs). Now let’s assume
+    that [Amazon S3 charges](https://aws.amazon.com/s3/pricing/) $0.0004 for every
+    1000 GET operations and $0.005 for every 1000 PUT operations (as at the time of
+    this writing). At first glance, these costs might seem so low that they would
+    be negligible compared to the other costs related to the data transformation.
+    However, a simple calculation shows that our Amazon S3 API calls alone will tally
+    a bill of **$5,400**!! This can easily be the most dominant cost factor of your
+    project, even more than the cost of the compute instance. We will return to this
+    thought experiment at the end of the post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Batch Data into Large Files
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The obvious way to reduce the costs of the API calls is to group samples together
+    into files of a larger size and run the transformation on batches of samples.
+    Denoting our batch size by *N*, this strategy could potentially reduce our cost
+    by a factor of *N* (assuming that multi-part file transfer is not used — see below).
+    This technique would save money not just on the PUT and GET calls but on **all**
+    of the cost components of Amazon S3 that are dependent on the number of object
+    files rather than the overall size of the data (e.g., [lifecycle transition requests](https://aws.amazon.com/s3/pricing/?trk=c8974be7-bc21-436d-8108-722e8ab912e1&sc_channel=ps&ef_id=Cj0KCQjw7aqkBhDPARIsAKGa0oJZYkx6SjrewVcE--kFsSRWT1-nzsS07TMivfP1P1SVqRSO4mKx_MIaAkCBEALw_wcB%3AG%3As&s_kwcid=AL%214422%213%21645125274431%21e%21%21g%21%21s3+pricing%2119574556914%21145779857032)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of disadvantages to grouping samples together. For example,
+    when you store samples individually, you can freely access any one of them at
+    will. This becomes more challenging when samples are grouped together. (See [this
+    post](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056) for more on the pros
+    and cons of batching samples into large files.) If you do opt for grouping samples
+    together, the big question is how to choose the size *N*. A larger *N* could reduce
+    storage costs but might introduce latency, increase the compute time, and, by
+    extension, increase the compute costs. Finding the optimal number may require
+    some experimentation that takes into account these and additional considerations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But let’s not kid ourselves. Making this kind of change will not be easy. Your
+    data may have many consumers (both human and artificial) each with their own particular
+    set of demands and constraints. Storing your samples in separate files can make
+    it easier to keep everyone happy. Finding a batching strategy that satisfies everyone
+    will be difficult.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Possible Compromise: Batched Puts, Individual Gets'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A compromise you might consider is to upload large files with grouped samples
+    while enabling access to individual samples. One way to do this is to maintain
+    an index file with the locations of each sample (the file in which it is grouped,
+    the start-offset, and the end-offset) and expose a thin API layer to each consumer
+    that would enable them to freely download individual samples. The API would be
+    implemented using the index file and an S3 API that enables extracting specific
+    ranges from object files (e.g., Boto3’s [get_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/get_object.html)
+    function). While this kind of solution would not save any money on GET calls (since
+    we are still pulling the same number of individual samples), the more expensive
+    PUT calls would be reduced since we would be uploading a lower number of larger
+    files. Note that this kind of solution poses some limitations on the library we
+    use to interact with S3 as it depends on an API that allows for extracting partial
+    chunks of the large file objects. In previous posts (e.g., [here](https://medium.com/towards-data-science/streaming-big-data-files-from-cloud-storage-634e54818e75))
+    we have discussed the different ways of interfacing with S3, many of which do
+    **not** support this feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code block below demonstrates how to implement a simple [PyTorch dataset](https://pytorch.org/docs/stable/data.html)
+    (with PyTorch version 1.13) that uses the [Boto3 get_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.get_object)
+    API to extract individual 1 MB samples from large files of grouped samples. We
+    compare the speed of iterating the data in this manner to iterating the samples
+    that are stored in individual files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The table below summarizes the speed of data traversal for different choices
+    of the sample grouping size, *N*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e0bd7fc2dd13510cfdc9762f48d73fe2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Impact of Different Grouping Strategies on Data Traversal Time (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, that although these results strongly imply that grouping samples into
+    large files has a relatively small impact on the performance of extracting them
+    individually, we have found that the comparative results vary based on the sample
+    size, file size, the values of the file offsets, the number of concurrent reads
+    from the same file, etc. Although we are not privy to the internal workings of
+    the Amazon S3 service, it is not surprising that considerations such as memory
+    size, memory alignment, and throttling would impact performance. Finding the optimal
+    configuration for your data will likely require a bit of experimentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One significant factor that could interfere with the money-saving grouping strategy
+    we have described here is the use of multi-part downloading and uploading, which
+    we will discuss in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use Tools that Enable Control Over Multi-part Data Transfer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Many cloud storage service providers support the option of multi-part uploading
+    and downloading of object files. In multi-part data transfer, files that are larger
+    than a certain threshold are divided into multiple parts that are transferred
+    concurrently. This is a critical feature if you want to speed up the data transfer
+    of large files. AWS [recommends using multi-part upload for files larger than
+    100 MB](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html).
+    In the following simple example, we compare the download time of a 2 GB file with
+    the multi-part *threshold* and *chunk-size* set to different values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results of this experiment are summarized in the table below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15610cf9ad7376004c75cee5df9c88cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Impact of Multi-part chunk size on Download Time (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the relative comparison will greatly depend on the test environment
+    and specifically on the speed and bandwidth of communication between the instance
+    and the S3 bucket. Our experiment was run on an instance that was in the same
+    region as the bucket. However, as the distance increases, so will the impact of
+    using multi-part downloading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With regards to the topic of our discussion, it is important to note the cost
+    implications of multi-part data transfer. Specifically, when you use multi-part
+    data transfer, [you are charged for the API operation of each one of the file
+    parts](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html#mpuploadpricing).
+    Consequently, using multi-part uploading/downloading will limit the cost savings
+    potential of batching data samples into large files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many APIs use multi-part downloading **by default**. This is great if your primary
+    interest is reducing the latency of your interaction with S3\. But if your concern
+    is limiting cost, this default behavior does not work in your favor. Boto3, for
+    example, is a popular Python API for uploading and downloading files from S3\.
+    If not specified, the boto3 S3 APIs such as [upload_file](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/upload_file.html)
+    and [download_file](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/download_file.html)
+    will use a default [TransferConfig](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/customizations/s3.html#boto3.s3.transfer.TransferConfig),
+    which applies multi-part uploading/downloading with a chunk-size of 8 MB to any
+    file larger than 8 MB. If you are responsible for controlling the cloud costs
+    in your organization, you might be unhappily surprised to learn that these APIs
+    are being widely used with their default settings. In many cases, you might find
+    these settings to be unjustified and that increasing the multi-part *threshold*
+    and *chunk-size* values, or disabling multi-part data transfer altogether, will
+    have little impact on the performance of your application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example — Impact of Multi-part File Transfer Size on Speed and Cost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the code block below we create a simple multi-process transform function
+    and measure the impact of the multi-part chunk size on its performance and cost:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this example we have fixed the file size to 500 MB and applied the same multi-part
+    settings to both the download and upload. A more complete analysis would vary
+    the size of the data files and the multi-part settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the table below we summarize the results of the experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4fc335db1fe163928b43ba1615afbaf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Impact of Multi-part Chunk Size on Data Transformation Speed and Cost (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results indicate that up to a multi-part chunk size of 500 MB (the size
+    of our files), the impact on the time of the data transformation is minimal. On
+    the other hand, the potential savings to the cloud storage API costs is significant,
+    up to 98.4% when compared with using Boto3’s default chunk size (8MB). Not only
+    does this example demonstrate the cost benefit of grouping samples together, but
+    it also implies an additional opportunity for savings through appropriate configuration
+    of the multi-part data transfer settings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s apply the results of our last example to the thought experiment we introduced
+    at the top of this post. We showed that applying a simple transformation to 1
+    billion data samples would cost $5,400 if the samples were stored in individual
+    files. If we were to group the samples into 2 million files, each with 500 samples,
+    and apply the transformation without multi-part data transfer (as in the last
+    trial of the example above), the cost of the API calls would be reduced to $10.8!!
+    At the same time, assuming the same test environment, the impact we would expect
+    (based on our experiments) on the overall runtime would be relatively low. I would
+    call that a pretty good deal. Wouldn’t you?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When developing cloud-based big-data applications it is vital that we be fully
+    familiar with **all** of the details of the costs of our activities. In this post
+    we focused on the “Requests & data retrievals” component of the Amazon S3 pricing
+    strategy. We demonstrated how this component can become a major part of the overall
+    cost of a big-data application. We discussed two of the factors that can affect
+    this cost: the manner in which data samples are grouped together and the way in
+    which multi-part data transfer is used.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naturally, optimizing just one cost component is likely to increase other components
+    in a way that will raise the overall cost. An appropriate design for your data
+    storage will need to take into account **all** potential cost factors **and will
+    greatly depend on your specific data needs and usage patterns**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, please feel free to reach out with comments and corrections.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,523 @@
+- en: 'Similarity Search, Part 5: Locality Sensitive Hashing (LSH)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=collection_archive---------0-----------------------#2023-06-24](https://towardsdatascience.com/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=collection_archive---------0-----------------------#2023-06-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Explore how similarity information can be incorporated into hash function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----76ae4b388203--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----76ae4b388203--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76ae4b388203--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76ae4b388203--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----76ae4b388203--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----76ae4b388203---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76ae4b388203--------------------------------)
+    ·10 min read·Jun 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76ae4b388203&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----76ae4b388203---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F76ae4b388203&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203&source=-----76ae4b388203---------------------bookmark_footer-----------)![](../Images/289a1eda8d45e7ae91026abd2a352a58.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: S**imilarity search** is a problem where given a query the goal is to find the
+    most similar documents to it among all the database documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In data science, similarity search often appears in the NLP domain, search engines
+    or recommender systems where the most relevant documents or items need to be retrieved
+    for a query. There exists a large variety of different ways to improve search
+    performance in massive volumes of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In previous parts of this article series, we discussed inverted file index,
+    product quantization and HNSW and how they can be used together to improve search
+    quality. In this chapter, we are going to look at a principally different approach
+    that maintains both high search speed and quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa?source=post_page-----76ae4b388203--------------------------------)
+    [## Similarity Search, Part 3: Blending Inverted File Index and Product Quantization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the first two parts of this series we have discussed two fundamental algorithms
+    in information retrieval: inverted…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa?source=post_page-----76ae4b388203--------------------------------)
+    [](/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=post_page-----76ae4b388203--------------------------------)
+    [## Similarity Search, Part 4: Hierarchical Navigable Small World (HNSW)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hierarchical Navigable Small World (HNSW) is a state-of-the-art algorithm used
+    for an approximate search of nearest…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/similarity-search-part-4-hierarchical-navigable-small-world-hnsw-2aad4fe87d37?source=post_page-----76ae4b388203--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Local Sensitive Hashing** (LSH) is a set of methods that is used to reduce
+    the search scope by transforming data vectors into hash values while preserving
+    information about their similarity.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We are going to discuss the traditional approach which consists of three steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Shingling**: encoding original texts into vectors.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**MinHashing**: transforming vectors into a special representation called **signature**
+    which can be used to compare similarity between them.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**LSH function**: hashing signature blocks into different buckets. If the signatures
+    of a pair of vectors fall into the same bucket at least once, they are considered
+    candidates.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We are going to gradually dive into the details throughout the article of each
+    of these steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shingling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Shingling** is the process of collecting *k*-grams on given texts. ***k*-gram**
+    is a group of *k* sequential tokens. Depending on the context, tokens can be words
+    or symbols. The ultimate goal of shingling is by using collected *k*-grams to
+    encode each document. We will be using one-hot encoding for this. Nevertheless,
+    other encoding methods can also be applied.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d0990f5343f36b851abde18bcf4e6153.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Collecting unique shingles of length k = 3 for the sentence “learning data science
+    is fascinating”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Firstly, unique *k*-grams for each document are collected. Secondly, to encode
+    each document, a vocabulary is needed which represents a set of unique *k*-grams
+    in all documents. Then for each document, a vector of zeros with the length equal
+    to the size of the vocabulary is created. For every appearing k-gram in the document,
+    its position in the vocabulary is identified and a *“1”* is placed at the respective
+    position of the document vector. Even if the same *k*-gram appears several times
+    in a document, it does not matter: the value in the vector will always be 1.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71cf4e0bd2b459e5107114915698f7e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: One-hot encoding
+  prefs: []
+  type: TYPE_NORMAL
+- en: MinHashing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this stage, initial texts have been vectorised. The similarity of vectors
+    can be compared via **Jaccard index**. Remember that Jaccard index of two sets
+    is defined as the number of common elements in both sets divided by the length
+    of all the elements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1daabf1176bcb6558c6a0cfec89a0837.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Jaccard Index is defined as the intersection over the union of two sets
+  prefs: []
+  type: TYPE_NORMAL
+- en: If a pair of encoded vectors is taken, the intersection in the formula for Jaccard
+    index is the number of rows that both contain 1 (i.e. *k*-gram appears in both
+    vectors) and the union is the number of rows with at least one 1 (*k*-gram is
+    presented at least in one of the vectors).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0f5d84aa438349bb1ba843445dac2f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formula for Jaccard Index of two vectors
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/da323105868b199bccef5821f908cebb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of calculating Jaccard Index for two vectors using the formula above
+  prefs: []
+  type: TYPE_NORMAL
+- en: The current problem right now is the sparsity of encoded vectors. Computing
+    a similarity score between two one-hot encoded vectors would take a lot of time.
+    Transforming them to a dense format would make it more efficient to operate on
+    them later. Ultimately, the goal is to design such a function that will transform
+    these vectors to a smaller dimension preserving the information about their similarity.
+    The method that constructs such a function is called MinHashing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MinHashing** is a hash function that permutes the components of an input
+    vector and then returns the first index where the permutated vector component
+    equals 1.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/744e291f536af26caf15a465719aa5db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of calculating a minhash value for a given vector and permutation
+  prefs: []
+  type: TYPE_NORMAL
+- en: For getting a dense representation of a vector consisting of *n* numbers, *n*
+    minhash functions can be used to obtain *n* minhash values which form a **signature**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It may not sound obvious at first but several minhash values can be used to
+    approximate Jaccard similarity between vectors. In fact, the more minhash values
+    are used, the more accurate the approximation is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d860b85779412a1381800621227139b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Calculation of signature matrix and how it is used to compute similarities between
+    vectors. Similarities computed using Jaccard similarity and signatures should
+    normally be approximately equal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just a useful observation. It turns out that there is a whole theorem
+    behind the scenes. Let us understand why Jaccard index can be calculated by using
+    signatures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Statement proof
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let us assume that a given pair of vectors contains only rows of type *01*,
+    *10* and *11*. Then a random permutation on these vectors is performed. Since
+    there exists at least one 1 in all the rows, then while computing both hash values,
+    at least one of these two hash-value computation processes will stop at the first
+    row of a vector with the corresponding hash value equal to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/abd9dc76476a994d4dbe34ba2e0f4ba6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What is the probability that the second hash value will be equal to the first
+    one? Obviously, this will only happen if the second hash value is also equal to
+    1\. This means that the first row has to be of type *11*. Since the permutation
+    was taken randomly, the probability of such an event is equal to *P* *=* *count(11)
+    / (count(01) + count(10) + count(11)*). This expression is absolutely the same
+    as the Jaccard index formula. Therefore:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The probability of getting equal hash values for two binary vectors based
+    on a random rows permutation equals the Jaccard index**.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: However, by proving the statement above, we assumed that initial vectors did
+    not contain rows of type *00*. It is clear that rows of type *00* do not change
+    the value of Jaccard index. Similarly, the probability of getting the same hash
+    values with rows of type *00* included does not affect it. For example, if the
+    first permutated row is 00, then minhash algorithm just ignores it and switches
+    to the next row until there exists at least one 1 in a row. **Of course, rows
+    of type 00 can result in different hash values than without them but the probability
+    of getting the same hash values stays the same**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb569ca7d34d084d62e1cfbb7260c0cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We have proven an important statement. But how the probability of getting the
+    same minhash values can be estimated? Definitely, it is possible to generate all
+    possible permutations for vectors and then calculate all minhash values to find
+    the desired probability. For obvious reasons, this is not efficient because the
+    number of possible permutations for a vector of size *n* equals *n!*. Nevertheless,
+    the probability can be evaluated approximately: let us just use many hash functions
+    to generate that many hash values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Jaccard index of two binary vectors approximately equals the number of corresponding
+    values in their signatures.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/94b03e84760881f1b83a2a2cb248d41b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mathematical notation
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is easy to notice that taking longer signatures results in more accurate
+    calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LSH Function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At the current moment, we can transform raw texts into dense signatures of equal
+    length preserving the information about similarity. Nevertheless, in practice,
+    such dense signatures still usually have high dimensions and it would be inefficient
+    to directly compare them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider *n = 10⁶* documents with their signatures of length 100\. Assuming
+    that a single number of a signature requires 4 bytes to store, then the whole
+    signature would require 400 bytes. For storing *n = 10⁶* documents, 400 MB of
+    space is needed which is doable in reality. But comparing each document with each
+    other in a brute-force manner would require approximately 5 * 10¹¹ comparisons
+    which is too much, especially when *n* is even larger.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af85fbd51bc48322ff806c2139b5cbc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To avoid the problem, it is possible to build a hash table to accelerate search
+    performance but even if two signatures are very similar and differ only in 1 position,
+    they are still likely to have a different hash (because vector remainders are
+    likely to be different). However, we normally want them to fall into the same
+    bucket. This is where LSH comes to the rescue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**LSH** mechanism builds a hash table consisting of several parts which puts
+    a pair of signatures into the same bucket if they have at least one corresponding
+    part.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: LSH takes a signature matrix and horizontally divides it into equal *b* parts
+    called **bands** each containing *r* **rows**. Instead of plugging the whole signature
+    into a single hash function, the signature is divided by *b* parts and each subsignature
+    is processed independently by a hash function. As a consequence, each of the subsignatures
+    falls into separate buckets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e9886e53b30a010a0ebc5ce9cca2064.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of using LSH. Two signatures of length 9 are divided into b = 3 bands
+    each containing r = 3 rows. Each subvector is hashed into one of k possible buckets.
+    Since there is a match in the second band (both subvectors have the same hash
+    value), we consider a pair of these signatures as candidates to be the nearest
+    neighbours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If there is at least one collision between corresponding subvectors of two
+    different signatures, the signatures are considered candidates. As we can see,
+    this condition is more flexible since for considering vectors as candidates they
+    do not need to be absolutely equal. Nevertheless, this increases the number of
+    false positives: a pair of different signatures can have a single corresponding
+    part but in overall be completely different. Depending on the problem, it is always
+    better to optimize parameters *b*, *r* and *k*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Error rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With LSH, it is possible to estimate the probability that two signatures with
+    similarity *s* will be considered as candidates given a number of bands *b* and
+    number of rows *r* in each band. Let us find the formula for it in several steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/678d05e38dbf53cb986924f1f52f9421.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that one random row of both signatures is equal
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa839556f946d35b8c3b9cbc6b657005.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that one random band with r rows is equal
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c45d5d3f4d51c4dc7b1a3205f3b0f4c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that one random band with r rows is different
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/275071ff06ef57a7ac66c254db85b3b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that all b bands in the table are different
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d08da9c4da020b016591cebec1a101f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that at least one of b bands is equal, so two signatures are
+    candidates
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the formula does not take into consideration collisions when different
+    subvectors accidentally hash into the same bucket. Because of this, the real probability
+    of signatures being the candidates might insignificantly differ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For getting a better sense of the formula we have just obtained, let us consider
+    a simple example. Consider two signatures with the length of 35 symbols which
+    are equally split into 5 bands with 7 rows each. Here is the table which represents
+    the probability of having at least one equal band based on their Jaccard similarity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d67b087e23e209ebf0e722cad2fb88d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Probability P of getting at least one corresponding band of two signatures based
+    on their similarity s
+  prefs: []
+  type: TYPE_NORMAL
+- en: We notice that if two similar signatures have the Jaccard similarity of 80%,
+    then they have a corresponding band in 93.8% of cases (*true positives*). In the
+    rest 6.2% of scenarios such a pair of signatures is *false negative*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let us take two different signatures. For instance, they are similar only
+    by 20%. Therefore, they are *false positive* candidates in 0.224% of cases. In
+    other 99.776% of cases, they do not have a similar band, so they are *true negatives*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualisation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let us now visualise the connection between similarity *s* and probability
+    *P* of two signatures becoming candidates. Normally with higher signature similarity
+    *s,* signatures should have a higher probability of being candidates. Ideally,
+    it would look like below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61d84dbb359897a596bc2e2c151be4a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Ideal scenario. A pair of signatures is considered candidates only if their
+    similarity is greater than a certain threshold t
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based on the probability formula obtained above, a typical line would look
+    like in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f083273e82d9968c58e6e6112c5feaa5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A typical line that slowly increases in the beginning and at the end and has
+    a steep slope at a threshold t given by the approximate probability formula in
+    the figure
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is possible to vary the number of bands *b* to shift the line in the figure
+    to the left or to the right. Increasing *b* moves the line to the left and results
+    in more *FP*, decreasing — shifts it to the right and leads to more *FN*. It is
+    important to find a good balance, depending on the problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26ba308613fe1d7962ff5cf150d720bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With a higher number of bands the line moves to the left, with lower — to the
+    right
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/50389f257435649c54cdb03220b3b7e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Moving the threshold to the left increases FP while shifting it to the right
+    increases FN
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimentations with different numbers of bands and rows
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Several line plots are built below for different values of *b* and *r*. It is
+    always better to adjust these parameters based on the specific task to successfully
+    retrieve all pairs of similar documents and ignore those with different signatures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/18cfbe49b97c06a824dc6239275815c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adjusting number of bands
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a2758547c42e35d87d9c25a13cc5de3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adjusting number of rows
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have walked through a classical implementation of the LSH method. LSH significantly
+    optimizes search speed by using lower dimensional signature representations and
+    a fast hashing mechanism to reduce the candidates’ search scope. At the same time,
+    this comes at the cost of search accuracy but in practice, the difference is usually
+    insignificant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, LSH is vulnerable to high dimensional data: more dimensions require
+    longer signature lengths and more computations to maintain a good search quality.
+    In such cases, it is recommended to use another index.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, there exist different implementations of LSH, but all of them are based
+    on the same paradigm of *transforming input vectors to hash values while preserving
+    information about their similarity*. Basically, other algorithms simply define
+    other ways of obtaining these hash values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Random projections** is another LSH method that will be covered in the next
+    chapter and which is implemented as an LSH index in the [Faiss](https://github.com/facebookresearch/faiss)
+    library for similarity search.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Locality Sensitive Hashing | Andrew Wylie | December 2, 2013](https://cse.iitkgp.ac.in/~animeshm/algoml/lsh.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Data Mining | Locality Sensitive Hashing | University of Szeged](https://www.inf.u-szeged.hu/~berendg/docs/dm/DM_lsh_en_pf.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss repository](https://github.com/facebookresearch/faiss)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

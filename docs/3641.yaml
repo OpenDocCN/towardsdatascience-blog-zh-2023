@@ -1,0 +1,960 @@
+- en: Nine Rules for SIMD Acceleration of Your Rust Code (Part 1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21?source=collection_archive---------2-----------------------#2023-12-12](https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21?source=collection_archive---------2-----------------------#2023-12-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: General Lessons from Boosting Data Ingestion in the `range-set-blaze` Crate
+    by 7x
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c16fe639ce21--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c16fe639ce21--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c16fe639ce21--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----c16fe639ce21---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c16fe639ce21--------------------------------)
+    ·17 min read·Dec 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc16fe639ce21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----c16fe639ce21---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc16fe639ce21&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21&source=-----c16fe639ce21---------------------bookmark_footer-----------)![](../Images/03b7cab4f40a89f2f1582704fd509bdd.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A crab delegating calculations to little crabs — Source: [https://openai.com/dall-e-2/](https://openai.com/dall-e-2/).
+    All other figures from the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to Ben Lichtman (B3NNY) at the Seattle Rust Meetup for pointing me in
+    the right direction on SIMD.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data) (Single
+    Instruction, Multiple Data) operations have been a feature of Intel/AMD and ARM
+    CPUs since the early 2000s. These operations enable you to, for example, add an
+    array of eight `i32` to another array of eight `i32` with just one CPU operation
+    **on a single core**. Using SIMD operations greatly speeds up certain tasks. If
+    you’re not using SIMD, you may not be fully using your CPU’s capabilities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is this “Yet Another Rust and SIMD” article? Yes and no. Yes, I did apply SIMD
+    to a programming problem and then feel compelled to write an article about it.
+    No, I hope that this article also goes into enough depth that it can guide you
+    through *your* project. It explains the newly available SIMD capabilities and
+    settings in Rust nightly. It includes a Rust SIMD cheatsheet. It shows how to
+    make your SIMD code generic without leaving safe Rust. It gets you started with
+    tools such as Godbolt and Criterion. Finally, it introduces new cargo commands
+    that make the process easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `[range-set-blaze](https://crates.io/crates/range-set-blaze)` crate uses
+    its `RangeSetBlaze::from_iter` method to ingest potentially long sequences of
+    integers. When the integers are “clumpy”, it can do this [30 times faster](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)
+    than Rust’s standard `HashSet::from_iter`. Can we do even better if we use SIMD
+    operations? Yes!
+  prefs: []
+  type: TYPE_NORMAL
+- en: See [this documentation](https://docs.rs/range-set-blaze/latest/range_set_blaze/struct.RangeSetBlaze.html#constructor-performance)
+    for the definition of “clumpy”. Also, what happens if the integers are not clumpy?
+    `RangeSetBlaze` is [2 to 3 times *slower*](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)
+    than `HashSet`.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: On clumpy integers, `RangeSetBlaze::from_slice` — a new method based on SIMD
+    operations — is 7 times faster than `RangeSetBlaze::from_iter.` That makes it
+    more than 200 times faster than `HashSet::from_iter`. (When the integers are not
+    clumpy, it is still 2 to 3 times slower than `HashSet`.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over the course of implementing this speed up, I learned nine rules that can
+    help you accelerate your projects with SIMD operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rules are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use nightly Rust and `core::simd`, Rust’s experimental standard SIMD module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'CCC: Check, Control, and Choose your computer’s SIMD capabilities.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Learn `core::simd`, but selectively.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Brainstorm candidate algorithms.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use Godbolt and AI to understand your code’s assembly, even if you don’t know
+    assembly language.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Generalize to all types and LANES with in-lined generics, (and when that doesn’t
+    work) macros, and (when that doesn’t work) traits.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'See [Part 2](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3)
+    for these rules:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*7\. Use Criterion benchmarking to pick an algorithm and to discover that LANES
+    should (almost) always be 32 or 64.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*8\. Integrate your best SIMD algorithm into your project with* `*as_simd*`*,
+    special code for* `*i128*`*/*`*u128*`*, and additional in-context benchmarking.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*9\. Extricate your best SIMD algorithm from your project (for now) with an
+    optional cargo feature.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Aside: To avoid wishy-washiness, I call these “rules”, but they are, of course,
+    just suggestions.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 1: Use nightly Rust and `core::simd`, Rust’s experimental standard SIMD
+    module.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Rust can access SIMD operations either via the stable `[core::arch](https://doc.rust-lang.org/core/arch/index.html)`
+    module or via nighty’s `[core::simd](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html)`
+    module. Let’s compare them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`**core::arch**`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stable
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[“[N]ot the easiest thing in the world](https://doc.rust-lang.org/core/arch/index.html#ergonomics)”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Offers high-performance to downstream users of your crate. For example, because
+    [regex](https://github.com/BurntSushi/regex) and `[memchr](https://github.com/BurntSushi/memchr)`
+    went this route, over 100,000 other crates got stable SIMD acceleration for free.
+    [[Reddit discussion](https://www.reddit.com/r/rust/comments/18hj1m6/comment/kdbfktb/?utm_source=share&utm_medium=web2x&context=3),
+    [some relevant](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs)
+    `[memchr](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs)`
+    [code](https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/memchr.rs)]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`**core::simd**`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nightly
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Delightfully easy and portable.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Limits downstream users to nightly.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I decided to go with “easy”. If you decide to take the harder road, starting
+    first with the easier path may still be worthwhile.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In either case, before we try to use SIMD operations in a larger project, let’s
+    make sure we can get them working at all. Here are the steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, create a project called `simd_hello`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Edit `src/main.rs` to contain ([Rust playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2021&gist=e39aa876c0abed9915d389fe73687839)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next — full SIMD capabilities require the nightly version of Rust. Assuming
+    you have Rust installed, install nightly (`rustup install nightly`). Make sure
+    you have the latest nightly version (`rustup update nightly`). Finally, set this
+    project to use nightly (`rustup override set nightly`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can now run the program with `cargo run`. The program applies [ROT13 decryption](https://en.wikipedia.org/wiki/ROT13)
+    to 32 bytes of upper-case letters. With SIMD, the program can decrypt all 32 bytes
+    simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s look at each section of the program to see how it works. It starts with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Rust nightly offers its extra capabilities (or “features”) only on request.
+    The `#![feature(portable_simd)]` statement requests that Rust nightly make available
+    the new experimental `core::simd` module. The `use` statement then imports the
+    module’s most important types and traits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the code’s next section, we define useful constants:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `Simd` struct is a special kind of Rust array. (It is, for example, always
+    memory aligned.) The constant `LANES` tells the length of the `Simd` array. The
+    `from_array` constructor copies a regular Rust array to create a `Simd`. In this
+    case, because we want `const` `Simd`’s, the arrays we construct from must also
+    be `const`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next two lines copy our encrypted text into `data` and then adds 13 to each
+    letter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: What if you make an error and your encrypted text isn’t exactly length `LANES`
+    (32)? Sadly, the compiler won’t tell you. Instead, when you run the program, `from_slice`
+    will panic. What if the encrypted text contains non-upper-case letters? In this
+    example program, we’ll ignore that possibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `+=` operator does element-wise addition between the `Simd` `data` and `Simd`
+    `THIRTEENS`. It puts the result in `data`. Recall that debug builds of regular
+    Rust addition check for overflows. Not so with SIMD. Rust defines SIMD arithmetic
+    operators to always wrap. Values of type `u8` wrap after 255.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coincidentally, Rot13 decryption also requires wrapping, but after ‘Z’ rather
+    than after 255\. Here is one approach to coding the needed Rot13 wrapping. It
+    subtracts 26 from any values [on beyond ‘Z](https://en.wikipedia.org/wiki/On_Beyond_Zebra!)’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says to find the element-wise places beyond ‘Z’. Then, subtract 26 from
+    all values. At the places of interest, use the subtracted values. At the other
+    places, use the original values. Does subtracting from all values and then using
+    only some seem wasteful? With SIMD, this takes no extra computer time and avoids
+    jumps. This strategy is, thus, efficient and common.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The program ends like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the `.as_array()` method. It safely transmutes a `Simd` struct into a
+    regular Rust array without copying.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Surprisingly to me, this program runs fine on computers without SIMD extensions.
+    Rust nightly compiles the code to regular (non-SIMD) instructions. But we don’t
+    just want to run “fine”, we want to run *faster*. That requires us to turn on
+    our computer’s SIMD power.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 2: CCC: Check, Control, and Choose your computer’s SIMD capabilities.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To make SIMD programs run faster on your machine, you must first discover which
+    SIMD extensions your machine supports. If you have an Intel/AMD machine, you can
+    use my `[simd-detect](https://github.com/CarlKCarlK/cargo-simd-detect)` cargo
+    command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Run with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On my machine, it outputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says that my machine supports the `sse2`, `avx2`, and `avx512f` SIMD extensions.
+    Of those, by default, Rust enables the ubiquitous twenty-year-old `sse2` extension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SIMD extensions form a hierarchy with `avx512f` above `avx2` above `sse2`.
+    Enabling a higher-level extension also enables the lower-level extensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most Intel/AMD computers also support the ten-year-old `avx2` extension. You
+    enable it by setting an environment variable:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: “Force install” and run `simd-detect` again and you should see that `avx2` is
+    enabled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Alternatively, you can turn on every SIMD extension that your machine supports:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: On my machine this enables `avx512f`, a newer SIMD extension supported by some
+    Intel computers and a few AMD computers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can set SIMD extensions back to their default (`sse2` on Intel/AMD) with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: You may wonder why `target-cpu=native` isn’t Rust’s default. The problem is
+    that binaries created using `avx2` or `avx512f` won’t run on computers missing
+    those SIMD extensions. So, if you are compiling only for your own use, use `target-cpu=native`.
+    If, however, you are compiling for others, choose your SIMD extensions thoughtfully
+    and let people know which SIMD extension level you are assuming.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Happily, whatever level of SIMD extension you pick, Rust’s SIMD support is so
+    flexible you can easily change your decision later. Let’s next learn details of
+    programming with SIMD in Rust.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 3: Learn `core::simd`, but selectively.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To build with Rust’s new `[core::simd](https://doc.rust-lang.org/nightly/core/simd/index.html)`
+    module you should learn selected building blocks. Here is a [cheatsheet](https://github.com/CarlKCarlK/range-set-blaze/blob/nov23/examples/simd/rust_simd_cheatsheet.md)
+    with the structs, methods, etc., that I’ve found most useful. Each item includes
+    a link to its [documentation](https://doc.rust-lang.org/nightly/core/simd/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Structs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`[Simd](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html)` - a
+    special, aligned, fixed-length array of `[SimdElement](https://doc.rust-lang.org/std/simd/trait.SimdElement.html)`.
+    We refer to a position in the array and the element stored at that position as
+    a “lane”. By default, we copy `Simd` structs rather than reference them.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Mask](https://doc.rust-lang.org/nightly/core/simd/struct.Mask.html)` - a
+    special Boolean array showing inclusion/exclusion on a per-lane basis.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SimdElements
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Floating-Point Types: `f32`, `f64`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Integer Types: `i8`, `u8`, `i16`, `u16`, `i32`, `u32`, `i64`, `u64`, `isize`,
+    `usize`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: — [*but not*](https://github.com/rust-lang/portable-simd/issues/108) `[*i128*](https://github.com/rust-lang/portable-simd/issues/108)`[*,*](https://github.com/rust-lang/portable-simd/issues/108)
+    `[*u128*](https://github.com/rust-lang/portable-simd/issues/108)`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`**Simd**` **constructors**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`[Simd::from_array](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.from_array)`
+    - creates a `Simd` struct by copying a fixed-length array.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Simd::from_slice](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.from_slice)`
+    - creates a `Simd<T,LANE>` struct by copying the first `LANE` elements of a slice.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Simd::splat](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.splat)`
+    - replicates a single value across all lanes of a `Simd` struct.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[slice::as_simd](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.to_simd)`
+    - without copying, safely transmutes a regular slice into an aligned slice of
+    `Simd` (plus unaligned leftovers).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`**Simd**` **conversion**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`[Simd::as_array](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.as_array)`
+    - without copying, safely transmutes an `Simd` struct into a regular array reference.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`**Simd**` **methods and operators**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`[simd[i]](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.index)`
+    - extract a value from a lane of a `Simd`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[simd + simd](https://doc.rust-lang.org/core/simd/struct.Simd.html#impl-Add%3C%26''rhs+Simd%3CT,+LANES%3E%3E-for-%26''lhs+Simd%3CT,+LANES%3E)`
+    - performs element-wise addition of two `Simd` structs. Also, supported `-`, `*`,
+    `/`, `%`, remainder, bitwise-and, -or, xor, -not, -shift.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[simd += simd](https://doc.rust-lang.org/core/simd/struct.Simd.html#impl-AddAssign%3CU%3E-for-Simd%3CT,+LANES%3E)`
+    - adds another `Simd` struct to the current one, in place. Other operators supported,
+    too.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Simd::simd_gt](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.simd_gt)`
+    - compares two `Simd` structs, returning a `Mask` indicating which elements of
+    the first are greater than those of the second. Also, supported `simd_lt`, `simd_le`,
+    `simd_ge`, `simd_lt`, `simd_eq`, `simd_ne`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Simd::rotate_elements_left](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.rotate_elements_left)`
+    - rotates the elements of a `Simd` struct to the left by a specified amount. Also,
+    `rotate_elements_right`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[simd_swizzle!(simd, indexes)](https://doc.rust-lang.org/std/simd/prelude/macro.simd_swizzle.html)`
+    - rearranges the elements of a `Simd` struct based on the specified const indexes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[simd == simd](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#impl-Eq-for-Simd%3CT,+N%3E)`
+    - checks for equality between two `Simd` structs, returning a regular `bool` result.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Simd::reduce_and](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.reduce_and)`
+    - performs a bitwise AND reduction across all lanes of a `Simd` struct. Also,
+    supported: `reduce_or`, `reduce_xor`, `reduce_max`, `reduce_min`, `reduce_sum`
+    (but no`reduce_eq`).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`**Mask**` **methods and operators**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`[Mask::select](https://doc.rust-lang.org/nightly/core/simd/struct.Mask.html#method.select)`
+    - selects elements from two `Simd` struct based on a mask.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Mask::all](https://doc.rust-lang.org/nightly/core/simd/struct.Mask.html#method.all)`
+    - tells if the mask is all `true`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[Mask::any](https://doc.rust-lang.org/nightly/core/simd/struct.Mask.html#method.all)`
+    - tells if the mask contains any `true`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**All about lanes**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`[Simd::LANES](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#associatedconstant.LANES)`
+    - a constant indicating the number of elements (lanes) in a `Simd` struct.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[SupportedLaneCount](https://doc.rust-lang.org/nightly/core/simd/trait.SupportedLaneCount.html)`
+    - tells the allowed values of `LANES`. Use by generics.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`[simd.lanes](https://doc.rust-lang.org/core/simd/struct.Simd.html#method.lanes)`
+    - const method that tells a `Simd` struct’s number of lanes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Low-level alignment, offsets, etc.**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*When possible, use* `[*to_simd*](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.to_simd)`
+    *instead.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`[mem::size_of](https://doc.rust-lang.org/std/mem/fn.size_of.html)`, `[mem::align_of](https://doc.rust-lang.org/std/mem/fn.align_of.html)`,
+    `[mem::align_to](https://doc.rust-lang.org/std/mem/fn.align_to.html)`, `[intrinsics::offset](https://doc.rust-lang.org/std/intrinsics/fn.offset.html)`,
+    `[pointer::read_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.read_unaligned)`
+    (unsafe), `[pointer::write_unaligned](https://doc.rust-lang.org/std/primitive.pointer.html#method.write_unaligned)`
+    (unsafe), `[mem::transmute](https://doc.rust-lang.org/std/mem/fn.transmute.html)`
+    (unsafe, const)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**More, perhaps of interest**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`[deinterleave](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.deinterleave)`,
+    `[gather_or](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.gather_or)`,
+    `[reverse](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.reverse)`,
+    `[scatter](https://doc.rust-lang.org/nightly/core/simd/struct.Simd.html#method.scatter)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With these building blocks at hand, it’s time to build something.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 4: Brainstorm candidate algorithms.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What do *you* want to speed up? You won’t know ahead of time which SIMD approach
+    (of any) will work best. You should, therefore, create many algorithms that you
+    can then analyze (Rule 5) and benchmark (Rule 7).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wanted to speed up `[range-set-blaze](https://crates.io/crates/range-set-blaze)`,
+    a crate for manipulating sets of “clumpy” integers. I hoped that creating `is_consecutive`,
+    a function to detect blocks of consecutive integers, would be useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Background:** Crate `*range-set-blaze*` *works on “clumpy” integers. “C*lumpy”,
+    here, means that the number of ranges needed to represent the data is small compared
+    to the number of input integers. For example, these 1002 input integers'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`100, 101,` ..., `489, 499, 501, 502,` ..., `998, 999, 999, 100, 0`'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Ultimately become three Rust ranges:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`0..=0, 100..=499, 501..=999`.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: (Internally, the `[*RangeSetBlaze*](https://docs.rs/range-set-blaze/latest/range_set_blaze/struct.RangeSetBlaze.html#)`
+    struct represents a set of integers as a sorted list of disjoint ranges stored
+    in a cache efficient BTreeMap.)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Although the input integers are allowed to be unsorted and redundant, we expect
+    them to often be “nice”. RangeSetBlaze’s `from_iter` constructor already exploits
+    this expectation by grouping up adjacent integers. For example, `from_iter` first
+    turns the 1002 input integers into four ranges
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`*100..=499, 501..=999, 100..=100, 0..=0.*`'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: with minimal, constant memory usage, independent of input size. It then sorts
+    and merges these reduced ranges.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I wondered if a new `from_slice` method could speed construction from array-like
+    inputs by quickly finding (some) consecutive integers. For example, could it—
+    with minimal, constant memory — turn the 1002 inputs integers *into five Rust
+    ranges:*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`*100..=499, 501..=999, 999..=999, 100..=100, 0..=0.*`'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*If so,* `*from_iter*` *could then quickly finish the processing.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Let’s start by writing `is_consecutive` with regular Rust:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The algorithm just loops through the array sequentially, checking that each
+    value is one more than its predecessor. It also avoids overflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looping over the items seemed so easy, I wasn’t sure if SIMD could do any better.
+    Here was my first attempt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splat0
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is an outline of its calculations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/420908b8497341c078410b9436eaa6d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: This and all following images by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It first (needlessly) checks that the first and last items are 15 apart. It
+    then creates `added` by adding 15 to the 0th item, 14 to the next, etc. Finally,
+    to see if all items in `added` are the same, it creates a new `Simd` based on
+    `added`’s 0th item and then compares. Recall that `splat` creates a `Simd` struct
+    from one value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splat1 & Splat2
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When I mentioned the `is_consecutive` problem to Ben Lichtman, he independently
+    came up with this, Splat1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Splat1 subtracts the comparison value from `chunk` and checks if the result
+    is the same as the first element of `chunk`, splatted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/074c54b0d26c8842f648e64d7246ad79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: He also came up with a variation called Splat2 that splats the first element
+    of `subtracted` rather than `chunk`. That would seemingly avoid one memory access.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m sure you are wondering which of these is best, but before we discuss that
+    let’s look at two more candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Swizzle
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Swizzle is like Splat2 but uses `simd_swizzle!` instead of `splat`. Macro `simd_swizzle!`
+    creates a new `Simd` by rearranging the lanes of an old `Simd` according to an
+    array of indexes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Rotate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This one is different. I had high hopes for it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: The idea is to rotate all the elements one to the right. We then subtract the
+    original `chunk` from `rotated`. If the input is consecutive, the result should
+    be “-15” followed by all 1’s. (Using wrapped subtraction, -15 is `4294967281u32`.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d8b9ae021da7778af8e11f6ed860b16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now that we have candidates, let’s start to evaluate them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 5: Use Godbolt and AI to understand your code’s assembly, even if you
+    don’t know assembly language.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ll evaluate the candidates in two ways. First, in this rule, we’ll look at
+    the assembly language generated from our code. Second, in Rule 7, we’ll benchmark
+    the code’s speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t worry if you don’t know assembly language, you can still get something
+    out of looking at it.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The easiest way to see the generated assembly language is with the [Compiler
+    Explorer, AKA Godbolt](https://godbolt.org/z/j5GdGah89). It works best on short
+    bits of code that don’t use outside crates. It looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1013810e2972f3eb9449156e4404a98f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Referring to the numbers in the figure above, follow these steps to use Godbolt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Open [godbolt.org](https://godbolt.org/z/odrPv5WcG) with your web browser.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add a new source editor.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select Rust as your language.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Paste in the code of interest. Make the functions of interest public (`pub fn`).
+    Do not include a main or unneeded functions. The tool doesn’t support external
+    crates.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add a new compiler.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set the compiler version to nightly.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set options (for now) to `-C opt-level=3 -C target-feature=+avx512f.`
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If there are errors, look at the output.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If you want to share or save the state of the tool, click “Share”
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: From the image above, you can see that Splat2 and Sizzle are exactly the same,
+    so we can remove Sizzle from consideration. If you [open up a copy of my Godbolt
+    session](https://godbolt.org/z/j5GdGah89), you’ll also see that most of the functions
+    compile to about the same number of assembly operations. The exceptions are Regular
+    — which is much longer — and Splat0 — which includes the early check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the assembly, 512-bit registers start with ZMM. 256-bit registers start
+    YMM. 128-bit registers start with XMM. If you want to better understand the generated
+    assembly, use AI tools to generate annotations. For example, here I ask [Bing
+    Chat](https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx) about Splat2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/813f956f0e22302edb254812fa60f303.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Try different compiler settings, including `-C target-feature=+avx2` and then
+    leaving `target-feature` completely off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fewer assembly operations don’t necessarily mean faster speed. Looking at the
+    assembly does, however, give us a sanity check that the compiler is at least trying
+    to use SIMD operations, inlining const references, etc. Also, as with Splat1 and
+    Swizzle, it can sometimes let us know when two candidates are the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may need disassembly features beyond what Godbolt offers, for example, the
+    ability to work with code the uses external crates. B3NNY recommended the cargo
+    tool `[cargo-show-asm](https://github.com/pacak/cargo-show-asm)` to me. I tried
+    it and found it reasonably easy to use.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The `range-set-blaze` crate must handle integer types beyond `u32`. Moreover,
+    we must pick a number of LANES, but we have no reason to think that 16 LANES is
+    always best. To address these needs, in the next rule we’ll generalize the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 6: Generalize to all types and LANES with in-lined generics, (and when
+    that doesn’t work) macros, and (when that doesn’t work) traits.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s first generalize Splat1 with generics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: First, note the `#[inline]` attribute. It’s important for efficiency and we’ll
+    use it on pretty much every one of these small functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function defined above, `is_consecutive_splat1_gen`, looks great except
+    that it needs a second input, called `comparison_value`, that we have yet to define.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you don’t need a generic const `comparison_value`, I envy you. You can skip
+    to the next rule if you like. Likewise, if you are reading this in the future
+    and creating a generic const `comparison_value` is as effortless as having your
+    personal robot do your household chores, then I doubly envy you.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'We can try to create a `comparison_value_splat_gen` that is generic and const.
+    Sadly, neither `From<usize>` nor alterative `T::One` are const, so this doesn’t
+    work:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Macros are the last refuge of scoundrels.** So, let’s use macros:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This lets us run on any particular element type and all number of LANES ([Rust
+    Playground](https://play.rust-lang.org/?version=nightly&mode=debug&edition=2021&gist=f5a6fbac31d64f3ae79440d5613e44ec)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sadly, this still isn’t enough for `range-set-blaze`. It needs to run on *all*
+    element types (not just one) and (ideally) all LANES (not just one).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Happily, there’s a workaround, that again depends on macros. It also exploits
+    the fact that we only need to support a finite list of types, namely: `i8`, `i16`,
+    `i32`, `i64`, `isize`, `u8`, `u16`, `u32`, `u64`, and `usize`. If you need to
+    also (or instead) support `f32` and `f64`, that’s fine.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If, on the other hand, you need to support `i128` and `u128`, you may be out
+    of luck. The `core::simd` module doesn’t support them. We’ll see in Rule 8 how
+    `range-set-blaze` gets around that at a performance cost.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The workaround defines a new trait, here called `IsConsecutive`. We then use
+    a macro (that calls a macro, that calls a macro) to implement the trait on the
+    10 types of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can now call fully generic code (Rust Playground):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this technique, we can create multiple candidate algorithms that are fully
+    generic over type and LANES. Next, it is time to benchmark and see which algorithms
+    are fastest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those are the first six rules for adding SIMD code to Rust. In [Part 2](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3),
+    we look at rules 7 to 9\. These rules will cover how to pick an algorithm and
+    set LANES. Also, how to integrate SIMD operations into your existing code and
+    (importantly) how to make it optional. Part 2 concludes with a discussion of when/if
+    you should use SIMD and ideas for improving Rust’s SIMD experience. I hope to
+    see you [there](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please* [*follow Carl on Medium*](https://medium.com/@carlmkadie)*. I write
+    on scientific programming in Rust and Python, machine learning, and statistics.
+    I tend to write about one article per month.*'
+  prefs: []
+  type: TYPE_NORMAL

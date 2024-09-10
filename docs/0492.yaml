@@ -1,0 +1,265 @@
+- en: Anomaly Detection using Sigma Rules (Part 2) Spark Stream-Stream Join
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f?source=collection_archive---------14-----------------------#2023-02-02](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f?source=collection_archive---------14-----------------------#2023-02-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A class of Sigma rules detect temporal correlations. We evaluate the scalability
+    of Spark’s stateful symmetric stream-stream join to perform temporal correlations.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)[![Jean-Claude
+    Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------)
+    [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----6bb4734e912f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----6bb4734e912f---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6bb4734e912f--------------------------------)
+    ·7 min read·Feb 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6bb4734e912f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&user=Jean-Claude+Cote&userId=444ed0089012&source=-----6bb4734e912f---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6bb4734e912f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f&source=-----6bb4734e912f---------------------bookmark_footer-----------)![](../Images/0b89900becc6702163692d4aacdc9d3e.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by Naveen Kumar on Unsplash
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following up on our [previous article](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457),
+    we evaluate Sparks ability to join a start-process event with it’s parent start-process
+    event.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we evaluated how Spark [stream-stream join](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#stream-stream-joins)
+    can scale. Specifically, how many events can it hold in in the join window.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'During our research, we evaluated a few approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Full join
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Doing a full stream-stream join requires caching all previous events on the
+    right side of the join (parent start-process). All the past parent start-process
+    details are not necessary since only a subset of these parent start-process events
+    are of interest. For example, a Sigma rule might specify a parent CommandLine
+    containing the string `.cpl`— all other events can be ignored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Join with Parent of Interest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The parents of interest is the result of applying filter conditions to the right
+    side of the join. This can greatly reduce the number of parents to remember. After
+    the join is performed, we apply the conditions on the current process and on the
+    parent process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9bbc30b515ae4de9767ee0fb2a40f177.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Join with Features of Parent of Interest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A better solution is to store the conditions we evaluate on the right side
+    and discard all other attributes — CommandLine, Image etc. This way we only keep
+    a limited number of boolean flags rather than potentially long strings. In the
+    diagram below, `Features` is a map of Sigma filter expression name and the value
+    is the result of the test. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e05fc711d048fe95e60ca80be7188baa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'During our research, we quickly came to the realization that reducing the amount
+    of state Spark needs to store is paramount. Thus we chose to keep only parents
+    of interest. These are the parents which have a feature we are looking for. We
+    discard all other parents and keep only the minimal set of information about these
+    parents: join key, timestamp and feature flags.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simulation Test Harness
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to evaluate the performance of the Spark stream-stream join, we created
+    a mock stream of `cause` and `effect` events. In our experiments, we disabled
+    the late arrival support by setting a watermark of zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'These `cause` and `effect` streaming events are joined using spark stream-stream:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the join expression `effect_key = cause_key` and the windowing clauses
+    stating that an effect time must be after the `cause` but not further back in
+    time than `window` seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linxiao Ma nicely explains in his article, [Spark Structured Streaming Deep
+    Dive (7) — Stream-Stream Join](https://dataninjago.com/2022/07/21/spark-structured-streaming-deep-dive-7-stream-stream-join/),
+    that under these conditions, cause events will get cached in Spark’s stateful
+    state store up to the `window` seconds. However, the `effect` events are not required
+    to be stored. For every `effect` event passing in the stream-stream join, a lookup
+    is made to find a corresponding `cause`. For every `effect` entering the join,
+    a `cause+effect` row is written out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the Right State Store
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spark has two state store implementations. The original is named HDFSBackedStateStore
+    and is a simple in-memory hash map backed by HDFS files. The newest state store
+    is based on RocksDB. [RocksDB is an embeddable key-value persistent store](https://www.confluent.io/blog/how-to-tune-rocksdb-kafka-streams-state-stores-performance/)
+    written in C++. The state of RocksDB is kept partly in memory and partly on local
+    disk. At every checkpoint, Spark saves a copy of the changed files to a central
+    location (datalake).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark recommends [RocksDB](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#rocksdb-state-store-implementation)
+    when you have a large number of keys to store. According to [DataBricks](https://docs.databricks.com/structured-streaming/stateful-streaming.html),
+    a large Spark worker node can cache up to 100 million keys.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since our stream-stream join will cache a lot of parents of interest rows, we
+    decided to use the RocksDB state store in our evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: All of our experiments are performed on a single Spark worker with 48G of RAM
+    and 16 CPU. We simulate logs coming from 50,000 hosts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our test harness is very flexible. It lets us alter many parameters, such as
+    the events per seconds, size of each event, the time window, for the join, key
+    sizes, distribution of events in the time window etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Effect of Spark Partitions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In our first experiment, we joined effects and causes over a window of 10,000
+    seconds (~2.77 hours). We simulated that each parent of interest would have 12
+    boolean flags. We set an event rate of 10,000 per second. Here, we show the effect
+    of varying the number of Spark partitions (individual tasks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/851031bbf6f8f6033f559af9c816aad5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Varying the number of partitions has no effect on performance. The time to execute
+    a micro-batch is about 225 seconds. Remember we triggered at every 60 seconds
+    `.trigger(processingTime="1 minutes")` . Spark will start the next micro-batch
+    immediately. The event processing latency is thus a maximum of 225 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Effect of Window Size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this second experiment, we varied the size (time) of the stream-stream join
+    window. The job is not stable at a rate of 5,000 events per seconds. Each micro-batch
+    takes longer and longer to execute. We are falling behind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e9c348879a1d1a4a2579a89409b3c987.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: If we reduce the window to 18 hours and reduce the rate to 2,500 events per
+    second, the job stabilizes and settles at about 300 seconds per micro-batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/118519c60d87af0830a72b92b10559af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'However, in practice, we will not keep every parent event. We will only keep
+    the “parents of interests”. These are the events which have one or more Sigma
+    rule expressions that is true. What is important to measure is Spark’s ability
+    to hold parent events. We can easily calculate this: 2,500 event/seconds x 64,000
+    seconds. Spark can cache 160 million “parents of interests”. Our experimental
+    result confirms [Databricks claim that the RocksDB StateStore](https://docs.databricks.com/structured-streaming/stateful-streaming.html)
+    can handle 100 million keys per machine. If we suppose these events come from
+    50,000 hosts, Spark can hold 3,200 “parents of interests” per host.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s interesting to observe that Spark stores the feature flags and the keys.
+    It needs to store the key of the `causes` in order to join them to the `effect`
+    key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other interesting observation we can make is, what do we retrieve from this
+    lookup by key? We retrieve an event (a row) that contains boolean flags. In practice,
+    these flags are often mutually exclusive. That is, in a given row, only one of
+    them might be true, while all others are false. Spark is storing the `cause` key
+    and all the associated flags no matter if they are true or false.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bloom Filter Join
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Is there a better way to keep track of feature flags? Yes, the answer is a bloom
+    filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A bloom filter is a probabilistic data structure which can store a key and test
+    for the presence of a key. Bloom filters hash the key and use the result of the
+    hash to set a few bits in a bit array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bloom filters are extremely compact. The price you pay for the space saving
+    is of possible false positives. However, once a detection is made, the Sigma rule
+    that triggered can be re-evaluated to confirm correctness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use a bloom filter to perform the join from above. Let’s suppose we use
+    a composite key (`parent_key + feature_id`), where the `feature_id` is the name
+    given to a Sigma filter expression. Filter expression that apply to a parent process
+    are stored in the bloom, but only if they are true. Testing for the presence of
+    the composite key returns true if the key is in the bloom and false if it is not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A bloom can hold a certain amount of keys. Past that number, false positives
+    increase drastically. By only storing features that are true, we prolong the usefulness
+    of the bloom filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The join is thus modeled as a lookup in a bloom filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ba551a067487290b99a1ed4f66d168f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In our next article, we will build a custom Spark stateful join function that
+    leverages a bloom filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images unless otherwise noted are by the author
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

@@ -1,0 +1,528 @@
+- en: 'BERxiT: Early Exiting for BERT'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/berxit-early-exiting-for-bert-6f76b2f561c5?source=collection_archive---------3-----------------------#2023-01-14](https://towardsdatascience.com/berxit-early-exiting-for-bert-6f76b2f561c5?source=collection_archive---------3-----------------------#2023-01-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Presenting the “early exiting” method for efficient inference in deep neural
+    networks, and reviewing the “BERxiT” paper*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@odedmous?source=post_page-----6f76b2f561c5--------------------------------)[![Oded
+    Mousai](../Images/61fc83236a1c9e1e5f42bf7b2deda1b1.png)](https://medium.com/@odedmous?source=post_page-----6f76b2f561c5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6f76b2f561c5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6f76b2f561c5--------------------------------)
+    [Oded Mousai](https://medium.com/@odedmous?source=post_page-----6f76b2f561c5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fefb071325af8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberxit-early-exiting-for-bert-6f76b2f561c5&user=Oded+Mousai&userId=efb071325af8&source=post_page-efb071325af8----6f76b2f561c5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6f76b2f561c5--------------------------------)
+    ·11 min read·Jan 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6f76b2f561c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberxit-early-exiting-for-bert-6f76b2f561c5&user=Oded+Mousai&userId=efb071325af8&source=-----6f76b2f561c5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6f76b2f561c5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fberxit-early-exiting-for-bert-6f76b2f561c5&source=-----6f76b2f561c5---------------------bookmark_footer-----------)![](../Images/45682104a04c165f2cafa599859fb1df.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by the author (created with Midjourney)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article contains two parts. In **Part I** I present the motivation for
+    efficient inference time and introduce the idea of “early exiting” to achieve
+    that. In **Part II** I review the interesting paper “**BERxiT: Early Exiting for
+    BERT with Better Fine-Tuning and Extension to Regression**” (Xin, Ji et al.) [[1](https://aclanthology.org/2021.eacl-main.8/)]that
+    was published in 2021 and aims to improve the early exiting method. Note that
+    this paper focuses on the NLP domain (using a BERT model), but the idea can be
+    easily applied to other domains.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Part I: Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**The importance of efficiency in inference time**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Deep neural networks (DNNs) have grown significantly in size over the past few
+    years, leading to longer training and inference times for these models. While
+    training cost may seem higher at first, in many cases it is actually eclipsed
+    by the cost of inference, as these models are usually trained only once but applied
+    multiple millions of times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Efficient inference is also important for the following reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Resource constraints: In some cases, the devices on which DNNs are deployed
+    may have limited resources, such as mobile devices. In these situations, fast
+    inference times are necessary in order to ensure that the DNN can run efficiently
+    and effectively.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'User experience: In many applications, DNNs are used to provide real-time responses
+    to user requests. For example, in a speech recognition system, the DNN must process
+    and classify the user’s speech in real time in order to provide an accurate transcription.
+    If the inference time is too slow, the user experience will be poor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cost: In some cases, the cost of running a DNN may be based on the amount of
+    time it takes to perform inference. For example, in cloud computing environments
+    users may be charged based on the amount of time their DNNs run.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sustainability: There are many discussions about the energy consumption of
+    DNNs and their potential impact on the environment (see [[2](https://arxiv.org/abs/1906.02243)],
+    [[3](https://deepai.org/publication/compute-and-energy-consumption-trends-in-deep-learning-inference)]
+    and [[4](https://arxiv.org/abs/1907.10597)] for example), and it appears that
+    fast inference times tend to be more energy-efficient.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Early-Exiting method**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are different methods to improve efficiency in inference time [[5](https://arxiv.org/abs/2209.00099)].
+    The obvious direction is to reduce the model size, for example by pruning or knowledge
+    distillation methods. However, since accuracy is generally gained by the complexity
+    of the model, this has the potential to hurt the model's performance and typically
+    requires another step besides the regular training phase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another approach is the “early exiting” method, which was also explored by
+    RTJ3 [[6](https://arxiv.org/abs/2004.07453)], DeeBERT [[7](https://arxiv.org/abs/2004.12993)],
+    and FastBERT [[8](https://arxiv.org/abs/2004.02178)]. The idea of early exiting
+    derives from the observation that samples are not equally difficult [[6](https://arxiv.org/abs/2004.07453)].
+    Longer sentences with complex structures would probably require more time and
+    effort to analyze. Consider the following sentences for the task of sentiment
+    analysis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (1) The restaurant was great.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (2) I’m not sure if the chef is actually talented or if the food was just microwaved
+    frozen meals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sentence 1 is easy to analyze because it is short and contains direct positive
+    language, indicating a positive sentiment. Sentence 2 is more difficult to analyze
+    because it contains both positive and negative terms, while the overall sentiment
+    is negative. Additionally, the reviewer uses a sarcastic tone to express his doubt
+    about the chef’s talent, which is hard to detect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The above observation led to the following idea: Create multiple decision points
+    at different depths within the network, and during inference let each sample exit
+    at the earliest point in which the network is confident about its prediction on
+    this sample. Hence, the inference of “easy” samples would probably terminate early,
+    and only the “hardest” samples would need to pass through all layers. This way,
+    the network can avoid performing unnecessary computations, which saves time and
+    resources.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a BERT model, this idea is implemented practically by attaching a small classifier
+    to the output of each Transformer layer (besides the last layer which already
+    has a classifier). I call these classifiers “early exiting components”. Each classifier
+    output is a vector of probabilities; the maximum probability in such a vector
+    is called the “confidence score”. At the inference time of a sample, the confidence
+    score at each layer is compared with a predefined threshold; if it is larger than
+    the threshold at a certain layer, the sample exits with the current prediction,
+    and future layers are skipped. The figure below illustrates this idea.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cd66af693cee592936671af45031db0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '***Left image:*** *Here the confidence score (0.95) in the second layer is
+    larger than the predefined threshold (0.9) and hence the sample is exited from
+    the model with a prediction of the label “Positive”.* ***Right image:*** *Here
+    the confidence score is smaller than the predefined threshold (0.9) in all layers,
+    so no early exiting is performed, and the prediction is the output of the final
+    classifier. Source:* [*Link*](https://www.virtual2021.eacl.org/paper_main.44.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part II: BERexiT'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The BERxiT(BERT+exit) paper aims to address two weaknesses of previous work:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Fine-tuning strategy —** Previous fine-tuning strategies are not ideal for
+    models with early exiting components.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Regression tasks —** Previous works make early exiting decisions based on
+    the confidence of the predicted probability distribution and are therefore limited
+    to classification tasks.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/0ed032f5206cbc22632785dd005af07b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'BERxiT architecture. Source: [Link](https://aclanthology.org/2021.eacl-main.8/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. Fine-tuning strategy**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In a “regular” neural network architecture, there is a single loss function
+    that is being optimized. In our case, an Early Existing component is added to
+    each Transformer layer and hence there are multiple loss terms. This imposes a
+    challenge to the learning process since the Transformer layers have to provide
+    hidden states for two competing purposes: immediate inference at the adjacent
+    classifier and gradual feature extraction for future classifiers. Therefore, achieving
+    a balance between the classifiers is critical, and that’s the goal of the fine-tuning
+    strategy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parameters**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before I present the different strategies, let’s understand which parameters
+    need to be optimized. The first set of parameters is those of the backbone model
+    Transformer layers, which are noted with θ₁, …, θₙ. Their job is to learn good
+    features for the task. The second set of parameters is the N classifiers parameters.
+    The parameters of the i-th classifier are noted by wᵢ. So w₁, …,wₙ are the parameters
+    of the first n-1 classifiers (early exiting components), and wₙ are the parameters
+    of the last classifier. Their job is to map the hidden states to a probability
+    distribution over a set of classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s examine 3 fine-tuning strategies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Joint
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Two-Stage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Alternating
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Joint**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this simple strategy, the loss function is defined to be the sum of all N
+    classifiers' loss functions, and the backbone model and all the classifiers are
+    trained jointly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9adfc0e21e3c97a33427d01c54536530.png)![](../Images/46da8d11f3202ffd6e36f93f6c59a33d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: [Link](https://aclanthology.org/2021.eacl-main.8/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Disadvantage: Joint treats all classifiers equally, hence doesn’t preserve
+    the performance of the (original) final classifier. This is not optimal because
+    the final classifier must provide highly accurate outputs; There is no other classifier
+    after it to handle examples that were not early exited.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Two-Stage**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this strategy the training phase is divided into two separate consecutive
+    stages: In the first stage, only the final classifier is trained as well as the
+    backbone model. In the second stage, only the first N-1 classifiers are trained
+    (while the final classifier and the backbone model are frozen).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d98c3145619c0c929b102d2dc6746db8.png)![](../Images/dbbce6731b28f76c9a45d956133a0690.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: [Link](https://aclanthology.org/2021.eacl-main.8/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Disadvantage: This strategy produces a final classifier with optimal quality
+    at the price of earlier classifiers, since the backbone model parameters (which
+    are the majority parameters) are solely optimized for the final classifier.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Alternating**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This strategy is proposed in this paper to overcome the disadvantages of the
+    previous strategies. In this strategy the training alternates between two different
+    objectives for odd-numbered and even-numbered iterations. In both, the backbone
+    model is trained, but in the odd iterations the final classifier is also trained,
+    while in the even iterations the first N-1 classifiers are also trained. This
+    way there is a potential to balance between the performance of the final classifier
+    and the performance of the early existing components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b61a4c130cc2bb3082dfe734efeb7408.png)![](../Images/a1986d40c183b6961018dbfef5ccab08.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: [Link](https://aclanthology.org/2021.eacl-main.8/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Regression tasks**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This method of “stop inference when the model has high confidence in its prediction”
+    can’t be applied to regression tasks, because they output real numbers and not
+    probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To extend this idea to regression tasks, the authors suggest a Learning-To-Exit
+    (LTE) component which is shared for all layers. This component is a one-layer
+    fully-connected network that takes as input a hidden state of some layer and outputs
+    a confidence score for the prediction in this layer. So at the inference time
+    of a sample, if the produced confidence score at some layer is higher than the
+    threshold, the hidden state is also inserted into the adjacent regressor to produce
+    the output for this sample, and the inference stops.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that LTE is another component that has parameters to train. The loss function
+    for this component is a simple MSE between the produced confidence score uᵢ and
+    the “ground truth” confidence score ũᵢ at the i-th layer: Jᵢ = ||uᵢ − ũᵢ||₂².
+    ũᵢ is estimated by negating the prediction’s absolute error: ũᵢ = 1- tanh( |gᵢ(hᵢ
+    ;wᵢ) − y| ), where y is the ground truth value and gᵢ(hᵢ ;wᵢ) is the i’th regressor
+    prediction.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The LTE component is trained with the rest of the model by substituting Lᵢ with
+    Lᵢ+Jᵢ (for i=1,…,n-1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The paper conducted several experiments. I’ll review three of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Experiment 1: Comparison of fine-tuning strategies**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first experiment compared the 3 fine-tuning strategies (over 6 different
+    classification tasks), by showing their layer-wise score curves: Each point in
+    the curve shows the output score at a certain exit layer, i.e., **all samples
+    were required to exit** at this layer for evaluation. Note that the scores were
+    converted to be relative to the BERTᵇᵃˢᵉ baseline model (value of 100%), which
+    is a model without early exiting components.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5dab0fa03f9ec71bf61c3a602a7d623e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Comparing Two-Stages (2STG), Joint, and Alternating (ALT) fine-tuning strategies.
+    Source: [Link](https://aclanthology.org/2021.eacl-main.8/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Several observations from the figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The accuracy of the model increases as we exit it later, which makes sense because
+    deeper layers have a greater amount of complexity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Two-Stage strategy is suboptimal in earlier layers, which again makes sense
+    since this strategy heavily optimizes the last classifier on the cost of the existing
+    layers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Alternating strategy is better than the Joint strategy in later layers and
+    slightly weaker in earlier layers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The conclusion is that the Alternating strategy provides good results on the
+    early existing components while preserving the performance of the final classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Experiment 2: Quality–efficiency trade-offs**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this experiment several models were used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Raw** — BERTᵇᵃˢᵉ model with no early exiting components (baseline)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**ALT** — BERTᵇᵃˢᵉ + early exiting components with Alternating fine-tuning
+    strategy'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DB** — DistilBERT, a BERTᵇᵃˢᵉ model that is reduced to a smaller model using
+    the knowledge distillation method'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**DB+ALT** — DistilBERT + early exiting components with Alternating fine-tuning
+    strategy'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'These models were compared by two metrics to examine the quality–efficiency
+    trade-off :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Metric for model quality**: Accuracy score for Raw and relative scores for
+    the other models (w.r.t. Raw model).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Metric for model efficiency**: Number of layers for RAW and relative saved
+    layers for the other models (w.r.t. Raw model). For ALT and DB+ALT models, the
+    number of saved layers is calculated by using the average exiting layer.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The experiment goal is to first examine the proposed model (ALT) quality-efficiency
+    trade-off in comparison to the baseline model (RAW). Secondly, check whether the
+    proposed model (ALT) is better than another strong efficient method (DB). Lastly,
+    check if the DistilBert model (DB) can be improved by applying the proposed model
+    on top of it (DB+ALT).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that in contrast to experiment 1, here a “regular” inference phase was
+    applied for the models with the early exiting components (ALT and DB+ALT): the
+    test set samples **were free to exit** when their confidence score at some layer
+    was higher than the threshold. In addition, The three different rows in ALT were
+    generated by varying the confidence threshold.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7e37f3e71d2908b75a2366e525855c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Quality–efficiency trade-offs. Source: [Link](https://aclanthology.org/2021.eacl-main.8/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take an example of the results: the first ALT model on the MRPC dataset
+    didn’t use 30% of the layers on average, but nonetheless achieved 99% of the RAW
+    baseline model score! Decreasing the confidence threshold led to more efficient
+    models (saving 56% and 74% on average), with a reasonable quality degradation
+    (97% and 94%, respectively).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Main observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using early exiting (with Alternating fine-tuning) can decrease inference computation
+    while still achieving good scores, compared with a baseline model with no early
+    exiting components.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In most cases, Alternating outperforms DistilBERT, which requires distillation
+    in pre-training and is therefore much more resource-demanding.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Alternating further improves model efficiency on top of DistilBERT, indicating
+    that early exiting is cumulative with other acceleration methods.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Experiment 3: Regression task**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this experiment, the proposed model (ALT-LTE) is compared against a previous
+    work model (PABEE) on a task of predicting similarity between two sentences (STS-B
+    dataset).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd5d5a0a23dc38cbf58987d9a9054662.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Comparing LTE with PABEE on STS-B. Source: [Link](https://aclanthology.org/2021.eacl-main.8/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen, ALT-LTE achieved the same scores with a faster inference time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusions**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Fast inference time is crucial for DNNs that are deployed on resource-constrained
+    devices, for providing real-time responses to user requests, and for cost and
+    sustainability reasons. The “early exiting” method improves inference time by
+    allowing samples to exit at different depths within the network, potentially making
+    many “easier” samples to exit early and thus avoiding unnecessary computations
+    while still maintaining accuracy.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The BERxiT paper improves this method by proposing the Alternating fine-tuning
+    strategy, whose goal is to balance between the performance of the final classifier
+    and the performance of the early existing components. In addition, BERxiT extends
+    the early exiting method to regression tasks by proposing the Learning-To-Exit
+    (LTE) component which learns to output confidence scores.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The experiments showed that the Alternating strategy achieves better quality-efficiency
+    trade-off, that the LTE component is indeed successful for regression tasks, and
+    that the early exiting method can be combined with other acceleration methods.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Xin, J., Tang, R., Yu, Y., & Lin, J.J. (2021). [BERxiT: Early Exiting for
+    BERT with Better Fine-Tuning and Extension to Regression](https://www.semanticscholar.org/paper/BERxiT%3A-Early-Exiting-for-BERT-with-Better-and-to-Xin-Tang/7b37c0a4976c4d2a5a440d494fbb0f3daede2a00).
+    *Conference of the European Chapter of the Association for Computational Linguistics*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Strubell, E., Ganesh, A., & McCallum, A. (2019). [Energy and Policy Considerations
+    for Deep Learning in NLP](https://www.semanticscholar.org/paper/Energy-and-Policy-Considerations-for-Deep-Learning-Strubell-Ganesh/d6a083dad7114f3a39adc65c09bfbb6cf3fee9ea).
+    *ArXiv, abs/1906.02243*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Desislavov, R., Mart’inez-Plumed, F., & Hern’andez-Orallo, J. (2021). [Compute
+    and Energy Consumption Trends in Deep Learning Inference](https://www.semanticscholar.org/paper/Compute-and-Energy-Consumption-Trends-in-Deep-Desislavov-Mart''inez-Plumed/01ce9f7d1c35e88f6ab3abe51bf1e1370da718b5).
+    *ArXiv, abs/2109.05472*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Schwartz, R., Dodge, J., Smith, N., & Etzioni, O. (2019). [Green AI](https://www.semanticscholar.org/paper/Green-AI-Schwartz-Dodge/fb73b93de3734a996829caf31e4310e0054e9c6b).
+    *Communications of the ACM, 63*, 54–63.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Treviso, M.V., Ji, T., Lee, J., van Aken, B., Cao, Q., Ciosici, M.R., Hassid,
+    M., Heafield, K., Hooker, S., Martins, P.H., Martins, A., Milder, P., Raffel,
+    C., Simpson, E., Slonim, N., Balasubramanian, N., Derczynski, L., & Schwartz,
+    R. (2022). [Efficient Methods for Natural Language Processing: A Survey](https://arxiv.org/abs/2209.00099).
+    *ArXiv, abs/2209.00099*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Schwartz, R., Stanovsky, G., Swayamdipta, S., Dodge, J., & Smith, N.A.
+    (2020). [The Right Tool for the Job: Matching Model and Instance Complexities](https://arxiv.org/abs/2004.07453).
+    *Annual Meeting of the Association for Computational Linguistics*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Xin, J., Tang, R., Lee, J., Yu, Y., & Lin, J.J. (2020). [DeeBERT: Dynamic
+    Early Exiting for Accelerating BERT Inference](https://arxiv.org/abs/2004.12993).
+    *Annual Meeting of the Association for Computational Linguistics*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Liu, W., Zhou, P., Zhao, Z., Wang, Z., Deng, H., & Ju, Q. (2020). [FastBERT:
+    a Self-distilling BERT with Adaptive Inference Time](https://arxiv.org/abs/2004.02178).
+    *Annual Meeting of the Association for Computational Linguistics*.'
+  prefs: []
+  type: TYPE_NORMAL

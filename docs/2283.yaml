@@ -1,0 +1,483 @@
+- en: Mixed Effects Machine Learning for Longitudinal & Panel Data with GPBoost (Part
+    III)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc?source=collection_archive---------3-----------------------#2023-07-17](https://towardsdatascience.com/mixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc?source=collection_archive---------3-----------------------#2023-07-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A demo of GPBoost in Python & R using real-world data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@fabsig?source=post_page-----523bb38effc--------------------------------)[![Fabio
+    Sigrist](../Images/f7bc2adc17255ae1efd0886a19ec202c.png)](https://medium.com/@fabsig?source=post_page-----523bb38effc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----523bb38effc--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----523bb38effc--------------------------------)
+    [Fabio Sigrist](https://medium.com/@fabsig?source=post_page-----523bb38effc--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb5b503a0c329&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc&user=Fabio+Sigrist&userId=b5b503a0c329&source=post_page-b5b503a0c329----523bb38effc---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----523bb38effc--------------------------------)
+    ·11 min read·Jul 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F523bb38effc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc&user=Fabio+Sigrist&userId=b5b503a0c329&source=-----523bb38effc---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F523bb38effc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmixed-effects-machine-learning-for-longitudinal-panel-data-with-gpboost-part-iii-523bb38effc&source=-----523bb38effc---------------------bookmark_footer-----------)![](../Images/afd55898ea6f1eb8180a279480fcead9.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Illustration of longitudinal data**: time series plots for different subjects
+    (idcode) — Image by author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [Part I](/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-i-an-empirical-df0a43dce059)
+    and [Part II](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492)
+    of this series, we showed how random effects can be used for modeling high-cardinality
+    categorical in machine learning models, and we gave an introduction to the `[GPBoost](https://github.com/fabsig/GPBoost)`
+    [library](https://github.com/fabsig/GPBoost) which implements the [GPBoost algorithm](https://www.jmlr.org/papers/v23/20-322.html)
+    combining tree-boosting with random effects. In this article, we demonstrate how
+    the Python and R packages of the `GPBoost` library can be used for longitudinal
+    data (aka repeated measures or panel data). You might want to first read [Part
+    II](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492)
+    of this series as it gives a first introduction to the `GPBoost` library. `GPBoost`
+    version 1.2.1 is used in this demo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of contents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '∘ [1 Data: description, loading, and sample split](#2605)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [2 Modeling options for longitudinal data in GPBoost](#3fc9)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · · [2.1 Subject grouped random effects](#fd01)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · · [2.2 Fixed effects only](#f29f)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · · [2.3 Subject and time grouped random effects](#a34f)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · · [2.4 Subject random effects with temporal random slopes](#d0bc)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · · [2.5 Subject-specific AR(1) / Gaussian process models](#b7a6)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · · [2.6 Subject grouped random effects and a joint AR(1) model](#447d)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [3 Training a GPBoost model](#cf4d)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [4 Choosing tuning parameters](#8791)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [5 Prediction](#171b)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [6 Conclusion and references](#b4d0)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1 Data: description, loading, and sample split'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data used in this demo is the wages data which was already used in [Part
+    II](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492).
+    It can be downloaded from [here](https://raw.githubusercontent.com/fabsig/Compare_ML_HighCardinality_Categorical_Variables/master/data/wages.csv.gz).
+    The data set contains a total of 28’013 samples for 4’711 persons for which data
+    was measured over several years. Such data is called longitudinal data, or panel
+    data, since for every subject (person ID =`idcode`), data was collected repeatedly
+    over time (years = `t`). In other words, the samples for every level of the categorical
+    variable `idcode` are repeated measurements over time. The response variable is
+    the logarithmic real wage (`ln_wage`), and the data includes several predictor
+    variables such as age, total work experience, job tenure in years, date, and others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the code below, we load the data and randomly partition the data into 80%
+    training data and 20% test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2 Modeling options for longitudinal data in GPBoost
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Various combinations of fixed and random effects models for longitudinal data
+    can be handled with the `GPBoost` library. In the following, we demonstrate several
+    ones. This list is not exhaustive and other models are possible. After defining
+    a random effects model (`gp_model`) and a `Dataset` (`data_bst`), training can
+    be done with the `gpb.train` function. This latter training step is identical
+    for all models presented in the following. For this reason, we do not include
+    it here, but first show only how to define the corresponding models. See the subsequent
+    Section 3 for how training is done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.1 Subject grouped random effects
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A first option is to use grouped random effects for the categorical subject
+    variable (`idcode`) and fixed effects for the time variable. This corresponds
+    to the following model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e61757b9a3cce538403dfbc6fddce6b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where i is the person index (=`idcode`), j is the temporal index, and we assume
+    that xij contains the time variable (or a “dummified” / one-hot encoding version
+    of it) and other predictor variables. The `idcode` random effect for person number
+    i is bi and F(xij) is the tree-ensemble fixed effects function. Such a model can
+    be specified in `GPBoost` as shown below. Subject-specific random effects are
+    defined by passing the `idcode` categorical variable to the `group_data` argument
+    of the `GPModel()` constructor. Note that the time variable `t` is of very low
+    cardinality, and we can thus use one-hot encoding or dummy variables. This is
+    what we do below as `pred_vars`, which defines the fixed effects predictor variables,
+    already contains year dummy variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2.2 Fixed effects only
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another option is to use a fixed effects-only model in which both subjects
+    (`idcode`) and time are modeled using fixed effects, and there are no random effects.
+    This corresponds to the following model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1302953138704753c9828513d538b462.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: again, for notational simplicity, assuming that xij contains the time variable.
+    Such a model can be specified in `GPBoost` by simply including the subject (`idcode`)
+    and time variables in the tree-boosting predictor variables and having no random
+    effects model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2.3 Subject and time grouped random effects
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One can also use random effects for both subjects (`idcode`) and time (`t`).
+    This corresponds to the following model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/faf9ee83a76b0a5c1b5206c9f70df28c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where bi and bj are the `idcode` and `t` random effects. Such a model can be
+    specified in `GPBoost` as follows. In contrast to the above single-level random
+    effects model in Section 2.1, we now pass two variables (`idcode` and `t)` to
+    the `group_data` argument of the `GPModel()` constructor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2.4 Subject random effects with temporal random slopes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the random effects models introduced so far (e.g., in Section 2.1), every
+    subject (`idcode`) has a different intercept (=mean). However, besides this “shift”,
+    the temporal evolution over time is the same for all persons. This restriction
+    can be relaxed by including polynomial random coefficients (= random slopes).
+    For instance, a model with random slopes for `t` and `t^2` is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cd89f3740c0715815bf5a81984dd1e6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where b(0,i) are the intercept random effects, b(1,i) and b(2,i) are the random
+    slopes, and tij denotes the time `t` for the sample ij. Due to the temporal random
+    slopes, every person has a different evolution over time `t` in this model. Such
+    a model can be specified in `GPBoost` as shown in the code below. The `group_rand_coef_data`
+    variable contains the random coefficient covariate data `t` and `t^2`. Further,
+    the indices in `ind_effect_group_rand_coef` indicate for which categorical variable
+    in `group_data` this covariate data should be used to obtain random coefficients.
+    Here, there is only one categorical variable (`idcode`), and thus `ind_effect_group_rand_coef`
+    is simply (1,1) (i.e., both `t` and `t^2` belong to `idcode`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2.5 Subject-specific AR(1) / Gaussian process models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A further extension of the above random slopes model is to use time series
+    models, or Gaussian processes, instead of polynomial random slopes. This allows
+    for separately modeling the temporal evolution of every subject in a more flexible
+    way. For instance, one can use subject-specific AR(1) models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55d67efe369fecf9328b9271cdd93ba8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this model, every person i has separate random effects bij which evolve over
+    time according to an AR(1) model (= discretized Gaussian process with an exponential
+    covariance function). Such a model can be specified in `GPBoost` as shown in the
+    following code. A temporal Gaussian process is defined by passing the time variable
+    `t` to the `gp_coords` argument. We use a Gaussian process with an exponential
+    covariance function which is equivalent to an AR(1) model. Further, the `cluster_ids`
+    variable indicates that every person (`idcode`) has a separate (= a priori independent)
+    Gaussian process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: After training, the AR(1) model parameters can be obtained from the Gaussian
+    process covariance parameters as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2.6 Subject grouped random effects and a joint AR(1) model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another alternative is to use one single temporal AR(1) model which is shared
+    across subjects but include separate temporally constant subject (`idcode`) random
+    effects. This corresponds to the following model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a931905ccac70d85093438b147020273.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Such a model can be specified in `GPBoost` as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3 Training a GPBoost model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following code shows how to train a GPBoost model. We first define a random
+    effects model (`gp_model`), a `Dataset` (`data_bst`), tuning parameters (`params`
+    and `nrounds` = number of trees / boosting iteration), and then run the GPBoost
+    algorithm by calling the `gpb.train` function. We use a subject (`idcode`) random
+    effects model with temporal random slopes (see Section 2.4) as such a model often
+    provides a good compromise between flexibility/accuracy and runtime. Note that
+    we use tuning parameters that have been selected beforehand (see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: When having multiple random effects (as is the case here), it can be faster
+    to use `nelder_mead` instead of `gradient_descent`(=default) as optimizer*.* This
+    can be set as follows before calling `gpb.train`. For this data set, it does not
+    matter, though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4 Choosing tuning parameters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It is important that tuning parameters are appropriately chosen for boosting.
+    There are no universal default values and every data set will likely need different
+    tuning parameters. Below, we show how tuning parameters can be chosen using the
+    `gpb.grid.search.tune.parameters` function. We use a deterministic grid search
+    with the parameter combinations shown below in the code. Note that we tune the
+    `max_depth` parameter and thus set the `num_leaves` to a large value. We randomly
+    split the training data into 80% inner training data 20% validation data and use
+    the mean squared error (`mse`) as a prediction accuracy measure on the validation
+    data. Alternatively, one can also use, e.g., the test negative log-likelihood
+    (`metric = "test_neg_log_likelihood"` = default) which also takes prediction uncertainty
+    into account. *Note: depending on the data set and the grid size, this can take
+    some time (approx. half an hour on my laptop for this data set). Instead of a
+    deterministic grid search as below, one can also do a random grid search (see*
+    `*num_try_random*`*) or another approach such as Bayesian optimization to speed
+    things up.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 5 Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Predictions can be obtained via the `predict` function. We need to provide both
+    test predictor variables (`data`) for the tree ensemble as well as test subject
+    variables and random slopes data (`group_data_pred` and `group_rand_coef_data_pred`)
+    for the random effects model. Below, we make predictions on the left-out test
+    data and calculate the test mean squared error (MSE). As the results below show,
+    the prediction accuracy of this random slopes model is higher compared to a simpler
+    subject random effects model without random slopes introduced in Section 2.1 (see
+    [Part II](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492)
+    for results of the latter model).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Python***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***R***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 6 Conclusion and references
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have demonstrated how to use the `GPBoost` library for modeling longitudinal
+    data. There are several more features of the `GPBoost` library that we did not
+    show here. For instance, in [Part II](https://medium.com/towards-data-science/mixed-effects-machine-learning-for-high-cardinality-categorical-variables-part-ii-gpboost-3bdd9ef74492)
+    of this series, we show to understand the fixed effects function using machine
+    learning interpretability techniques, and we also demonstrate how the `GPBoost`
+    library can handle (generalized) linear mixed effects models (GLMMs → F() is linear
+    instead of tree ensemble). You may also want to have a look at the [Python examples](https://github.com/fabsig/GPBoost/tree/master/examples/python-guide)
+    and [R examples](https://github.com/fabsig/GPBoost/tree/master/R-package/demo).
+  prefs: []
+  type: TYPE_NORMAL
+- en: F. Sigrist. Gaussian Process Boosting. The Journal of Machine Learning Research,
+    23(1):10565–10610, 2022.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: F. Sigrist. Latent Gaussian Model Boosting. IEEE Transactions on Pattern Analysis
+    and Machine Intelligence, 45(2):1894–1905, 2023.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://github.com/fabsig/GPBoost](https://github.com/fabsig/GPBoost)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

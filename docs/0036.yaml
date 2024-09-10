@@ -1,0 +1,589 @@
+- en: Road Network Edge Matching With Triangles
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/road-network-edge-matching-with-triangles-5dc989a77edf?source=collection_archive---------15-----------------------#2023-01-03](https://towardsdatascience.com/road-network-edge-matching-with-triangles-5dc989a77edf?source=collection_archive---------15-----------------------#2023-01-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Triangles have mighty properties for geospatial queries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@joao.figueira?source=post_page-----5dc989a77edf--------------------------------)[![João
+    Paulo Figueira](../Images/54e4176f66e4ab0324d86ec71d8b033d.png)](https://medium.com/@joao.figueira?source=post_page-----5dc989a77edf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dc989a77edf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5dc989a77edf--------------------------------)
+    [João Paulo Figueira](https://medium.com/@joao.figueira?source=post_page-----5dc989a77edf--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64bc009cedeb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froad-network-edge-matching-with-triangles-5dc989a77edf&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=post_page-64bc009cedeb----5dc989a77edf---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dc989a77edf--------------------------------)
+    ·13 min read·Jan 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5dc989a77edf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froad-network-edge-matching-with-triangles-5dc989a77edf&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=-----5dc989a77edf---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5dc989a77edf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Froad-network-edge-matching-with-triangles-5dc989a77edf&source=-----5dc989a77edf---------------------bookmark_footer-----------)![](../Images/0394d8e4a49df7abe5e80601291b2049.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Pawel Czerwinski](https://unsplash.com/fr/@pawel_czerwinski?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Triangles are shapes with many practical geometric properties. In this article,
+    I illustrate using such properties when performing opportunistic optimizations
+    while solving a particular geospatial problem: the recovery of missing map-matched
+    information.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I started exploring the [Extended Vehicle Energy Dataset](https://arxiv.org/abs/2203.08630)¹
+    (EVED) [1] a while ago to search for compelling geospatial data analysis opportunities
+    in a city road network context. This dataset derives from a previous publication,
+    the [Vehicle Energy Dataset](https://arxiv.org/abs/1905.02081) [2], and contains
+    many enhancements, namely the vehicles’ map-matched GPS locations. The map-matching
+    process snaps the original GPS locations to the most likely edges of the underlying
+    road network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 1** below (taken from a [previous article](https://medium.com/towards-data-science/trajectory-queries-using-space-partitioning-773167d4184e))
+    illustrates how the map-matching process snaps the sampled GPS location to the
+    most likely road network edge.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f38410903905aef59131a3ce30e2f28.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1** — The map-matching process snaps the noisy GPS measurement to
+    the most likely road network edge. Here you can see a depiction of the process
+    where the circles denoted with “n” represent the road network nodes, and the arrows
+    named “e” are the directed edges. The sampled GPS location in green matches another
+    one along the arc and gets recorded in the database. There is no information on
+    the matched edges, though. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, the EVED dataset does not retain the underlying matched edge
+    information; only the snapped location. With the missing edge information, we
+    can make more inferences from the data, for example, to create a destination prediction
+    model. Can we retrieve that information from the matched GPS locations?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The article authors used the [Valhalla](https://valhalla.readthedocs.io/en/latest/api/map-matching/api-reference/)
+    toolset to perform the map-matching operation using [Open Street Map](https://www.openstreetmap.org/)
+    data for the underlying road network. Armed with this information, we can recover
+    the missing mapped edge information using geospatial queries. We start by using
+    one very well-known off-the-shelf tool: [OSMnx](https://osmnx.readthedocs.io/en/stable/).
+    Our first task is to download the road network (aka graph).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Downloading the Road Network
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To download and prepare the road network data, we need to use OSMnx’s facilities,
+    as illustrated by the following code snippet².
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We start by downloading a non-simplified graph to retain most of the node detail.
+    Next, we add missing properties to the network, like edge speeds, travel times,
+    and bearings (the angle measured in degrees from true North in the clockwise direction).
+    The function returns the road network as a [NetworkX](https://networkx.org/) [3]
+    [directed graph object](https://networkx.org/documentation/stable/tutorial.html#multigraphs)
+    that allows [multiple edges](https://networkx.org/documentation/stable/tutorial.html#multigraphs)
+    between nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looking for Edges
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As I mentioned, the EVED only contains the map-matched locations, not the edges
+    themselves, and our job is to reconstruct this information. The map-matching process
+    involves finding the network edges that maximize the matching probability between
+    the observed route and the known road network. More concretely, the operation
+    maps each GPS sample to the road network edge with the highest likelihood of representing
+    the actual traveled route. The map-matching process projects the sampled GPS location,
+    providing additional contextual information. The matched location belongs to the
+    edge-defining geodesic, and we will see how to use this to our advantage in what
+    follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The OSMnx Way
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let us now turn to OSMnx and discover a way to search for the road network edges
+    that the map-matched locations belong to. Fortunately, the package implements
+    functions to find the closest nodes and edges, which is where we will start.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is to project the road network coordinates into [UTM](https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system)
+    [4]. This conversion projects the spherical GPS coordinates to a local planar
+    space where we can use regular geometry, and measurements are in meters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function call above projects the road network coordinates to the UTM zone
+    corresponding to the area’s center. We can now call OSMnx’s edge detection function
+    using a coordinate pair from the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Instead of a single location, the function supports latitude and longitude
+    collections, returning the corresponding edge list. As for the above call, we
+    can inspect its result using the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result is a Python dictionary containing the nearest edge properties, as
+    depicted below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Unfortunately, this function is slow. If we want to convert the whole EVED database
+    to assign the closest edge to every point, we should try another way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Triangular Way
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The solution I’m presenting in this section was the first to come to mind. As
+    stated above, map-matched locations live in the edge’s geodesic line segment that
+    connects the end nodes. This allows us to use triangle properties to find the
+    best network edge for a specific point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before explaining further, I invite you to read an older article exploring triangle
+    properties to perform high-speed geospatial queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/tblx-insider/using-the-triangle-inequality-to-query-geographic-data-7148a1b103a0?source=post_page-----5dc989a77edf--------------------------------)
+    [## Using the Triangle Inequality to Query Geographic Data'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A fast and straightforward method of querying large sets of locations.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/tblx-insider/using-the-triangle-inequality-to-query-geographic-data-7148a1b103a0?source=post_page-----5dc989a77edf--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, I use an updated version of that article’s code to perform the basic
+    search queries on the road network: the *K nearest neighbors* and the *radius
+    query*. The updated code version uses [Numba](https://numba.pydata.org/)-based
+    optimizations to improve its execution performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Besides using the triangle inequality to supercharge the geospatial queries,
+    we will also use it to select the best edge for a given map-matched GPS sample.
+    The idea is quite simple, and I illustrate it in **Figure 2** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b5c74d0dbd32fdaf17e213b7914011d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2** — When the matched GPS point does not align with a given road
+    network edge geodesic, the three points define a triangle (top), and the distances
+    verify **b + c > a**. When the point aligns (bottom), we have a degenerate triangle,
+    and **b + c = a**. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To match a given road network edge to a GPS point, we need to calculate the
+    distances between said point to the nodes (**b** and **c** in **Figure 2**). The
+    edge length (**a**) is a property of the downloaded road network data. We calculate
+    the following ratio as a metric of fit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f714e9897ee661681ab64a3731bf99d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3** — The ratio above is 1 when the matched GPS location lies in the
+    road network edge geodesic; otherwise, it will be greater. The best-fitting edge
+    will have the lowest possible value. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best-fitting road network edge will have the lowest possible value for this
+    metric. But this is not the only criterion we must use, as the segment’s heading
+    is also essential.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We query a network edge using the identifiers for the end nodes, and their order
+    is important. By reversing the node identifiers in the network query, we get different
+    properties for the reverse direction (if it exists), namely the calculated bearing
+    or heading. **Figure 4** below shows what these properties might look like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e662fa0190b9d7ad345e83e5ebf12755.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4** — By reversing the end node identifiers, we get different properties
+    for the road segment, namely the bearing. (Image source: Author; Data: © OpenStreetMap
+    contributors)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To correctly match the road network edge, we must also know the GPS heading
+    or, as is the case, the inferred one. You can read the article below about calculating
+    the EVED bearings from the matched GPS locations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/travel-time-estimation-using-quadkeys-ecf6d54823b4?source=post_page-----5dc989a77edf--------------------------------)
+    [## Travel Time Estimation Using Quadkeys'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article explains how to estimate travel times using known speed vectors
+    indexed by quadkeys.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/travel-time-estimation-using-quadkeys-ecf6d54823b4?source=post_page-----5dc989a77edf--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are now ready to search for the best-fitting edge, but how should we search
+    for it in an arbitrarily large road network? A brute-force approach would search
+    through all available road segments, but that would not be a good use of computing
+    power as we can do much better. We can select a small set of nearby candidates
+    and then search within those only.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The criterion for selecting this candidate set is straightforward — we will
+    use a radius query from the input GPS location. The radius comprises two parts,
+    the smallest distance from the query point to the network and the maximum road
+    segment length. By adding these two distances, we obtain a radius where we are
+    sure that the closest edge nodes will reside. **Figure 5** below illustrates this
+    concept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69c32c80d146b6ea2fea7ea1285bed60.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 5** — The schema above illustrates how to determine the search radius:
+    add the shortest distance from the query location (red) to the road network (blue)
+    to the maximum segment size (green). All the nodes inside the green circle are
+    candidates. Note that the query circle is centered in the query location. (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once we have determined the candidate node set, we only consider the existing
+    links within the search radius.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see what the code looks like. We start with the class declaration that
+    handles the road network:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: To initialize this class, we call the function that downloads and prepares the
+    OSM road network and feeds its result as the constructor parameter. The constructor
+    then collects all the locations and passes them to the indexer object, described
+    in the previously-mentioned article. Note that we will not need to project any
+    coordinates for this method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The function that collects the geospatial coordinates is simple enough:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can get to the algorithm’s core, the query process itself. For each
+    query point, we want to select the most likely road network nodes that might delimit
+    the edge’s geodesic segment. The function below takes location coordinates and
+    finds the road network edge with the minimal value for the fit metric (**Figure
+    3**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code starts by finding the closest road network node and its distance. It
+    then calculates the search radius by adding this distance to the largest road
+    network edge length. The ensuing radius query returns the set of candidate nodes
+    and their distances to the query location. We now use the node identifiers as
+    keys to a dictionary of the distances for faster retrieval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main loop iterates through the candidate nodes and finds the adjacent nodes
+    within the query radius that still need to be iterated. Finally, the code calculates
+    the fit ratio and retains the best road network edge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But there is a final test in the returned road network edge: its orientation.
+    We can go about this if we have the sample GPS heading. As I previously explained,
+    we have the inferred heading value that we can use. You can see this in the final
+    part of the code, which only works if you provide a bearing and if the reverse
+    edge exists. The function that fixes the edge bearing is shown below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can test this code using the accompanying [Jupyter notebook](https://github.com/joaofig/eved-explore/blob/main/07-edge-matching.ipynb)
+    in the [GitHub repository](https://github.com/joaofig/eved-explore). In my MacBook
+    Pro, this code offers a performance improvement of over three times over the OSMnx
+    approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Distance Way
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One might argue that the previous arrangement performs better under rigorous
+    assumptions, namely that the query locations already live over the road segment’s
+    geodesic. What if that is not the case? Can we develop a more general approach
+    based on the same search principles? We can! But we must assume that distances
+    are small³, so we do not have to project the coordinates, which is, fortunately,
+    the case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of using the aforementioned triangle ratio metric, we can calculate
+    the distance between the GPS location and any nearby road segment without requiring
+    any geospatial projection (like UTM mentioned above). Again, we rely on triangle
+    properties to calculate the distance using two alternate methods of computing
+    the triangle area and other triangle inequalities [5].
+  prefs: []
+  type: TYPE_NORMAL
+- en: When calculating the distance from a given point to a line segment, we have
+    two cases to consider, when we can make an orthogonal projection of the point
+    to the segment and when we cannot. Let us visualize the first case in **Figure
+    6** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/473a6ba1eba68950383cab8ea328ac22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 6** — The query point, in red, projects orthogonally into the road
+    segment (in blue). The distance between both (in black) is the unknown triangle''s
+    height, and we know all lengths. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this case, our unknown is the triangle’s height, which is the shortest distance
+    from the point to the road segment. So how do we calculate it? One of the best-known
+    triangle area formulas uses that quantity and is shown in **Figure 7** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce8c2a6733e1a317e30bc9666ad06cb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 7** — A triangle area equals the product of its base and its height
+    divided by two. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the area is known, we can quickly derive the height using simple algebra.
+    Can we calculate the triangle’s area using just the side lengths?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another probably less well-known triangle area formula got its name from [Heron
+    of Alexandria](https://en.wikipedia.org/wiki/Hero_of_Alexandria) [6], who proved
+    it “first.” Interestingly, this formula only depends on things that we already
+    know — the size of the triangle sides. This formula has several forms, and the
+    most famous is probably the one in **Figure 8** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69a88bd090256a9b4688fd4b0f5464af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 8** — The Heron formula only computes the triangle area using side
+    lengths. Quantity “**s**” is the semi-perimeter. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using this formula, we can compute the triangle area and use it in the previous
+    one to get the distance from the sample point to the segment. Unfortunately, this
+    formulation is known to have numerical stability issues, especially when applied
+    to very “flat” triangles with very sharp angles. We will use a known stable alternative
+    depicted in **Figure 9** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e8988cc23eee839b510a0552fb749fba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 9** — The numerically stable Heron formula requires **a ≥ b ≥ c**.
+    (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What happens when we cannot orthogonally project the query point to the road
+    segment? We visualize this situation if **Figure 10** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73fff67c4e6976e7a984860ffc3255f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 10** — We cannot make an orthogonal projection of the query point
+    to the road segment. In this case, the distance between both is “**a**.” (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this situation, we have it easy as the distance is already calculated. But
+    how do we know the geometry using side lengths only? One observation we can make
+    distinguishes the triangles in **Figure 6** and **Figure 10**. In **Figure 6**,
+    the angles that segments “***a***” and “***c***” make with “***b***” are both
+    acute, while in **Figure 10**, one of them is obtuse (larger than 90 degrees).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, geometry helps us with a different set of triangle inequalities
+    that help us determine if an internal triangle angle is either acute, obtuse,
+    or straight. In the case of **Figure 9**, we have ***c² > a² + b²***. In the symmetric
+    case, where the opposing angle is obtuse, we would have ***a² > b² + c²***. These
+    two tests tell the two situations apart and are very fast to execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code below illustrates the query that uses distances instead of a simple
+    fitness ratio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, the following function calculates Heron’s formula from three arbitrary
+    triangle side lengths. Note how the code starts by sorting the side lengths appropriately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see if all this effort was called for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I obtained the performance results below using a 16-inch MacBook Pro from 2019
+    with a 2.6 GHz 6-Core Intel Core i7 CPU, 32 GB RAM, and Ventura 13.0\. All three
+    methods queried the same 868-point trajectory taken from the EVED.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In **Figure 11** below, you can see the benchmark results of the three algorithms
+    in the order I presented them in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/159cbe17545fb8a2dbb24b0155027872.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 11** — The above performance measurements reflect the average time
+    each algorithm takes to process a path with 868 locations with duplicates. (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, I am using a cache to handle the duplicates and avoid unnecessary
+    processing. This might provide an unfair advantage over the OSMnx algorithm, and
+    to clarify, I decided to run the same benchmark with the set of 203 unique locations
+    from the same path. The results are displayed below in **Figure 12**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d499bbffb5d21d716c78d4c9278f81e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 12** — There seems to be a slight performance improvement when we
+    reduce the input trajectory to have only 203 unique locations. Nevertheless, the
+    performance profile does not change significantly. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that for OSMnx versions before **1.3.0**, the performance difference was
+    dramatically worse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have used our triangle properties and found a speedy algorithm to match edges.
+    Still, I should conduct further tests to investigate edge cases and larger road
+    networks to ensure this is a solid algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I developed a fast algorithm to search for the missing map-matched
+    edges of the EVED locations. By assuming that these locations lie on a road network
+    edge geodesic, I developed a fast fit metric using the triangle inequality property.
+    Next, I enriched the algorithm to use the geometric concept of the distance of
+    a point to a line segment. I used more triangle properties and inequalities to
+    consider side lengths only. Finally, I benchmarked the solution and confirmed
+    the performance improvement of the new algorithms over the OSMnx one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, let me stress that the performance gains result from the strong assumptions
+    I could make from the problem definition. The performance of this algorithm degrades
+    by increasing the search radius, which is highly dependent on the road network
+    structure, and node density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please get the code from the [GitHub repository](https://github.com/joaofig/eved-explore).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The original paper authors licensed the dataset under the Apache 2.0 License
+    (see the [VED](https://github.com/gsoh/VED) and [EVED](https://github.com/zhangsl2013/eVED)
+    GitHub repositories). Note that this also applies to derivative work.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I licensed all the code in this article and the accompanying GitHub repository
+    using the MIT License.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We are dealing with relatively small distances with this dataset. The maximum
+    road segment length for the downloaded data is less than 600 meters (0.37 miles
+    or 1968 feet). You can probably use larger distances safely without a significant
+    error, but I suggest checking whether the incurred error is acceptable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**[1]** Zhang, S., Fatih, D., Abdulqadir, F., Schwarz, T., & Ma, X. (2022).
+    Extended vehicle energy dataset (eVED): an enhanced large-scale dataset for deep
+    learning on vehicle trip energy consumption. *arXiv*. [https://doi.org/10.48550/arXiv.2203.08630](https://doi.org/10.48550/arXiv.2203.08630)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[2]** Oh, G. S., Leblanc, D. J., & Peng, H. (2019). Vehicle Energy Dataset
+    (VED), A Large-scale Dataset for Vehicle Energy Consumption Research. *arXiv*.
+    [https://doi.org/10.48550/arXiv.1905.02081](https://doi.org/10.48550/arXiv.1905.02081)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[3]** Aric A. Hagberg, Daniel A. Schult, and Pieter J. Swart, [“Exploring
+    network structure, dynamics, and function using NetworkX](https://conference.scipy.org/proceedings/SciPy2008/paper_2/),”
+    in [Proceedings of the 7th Python in Science Conference (SciPy2008)](https://conference.scipy.org/proceedings/SciPy2008/index.html),
+    Gäel Varoquaux, Travis Vaught, and Jarrod Millman (Eds), (Pasadena, CA USA), pp.
+    11–15, Aug 2008'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[4]** Universal Transverse Mercator coordinate system. (2022, June 16). In
+    *Wikipedia*. [https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system](https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[5]** List of triangle inequalities. (2022, December 17). In *Wikipedia*.
+    [https://en.wikipedia.org/wiki/List_of_triangle_inequalities](https://en.wikipedia.org/wiki/List_of_triangle_inequalities)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[6]** Heron’s formula. (2022, December 17). In *Wikipedia*. [https://en.wikipedia.org/wiki/Heron%27s_formula](https://en.wikipedia.org/wiki/Heron%27s_formula)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: João Paulo Figueira works as a Data Scientist at [tb.lx by Daimler Trucks and
+    Buses](https://tblx.io/) in Lisbon, Portugal.
+  prefs: []
+  type: TYPE_NORMAL

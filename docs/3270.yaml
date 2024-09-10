@@ -1,0 +1,525 @@
+- en: 'ULTRA: Foundation Models for Knowledge Graph Reasoning'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/ultra-foundation-models-for-knowledge-graph-reasoning-9f8f4a0d7f09?source=collection_archive---------0-----------------------#2023-11-03](https://towardsdatascience.com/ultra-foundation-models-for-knowledge-graph-reasoning-9f8f4a0d7f09?source=collection_archive---------0-----------------------#2023-11-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What’s new in Graph ML?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One model to rule them all
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mgalkin.medium.com/?source=post_page-----9f8f4a0d7f09--------------------------------)[![Michael
+    Galkin](../Images/c5eb13334712ca0462d8a5df4a268ad0.png)](https://mgalkin.medium.com/?source=post_page-----9f8f4a0d7f09--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9f8f4a0d7f09--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9f8f4a0d7f09--------------------------------)
+    [Michael Galkin](https://mgalkin.medium.com/?source=post_page-----9f8f4a0d7f09--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d4f8ddd1e68&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fultra-foundation-models-for-knowledge-graph-reasoning-9f8f4a0d7f09&user=Michael+Galkin&userId=4d4f8ddd1e68&source=post_page-4d4f8ddd1e68----9f8f4a0d7f09---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9f8f4a0d7f09--------------------------------)
+    ·10 min read·Nov 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9f8f4a0d7f09&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fultra-foundation-models-for-knowledge-graph-reasoning-9f8f4a0d7f09&user=Michael+Galkin&userId=4d4f8ddd1e68&source=-----9f8f4a0d7f09---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9f8f4a0d7f09&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fultra-foundation-models-for-knowledge-graph-reasoning-9f8f4a0d7f09&source=-----9f8f4a0d7f09---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a single generic model for solving arbitrary datasets is always a dream
+    for ML researchers, especially in the era of foundation models. While such dreams
+    have been realized in perception domains like images or natural languages, whether
+    they can be reproduced in reasoning domains (like graphs) remains an open challenge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/420c91170bb69d5fbbd70d11d432c415.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Authors edited from the output of DALL-E 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, we prove such a generic reasoning model exists, at least
+    for knowledge graphs (KGs). We create **ULTRA**, a single pre-trained reasoning
+    model that generalizes to new KGs of arbitrary entity and relation vocabularies,
+    which serves as a default solution for any KG reasoning problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This post is based on our recent paper (*[*preprint*](https://arxiv.org/abs/2310.04562)*)
+    and was written together with* [*Xinyu Yuan*](https://github.com/KatarinaYuan)
+    *(Mila),* [*Zhaocheng Zhu*](https://kiddozhu.github.io/) *(Mila), and* [*Bruno
+    Ribeiro*](https://www.cs.purdue.edu/homes/ribeirob/) *(Purdue / Stanford). Follow*
+    [*Michael*](https://twitter.com/michael_galkin)*,* [*Xinyu*](https://twitter.com/XinyuYuan402)*,*
+    [*Zhaocheng*](https://twitter.com/zhu_zhaocheng)*, and* [*Bruno*](https://twitter.com/brunofmr)
+    *on Twitter for more Graph ML content.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outline
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Why KG representation learning is stuck in 2018](#974c)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Theory: What makes a model inductive and transferable?](#062b)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Theory: Equivariance in multi-relational graphs](#fbb0)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[ULTRA: A Foundation Model for KG Reasoning](#86f8)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Experiments: Best even in the zero-shot inference, Scaling behavior](#2517)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Code, Data, Checkpoints](#71ab)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Why KG representation learning is stuck in 2018
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The pretrain-finetune paradigm has been with us since 2018 when [ELMo](https://arxiv.org/abs/1802.05365)
+    and [ULMFit](https://arxiv.org/abs/1801.06146) showed first promising results
+    and they were later cemented with [BERT](https://arxiv.org/abs/1810.04805) and
+    [GPT](https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the era of *large language models* (LLM) and more general *foundation models*
+    (FMs), we often have a single model (like GPT-4 or Llama-2) pre-trained on enormous
+    amounts of data and capable of performing a sheer variety of language tasks in
+    the zero-shot manner (or at least be fine-tuned on the specific dataset). These
+    days, multimodal FMs even support language, vision, audio, and other modalities
+    in the same one model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Things work a little differently in Graph ML. Particularly, **what’s up with
+    representation learning on KGs at the end of 2023?** The main tasks here are edge-level:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Entity prediction (or knowledge graph completion) `(h,r,?)`: given a head node
+    and relation, rank all nodes in the graph that can potentially be true tails.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Relation prediction `(h,?,t)`: given two nodes, predict a relation type between
+    them'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Turns out, up until now it has been somewhere in pre-2018\. The key problem
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each KG has its own set of entities and relations, there is no single pre-trained
+    model that would transfer to any graph.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: For example, if we look at Freebase (a KG behind Google Knowledge Graph) and
+    Wikidata (the largest open-source KG), they have absolutely different sets of
+    entities (86M vs 100M) and relations (1500 vs 6000). Is there any hope for current
+    KG representation learning methods to be trained on one graph and transfer to
+    another?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c68c80ce7bd14dbad8070aadc789c5d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Different vocabularies of Freebase and Wikidata. Image by Authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ❌ Classical transductive methods like TransE, ComplEx, RotatE, and hundreds
+    of other embedding-based methods learn a **fixed set of entities and relation
+    types** from the training graph and cannot even support new nodes added to the
+    same graph. Shallow embedding-based methods do not transfer (in fact, we believe
+    there is no point in developing such methods anymore except for some student project
+    exercises).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🟡 Inductive entity methods like [NodePiece](https://openreview.net/forum?id=xMJWUKJnFSw)
+    and [Neural Bellman-Ford Nets](https://arxiv.org/pdf/2106.06935.pdf) do not learn
+    entity embeddings. Instead, they parameterize training (seen) and new inference
+    (unseen) nodes as a function of fixed relations. Since they **learn only relation
+    embeddings**, it does allow them to transfer to graphs with new nodes but transfer
+    to new graphs with different relations (like Freebase to Wikidata) is still beyond
+    reach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe9e903615e0e5c9ed37b6ea92aff2d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Relative entity representations enable inductive GNNs. Image by Authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What to do if you have **both** new entities and relations at inference time
+    (a completely new graph)? If you don’t learn entity or relation embeddings, is
+    the transfer theoretically possible? Let’s look into the theory then.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Theory: What makes a model inductive and transferable?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s define the setup more formally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: KGs are directed, multi-relational graphs with arbitrary sets of nodes and relation
+    types
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Graphs arrive **without features**, that is, we don’t assume the existence of
+    textual descriptions (nor pre-computed feature vectors) of entities and relations.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given a query (head, relation, ?), we want to rank all nodes in the underlying
+    graph (inference graph) and maximize the probability of returning a true tail.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Transductive* setup: the set of nodes and entities is the same at training
+    and inference time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Inductive* (entity) setup: the set of relations has to be fixed at training
+    time, but nodes can be different at training and inference'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Inductive* (entity and relation) setup: both new unseen entities and relations
+    are allowed at inference'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What do neural networks learn to be able to generalize to new data? The primary
+    reference— the book on [Geometric Deep Learning by Bronstein, Bruna, Cohen, and
+    Veličković](https://geometricdeeplearning.com/)—posits that it is a question of
+    *symmetries and invariances*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the learnable invariances in foundation models? LLMs are trained on
+    a fixed vocabulary of tokens (sub-word units, bytes, or even randomly initialized
+    vectors as in [Lexinvariant LLMs](https://arxiv.org/abs/2305.16349)), vision models
+    learn functions to project image patches, audio models learn to project audio
+    patches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the learnable invariances for multi-relational graphs?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: First, we will introduce the invariances (equivariances) in standard **homogeneous**
+    graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Standard (single) permutation equivariant graph models:* A great leap in graph
+    ML came when early GNN work ([Scarselli et al. 2008](https://ro.uow.edu.au/cgi/viewcontent.cgi?article=10501&context=infopapers),
+    [Xu et al. 2018](https://arxiv.org/abs/1810.00826), [Morris et al. 2018](https://ojs.aaai.org/index.php/AAAI/article/view/4384))
+    has shown that inductive tasks on graphs benefited enormously from assuming that
+    vertex IDs are arbitrary, such that the predictions of a graph model should not
+    change if we reassigned vertex ID. This is known as *permutation equivariance*
+    of the neural network on node IDs. This realization has created great excitement
+    and a profusion of novel graph representation methods since, as long as the neural
+    network is equivariant to node ID permutations, we can call it a graph model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be3ea4a2e3127b59fe07092c439734ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Single-relational graphs. GNNs are equivariant to node permutations: Michael
+    Jackson’s node vector will have the same value even after re-labeling node IDs.
+    Image by Authors.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The permutation equivariance on node IDs allows GNNs to inductively (zero-shot)
+    transfer the patterns learned from a training graph to another (different) test
+    graph. This is a consequence of the equivariance, since the neural network cannot
+    use node IDs to produce embeddings, it must use the graph structure. This creates
+    what we know as *structural representations* in graphs (see [Srinivasan & Ribeiro
+    (ICLR 2020)](https://iclr.cc/virtual_2020/poster_SJxzFySKwH.html)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equivariance in multi-relational graphs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now edges in the graphs might have different relation types — is there any GNN
+    theory for such graphs?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1️⃣ In our previous work, [Weisfeiler and Leman Go Relational](https://arxiv.org/abs/2211.17113)
+    (with Pablo Barceló, Christopher Morris, and Miguel Romero Orth, LoG 2022), we
+    derived Relational WL — a WL expressiveness hierarchy for multi-relational graphs
+    focusing more on node-level tasks. The great [follow-up work by Huang et al (NeurIPS
+    2023)](https://arxiv.org/abs/2302.02209) extended the theory to link prediction,
+    formalized *conditional message passing,* and logical expressiveness using Relational
+    WL. ✍️ Let’s remember **conditional message passing** — we’ll need it later —
+    it provably improves link prediction performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The proposed addition of a global readout vector induced by incoming/outgoing
+    edge direction resembles the [recent work of Emanuele Rossi et al](https://arxiv.org/abs/2305.10498)
+    on studying directionality in homogeneous MPNNs (read [the blog post on Medium](/direction-improves-graph-learning-170e797e94fe)
+    for more details). Still, those works do not envision the case when even relations
+    at test time are unseen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*2️⃣ Double permutation equivariant (multi-relational) graph models:* Recently,
+    [Gao et al. 2023](https://arxiv.org/abs/2302.01313) proposed the concept of **double
+    equivariance** for multi-relational graphs. Double equivariance forces the neural
+    network to be equivariant to the joint permutations of both node IDs and relation
+    IDs. This ensures the neural network learns structural patterns between nodes
+    and relations, which allows it to inductively (zero-shot) transfer the learned
+    patterns to another graph with new nodes and new relations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ad9763efc24de9bca5a6c3a6bace408.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Double equivariance in multi-relational graphs. Permuting both node IDs and
+    relation IDs does not change the relational structure. Hence, the output node
+    states should be the same (but permuted). Image by Authors.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '➡️ In our work, we find *the invariance of relation interactions*, that is,
+    even if relation identities are different, their fundamental interactions remain
+    the same, and those fundamental interactions can be captured by a **graph of relations.**
+    In the graph of relations, each node is a relation type from the original graph.
+    Two nodes in this graph will be connected if edges with those relation types in
+    the original graph are incident (that is, they share a head or tail node). Depending
+    on the incidence, we distinguish **4 edge types** in the graph of relations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Head-to-head (h2h)* — two relations can start from the same head entity;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Tail-to-head (t2h)* — tail entity of one relation can be a head of another
+    relation;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Head-to-tail (h2t)* — head entity of one relation can be a tail of another
+    relation;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Tail-to-tail (t2t)* — two relations can have the same tail entity.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5170699f4814c0eb228294f5ea19e974.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Different incidence patterns in the original graph produce different interactions
+    in the graph of relations. The right-most: the example relation graph (inverse
+    edges are omitted for clarity). Image by Authors*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A few nice properties of the relation graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can be built from absolutely any multi-relational graph (with simple sparse
+    matrix multiplications)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The 4 fundamental interactions never change because they just encode the basic
+    topology — in directed graphs there always will be head and tail nodes, and we
+    relations would have those incidence patterns
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Essentially, learning representations over the relations graph can transfer
+    to any multi-relational graph! This is the *learnable invariance*.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In fact, it can be shown (we are already working on the formal proofs which
+    will be available in an upcoming work 😉) that representing relations via their
+    interactions in a graph of relations is a double equivariant model! This means
+    that learned relational representations are independent of identities but rather
+    rely on the joint interactions between relations, nodes, and nodes & relations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ULTRA: A Foundation Model for KG Reasoning'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With all the theoretical foundations backing us up, we are now ready to introduce
+    ULTRA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ULTRA is a method for unified, learnable, and transferable graph representations.
+    ULTRA leverages the invariances (and equivariances) of the **graph of relations**
+    with its fundamental interactions and applies **conditional message passing**
+    to get relative relational representations. Perhaps the coolest fact is that
+  prefs: []
+  type: TYPE_NORMAL
+- en: a single pre-trained ULTRA model can run 0-shot inference on any possible multi-relational
+    graph and be fine-tuned on any graph.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In other words, ULTRA is pretty much a foundation model that can run inference
+    on any graph input (with already good performance) and be fine-tuned on any target
+    graph of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The crucial component of ULTRA is in *relative* relation representations constructed
+    from the graph of relations. Given a query `(Michael Jackson, genre, ?)`, we first
+    initialize the `genre` node in the graph of relations with the all-ones vector
+    (all other nodes are initialized with zeros). Running a GNN, the resulting node
+    embeddings of the relation graph are conditioned on the `genre` node — it means
+    that each starting initialized relation will have its own matrix of relational
+    features, and that’s very helpful from many theoretical and practical aspects!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a2a3e03826f084d0bd9909871b263b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*ULTRA employs relative relation representations (a labeling trick over the
+    graph of relations) such that each relation (eg, “genre”) has its own unique matrix
+    of all relation representations. Image by Authors.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Practically, given an input KG and a (h, r, ?) query, ULTRA executes the following
+    actions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Construction of the graph of relations;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Get relation features from the conditional message passing GNN on the graph
+    of relations (conditioned on the initialized query relation r);
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Use the obtained relational representations for the inductive link predictor
+    GNN conditioned on the initialized head node h;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Steps 2 and 3 are implemented via slightly different modifications of the [Neural
+    Bellman-Ford net (NBFNet)](https://arxiv.org/pdf/2106.06935.pdf). ULTRA only learns
+    embeddings of the 4 fundamental interactions (h2t, t2t, t2h, h2h) and GNN weights
+    — pretty small overall. The main model we experimented with has only 177k parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69c48ade8d1640695e8a31d647795722.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Three main steps taken by ULTRA: (1) building a relation graph; (2) running
+    conditional message passing over the relation graph to get relative relation representations;
+    (3) use those representations for inductive link predictor GNN on the entity level.
+    Image by Authors.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Experiments: Best even in the zero-shot inference and Fine-tuning'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We pre-trained ULTRA on 3 standard KGs based on Freebase, Wikidata, and Wordnet,
+    and ran 0-shot link prediction on 50+ other KGs of various sizes from 1k — 120k
+    nodes and 2k edges — 1.1M edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Averaged across the datasets with known SOTA, a single pre-trained ULTRA model
+    is **better in the 0-shot inference mode** than existing SOTA models trained specifically
+    on each graph 🚀Fine-tuning improves the performance even 10% further. It’s particularly
+    amazing that a single trained ULTRA model can scale to graphs of such different
+    sizes (100x difference in node size and 500x in the edge sizes) whereas GNNs are
+    known to suffer from size generalization issues (see the prominent works by [Yehudai
+    et al, ICML 2021](https://arxiv.org/abs/2010.08853) and [Zhou et al, NeurIPS 2022](https://arxiv.org/abs/2205.15117)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c040b43c06c13861b944f7734708cda5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A single pre-trained ULTRA is better even in the 0-shot inference mode than
+    supervised SOTA modes trained end-to-end on specific graphs (look at the Average
+    column). Fine-tuning improves the performance even further. Image by Authors
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🙃 In fact, with 57 tested graphs, we ran a bit out of KGs to test ULTRA on.
+    So if you have a fresh new benchmark hidden somewhere — let us know!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaling Behavior
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can bump the zero-shot performance even more by adding more graphs to the
+    pre-training mixture although we do observe certain performance saturation after
+    training on 4+ graphs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The church of [Scaling Laws](https://arxiv.org/abs/2001.08361) predicts even
+    better performance with bigger models trained on more qualitative data, so it’s
+    definitely on our agenda.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ef48bedd78ce63c719bf0a0f8a343dd8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Zero-shot performance increases with more diverse graphs in the pre-training
+    mix. Image by Authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion: Code, Data, Checkpoints'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So foundation models for KG reasoning are finally here, we are past that 2018
+    threshold! A single pre-trained ULTRA model can perform link prediction on any
+    KG (multi-relational graph) from any domain. You really just need a graph with
+    more than 1 edge type to get going.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 📈 Practically, ULTRA demonstrates very promising performance on a variety of
+    KG benchmarks already in the 0-shot mode, but you can bump the performance even
+    further with a short fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We make all the code, training data, and pre-trained model checkpoints available
+    on GitHub so you can start running ULTRA on your data right away!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '📜 preprint: [arxiv](https://arxiv.org/abs/2310.04562)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '🛠️ Code, data: [Githtub repo](https://github.com/DeepGraphLearning/ULTRA)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '🍪 Checkpoints: 2 checkpoints (2 MB each) in the [Github repo](https://github.com/DeepGraphLearning/ULTRA)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '🌎 Project website: [here](https://deepgraphlearning.github.io/project/ultra)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a closing remark, KG reasoning just represents a fraction of the many interesting
+    problems in the reasoning domain, and the majority still don’t have a generic
+    solution. We believe the success of KG reasoning will bring more breakthroughs
+    in other reasoning domains (for example, we recently found that [LLMs can actually
+    learn and employ textual rules](https://arxiv.org/abs/2310.07064)). Let’s stay
+    optimistic about the future of reasoning!
+  prefs: []
+  type: TYPE_NORMAL

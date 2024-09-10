@@ -1,0 +1,65 @@
+- en: 'vLLM: PagedAttention for 24x Faster LLM Inference'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83?source=collection_archive---------3-----------------------#2023-06-24](https://towardsdatascience.com/vllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83?source=collection_archive---------3-----------------------#2023-06-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A more efficient way to compute Transformer’s attention during inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----fdfb1b80f83--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----fdfb1b80f83---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fdfb1b80f83--------------------------------)
+    ·6 min read·Jun 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffdfb1b80f83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83&user=Benjamin+Marie&userId=ad2a414578b3&source=-----fdfb1b80f83---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffdfb1b80f83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvllm-pagedattention-for-24x-faster-llm-inference-fdfb1b80f83&source=-----fdfb1b80f83---------------------bookmark_footer-----------)![](../Images/9b79c5674eecc1de9d97ae46d9048bff.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: PagedAttention for a prompt “the cat is sleeping in the kitchen and the dog
+    is”. Key-Value pairs of tensors for attention computation are stored in virtual
+    contiguous blocks mapped to non-contiguous blocks in the GPU memory. — Image by
+    the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Almost all the large language models (LLM) rely on the Transformer neural architecture.
+    While this architecture is praised for its efficiency, it has some well-known
+    computational bottlenecks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During decoding, one of these bottlenecks is in the computation of the attention
+    with pairs of key-value tensors for each token of the input. All these tensors
+    must be stored in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: I won’t explain in this article what is the role of these key-value
+    pairs. It’s one of the most complicated and interesting aspects of the Transformer
+    architecture. If you don’t know about it, I strongly recommend reading* [*The
+    Illustrated Transformer by Jay Alammar*](https://jalammar.github.io/illustrated-transformer/)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As LLM accepts longer and longer inputs, e.g., the LLM Claude accepts 100k token-long
+    inputs, the memory consumed by these tensors can become very large.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naively storing all these tensors in memory leads to memory over-reservation
+    and fragmentation. This fragmentation can make memory access very inefficient,
+    especially for long sequences of tokens. As for over-reservation, the system does
+    it to make sure it has allocated enough memory for the tensors, even if it doesn’t
+    consume all of it.
+  prefs: []
+  type: TYPE_NORMAL

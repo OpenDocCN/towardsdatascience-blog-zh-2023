@@ -1,0 +1,366 @@
+- en: 'Mistral 7B: Recipes for Fine-tuning and Quantization on Your Computer'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mistral-7b-recipes-for-fine-tuning-and-quantization-on-your-computer-631401583f77?source=collection_archive---------0-----------------------#2023-10-26](https://towardsdatascience.com/mistral-7b-recipes-for-fine-tuning-and-quantization-on-your-computer-631401583f77?source=collection_archive---------0-----------------------#2023-10-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Cheap supervised fine-tuning with an impressive LLM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----631401583f77--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----631401583f77--------------------------------)[](https://towardsdatascience.com/?source=post_page-----631401583f77--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----631401583f77--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----631401583f77--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmistral-7b-recipes-for-fine-tuning-and-quantization-on-your-computer-631401583f77&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----631401583f77---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----631401583f77--------------------------------)
+    ·9 min read·Oct 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F631401583f77&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmistral-7b-recipes-for-fine-tuning-and-quantization-on-your-computer-631401583f77&user=Benjamin+Marie&userId=ad2a414578b3&source=-----631401583f77---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F631401583f77&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmistral-7b-recipes-for-fine-tuning-and-quantization-on-your-computer-631401583f77&source=-----631401583f77---------------------bookmark_footer-----------)![](../Images/bfa5a4ac457b91e1272b5d1cd9f44188.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mistral is a wind blowing in the northern Mediterranean Sea — Illustration
+    from [Pixabay](https://pixabay.com/illustrations/wind-girl-tree-long-hair-4054954/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mistral 7B is a very popular large language model (LLM) created by Mistral AI.
+    It outperforms all [the other pre-trained LLMs of similar size](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard)
+    and is even better than larger LLMs such as Llama 2 13B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also very well optimized for fast decoding, especially for long contexts,
+    thanks to the use of a sliding window to compute attention and grouped-query attention
+    (GQA). You can find more details in [the arXiv paper presenting Mistral 7B](https://arxiv.org/abs/2310.06825)
+    and in [this excellent article](https://medium.com/gitconnected/mistral-7b-a-new-wind-blowing-other-language-models-b74d7bfe137e)
+    by [Salvatore Raieli](https://medium.com/u/f1a08d9452cd?source=post_page-----631401583f77--------------------------------).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mistral 7B is good but small enough to be exploited with affordable hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will show you how to fine-tune Mistral 7B with QLoRA. We
+    will use the dataset “ultrachat” that I modified for this article. Ultrachat was
+    used by Hugging Face to create [Zephyr 7B](https://huggingface.co/HuggingFaceH4/zephyr-7b-alpha).
+    We will also see how to quantize Mistral7B with AutoGPTQ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I wrote notebooks implementing all the sections. You can find them here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Get the notebooks (#22, #23)](https://kaitchup.substack.com/p/notebooks)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Supervised Fine-Tuning of Mistral 7B with TRL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Mistral 7B is a 7 billion parameter model. You roughly need 15 GB of VRAM to
+    load it on a GPU. Then, full fine-tuning with batches will consume even more VRAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An alternative to standard full fine-tuning is to fine-tune with QLoRA. QLoRA
+    fine-tunes LoRA adapters on top of a frozen quantized model. In previous articles,
+    [I have used it to fine-tune Llama 2 7B](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since QLoRA quantizes to 4-bit (NF4), we approximately divide by 4 the memory
+    consumption for loading the model, i.e., Mistral 7B quantized with NF4 consumes
+    around 4 GB of VRAM. If you have a GPU with 12 GB of VRAM, it leaves a lot of
+    space for increasing batch size and targeting more modules with LoRA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, you can fine-tune Mistral 7B for free, on your machine if you
+    have enough VRAM, or with the free instance of Google Colab which is equipped
+    with a T4 GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To fine-tune with QLoRA, you will need to install the following libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, import the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we load the tokenizer and configure it. As with Llama 2, we need to define
+    a padding token. As usual, I chose the UNK token to pad the training examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: Mistral 7B is fully open. You don’t need to be connected to Hugging
+    Face or to sign a license agreement before downloading the model and the tokenizer.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: For fine-tuning, I made a custom version of [ultrachat](https://huggingface.co/datasets/stingning/ultrachat)
+    (MIT license). Ultrachat contains 774k dialogues in the JSON format. This is way
+    too many for a cheap fine-tuning and the format is not optimal for fine-tuning
+    with TRL on consumer hardware. *Note:* [*TRL*](https://huggingface.co/docs/trl/index)
+    *is a library developed by Hugging Face that simplifies fine-tuning of instruct
+    LLMs.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I randomly subsampled ultrachat to only keep 100k dialogues. Then, I flattened
+    the dialogues. For instance, in the original dataset, one example is formatted
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once flattened, we have everything into one single sequence of tokens with
+    “### Human” and “### Assistant” tags:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is the same format as [timdettmers/openassistant-guanaco](https://huggingface.co/datasets/timdettmers/openassistant-guanaco).
+    This format can be directly used by TRL. You can find this version of ultrachat
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[kaitchup/ultrachat-100k-flattened](https://huggingface.co/datasets/kaitchup/ultrachat-100k-flattened)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To load the dataset, we do:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let’s load the model and prepare it for QLoRA:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Replace “float16” with “bfloat16“ if your GPU supports it. It will make the
+    training more stable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we define the configuration of LoRA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: I usually set up r=lora_alpha=16 since I read the Platypus paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kaitchup.substack.com/p/platypus-dataset-curation-and-adapters?source=post_page-----631401583f77--------------------------------)
+    [## Platypus: Dataset Curation and Adapters for Better Large Language Models'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Achieve low-cost state-of-the-art on your target tasks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kaitchup.substack.com](https://kaitchup.substack.com/p/platypus-dataset-curation-and-adapters?source=post_page-----631401583f77--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I target several modules. Here, I chose all the “proj” modules but there are
+    more. You can find them all by running “print(model)”. Note that adding more modules
+    may improve the performance but it also adds trainable parameters that will consume
+    more VRAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For training, I chose the following hyperparameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: I trained for only 100 steps. Since the examples are very long, training for
+    one epoch would take more than 200 hours using a T4 GPU. If you use a V100 or
+    an RTX 40xx, you may reduce it to 100 hours.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I recommend at least 2,000 training steps to get a reasonably good model. It
+    should take around two days of training with a T4 or one day with a more recent
+    GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I also commented with “#” the hyperparameters related to the evaluation which
+    is costly. Uncomment them to log the validation loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Start the training with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, once training is done, test the trained adapter by running:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'All this code is implemented in [this notebook #22](https://kaitchup.substack.com/p/notebooks).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization of Mistral 7B with AutoGPTQ and bitsandbytes NF4
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With bitsandbytes NF4
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To keep memory consumption low, we want to run quantized models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have fine-tuned your own model with QLoRA and would like to quantize
+    it, your best option is to load and quantize Mistral 7B with bitsandbytes nf4
+    as we did for QLoRA. Then, load your fine-tuned adapter on top of it. This is
+    what we did in the last code sample in the previous section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: I have explored several other options, for instance merging the adapter to the
+    base model, but none of them are optimal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kaitchup.substack.com/p/lora-adapters-when-a-naive-merge?source=post_page-----631401583f77--------------------------------)
+    [## LoRA Adapters: When a Naive Merge Leads to Poor Performance'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The case of LoRA adapters fine-tuned with QLoRA
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kaitchup.substack.com](https://kaitchup.substack.com/p/lora-adapters-when-a-naive-merge?source=post_page-----631401583f77--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could have used [QA-LoRA to fine-tune a quantization-aware LoRA](https://kaitchup.substack.com/p/qa-lora-quantization-aware-fine-tuning)
+    but the framework to do that doesn’t support yet Mistral 7B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mistral AI also released an instruct version of Mistral 7B. You can get it
+    here instead of training your instruct Mistral 7B:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[mistralai/Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I use this model for the following quantization examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To load and quantize the model with bitsandbytes, you first need to install
+    the following libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For testing generation, you can use the generate function I defined in the
+    previous section with the right prompt format used by Mistral Instruct:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: With AutoGPTQ
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: bitsandbytes nf4 is fast to quantize but slow for inference. Currently, we can’t
+    serialize nf4 models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AutoGPTQ is much slower for quantization but you only need to do it once. It’s
+    also [much faster than nf4 for decoding](https://kaitchup.substack.com/p/gptq-or-bitsandbytes-which-quantization)
+    but keep in mind that models quantized with [AutoGPTQ (INT4) are slightly worse
+    than models quantized with nf4](https://kaitchup.substack.com/p/quantize-and-fine-tune-llms-with).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need the following libraries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, import the following package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, the model will be quantized when we load it with “AutoModelForCausalLM.from_pretrained”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Quantization is very costly in memory. You will need more than 24 GB of VRAM,
+    e.g., the A100 of Google Colab Pro would work. I recommend saving the model once
+    it’s loaded to make sure you won’t have to do it again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All this quantization code is also available in my [notebook #23](https://kaitchup.substack.com/p/notebooks).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that TheBloke proposes Mistral Instruct 7B quantized with AutoGPTQ on
+    the Hugging Face Hub:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[TheBloke/Mistral-7B-Instruct-v0.1-GPTQ](https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.1-GPTQ)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Mistral 7B is an impressive pre-trained LLM. You can easily fine-tune it on
+    your computer with QLoRA. However, fine-tuning remains very time-consuming. As
+    we saw, you may need to run it for a hundred hours or more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you don’t need to fine-tune Mistral 7B on your data, Mistral Instruct is
+    a good alternative proposed by Mistral AI. To run it on consumer hardware, you
+    can quantize it with bitsandbytes nf4 or GPTQ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To support my work, consider subscribing to my newsletter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kaitchup.substack.com/?source=post_page-----631401583f77--------------------------------)
+    [## The Kaitchup - AI on a Budget | Benjamin Marie, PhD | Substack'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Weekly news, tips, and tutorials on fine-tuning, running, and serving large
+    language models on your computer. Each…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kaitchup.substack.com](https://kaitchup.substack.com/?source=post_page-----631401583f77--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

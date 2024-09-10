@@ -1,0 +1,350 @@
+- en: How to Mask PII data with FPE Using Azure Synapse
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b?source=collection_archive---------16-----------------------#2023-05-23](https://towardsdatascience.com/how-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b?source=collection_archive---------16-----------------------#2023-05-23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn to do Format Preserving Encryption (FPE) at scale, securely move data
+    from production to test environments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)[![René
+    Bremer](../Images/e422c4b84e225d2a949251ebc24dbd2c.png)](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----12902547af2b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----12902547af2b--------------------------------)
+    [René Bremer](https://rebremer.medium.com/?source=post_page-----12902547af2b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F11e5e7fb3771&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b&user=Ren%C3%A9+Bremer&userId=11e5e7fb3771&source=post_page-11e5e7fb3771----12902547af2b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----12902547af2b--------------------------------)
+    ·7 min read·May 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F12902547af2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b&user=Ren%C3%A9+Bremer&userId=11e5e7fb3771&source=-----12902547af2b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F12902547af2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-mask-pii-data-with-fpe-using-azure-synapse-12902547af2b&source=-----12902547af2b---------------------bookmark_footer-----------)![](../Images/02304fe2bd3a9beb0af28aeef250db7b.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Masking data — image by [Mika Baumeister](https://unsplash.com/@mbaumi) on [Unsplash](https://unsplash.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A lot of enterprises require representative data in their test environments.
+    Typically, this data is copied from production to test environments. However,
+    Personally Identifiable Information (PII) data is often part of production environments
+    and shall first be masked. Azure Synapse can be leveraged to mask data using [format
+    preserved encryption](https://en.wikipedia.org/wiki/Format-preserving_encryption)
+    and then copy data to test environments. See also architecture below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b1e55f049c3a995be4bab7adb18308c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 1\. Format preserving Encryption at scale using Azure Synapse — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog and repo`[azure-synapse_mask-data_format-preserved-encryption](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption)`,
+    it is discussed how a scalable and secure masking solution can be created in Synapse.
+    In the next chapter, the properties of the project are discussed. Then the project
+    is deployed in chapter 3, tested in chapter 4 and a conclusion in chapter 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Properties of PII masking application in Synapse
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Properties of the PII masking appication in Synapse are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Extendable masking functionality**: Extending on open source Python libraries
+    like [ff3](https://github.com/mysto/python-fpe), FPE can be achieved for IDs,
+    names, phone numbers and emails. Examples of encryption are 06–23112312 => 48–78322271,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Kožušček123a => Sqxbblkd659p, bremersons@hotmail.com => h0zek2fbtw@fr5wsdh.com
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Security**: Synapse Analytics workspace that used has the following security
+    in place: **Private endpoints** to connect to Storage Account, Azure SQL (public
+    access can be disabled) and 100 of other data sources (including on-premises);
+    **Managed Identity** to authenticate to Storage account, Azure SQL and Azure Key
+    Vault in which the secrets are stored that are used by ff3 for encryption; **RBAC
+    authorization** to grant access to Azure Storage, Azure SQL and Azure Key Vault
+    and [**Synapse data exfiltration protection**](https://learn.microsoft.com/en-us/azure/synapse-analytics/security/workspace-data-exfiltration-protection)to
+    prevent that data leaves the tenant by a malicious insider'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Performance**: Scalable solution in which Spark used. Solution can be scaled
+    up by using more vcores, scaling out by using more executors (VMs) and/or using
+    more Spark pools. In a basic test, 250MB of data with 6 columns was encrypted
+    and written to storage in 1m45 using a Medium sized Spark pool with 2 executors
+    (VMs) and 8 vcores (threads) per executor (16 vcores/threads in total)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Orchestration**: Synapse pipelines can orchestrate the process end to end.
+    That is, data can be fetched from cloud/on-premises databases using over 100 different
+    connectors, staged to Azure Storage, masked and then sent back to lower environment
+    for testing.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the architecture below, the security properties are defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2322a3438bb88e3f22495d29c9ebfbd8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 2\. Security properties of masking application — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next chapter, the masking application will be deployed and configured
+    including test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Deploy PII masking application in Synapse
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this chapter, the project comes to live and will be deployed in Azure. The
+    following steps are executed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.1 Prerequisites
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3.2 Deploy resources
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3.3 Configure resources
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3.1 Prerequisites
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following resources are required in this tutorial:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Azure Account](https://azure.microsoft.com/en-us/free/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+    (recommended)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, clone the git repo below to your local computer. In case you don’t
+    have git installed, you can just download a zip file from the web page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2 Deploy resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The following resources need to be deployed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.2.1 Azure Synapse Analytics workspace:** Deploy Synapse with data exfiltration
+    protection enabled. Make sure that a primary storage account is created. Make
+    also sure that Synapse is deployed with 1) Managed VNET enabled, 2) has a private
+    endpoint to the storage account and 3) allow outbound traffic only to approved
+    targets, see also screenshot below:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ea8172eac3eb4312ac797a312835e00a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3.2\. Azure Synapse with managed VNET and data exfiltration protection enabled
+    — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.2.2 Azure Key vault:** This Key Vault will be used to store the secrets
+    that are used to create the HMACs in `[Synapse/mask_data_fpe_prefixcipher.ipynb](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption/blob/main/Synapse/mask_data_fpe_prefixcipher.ipynb)`
+    and encryption in `[Synapse/mask_data_fpe_ff3.ipynb](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption/blob/main/Synapse/mask_data_fpe_ff3.ipynb)`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3.3\. Configure resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following resources need to be configured
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3.1 Storage Account - File Systems :** In the storage account, create a
+    new Filesystem called `bronze` and `gold`. Then upload csv file in `[Data\SalesLT.Customer.txt](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption/blob/main/Data/SalesLT.Customer.txt)`.
+    In case you want to do a larger dataset, see [this](https://testhmacmaskstor.blob.core.windows.net/bronze/SalesLT.Customer_1M.txt?sp=r&st=2023-04-06T09%3A04%3A43Z&se=2024-04-01T17%3A04%3A43Z&spr=https&sv=2021-12-02&sr=b&sig=zYCOdxO40pWoTKBDfGpC%2FsR6ixpUiCneXGHQJSNlxuQ%3D)
+    set of 250MB and 1M records'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3.3.2 Azure Key Vault - Secrets:** Create a secret called `fpekey` and `fpetweak`.
+    Make sure that hexadecimal values are added for both secrets. In case Azure Key
+    vault was deployed with public access enabled (in order to be able to create secrets
+    via Azure Portal), it is now not needed anymore and public access can be disabled
+    (since private link connection will be created between Synapse and Azure Key vault
+    in 3.3.4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3.3.3 Azure Key vault - access control:** Make sure that in the access policies
+    of the Azure Key Vault the Synapse Managed Identity had get access to secret,
+    see also image below.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/4e24becd9000e4df6f72e91beb06a6ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3.3.3 Synapse Managed Identity having get access on secrets in Key Vault — image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3.4 Azure Synapse Analytics - Private link to Azure Key Vault**: Create
+    a private endpoint from the Azure Synapse Workspace managed VNET and your key
+    vault. The request is initiated from Synapse and needs to be approved in the AKV
+    networking. See also screenshot below in which private endpoint is approved, see
+    also image below'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/60acccebc45a07fa8529e5d619dfc40e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3.3.4 Private Link Connection between Synapse and Key Vault — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3.5 Azure Synapse Analytics - Linked Service link to Azure Key Vault:**
+    Create a linked service from the Azure Synapse Workspace and your key vault, see
+    also image below'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/a3fbd054ad53517bb855bdd05c57ea0e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3.3.5 Linked Service between Synapse and Key Vault to get secrets — image by
+    author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3.6 Azure Synapse Analytics - Spark Cluster**: Create a Spark cluster that
+    is Medium size, has 3 to 10 nodes and can be scaled to 2 to 3 executors, see also
+    image below.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/682ae3bddc7fc8c9879f3c47545c049c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3.3.6 Create Spark Cluster in Synapse — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3.7 Azure Synapse Analytics - Library upload:** Notebook `Synapse/mask_data_fpe_ff3.ipynb`
+    uses [ff3](https://github.com/mysto/python-fpe) to encryption. Since Azure Synapse
+    Analytics is created with data exfiltration protection enabled, it cannot be installed
+    using by fetching from pypi.org, since that requires outbound connectivity outside
+    the Azure AD tenant. Download the pycryptodome wheel [here](https://files.pythonhosted.org/packages/14/58/77278d7a078241b55b515f6073b90108125fb0d197b384a0f372c5f61c80/pycryptodome-3.17-cp35-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl)
+    , ff3 wheel [here](https://files.pythonhosted.org/packages/3a/c1/3550f1b97d6eedb2117521a149f379bb0d92cbb02e242110bb174f12c9a2/ff3-1.0.1-py3-none-any.whl)
+    and Unidecode library [here](https://files.pythonhosted.org/packages/be/ea/90e14e807da5a39e5b16789acacd48d63ca3e4f23dfa964a840eeadebb13/Unidecode-1.3.6-py3-none-any.whl)
+    (Unidecode library is leveraged to convert unicode to ascii first to prevent that
+    extensive alphabets shall be used in ff3 to encrypt data). Then upload the wheels
+    to Workspace to make them trusted and finally attach it to the Spark cluster,
+    see image below.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b6b32ada497a3e326f26a41c0d1d07a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3.3.7 Attached Python packages to Spark cluster from Synapse workspace — image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3.8 Azure Synapse Analytics - Notebooks upload:** Upload the notebooks
+    `[Synapse/mask_data_fpe_prefixcipher.ipynb](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption/blob/main/Synapse/mask_data_fpe_prefixcipher.ipynb)`
+    and `[Synapse/mask_data_fpe_ff3.ipynb](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption/blob/main/Synapse/mask_data_fpe_ff3.ipynb)`
+    to your Azure Synapse Analytics Workspace. Make sure that in the notebooks, the
+    value of the storage account, filesystem, key vault name and keyvault linked services
+    are substituted.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**3.3.9 Azure Synapse Analytics - Notebooks - Spark session**: Open Spark session
+    of notebook `Synapse/mask_data_fpe_prefixcipher.ipynb`, make sure you choose more
+    than 2 executor and run it using a Managed Identity, see also screenshot below.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/cebbcf4c41e7e399ce3152e761af51dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 3.3.9 Run Spark session as managed Identity — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Test solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After all resources are deployed and configured, notebook can be run. Notebook
+    `Synapse/mask_data_fpe_prefixcipher.ipynb` contains functionality to mask numeric
+    values, alpanumeric values, phone numbers and email addresses, see functionality
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In case the 1M dataset is used and 6 columns are encrypted, processing takes
+    around 2 minutes. This can easily be scaled by using 1) scaling up by using more
+    vcores (from medium to large), scaling out by using more executors or just create
+    a 2nd Spark pool. See also screenshot below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/76da8ab53bac7a689c6c1deb7b15a49f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 4\. Notebook successfully run — image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Synapse, notebooks can be easily embedded in pipelines. These pipelines can
+    be used to orchestrate the activities by first uploading the data from production
+    source to storage, run notebook to mask data and then copy masked data to test
+    targed. An example pipeline can be found in `[Synapse/synapse_pipeline.json](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption/blob/main/Synapse/synapse_pipeline.json)`
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A lot of enterprises need to have representative sample data in test environment.
+    Typically, this data is copied from a production environment to a test environment.
+    In this blog and git repo`[-synapse_mask-data_format-preserved-encryption](https://github.com/rebremer/azure-synapse_mask-data_format-preserved-encryption)`,
+    a scalable and secure masking solution is discussed that leverages the power of
+    Spark, Python and open source library [ff3](https://github.com/mysto/python-fpe),
+    see also architecture below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b1e55f049c3a995be4bab7adb18308c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 5\. Format Preserving Encryption at scale using Azure Synapse — image by author
+  prefs: []
+  type: TYPE_NORMAL

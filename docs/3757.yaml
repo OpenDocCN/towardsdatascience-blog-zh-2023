@@ -1,0 +1,234 @@
+- en: 'Optimization or Architecture: How to Hack Kalman Filtering'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/optimization-or-architecture-how-to-hack-kalman-filtering-c0a21ac7d756?source=collection_archive---------3-----------------------#2023-12-26](https://towardsdatascience.com/optimization-or-architecture-how-to-hack-kalman-filtering-c0a21ac7d756?source=collection_archive---------3-----------------------#2023-12-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why neural networks may seem better than the KF even when they are not — and
+    how to both fix this and improve your KF itself
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://idogreenberg90.medium.com/?source=post_page-----c0a21ac7d756--------------------------------)[![Ido
+    Greenberg](../Images/887c83b2f367133a6eab98b2bb4716ad.png)](https://idogreenberg90.medium.com/?source=post_page-----c0a21ac7d756--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0a21ac7d756--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c0a21ac7d756--------------------------------)
+    [Ido Greenberg](https://idogreenberg90.medium.com/?source=post_page-----c0a21ac7d756--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe3afd2470982&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-or-architecture-how-to-hack-kalman-filtering-c0a21ac7d756&user=Ido+Greenberg&userId=e3afd2470982&source=post_page-e3afd2470982----c0a21ac7d756---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0a21ac7d756--------------------------------)
+    ·6 min read·Dec 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc0a21ac7d756&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-or-architecture-how-to-hack-kalman-filtering-c0a21ac7d756&user=Ido+Greenberg&userId=e3afd2470982&source=-----c0a21ac7d756---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc0a21ac7d756&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimization-or-architecture-how-to-hack-kalman-filtering-c0a21ac7d756&source=-----c0a21ac7d756---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post introduces our [recent paper](https://arxiv.org/abs/2310.00675) from
+    NeurIPS 2023\. Code is available on [PyPI](https://pypi.org/project/Optimized-Kalman-Filter/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Kalman Filter (KF) is a celebrated method for sequential forecasting and
+    control since 1960\. While many new methods were introduced in the last decades,
+    the KF’s simple design makes it a practical, robust and competitive method to
+    this day. The [original paper](https://asmedigitalcollection.asme.org/fluidsengineering/article-abstract/82/1/35/397706/A-New-Approach-to-Linear-Filtering-and-Prediction)
+    from 1960 has [12K citations](https://scholar.google.com/scholar?as_ylo=2019&hl=en&as_sdt=2005&sciodt=0%2C5&cites=5225957811069312144&scipsc=)
+    in the last 5 years alone. Its broad applications include [navigation](https://ardupilot.org/dev/docs/extended-kalman-filter.html),
+    [medical treatment](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4029942/), [marketing
+    analysis](https://medium.com/@bqnnguyen/kalman-filter-and-its-application-in-marketing-analytics-d568def19679),
+    [deep learning](https://arxiv.org/abs/1901.07860) and even [getting to the moon](https://www.lancaster.ac.uk/stor-i-student-sites/jack-trainer/how-nasa-used-the-kalman-filter-in-the-apollo-program/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6101f1c1b4507de6519d5e1eff447d57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of the KF on Apollo mission (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Technically, the KF predicts the state *x* of a system (e.g. spaceship location)
+    from a sequence of noisy observations (e.g. radar/camera). It estimates a distribution
+    over the state (e.g. location estimate + uncertainty). Every time-step, it predicts
+    the next state according to the dynamics model *F*, and increases the uncertainty
+    according to the dynamics noise ***Q***. Every observation, it updates the state
+    and its uncertainty according to the new observation *z* and its noise ***R***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bcbed22dbdc7e8ed4df2368fd38073b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An illustration of a single step of the KF (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kalman Filter or a Neural Network?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The KF prediction model *F* is linear, which is somewhat restrictive. So we
+    built a fancy neural network on top of the KF. This gave us better prediction
+    accuracy than the standard KF! Good for us!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finalizing our experiments for a paper, we conducted some ablation tests. In
+    one of them, we *removed the neural network completely*, and just *optimized the
+    internal KF parameters* *Q* and *R*. Imagine the look at my face when this optimized
+    KF outperformed not only the standard KF, but also my fancy network! The same
+    KF model exactly, with the same 60-yo linear architecture, becomes superior just
+    by changing the values of its noise parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b656bd7fb939d4f32614e8c64a4c9c73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction errors of the KF, the Neural KF (NKF), and the Optimized KF (OKF)
+    (image from our paper)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The KF beating a neural network is interesting but *anecdotal* to our problem.
+    More important is the *methodological* insight: before the extended tests, we
+    were about to declare the network as superior to the KF — just because we didn’t
+    compare the two properly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Message 1: To make sure that your neural network is actually better than
+    the KF, optimize the KF just as nicely as you do for the network.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Remark — does this mean that the KF is better than neural networks?** We
+    certainly make no such general claim. Our claim is about the methodology — that
+    both models should be optimized similarly if you’d like to compare them. Having
+    said that, we do demonstrate *anecdotally* that the KF can be better in the Doppler
+    radar problem, despite the non-linearity in the problem. In fact, this was so
+    hard for me to accept, that I lost a bet about my neural KF, along with many weeks
+    of hyperparameter optimization and other tricks.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Optimizing the Kalman Filter
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When comparing two architectures, optimize them similarly. Sounds somewhat
+    trivial, doesn’t it? As it happens, this flaw was not unique to our research:
+    in the literature of non-linear filtering, the linear KF (or its extension EKF)
+    is usually used as a baseline for comparison, but is rarely optimized. And there
+    is actually a reason for that: the standard KF parameters are “known” to already
+    yield optimal predictions, so why bother optimizing further?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/70b7f1594bce4d25619337cda490b4b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The standard closed-form equation for the KF parameters *Q* and R. We focus
+    on the settings where offline data is available with both states {x} and observations
+    {z}, hence the covariances can be calculated directly. Other methods to determine
+    Q and R are typically intended for other settings, e.g. without data of {x}.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unfortunately, the optimality of the closed-form equations does not hold in
+    practice, as it relies on a set of quite strong assumptions, which rarely hold
+    in the real world. In fact, in the simple, classic, low-dimensional problem of
+    a Doppler radar, we found no less than 4 violations of the assumptions. In some
+    cases, the violation is tricky to even notice: for example, we simulated iid observation
+    noise — but in spherical coordinates. Once transforming to Cartesian coordinates,
+    the noise is no longer iid!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1bfdc17cbb11accee8c01189bf3ec11c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The violation of 4 KF assumptions in the Doppler radar problem: non-linear
+    dynamics; non-linear observations; inaccurate initialized distribution; and non-iid
+    observation noise. (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Message 2: Do not trust the KF assumptions, and thus avoid the closed-form
+    covariance estimation. Instead, optimize the parameters wrt your loss — just as
+    with any other prediction model.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, in the real world, noise covariance estimation is no longer
+    a proxy to optimize the prediction errors. This discrepancy between the objectives
+    creates surprising anomalies. In one experiment, we replace noise estimation with
+    an *oracle* KF that knows the exact noise in the system. This oracle is still
+    inferior to the Optimized KF — since accurate noise estimation is not the desired
+    objective, but rather accurate state prediction. In another experiment, the KF
+    *deteriorates* when it is fed with more data, since it effectively pursues a different
+    objective than the MSE!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a39e8212534b7ac9b919976d0c46e15.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Test errors vs. train data size. The standard KF is not only inferior to the
+    Optimized KF, but also deteriorates with the data, since its parameters are not
+    set to optimize the desired objective. (image from our paper)
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how to optimize the KF?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Behind the standard noise-estimation method for KF tuning, stands the view
+    of the KF parameters as representatives of the noise. This view is beneficial
+    in some contexts. However, as discussed above, for the sake of optimization, we
+    should “forget” about this role of the KF parameters, and just treat them as model
+    parameters, whose objective is loss minimization. This alternative view also tells
+    us *how* to optimize: just like any sequential prediction model, such as RNN!
+    Given the data, we just make predictions, calculate loss, backpropagate gradients,
+    update the model, and repeat.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main difference from RNN, is that the parameters *Q*,*R* come in the form
+    of a covariance matrix, so they should remain symmetric and positive definite.
+    To handle this, we use the Cholesky decomposition to write *Q=LL**, and optimize
+    the entries of *L*. This guarantees that *Q* remains positive definite regardless
+    of the optimization updates. This trick is used for both *Q*,*R*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ffae49da232000912445ea2a510e593.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pseudocode of the OKF training procedure (from our paper)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This optimization procedure was found fast and stable in all of our experiments,
+    as the number of parameters was several orders of magnitude beneath typical neural
+    networks. And while the training is easy to implement yourself, you may also use
+    our PyPI package, as demonstrated in [this](https://github.com/ido90/Optimized-Kalman-Filter/blob/master/example.ipynb)
+    example :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As summarized in the diagram below, our main message is that the KF assumptions
+    cannot be trusted, and thus we should optimize the KF directly — whether we use
+    it as our primary prediction model, or as a reference for comparison with a new
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our simple training procedure is available in PyPI. More importantly, since
+    our architecture remains identical to the original KF, any system using KF (or
+    Extended-KF) can be easily upgraded to OKF just by re-learning the parameters
+    — without adding a single line of code in inference time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/298fa1f9a83fa1a5598cb391a7dcc433.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary of our scope and contribution. Since the KF assumptions are often violated,
+    the KF must be optimized directly. (image from our paper)
+  prefs: []
+  type: TYPE_NORMAL

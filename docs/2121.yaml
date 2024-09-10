@@ -1,0 +1,284 @@
+- en: Modeling the World in a Deterministic Way with GEKKO
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/modeling-the-world-in-a-deterministic-way-with-gekko-6dc8edbe5842?source=collection_archive---------10-----------------------#2023-06-30](https://towardsdatascience.com/modeling-the-world-in-a-deterministic-way-with-gekko-6dc8edbe5842?source=collection_archive---------10-----------------------#2023-06-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/e02f772b89b2125635c6260decb0508e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Iván Díaz](https://unsplash.com/@ivvndiaz?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A soft guide to solving differential algebraic equations and applying dynamic
+    optimization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dkulikm?source=post_page-----6dc8edbe5842--------------------------------)[![Daniel
+    Kulik](../Images/f48c2034f1381c195d7798e99f30f8d7.png)](https://medium.com/@dkulikm?source=post_page-----6dc8edbe5842--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6dc8edbe5842--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6dc8edbe5842--------------------------------)
+    [Daniel Kulik](https://medium.com/@dkulikm?source=post_page-----6dc8edbe5842--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F39c64e2376b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-the-world-in-a-deterministic-way-with-gekko-6dc8edbe5842&user=Daniel+Kulik&userId=39c64e2376b3&source=post_page-39c64e2376b3----6dc8edbe5842---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6dc8edbe5842--------------------------------)
+    ·8 min read·Jun 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6dc8edbe5842&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-the-world-in-a-deterministic-way-with-gekko-6dc8edbe5842&user=Daniel+Kulik&userId=39c64e2376b3&source=-----6dc8edbe5842---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6dc8edbe5842&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-the-world-in-a-deterministic-way-with-gekko-6dc8edbe5842&source=-----6dc8edbe5842---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With our world becoming more and more digitized, data collection is expanding
+    rapidly. This data has allowed us to create more accurate models that have helped
+    us to solve problems and find optimized solutions in many fields of business and
+    technology. Since these models are built on real world data, which is stochastic
+    by nature, things such as randomness, noise, and anomalies within the datasets
+    are often inevitable. Much time is often spent doing EDA, data preprocessing,
+    and outlier detection. These methods have become commonplace to understand and
+    refine the data prior to fitting a model. However, any model built using such
+    data is always an approximate to the real solution. This is due to data again
+    being stochastic (Aleatoric uncertainty) and subject to many unknown influences
+    (Knightian uncertainty). Along with these, a lack of sufficient data or having
+    biased imbalanced datasets can further degrade a model’s accuracy (Epistemic uncertainty).
+    Even against these odds, models built in this manner are invaluable and the inherent
+    stochasticity can sometimes be a tool to help better understand the intricacies
+    of the real world. However… an alternative approach exists: enter deterministic
+    modeling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deterministic modeling is the antithesis to modeling with randomness. It is
+    a method to simplify certain aspects of the modeling process by removing the messiness
+    introduced by the real world. These models are idealistic in nature, meaning that
+    they represent an ideal solution based on specific assumptions. These assumptions
+    can stem from a set of opinionated, probabilistic, or generalized rules, and assumes
+    that a well-defined pattern exists between the inputs and outputs. While this
+    may sound similar to modeling with stochastic data, the main difference is that
+    the model now is determined by the these predefined assumptions rather than training
+    data. A question might now be popping into your head asking, “*well if I’m not
+    training the model on the data, where do I get these model assumptions from*?”.
+    The answer to this is quite simple yet sometimes overlooked, **domain knowledge.**
+    Domain knowledge is a set of rules and concepts known on a specific topic. It
+    is through domain knowledge that the assumptions are derived, serving as the foundation
+    for deterministic modeling. In any programming language these deterministic models
+    can be written using custom code, but as models become more complex, libraries
+    have been written to specifically tackle this task. In python one such library
+    called *GEKKO* will be explored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*GEKKO* is a Python library to facilitate the execution of the modeling language
+    Advanced process monitor (**APMonitor**). It offers a range of features and functions
+    tailored to the needs of deterministic modeling, facilitating the creation and
+    analysis of complex models. It can solve both mixed-integer and differential algebraic
+    equations, and is coupled with large-scale solvers for linear, quadratic, nonlinear,
+    and mixed integer programming. *GEKKO* has 9 problem types with which to define
+    a deterministic model setup. However, for this article, only a Moving Horizon
+    Estimation (**MHE**) that solves all equations simultaneously will be considered.
+    The MHE mode is used to estimate the states of a dynamic system by minimizing
+    the discrepancy between the measured outputs and the model predictions formulated
+    by an optimization problem with an objective. This is done by applying a recursive
+    estimation or a moving window estimation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whew! That was quite a lot a jargon, but it should all make sense soon with
+    the following practical example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Space flight is an incredible human achievement. The feat of sending something
+    man-made into space is a marvel of both engineering and ingenuity. But to send
+    something into space is pretty expensive. So, building rockets with confidence
+    of their ability to perform as expected is crucial. Collecting data of a real
+    live launch is great to help improve a future rocket’s performance. But a rocket
+    had to be launched before that to get the data, and therein lies the problem.
+    No stochastic data no stochastic based model. Enter the deterministic model and
+    *GEKKO*. The assumptions for a deterministic model of a rocket are quite simply,
+    you guessed it, rocket science! That is to say, that without even having to launch
+    a rocket one inch off the ground, we can instead use the laws of physics to determine
+    how a specific rocket setup will perform in an idealistic scenario. For example,
+    let’s replicate SpaceX’s Falcon 1 Stage 1 rocket setup using *GEKKO*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To start, let’s use publicly known information [1][2] for the Falcon 1 Stage
+    1 rocket setup and begin by defining some simulation constants and known values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we can really start with the cool stuff in *GEKKO*. Since we are working
+    with a temporal based simulation, let’s first define our time components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rocket flight time will be 200 seconds
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The fuel burn time is a known 161.6 seconds
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And an additional time component to use for later
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'With the time array setup, we can initialize a *GEKKO* model and set the model’s
+    time component. The next step is to define the variables that must be solved at
+    every time step. These variables are determined by the assumptions we will make
+    for our rocket, but they can also include variables that we might be interested
+    in evaluating at the end of the simulation. To keep it simple for this simulation
+    the variables are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mass
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Velocity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Force generated by thrust
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Additional dummy time variable to use for later
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For each of these variables we can give it a starting value, and also set lower
+    and upper bounds to constrain them. *GEKKO* variables are the most generic way
+    to define variables that we are interested in. However, there are actually quite
+    a few other options such as Fixed, Controlled, and Manipulated variables that
+    give the user much more control on how they are allowed to evolve. You should
+    [check them out](https://gekko.readthedocs.io/en/latest/quick_start.html)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we continue, it is important to note that for the sake of your reading
+    time and not to be too math heavy, this rocket model will neglect quite a few
+    known assumptions on rocket physics. These include, the change in air density
+    and gravity as the rockets ascends, the effects of the Coriolis force, and a good
+    many mechanical engineering components. However, with the assumptions that are
+    made, the main forces affecting a rocket’s flight and dynamics will be covered.
+    And now, it is probably a good time to introduce them as well as how simple it
+    is to apply them in *GEKKO*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As with any classical moving object, Newton’s laws of motion apply. This means
+    that we already have a good idea how this rocket is going to move. But let’s quickly
+    recap on the differential equations we will need to do this. Don’t worry they
+    are really simple. Let’s start with defining the equation for how the rocket will
+    move and cover distance,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bedc0d55a7d9c9a50cb5e83b48653083.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Wow! This one is basic physics, *the object’s velocity is simply a change in
+    distance over a change in time.* Next, lets add the resistive force that the rocket
+    will experience as it moves through the air, P.S it’s such a drag.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4f5ba1cf4d46ed4c4237567855b4324.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With that, we can now make another relationship between force and velocity.
+    Remember,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb55bea124989ccc81281d3b429b32da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Well, with this we can relate all the forces the rocket will experience (forward
+    thrust, drag, and of course gravity) with velocity. Here’s how,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46899dfc7aacd881f290759b0df73573.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I promise that was the hardest equation for this simulation. Only two more assumptions
+    will be made for our rocket before it takes off. One of them has to do with the
+    fuel in the rocket. If the rocket is burning up it’s fuel as a propellant, a good
+    idea then is to describe how the mass of the rocket must change. To do this, let’s
+    just say that the loss of mass has a linear relationship with the maximum thrust
+    and the burn time like this,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f0bbf29d2feca2245f29f0620759ee3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The final assumption is really what happens when the fuel is all used up. This
+    one is quite cool because it is a logical statement and *GEKKO* has something
+    for this too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With all this done, we can now put all the pieces together and build our deterministic
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that there are some extra things in the code above that were not mentioned.
+    First a dummy time equation was called, this is to keep track of the time for
+    when the fuel ends. Next, an optimization objective was used. Why was this done?
+    Well, the MHE solves for an objective, in this case to try have the rocket reach
+    the greatest height from the ground at every time step. You can try other objective
+    functions based on what you want to optimize for (e.g., give m.fix_final(h, 50e3)
+    and then m.Obj(thrust*v) a whirl to try and be thrifty with your rocket juice).
+    One last thing is that *GEKKO* will print out whether the simulation was able
+    to find an optimal solution or not. For this simulation, you will see that we
+    actually had negative degrees of freedom. This is a quirk of using m.if3 and this
+    can usually cause the simulation to not solve. So, if you want to try something
+    more elaborate, perhaps stick with m.if2 instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, it's time to see the fruits of our simulation. To get a good and quick
+    look at what the simulation solved, plotting the results is a great way to visualize
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ffbc72ea273566c679249ef1875e408a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Analyzing the rocket’s performance provides some interesting insights. Firstly,
+    it achieved in reaching a maximum height of 73.83 km and maximum speed of 802.15
+    m/s. Secondly, the rocket had an average thrust of 322.68 kN while burning through
+    a whopping 19.59 GJ of energy during its flight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results offer us crucial information about the rocket’s capabilities and
+    performance even before building said rocket. Even better, the parameters can
+    easily be adjusted and fine-tuned along with increasingly added complexity to
+    truly showcase the incredible potential deterministic modeling brings to the table.
+    With all this information available, such knowledge can be further used to aid
+    engineers in design optimizations and help budget for such costly projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While rockets are cool and all, more realistic applications of deterministic
+    modeling include optimizations of many different types of systems. Examples of
+    such systems are: the processing line at a manufacturing plant, traffic control
+    and route planning, simulating the complex spread of infections and diseases,
+    modeling climate changes and their effects, and even using deterministic-based
+    game theory models in finance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To wrap up, deterministic modeling is a great option to find solutions for idealistic
+    scenarios that can be well-described by domain knowledge. They can be used to
+    model complex non-linear systems and provided strong predictive and probabilistic
+    outcomes prior to real world data availability. All in all, deterministic modeling
+    is a powerful tool for those who wish to master it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Propulsion Falcon-I([http://www.b14643.de/Spacerockets_2/United_States_2/Falcon-I/Propulsion/engines.htm](http://www.b14643.de/Spacerockets_2/United_States_2/Falcon-I/Propulsion/engines.htm))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Falcon 1 ([https://en.wikipedia.org/wiki/Falcon_1](https://en.wikipedia.org/wiki/Falcon_1))'
+  prefs: []
+  type: TYPE_NORMAL

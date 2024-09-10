@@ -1,0 +1,394 @@
+- en: Multi-Armed Bandits Applied to Order Allocation among Execution Algorithms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/multi-armed-bandits-applied-to-order-allocation-among-execution-algorithms-fff21dedc927?source=collection_archive---------10-----------------------#2023-03-02](https://towardsdatascience.com/multi-armed-bandits-applied-to-order-allocation-among-execution-algorithms-fff21dedc927?source=collection_archive---------10-----------------------#2023-03-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Finding the right balance between exploitation and exploration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@larsterbraak?source=post_page-----fff21dedc927--------------------------------)[![Lars
+    ter Braak](../Images/79a2bbfbe8706c2451826049e3e2d8e7.png)](https://medium.com/@larsterbraak?source=post_page-----fff21dedc927--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fff21dedc927--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fff21dedc927--------------------------------)
+    [Lars ter Braak](https://medium.com/@larsterbraak?source=post_page-----fff21dedc927--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff1d3961756e7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-armed-bandits-applied-to-order-allocation-among-execution-algorithms-fff21dedc927&user=Lars+ter+Braak&userId=f1d3961756e7&source=post_page-f1d3961756e7----fff21dedc927---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fff21dedc927--------------------------------)
+    ·6 min read·Mar 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffff21dedc927&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-armed-bandits-applied-to-order-allocation-among-execution-algorithms-fff21dedc927&user=Lars+ter+Braak&userId=f1d3961756e7&source=-----fff21dedc927---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffff21dedc927&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-armed-bandits-applied-to-order-allocation-among-execution-algorithms-fff21dedc927&source=-----fff21dedc927---------------------bookmark_footer-----------)![](../Images/4aa78a1ebd02691dc382392a434cb265.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Confused robot observing three one-armed slot machines in Picasso style. Source:
+    DALL-E 2.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making decisions under uncertainty is a common challenge faced by professionals
+    in various fields, including data science and asset management. Asset managers
+    face this problem when selecting among multiple execution algorithms to carry
+    out their trades. The allocation of orders among algorithms resembles the multi-armed
+    bandit problem that gamblers face when deciding which slot machines to play, as
+    they must determine the number of times to play each machine, the order in which
+    to play them, and whether to continue with the current machine or switch to another.
+    In this article, we describe how an asset manager can best distribute orders among
+    available algorithms based on realized execution cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dummy example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For each order, we take an action *a* to allocate to one of *K* algorithms
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/604ac3185d674ae9b4d86f32aae31c91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 1: Set of possible actions to allocate an order to one of K algorithms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The value of action *a* is the expected execution cost for the algorithm
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81fdf713fc23730a0ac9ab393150107d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 2: (Unobserved) expected execution cost for action a, i.e. choosing a certain
+    algorithm.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose that *K = 3* and the expected execution cost for the algorithms are
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/082e972322dab17604114dadcd127ea0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 3: (Unobserved) expected execution cost for three algorithms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you would know the action values a priori, it would be trivial to solve the
+    problem. You would always select the algorithm with the lowest expected execution
+    cost. Suppose now that we start allocating orders among the three algorithms as
+    shown in Figure 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99b76e27a17b4638bba7a8db92b5de80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Example of order allocation among three algorithms and associated
+    execution cost. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We still do not know the action values with certainty, but we do have estimates
+    after some time *t*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b59cc23f6af13e112a07e1993daa40a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 4: (Observed) expected execution cost for action a conditional on the information
+    up until time t.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can for instance construct the empirical distribution of the execution cost¹
+    for each algorithm, as shown in Figure 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cfc1fbe77b98e44fae885343d3740419.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Empirical distribution of execution cost per algorithm after some
+    time t. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Allocating all orders to the algorithm with the lowest expected execution cost
+    may appear to be the best approach. However, doing so would prevent us from gathering
+    information on the performance of the other algorithms. This illustrates the classical
+    multi-armed bandit dilemma:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploit the information that has already been learned
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Explore to learn which actions give the best outcomes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The objective is to **minimize the average execution cost** after allocating
+    *N* orders:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42a442d21839f39b066048d565246519.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 5: Objective function for order allocation problem.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solving the problem using policies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To solve the problem, we need an action selection policy that tells us how to
+    allocate each order based on current information *S.* We can define a policy as
+    a map from *S* to *a:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6e38cf7191513324dc8acd814c6a6ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 6: Definition of an action selection policy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We discuss the most well known policies² for the multi-armed bandit problem,
+    which can be classified in the following categories:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Semi-uniform strategies:** *Greedy &* *ε-greedy*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Probability matching strategies:** *Upper-Confidence-Bound & Thompson sampling*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Greedy*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The *greedy approach* allocates all orders to the action with the lowest estimated
+    value. This policy always exploits current knowledge to maximize immediate reward:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91851e1c2265209712ca67b5f37fd516.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 7: Action selection policy for greedy approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ϵ-Greedy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The *ε-greedy approach* behaves greedily most of the time but with probability
+    *ε* selects randomly among the suboptimal actions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d97e34f46b3fc27bed27c9430a6c8394.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 8: Action selection policy for ϵ-greedy approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An advantage of this policy is that it converges to the optimal action in the
+    limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Upper-Confidence-Bound
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The *Upper-Confidence-Bound (UCB) approach* selects the action with the lowest
+    action value *minus* a term that is inversely proportional to the number of times
+    the trading algorithm is used, i.e. *Nt(a)*. The approach thus selects among the
+    non-greedy actions according to their potential for actually being optimal and
+    the associated uncertainties in those estimates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/302f652ce4b8def7b38188decddadaff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 9: Action selection policy for Upper-Confidence-Bound (UCB) approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thompson Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The *Thompson Sampling approach,* as proposed by Thompson (1933), assumes a
+    known initial distribution over the action values and updates the distribution
+    after each order allocation³. The approach selects actions according to their
+    posterior probability of being the best action:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b51308774601572de67352cfe760f88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 10: Action selection policy for Thompson sampling approach.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating policies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In practice, policies are commonly evaluated on *regret* which is the deviation
+    from the optimal solution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/01a002b041e58e03fd373b02962bb370.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 11: Definition of regret as a function of a sequence of actions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where *μ** is the minimal execution cost mean:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4d3cd7291df6ad7f70777c3bd3a37b0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 12: Expected execution cost for choosing the optimal action.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Actions are a direct consequence of the policy, and we can therefore also define
+    regret as a function of the chosen policy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9aa74ffc6a17bd11d09b049e5d37e3d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Eq. 13: Definition of regret as a function of an action selection policy π.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Figure 3, we simulate the regret for the aforementioned policies in the dummy
+    example. We observe that the *Upper-Confidence-Bound approach* and *Thompson sampling
+    approach* perform best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/502478bbb0858eae530f379beb661fd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Simulated regret for different action selection policies for dummy
+    order allocation problem. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Allocating orders? Embrace uncertainty!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The dummy example simulation results strongly indicate that relying solely on
+    a *greedy approach* may not yield optimal outcomes. It is, therefore, crucial
+    to incorporate and measure the uncertainty in the execution cost estimates when
+    developing an order allocation strategy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Footnotes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ¹ To ensure comparability of the empirical distribution of the execution cost,
+    we need to either allocate similar orders or use order-agnostic cost metrics for
+    evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ² In situation where an algorithm’s execution cost are dependent on the order
+    characteristics, contextual bandits are a more suitable option. To learn more
+    about this approach, we recommend Chapter 2.9 in Barto & Sutton (2018) for an
+    introduction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ³ We strongly suggest Russo et al. (2018) as an outstanding resource to learn
+    about Thompson sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional resources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following tutorials / lectures were personally very helpful for my understanding
+    of multi-armed bandit problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Industry
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Research Scientist Robert Schapire @ [Microsoft](https://www.youtube.com/watch?v=N5x48g2sp8M&ab_channel=SimonsInstitute)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Research Scientist Hado van Hasselt @ [Deepmind](https://www.youtube.com/watch?v=TCCjZe0y4Qc&ab_channel=DeepMind)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Academia**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Assistant Professor Christina Lee Yu @ [Cornell](https://www.youtube.com/watch?v=w1pRb8SGdcw&t=446s&ab_channel=SimonsInstitute)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Assistant Professor Emma Brunskill @ [MIT](https://www.youtube.com/watch?v=FgzM3zpZ55o&list=PLoROMvodv4rOSOPzutgyCTapiGlY2Nd8u&ab_channel=StanfordOnline)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Sutton, R. S., & Barto, A. G. (2018). Reinforcement learning: An introduction.
+    *MIT press*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Russo, D. J., Van Roy, B., Kazerouni, A., Osband, I., & Wen, Z. (2018).
+    A tutorial on Thompson sampling. *Foundations and Trends® in Machine Learning*,
+    *11*(1), 1–96.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Thompson, W. 1933\. On the likelihood that one unknown probability exceeds
+    another in view of the evidence of two samples. *Biometrika*. 25(3/4): 285–294.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Thompson, W. R. 1935\. On the theory of apportionment. *American Journal
+    of Mathematics*. 57(2): 450–456.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Eckles, D. and M. Kaptein. 2014\. Thompson sampling with the online bootstrap.
+    *arXiv preprint arXiv:1410.4009*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you’re keen on reading more, see a selection of my articles below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@larsterbraak/cost-decomposition-for-a-vwap-execution-algorithm-buy-side-perspective-1126f9eebf40?source=post_page-----fff21dedc927--------------------------------)
+    [## Cost decomposition for a VWAP execution algorithm: Buy-side perspective.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear cost decomposition for VWAP execution algorithm that allows for faster
+    and more granular algorithmic trading…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'medium.com](https://medium.com/@larsterbraak/cost-decomposition-for-a-vwap-execution-algorithm-buy-side-perspective-1126f9eebf40?source=post_page-----fff21dedc927--------------------------------)
+    [](/introduction-to-probabilistic-classification-a-machine-learning-perspective-b4776b469453?source=post_page-----fff21dedc927--------------------------------)
+    [## Introduction to Probabilistic Classification: A Machine Learning Perspective'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Guide to go from predicting labels to predicting probabilities
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/introduction-to-probabilistic-classification-a-machine-learning-perspective-b4776b469453?source=post_page-----fff21dedc927--------------------------------)
+    [](https://medium.com/@larsterbraak/beyond-traditional-return-modelling-embracing-thick-tails-67f457dfbf6b?source=post_page-----fff21dedc927--------------------------------)
+    [## Beyond traditional asset return modelling: Embracing thick tails.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Guide to statistical inference for preasymptotics.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@larsterbraak/beyond-traditional-return-modelling-embracing-thick-tails-67f457dfbf6b?source=post_page-----fff21dedc927--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

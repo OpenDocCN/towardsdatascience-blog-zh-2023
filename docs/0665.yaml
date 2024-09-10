@@ -1,0 +1,553 @@
+- en: Inference for Distributional Random Forests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/inference-for-distributional-random-forests-64610bbb3927?source=collection_archive---------10-----------------------#2023-02-17](https://towardsdatascience.com/inference-for-distributional-random-forests-64610bbb3927?source=collection_archive---------10-----------------------#2023-02-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Confidence intervals for a powerful nonparametric method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jeffrey_85949?source=post_page-----64610bbb3927--------------------------------)[![Jeffrey
+    Näf](../Images/0ce6db85501192cdebeeb910eb81a688.png)](https://medium.com/@jeffrey_85949?source=post_page-----64610bbb3927--------------------------------)[](https://towardsdatascience.com/?source=post_page-----64610bbb3927--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----64610bbb3927--------------------------------)
+    [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----64610bbb3927--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finference-for-distributional-random-forests-64610bbb3927&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----64610bbb3927---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----64610bbb3927--------------------------------)
+    ·17 min read·Feb 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F64610bbb3927&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finference-for-distributional-random-forests-64610bbb3927&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----64610bbb3927---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F64610bbb3927&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finference-for-distributional-random-forests-64610bbb3927&source=-----64610bbb3927---------------------bookmark_footer-----------)![](../Images/a83708db984a87353847003d7999656b.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Features of (Distributional) Random Forests. In this article: The ability to
+    provide uncertainty measures. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a previous [article](/drf-a-random-forest-for-almost-everything-625fa5c3bcb8),
+    I extensively discussed the Distributional Random Forest method, a Random Forest-type
+    algorithm that can nonparametrically estimate multivariate conditional distributions.
+    This means that we are able to learn the whole distribution of a multivariate
+    response ***Y*** given some covariates ***X*** nonparametrically, instead of “just”
+    learning an aspect such as its conditional expectation. DRF does this by learning
+    weights *w_i(****x****)* for the *i=1,…,n* training points that define the distribution
+    and can be used to estimate a wide range of targets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far this method only produced a “point estimate” of the distribution (i.e.
+    a point estimate for the *n* weights *w_i(****x****)*). While this is enough to
+    predict the whole distribution of a response, it doesn’t give a way to make inference
+    that considers the randomness of the data-generating mechanism. That is, even
+    though this point estimate gets increasingly close to the truth for large sample
+    sizes (under a list of assumptions), there is still uncertainty in its estimate
+    for finite sample sizes. Luckily there is now a (provable) method to quantify
+    this uncertainty as I lay out in this article. This is based on our new paper
+    on [arXiv](https://arxiv.org/pdf/2302.05761.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The goal of this article is twofold: First, I want to discuss how to add uncertainty
+    estimates to the DRF, based on our paper. The paper is quite theoretical, so I
+    start with a few examples. The subsequent sections take a quick glance at these
+    theoretical results, for those interested. I then explain how this can be used
+    to get a (sampling-based) uncertainty measure for a wide range of targets. Second,
+    I discuss the CoDiTE of [1] and a particularly interesting example of this concept,
+    the conditional witness function. This function is a complicated object, yet,
+    as we will see below, we can estimate it easily with DRF and can even provide
+    asymptotic confidence bands, based on the concepts introduced in this article.
+    An extensive real-data example of how this could be applied is given in [this
+    article](https://medium.com/@jeffrey_85949/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout we assume to have a *d*-variate i.i.d. sample ***Y****_1, …,* ***Y****_n*
+    of variables of interest and a *p*-variate i.i.d. sample ***X****_1,…,****X****_n*
+    of covariates. The goal is to estimate the conditional distribution of ***Y****|****X=x***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will need the following packages and functions for this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The functions in the file “CIdrf.R” can be found below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following, all images, unless otherwise noted, are by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We simulate from a simple example with *d=1* and *p=2*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that this is simply a heteroskedastic linear model, with the variance of
+    the error term depending on the *X_1* values. Of course, knowing the effect of
+    ***X*** on *Y* is just linear, you would not use DRF, or any Random Forest for
+    that matter, but directly go with linear regression. But for this purpose, it
+    is convenient to know the truth. Since DRF’s job is to estimate a conditional
+    distribution given ***X****=****x***, we now fix***x*** and estimate the conditional
+    expectation and variance given ***X****=****x.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: We choose a point that is right in the center of the ***X*** distribution, with
+    lots of observations surrounding it. In general, one should be careful when using
+    any Random Forest method for points on the border of the ***X*** observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we fit our DRF and obtain the weights *w_i(****x****)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: As explained below, the DRF object we built here not only contains the weights
+    *w_i(****x****)*, but also a sample of *B* weights that correspond to draws from
+    the distribution of *w_i(****x****)*. We can use these *B* draws to approximate
+    the distribution of anything we want to estimate, as I illustrate now in two examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example 1: Conditional Expectation**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, we simply do what most prediction methods do: We estimate the conditional
+    expectation. With our new method, we also build a confidence interval around it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Importantly, though the estimated value is a bit off, this CI contains the truth,
+    which is given as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52ee2c7bbc6815322309981bda7f19fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Example 2: Conditional Variance**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Assume now we would like to find the variance Var(Y|**X**=**x**) instead of
+    the conditional mean. This is quite a challenging example for a nonparametric
+    method that cannot make use of the linearity. The truth is given as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2db80f11b107106d566d7dcc249eae5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Using DRF, we can estimate this as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Thus the true parameter is contained in the CI, as we would hope, and in fact,
+    we are quite close to the truth with our estimate!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now study the theory underlying these examples, before we come to a third
+    example in Causal Analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Asymptotic Normality in the RKHS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this and the next section, we briefly focus on the theoretical results derived
+    in the paper. As explained above and in the article, DRF presents a distributional
+    prediction at a test point **x**. That is, we obtain an estimate
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ef4a0a592b625a61439725d7f4146eca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: of the conditional distribution of ***Y*** given ***X****=****x***. This is
+    just a typical way of writing an empirical measure, the magic lies in the weights
+    *w_i(****x****)* — they can be used to easily obtain estimators of quantities
+    of interest, or even to sample directly from the distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To obtain this estimate, DRF actually estimates the conditional mean, but in
+    a reproducing kernel Hilbert space (RKHS). An RKHS is defined through a kernel
+    function *k(****y****_1,* ***y****_2)*. With this kernel, we can map each observation
+    ***Y****_i* into the Hilbert space, as *k(****Y****_i, .)*. There is a myriad
+    of methods using this extremely powerful tool, such as kernel ridge regression.
+    The key point is that under some conditions, any distribution can be expressed
+    as an element of this RKHS. It turns out that the true conditional distribution
+    can be represented in the RKHS as the following expectation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bd156eb31d44300738e13e547b07d8d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So this is just another way of expressing the conditional distribution of ***Y***
+    given ***X****=****x***. We then try to estimate this element with DRF like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1cb7f9837a62a83ca4fb45179088ebf7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again we are using the weights obtained from DRF, but now form a weighted sum
+    with *k(****Y****_i,.)* instead of the Dirac measures above. We can map back and
+    forth between the two estimates by writing either of the two. The reason this
+    matters is that we can write the conditional distribution estimate as a weighted
+    mean in the RKHS! Just as the original Random Forest estimates a mean in the real
+    numbers (the conditional expectation of *Y* given ***X****=****x***), DRF estimates
+    a mean in the RKHS. Only with the latter, it turns out we also obtain an estimate
+    of the conditional distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason this is important for our story is that this weighted mean in the
+    RKHS behaves quite similarly in some regards to a (weighted) mean in *d* dimensions.
+    That is, we can study its consistency and asymptotic normality using the myriad
+    of tools that are available for averages. This is quite remarkable, as all interesting
+    RKHS will be infinite-dimensional. The [first DRF paper](https://www.jmlr.org/papers/v23/21-0585.html)
+    already establishes consistency of the estimator in (1) in the RKHS. Our new paper
+    now proves that, in addition,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/beb966c92670eb9ee62fecb884bf5abb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where sigma_n is a standard deviation that goes to zero and ***Sigma****_****x***
+    is an operator that takes the place of a covariance matrix (again it all works
+    quite similarly as in *d*-dimensional Euclidean space).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obtaining the sampling distribution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ok so, we have an asymptotic normality result in an infinite-dimensional space,
+    what exactly does that mean? Well first, it means estimators derived from the
+    DRF estimate that are “smooth’’ enough will also tend to be asymptotically normal.
+    But this alone is still not useful, as we also need to have a variance estimate.
+    Here a further result in our paper comes into play.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We leave away a lot of details here, but essentially we can use the following
+    subsample scheme: Instead of just fitting say *N* trees to build our forest, we
+    build *B* groups of *L* trees (such that *N=B*L*). Now for each group of trees
+    or mini forests, we subsample at random about half of the data points and then
+    fit the forest using only this subsample. Let’s call this subset of samples chosen
+    *S*. For each drawn *S* we then get another DRF estimator in the Hilbert space
+    denoted'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c96b09934e8fd69d152821605f9250f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: only using the samples in *S*. Note that, as in bootstrapping, we now have two
+    sources of randomness, even disregarding the randomness of the forest (in theory
+    we assume *B* to be so large, as to make the randomness of the forest(s) negligible).
+    One source from the data themselves and another artificial source of randomness,
+    we introduce when choosing *S* at random. Crucially the randomness from *S*, given
+    the data, is in our control — we can draw as many subsets *S* as we want. So the
+    question is, what happens with our estimator in (2) if we only consider the randomness
+    of *S* and fix the data? Remarkably, we can show that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a5d0db02cd4a1152ab28bbfa2d32eb0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This just means that if we fix the randomness of the data and only consider
+    the randomness from *S*, the estimator (2) minus the estimator in (1) will converge
+    in distribution to the same limit as the original estimator minus the truth! This
+    is actually how bootstrap theory works: We have shown that something we can sample
+    from, namely'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/284228a4f892f49794336481ce31ae76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: converges to the same limit as what we cannot access, namely
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/84b2fe390815c3b56f196fde0bf1bf82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So to make inference about the latter, we can use the former! This is actually
+    the standard argument people make in bootstrap theory to justify why the bootstrap
+    can be used to approximate the sampling distribution! That’s right, even bootstrap,
+    a technique that people often use in small samples, only really makes sense (theoretically)
+    in a large sample regime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use this now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does this actually mean?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now show what this means in practice. In the following, we define two new
+    functions derived from the drf function of the CRAN package [drf](https://cran.r-project.org/web/packages/drf/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: So from our method, we not only get the point estimate in form of weights *w_i(****x****)*,
+    but a sample of *B* weights, each representing an independent draw from the distribution
+    of the estimator of the conditional distribution (that sounds more confusing than
+    it should be, please keep the examples in mind). This just means we are not only
+    having an estimator, but also an approximation to its distribution!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I now turn to a more interesting example of something we can only do with DRF
+    (as far as I know).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Causal Analysis Example: Witness Function**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s assume we have two sets of observations, say group *W=1* and group *W=0*
+    and we want to find the causal relationship between the group belonging and a
+    variable *Y*. In the example of [*this article*](https://medium.com/@jeffrey_85949/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0),
+    the two groups would be male and female and *Y* would be the hourly wage. In addition,
+    we have confounders ***X***, which we assume affect both *W* and *Y*. We assume
+    here that ***X*** really includes all relevant confounders. This is a BIG assumption.
+    Formally, we assume unconfoundedness:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41019dc0794c12529c1e97f67d558a3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'and overlap:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2628db016d7b856e7d35b9b4262ae61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Often people then compare the conditional expectation between the two groups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f68a21df53759761756554f6e747085c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the Conditional Average Treatment Effect (CATE) at ***x***. This is
+    a natural first starting point, but in a recent paper ([1]), the CoDiTE was introduced
+    as a generalization of this idea. Instead of just looking at the difference in
+    expected values the CoDiTE proposes to look at differences in other quantities
+    as well. A particularly interesting example of this idea is the *conditional witness
+    function:* For both groups, we take as above
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/afdd6de7c361390ea2305e8804c7bbb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So we consider the representation of the two conditional distributions in the
+    RKHS. In addition to being representations of the conditional distributions, these
+    quantities are also real-valued functions: For *j=0,1*,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98b487eeaf5072792c5c007b3fd822b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The function that gives the difference between those two quantities,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b42cf61f8df2f6f91847f49944db0f41.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: is called the *conditional witness function*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why is this function interesting? It turns out that this function shows how
+    the two densities behave in relation to each other: For values of *y* for which
+    the function is negative, the conditional density of class 1 at *y* is smaller
+    than the conditional density of 0\. Similarly, if the function is positive at
+    *y*, it means the density of 1 is higher at *y* than the conditional density of
+    0 (whereby “conditional” always refers to conditioning on ***X****=****x***).
+    Crucially, this can be done *without having to estimate the densities*, which
+    is hard, especially for multivariate ***Y***.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we can provide *uniform confidence bands* for our estimated conditional
+    witness functions, by using the *B* samples from above. I do not go into details
+    here, but these are essentially the analog to the confidence intervals for the
+    conditional mean we used above. Crucially, these bands should be valid uniformly
+    over the function values *y*, for one specific ***x***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s illustrate this with an example: We simulate the following data-generating
+    process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d50fab95d19e8b586d478f249897a0d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'That is, *X_1, X_2* are independently uniformly distributed on (0,1), *W* is
+    either 0 or 1, with a probability depending on *X_2* and *Y* is a function of
+    *W* and *X_1*. This is a really hard problem; not only does ***X*** influence
+    the probability of belonging to class 1 (i.e. the propensity), it also changes
+    the treatment effect of *W* on *Y*. In fact, a small calculation shows that the
+    CATE is given as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (1 - 0.2)*X_1 - (0 - 0.2)*X_1 = X_1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c54d252b2f10464351b4cdbfbd3d16f6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Graph corresponding to the data-generating process
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We now randomly choose a test point ***x*** and use the following code to estimate
+    the witness function plus confidence band:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8e33cecd895b14726387eef7739c5687.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We can read from this plot that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (1) The conditional density of group 1 is *lower* than the density of group
+    0 for values of *y* between -3 and 0.3\. Moreover, this difference gets larger
+    the larger *y* is until about *y = -1*, after which point the difference in densities
+    starts to decrease again until the two densities are the same at around 0.3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (2) Symmetrically, the density of group 1 is higher than the density of group
+    0 for values of *y* between 0.3 and 3 and this difference gets larger until it
+    reaches a maximum at about *y = 1.5*. After this point, the difference decreases
+    until it is almost zero again at *y = 3*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (3) The difference between the two densities is statistically significant at
+    the 95% percent level, as can be seen from the fact that for *y* approximately
+    between -1.5 and -0.5 and between 1 and 2, the asymptotic confidence bands do
+    not include the zero line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s check (1) and (2) for the simulated true conditional densities. That
+    is, we simulate the truth a great number of times:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This leads to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d07cca78bc95a50ec272a3d9684e9e03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is a bit hard to compare visually, but we see that the two densities behave
+    quite close to what the witness function above predicted. In particular, we see
+    that the densities are about the same around 0.3 and the difference in densities
+    appears to be maximal approximately around -1 and 1.5\. Thus both points (1) and
+    (2) can be seen in the actual densities!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Moreover, to get (3) into context, a repeated simulation in the paper shows
+    how the estimated witness function tends to look when no effect is visible:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b78fb42e38b3246856be32072c56a1b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simulation of a 1000 witness functions in a similar setting as described here.
+    In blue are the 1000 estimated witness functions, while in grey one can see the
+    corresponding confidence bands. Taken from our paper on arXiv. There is no effect
+    in this example, and 99% of CIs do not contain the zero line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A real data example in Causal Inference is given in [this article](https://medium.com/p/ec4c2a69abf0/edit).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, I discussed the new inferential tools available for Distributional
+    Random Forests. I also looked at an important application of these new capabilities;
+    estimating the conditional witness function with uniform confidence bands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, I also want to offer a few words of warning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results are only valid for a given test point ***x***
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The results are only valid asymptotically
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The current code is much much slower than it could be
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The first point is actually not so bad, in simulations, the asymptotic normality
+    often also holds over a range of **x**. *Just be careful with test points that
+    are close to the boundary of your sample!* Intuitively, DRF (and all other nearest
+    neighborhood methods) need many sample points around the test point ***x*** to
+    estimate the response for ***x***. So if the covariates *X* in your training set
+    are standard normal, with most points between -2 and 2, then predicting an *x*
+    in [-1,1] should be no problem. But if your *x* reaches -2 or 2, performance starts
+    to deteriorate fast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Forests (and nearest neighbourhood methods in general) are not good at
+    predicting for points that only have a few neighbours in the training set, such
+    as points at the boundary of the support of ***X***.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The second point is also quite important. Asymptotic results have fallen somewhat
+    out of fashion in contemporary research, in favor of finite sample results that
+    in turn require assumptions such as “sub-Gaussianity”. I personally find this
+    a bit ridiculous, asymptotic results provide extremely powerful approximations
+    in complicated settings like these. And in fact, this approximation is pretty
+    accurate for many targets for more than 1000 or 2000 data points (maybe you have
+    92% coverage instead of 95% for your conditional mean/quantile). However, the
+    witness function we introduced is a complicated object, and thus the more data
+    points you have to estimate the uncertainty bands around it, the better!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally point three is just a shortcoming on our side: While DRF itself is
+    efficiently written in C, estimating the uncertainty with *S* is entirely based
+    in R for the moment. Fixing this would provide an extreme speed-up to the code.
+    We hope to be able to fix this in the future.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Citations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] Junhyung Park, Uri Shalit, Bernhard Schölkopf, and Krikamol Muandet. “Conditional
+    distributional treatment effect with kernel conditional mean embeddings and U-statistic
+    regression.” In Proceedings of 38th International Conference on Machine Learning
+    (ICML) , volume 139, pages 8401–8412\. PMLR, July 2021.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,417 @@
+- en: Hacking MySQL’s JSON_ARRAYAGG Function to Create Dynamic, Multi-Value Dimensions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25](https://towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Making up for one of MySQL’s lesser-known shortcomings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)[![Dakota
+    Smith](../Images/df345239ca070910365d2b6c7fb3e5e7.png)](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)
+    [Dakota Smith](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcadf2cebe12&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=post_page-dcadf2cebe12----211074115d28---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)
+    ·9 min read·Jul 25, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=-----211074115d28---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&source=-----211074115d28---------------------bookmark_footer-----------)![](../Images/fe765b373fc96e7eb057ae81d622a993.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Azamat E](https://unsplash.com/fr/@esen_aza?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral). Thanks,
+    Azamat!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s imagine that we’re members on the Data team at a subscription box company.
+    In a MySQL database, transaction records of purchases are written to table named
+    `subscriptions`. Metadata excluded, the table contains a `customer_id` and `subscription`
+    field, and looks something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c82c2a747ec45b2f33645f1c8853035.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The subscriptions table. (Note: All images, unless otherwise noted, are by
+    the author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note that in this example scenario, a customer can have multiple subscriptions.
+    The uniqueness of each record is in defined by both the customer ID and a subscription,
+    i.e., no customer can have the same subscription twice. If you want to load this
+    test data into your own database, you can find the code to do so* [*here*](https://github.com/dakotaleesmith/pyProjects/blob/main/tutorials/mysql_json_arrayagg_tutorial/create_table.sql)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a subscription box company, our goal is to sell more subscription boxes.
+    To that end, the Product team recently pointed out that all of our current customers
+    have more than one subscription. They’re curious what this says about customer
+    behavior. They ask our team for a data model showing combinations of subscriptions
+    purchased by user, as well as which combinations are most common.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Marketing team has also showed interested in this model. They believe the
+    results might be useful for marketing bundled product promotions, profiling customers,
+    and targeting email campaigns. For these same reasons, they’re also asking to
+    see the most common total *number* of subscriptions purchased by each customer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In short, the requested data model hopes to answer some important questions
+    that’ll ideally end in higher subscription box sales. The question is, how exactly
+    should we execute it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’re going to tackle a unique data modeling challenge by making
+    up for one of MySQL’s lesser-known shortcomings. We’re going to go over qualitative
+    aggregation, the JSON data type, and how to force MySQL to order a list of values
+    in a way that produces distinct, multi-value dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Aggregations as Dimensions](#0c85)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[A brief overview of the JSON datatype in MySQL](#3a1b)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[JSON_ARRAYAGG](#5b60)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Using ROW_NUMBER to force the ordering of values](#0793)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[To recap](#c0e9)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Aggregations as Dimensions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Conceptually, what we need to do is relatively simple: We need to bundle (group)
+    our subscriptions by customer. Then we need to take a look at these bundles and
+    see which are the most common and how many subscriptions are in them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In data modeling terms, we’re looking at some form of aggregation: specifically,
+    aggregating subscriptions by customer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s normal to think of aggregate functions in the quantitative sense (`SUM`,
+    `COUNT`, etc.), and this is largely because this is what most aggregate functions
+    do in SQL. But we can also aggregate concatenated string values into longer, list-like
+    strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The challenge with this though is lies in accessing, manipulating, or otherwise
+    evaluating the values within these concatenated strings. MySQL is going to treat
+    the value `foo, bar, hello, world` not as a list, but as text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is this relevant? Primarily because in our hypothetical scenario, we want
+    to count the number of subscriptions in each combination. We don’t want a long
+    comma-delimited string, we want something more truly list-like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solving this in Python would be simple—using pandas, maybe polars, or even just
+    Python-native data structures. But there are many cases where this isn’t an option.
+    Maybe the Data team is a strictly dbt-only shop; or, perhaps more commonplace,
+    you work at a company where the IT department has local environments severely
+    locked down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Whatever the case, if you have only SQL at your disposal, you need a solution
+    that will provide you the most readable code and the most flexible results. Achieving
+    this is not intuitive. For example, my first instinct when encountering this problem
+    was to use `GROUP_CONCAT`, the function that concatenates strings according to
+    your defined grouping:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a6f7a07836f586894a21825cbb0eb247.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the aggregation *worked*, technically, but it didn’t work along
+    the lines of our business logic. See the first and last rows. The subscriptions
+    combination of “international_snacks, self_care” is the same combination as “self_care,
+    international_snacks”. (The same is true of the 2nd and 4th rows.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use an `ORDER BY` clause within `GROUP_CONCAT` to solve this particular
+    issue:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d600ce04441f86029ced24389ca10d45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this still leaves up with the problem of counting how many subscriptions
+    are in each combination.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a way to do it. But not only is it needlessly complex and not very
+    readable, in my opinion, but it also comes with some not-so-obvious pitfalls.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A quick search on how to count the number of values in a comma-delimited string
+    in MySQL turns up a [solution](https://stackoverflow.com/a/7020024/16018746) from
+    StackOverflow that, translated for our purposes, amounts to this (`subscriptions_grouped`
+    CTE excluded):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which is essentially counting the number of commas and then adding 1 to the
+    result. This works. But not only is this answer difficult to understand at a glance,
+    it also introduces a potential mistake: the `LENGTH` and `CHAR_LENGTH` function
+    [don’t count the same thing](https://stackoverflow.com/a/1734340/16018746).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can probably guess, this article details obstacles I ran into at work
+    when I found myself in a similar situation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ultimately, the solution was in a somewhat hack-y, but remarkably comprehensible,
+    workaround using the native MySQL JSON data type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A brief overview of the JSON data type in MySQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The JSON data type in MySQL was added in version 5.7.8, and provides a lot of
+    useful utility for both storage and modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Under the JSON data type umbrella (officially called “JSON documents”) are
+    two different data structures: JSON arrays and JSON objects.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A JSON array can simply be thought of as an array (a list, if you’re a Pythonista):
+    values enclosed by square brackets `[ ]` and separated by commas.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An example MySQL JSON array value: `[“foo”, “bar”, 1, 2]`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A JSON object can be thought of as a hash table (or, again in Python terms,
+    a dictionary): key-value pairs, separated by commas, and enclosed by curly brackets
+    `{ }`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An example of a MySQL JSON object value: `{“foo”: “bar”, 1: 2}`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[MySQL has a number of functions that can be used to deal with both of these
+    formats](https://dev.mysql.com/doc/refman/5.7/en/json-function-reference.html)—almost
+    none of which perform any sort of aggregation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thankfully, though, there are two that do. And they both return JSON documents,
+    which means we can use MySQL’s built-in functions to access the values therein.
+  prefs: []
+  type: TYPE_NORMAL
+- en: JSON_ARRAYAGG
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The MySQL function `JSON_ARRAYAGG` acts a lot like `GROUP_CONCAT`. The biggest
+    difference is that it returns a JSON array, which, again, comes with several helpful
+    built-in functions linked above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The JSON array data type solves one of our two problems with astounding simplicity:
+    the problem of reliably counting the number of subscriptions in a combination.
+    This is accomplished using the `[JSON_LENGTH](https://dev.mysql.com/doc/refman/5.7/en/json-attribute-functions.html#function_json-length)`
+    function. The syntax is wonderfully straightforward:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result of this statement is 4, since there are 4 values in the generated
+    JSON array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But let’s return to the combination of subscriptions. Unfortunately, `JSON_ARRAYAGG`
+    doesn’t come with the ordering functionality that `GROUP_CONCAT` has. Ordering
+    the `subscription` values, even in a CTE before the base query, doesn’t return
+    the desired results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e43f5434827139bfa31f28338ec75ec2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of subscriptions in each combination is there, thanks to the `JSON_LENGTH`
+    function—but combinations that are effectively the same are once again mischaracterized
+    as distinct because of their order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using ROW_NUMBER to force the ordering of values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`ROW_NUMBER` is a window function that creates an index. The index has to be
+    defined; that is, you have to tell it where to start, how to increment (directionally),
+    and where to end.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see a quick example of this by applying the `ROW_NUMBER` function and
+    telling it to order by the `subscription` field:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1066d24e9f6e4a4671f414253647015d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results
+  prefs: []
+  type: TYPE_NORMAL
+- en: Look closely at the results. ***Even though we didn’t use an*** `ORDER BY` ***statement
+    at the end of our query, the data is nonetheless ordered according to the*** `ORDER
+    BY` ***in the*** `OVER` ***clause.***
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But of course this still isn’t exactly what we want. What we need to do next
+    is add a `PARTITION BY` clause to our window function, so that the ordering of
+    the results are related to (and in fact bounded by) each customer ID. Like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4537a7c2f58735eb1c1b44276cf9c635.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can probably see where this is going.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we execute the `JSON_ARRAYAGG` function against these results in a CTE,
+    we see that the duplicate combinations now look exactly the same, thanks to the
+    subscriptions being forced into an alphabetical order by the `ROW_NUMBER` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/eac71aa011199f26abb7c391f7a0382e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now all we need to do is add in the grouping CTE following the one executing
+    `ROW_NUMBER`, and alter the base query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This gives not only accurately distinct combinations of subscriptions, but
+    also the number of customers who’ve purchased those combinations, and how many
+    subscriptions comprise each of them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5154dd8a5b6457e69f1cbcdeb57b20ae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Query results
+  prefs: []
+  type: TYPE_NORMAL
+- en: Voila!
+  prefs: []
+  type: TYPE_NORMAL
+- en: To recap
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We wanted to know how many customers purchased different combination of subscriptions,
+    and how many subscriptions were in each of those combinations. This presented
+    two problems: how best to obtain the latter, and how to generate accurately distinct
+    subscription combinations.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To obtain the number of subscriptions in each combination, we chose to go with
+    one of MySQL’s JSON functions, `JSON_ARRAYAGG`. The resulting aggregation was
+    returned to us as a JSON data type, allowing us to use the `JSON_LENGTH` function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We then needed to force the ordering of values inside the JSON array so that
+    duplicate combinations didn’t mistakenly appear distinct. To do this, we used
+    the window function `ROW_NUMBER` in a CTE prior to the base query, partitioning
+    by customer ID and ordering the subscriptions alphabetically (in ascending order).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This ultimately allowed us to aggregate up to accurately distinct combinations
+    of subscriptions; and with this we were able to use a simple `COUNT` function
+    to see how many customers had purchased each combination.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thanks for reading! 🤓
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*I hope this was helpful! If you know of any other clever tricks/workarounds
+    in SQL (regardless of dialect), I’d love to hear about them. SQL has long been
+    the de facto lingua franca for transforming structured data, but it’s not perfect.
+    I always enjoy learning about innovative and/or clever solutions to real-world
+    challenges. 🔥*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*I write semi-regularly about data engineering and analytics topics—the goal
+    always being to write as clearly and simply as possible. If anything in this article
+    confused you, please let me know in the comments. And if you’re interested in
+    reading more articles like this, feel free to* [*follow me*](https://medium.com/@dakotasmithdata)
+    *and/or* [*connect on LinkedIn*](https://www.linkedin.com/in/dakotaleesmith/)*.*'
+  prefs: []
+  type: TYPE_NORMAL

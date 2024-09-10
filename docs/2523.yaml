@@ -1,0 +1,564 @@
+- en: 'Simplifying Transformers: State of the Art NLP Using Words You Understand —
+    part 3— Attention'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/transformers-part-3-attention-7b95881714df?source=collection_archive---------3-----------------------#2023-08-07](https://towardsdatascience.com/transformers-part-3-attention-7b95881714df?source=collection_archive---------3-----------------------#2023-08-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Deep dive into the core technique of LLMs — attention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@chenmargalit?source=post_page-----7b95881714df--------------------------------)[![Chen
+    Margalit](../Images/fb37720654b3d1068b448d4d9ad624d5.png)](https://medium.com/@chenmargalit?source=post_page-----7b95881714df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b95881714df--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b95881714df--------------------------------)
+    [Chen Margalit](https://medium.com/@chenmargalit?source=post_page-----7b95881714df--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff8e6113b0479&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-part-3-attention-7b95881714df&user=Chen+Margalit&userId=f8e6113b0479&source=post_page-f8e6113b0479----7b95881714df---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b95881714df--------------------------------)
+    ·14 min read·Aug 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b95881714df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-part-3-attention-7b95881714df&user=Chen+Margalit&userId=f8e6113b0479&source=-----7b95881714df---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b95881714df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransformers-part-3-attention-7b95881714df&source=-----7b95881714df---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tansformers have made a serious impact in the field of AI, perhaps in the entire
+    world. This architecture is comprised of several components, but as the original
+    paper is named “Attention is All You Need”, it’s somewhat evident that the attention
+    mechanism holds particular significance. Part 3 of this series will primarily
+    concentrate on attention and the functionalities around it that make sure the
+    Transformer philharmonic plays well together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d53a5dc36eff54f49b0c3290c3348c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from the [original paper](https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf)
+    by Vaswani, A. et al.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the context of Transformers, attention refers to a mechanism that enables
+    the model to focus on relevant parts of the input during processing. Image a flashlight
+    that shines on specific parts of a sentence, allowing the model to give more to
+    less significance depending on context. I believe examples are more effective
+    than definitions because they are some kind of brain teaser, providing the brain
+    with the possibility to bridge the gaps and comprehend the concept on its own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When presented with the sentence, “The man took the chair and disappeared,”
+    you naturally assign varying degrees of importance (e.g. attention) to different
+    parts of the sentence. Somewhat surprisingly, if we remove specific words, the
+    meaning remains mostly intact: “man took chair disappeared.” Although this version
+    is broken English, compared to the original sentence you can still understand
+    the essence of the message. Interestingly, three words (“The,” “the,” and “and”)
+    account for 43% of the words in the sentence but do not contribute significantly
+    to the overall meaning. This observation was probably clear to every Berliner
+    who came across my amazing German while living there (one can either learn German
+    or be happy, it''s a decision you have to make) but it''s much less apparent to
+    ML models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the past, previous architectures like RNNs, (Recurrent Neural Networks)
+    faced a significant challenge: they struggled to “remember” words that appeared
+    far back in the input sequence, typically beyond 20 words. As you already know,
+    these models essentially rely on mathematical operations to process data. Unfortunately,
+    the mathematical operations used in earlier architectures were not efficient enough
+    to carry word representations adequately into the distant future of the sequence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This limitation in long-term dependency hindered the ability of RNNs to maintain
+    contextual information over extended periods, impacting tasks such as language
+    translation or sentiment analysis where understanding the entire input sequence
+    is crucial. However, Transformers, with their attention mechanism and self-attention
+    mechanisms, address this issue more effectively. They can efficiently capture
+    dependencies across long distances in the input, enabling the model to retain
+    context and associations even for words that appear much earlier in the sequence.
+    As a result, Transformers have become a groundbreaking solution to overcome the
+    limitations of previous architectures and have significantly improved the performance
+    of various natural language processing tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To create exceptional products like the advanced chatbots we encounter today,
+    it is essential to equip the model with the ability to distinguish between high
+    and low-value words and also retain contextual information over long distances
+    in the input. The mechanism introduced in the Transformers architecture to address
+    these challenges is known as **attention**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Humans have been developing techniques to discriminate between humans for
+    a very long time, but as inspiring as they are, we won’t be using those here.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dot Product
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How can a model even theoretically discern the importance of different words?
+    When analyzing a sentence, we aim to identify the words that have stronger relationships
+    with one another. As words are represented as vectors (of numbers), we need a
+    measurement for the similarity between numbers. The mathematical term for measuring
+    vector similarity is “Dot Product.” It involves multiplying elements of two vectors
+    and producing a scalar value (e.g., 2, 16, -4.43), which serves as a representation
+    of their similarity. Machine Learning is grounded in various mathematical operations,
+    and among them, the Dot Product holds particular importance. Hence, I’ll take
+    the time to elaborate on this concept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Intuition*** Image we have real representations (embeddings) for 5 words:
+    “florida”, “california”, “texas”, “politics” and “truth”. As embeddings are just
+    numbers, we can potentially plot them on a graph. However, due to their high dimensionality
+    (the number of numbers used to represent the word), which can easily range from
+    100 to 1000, we can’t really plot them as they are. We can’t plot a 100-dimensional
+    vector on a 2D computer/phone screen. Moreover, The human brain finds it difficult
+    to understand something above 3 dimensions. What does a 4-dimensional vector look
+    like? I don’t know.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To overcome this issue, we utilize Principal Component Analysis ([PCA](https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)),
+    a technique that reduces the number of dimensions. By applying PCA, we can project
+    the embeddings onto a 2-dimensional space (x,y coordinates). This reduction in
+    dimensions helps us visualize the data on a graph. Although we lose some information
+    due to the reduction, hopefully, these reduced vectors will still preserve enough
+    similarities to the original embeddings, enabling us to gain insights and comprehend
+    relationships among the words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These numbers are based on the [GloVe](https://nlp.stanford.edu/projects/glove/)
+    Embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can perhaps notice there is some pattern in the numbers, but we’ll plot
+    the numbers to make life easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3789805a1e17369e25f6782a1447c82b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 5 2D vectors
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this visualization, we see five 2D vectors (x,y coordinates), representing
+    5 different words. As you can see, the plot suggests some words are much more
+    related to others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***math*** The mathematical counterpart of visualizing vectors can be expressed
+    through a straightforward equation. If you aren’t particularly fond of mathematics
+    and recall the authors’ description of the Transformers architecture as a “simple
+    network architecture,” you probably think this is what happens to ML people, they
+    get weird. It''s probably true, but not in this case, this **is** simple. I’ll
+    explain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c30ce12b81f66f6150a48bcf1295d33.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dot Product Formula
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The symbol ||a|| denotes the magnitude of vector “a,” which represents the
+    distance between the origin (point 0,0) and the tip of the vector. The calculation
+    for the magnitude is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99ba69b48b9cdc757d3704272b7abe9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vector magnitude formula
+  prefs: []
+  type: TYPE_NORMAL
+- en: The outcome of this calculation is a number, such as 4, or 12.4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Theta (θ), refers to the angle between the vectors (look at the visualization).
+    The cosine of theta, denoted as cos(θ), is simply the result of applying the cosine
+    function to that angle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***code*** Using the [GloVe](https://nlp.stanford.edu/projects/glove/) algorithm,
+    researchers from Stanford University have generated embeddings for actual words,
+    as we discussed earlier. Although they have their specific technique for creating
+    these embeddings, the underlying concept remains the same as we talked about [in
+    the previous part of the series](https://medium.com/@chenmargalit/transformers-part-2-input-2a8c3a141c7d).
+    As an example, I took 4 words, reduced their dimensionality to 2, and then plotted
+    their vectors as straightforward x and y coordinates.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make this process function correctly, downloading the [GloVe](https://nlp.stanford.edu/projects/glove/)
+    embeddings is a necessary prerequisite.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Part of the code, especially the first box is inspired by some code I’ve seen,
+    but I can’t seem to find the source.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now possess a genuine representation of all 5 words. Our next step is to
+    conduct the dot product calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Vector magnitude:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dot Product between two **similar** vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dot Product between two **dissimilar** vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As evident from the dot product calculation, it appears to capture and reflect
+    an understanding of similarities between different concepts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaled Dot-Product attention
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***intuition***Now that we have a grasp of Dot Product, we can delve back into
+    attention. Particularly, the self-attention mechanism. Using self-attention provides
+    the model with the ability to determine the importance of each word, regardless
+    of its “physical” proximity to the word. This enables the model to make informed
+    decisions based on the contextual relevance of each word, leading to better understanding.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To achieve this ambitious goal, we create 3 matrics composed out of learnable
+    (!) parameters, known as Query, Key and Value (Q, K, V). The query matrix can
+    be envisioned as a query matrix containing the words the user inquires or asks
+    for (e.g. when you ask chatGPT if: “god is available today at 5 p.m.?” that is
+    the query). The Key matrix encompasses all other words in the sequence. By computing
+    the dot product between these matrices, we get the degree of relatedness between
+    each word and the word we are currently examining (e.g., translating, or producing
+    the answer to the query).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Value Matrix provides the “clean” representation for every word in the sequence.
+    Why do I refer to it as clean where the other two matrices are formed in a similar
+    manner? because the value matrix remains in its original form, we don’t use it
+    after multiplication by another matrix or normalize it by some value. This distinction
+    sets the Value matrix apart, ensuring that it preserves the original embeddings,
+    free from additional computations or transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All 3 matrices are constructed with a size of word_embedding (512). However,
+    they are divided into “heads”. In the paper the authors used 8 heads, resulting
+    in each matrix having a size of sequence_length by 64\. You might wonder why the
+    same operation is performed 8 times with 1/8 of the data and not once with all
+    the data. The rationale behind this approach is that by conducting the same operation
+    8 times with 8 different sets of weights (which are as mentioned, learnable),
+    we can exploit the inherent diversity in the data. Each head can focus on a specific
+    aspect within the input and in aggregate, this can lead to better performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In most implementations we don''t really divide the main matrix to 8\. The
+    division is achieved through indexing, allowing parallel processing for each part.
+    However, these are just implementation details. Theoretically, we could’ve done
+    pretty much the same using 8 matrices.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Q and K are multiplied (dot product) and then normalized by the square root
+    of the number of dimensions. We pass the result through a [Softmax](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html)
+    function and the result is then multiplied by the matrix V.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason for normalizing the results is that Q and K are matrices that are
+    generated somewhat randomly. Their dimensions might be completely unrelated (independent)
+    and multiplications between independent matrices might result in very big numbers
+    which can harm the learning as I’ll explain later in this part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then use a non-linear transformation named [Softmax](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html),
+    to make all numbers range between 0 and 1, and sum to 1\. The result is similar
+    to a probability distribution (as there are numbers from 0 to 1 that add up to
+    1). These numbers exemplify the relevance of every word to every other word in
+    the sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we multiply the result by matrix V, and lo and behold, we’ve got the
+    self-attention score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The encoder is actually built out of N (in the paper, N=6) identical layers,
+    each such layer gets its input from the previous layer and does the same. The
+    final layer passes the data both to the Decoder (which we will talk about in a
+    later part of this series) and to the upper layers of the Encoder.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is a visualization of self-attention. It's like groups of friends in a
+    classroom. Some people are more connected to some people. Some people aren’t very
+    well connected to anyone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2c11c6680c5e7272614738a17ac8af6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from the [original paper](https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf)
+    by Vaswani, A. et al.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***math***Thq Q, K and V matrices are derived through a linear transformation
+    of the embedding matrix. Linear transformations are important in machine learning,
+    and if you have an interest in becoming an ML practitioner, I recommend exploring
+    them further. I won''t delve deep, but I will say that linear transformation is
+    a mathematical operation that moves a vector (or a matrix) from one space to another
+    space. It sounds more complex than it is. Imagine an arrow pointing in one direction,
+    and then moving to point 30 degrees to the right. This illustrates a linear transformation.
+    There are a few conditions for such an operation to be considered linear but it''s
+    not really important for now. The key takeaway is that it retains many of the
+    original vector properties.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The entire calculation of the self-attention layers is performed by applying
+    the following formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0fa457644a0388968acb432206b0fe11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaled Dot-Product Attention —Image from the [original paper](https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf)
+    by Vaswani, A. et al.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The calculation process unfolds as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. We multiply Q by K transposed (flipped).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. We divide the result by the square root of the dimensionality of matrix
+    K.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3\. We now have the “attention matrix scores” that describe how similar every
+    word is to every other word. We pass every row to a [Softmax](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html)
+    (a non-linear) transformation. [Softmax](https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.softmax.html)
+    does three interesting relevant things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a. It scales all the numbers so they are between 0 and 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: b. It makes all the numbers sum to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: c. It accentuates the gaps, making the slightly more important, much more important.
+    As a result, we can now easily distinguish the varying degrees to which the model
+    perceives the connection between words x1 and x2, x3, x4, and so on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. We multiply the score by the V matrix. This is the final result of the self-attention
+    operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Masking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the [previous chapter in this series](https://medium.com/@chenmargalit/transformers-part-2-input-2a8c3a141c7d),
+    I’ve explained that we employ dummy tokens to treat special occurrences in the
+    sentence such as the first word in the sentence, the last word, etc. One of these
+    tokens, denoted as <PADDING>, indicates that there is no actual data, and yet
+    we need to maintain consistent matrix sizes throughout the entire process. To
+    ensure the model comprehends these are dummy tokens and should therefore not be
+    considered during the self-attention calculation, we represent these tokens as
+    minus infinity (e.g. a very large negative number, e.g. -153513871339). The masking
+    values are added to the result of the multiplication between Q by K. [Softmax](https://medium.com/@chenmargalit/transformers-part-2-input-2a8c3a141c7d)
+    then turns these numbers into 0\. This allows us to effectively ignore the dummy
+    tokens during the attention mechanism while preserving the integrity of the calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dropout
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Following the self-attention layer, a dropout operation is applied. Dropout
+    is a regularization technique widely used in Machine Learning. The purpose of
+    regularization is to impose constraints on the model during training, making it
+    more difficult for the model to rely heavily on specific input details. As a result,
+    the model learns more robustly and improves its ability to generalize. The actual
+    implementation involves choosing some of the activations (the numbers coming out
+    of different layers) randomly, and zeroing them out. In every pass of the same
+    layer, different activations will be zeroed out preventing the model from finding
+    solutions that are specific to the data it gets. In essence, dropout helps in
+    enhancing the model’s ability to handle diverse inputs and making it more difficult
+    for the model to be tailored to specific patterns in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Skip connection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another important operation done in the Transformer architecture is called Skip
+    Connection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69d5ee94ca9dbdc0b378791faf98e236.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from the [original paper](https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf)
+    by Vaswani, A. et al.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Skip Connection is a way to pass input without subjecting it to any transformation.
+    To illustrate, imagine that I report to my manager who reports it to his manager.
+    Even with very pure intentions of making the report more useful, the input now
+    goes through some modifications when processed by another human (or ML layer).
+    In this analogy, the Skip-Connection would be me, reporting straight to my manager’s
+    manager. Consequently, the upper manager receives input both through my manager
+    (processed data) **and** straight from me (unprocessed). The senior manager can
+    then hopefully make a better decision. The rationale behind employing skip connections
+    is to address potential issues such as vanishing gradients which I will explain
+    in the following section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Add & Norm Layer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***Intuition***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The “Add & Norm” layer performs addition and normalization. I’ll start with
+    addition as it's simpler. Basically, we add the output from the self-attention
+    layer to the original input (received from the skip connection). This addition
+    is done element-wise (every number to its same positioned number). The result
+    is then normalized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason we normalize, again, is that each layer performs numerous calculations.
+    Multiplying numbers many times can lead to unintended scenarios. For instance,
+    if I take a fraction, like 0.3, and I multiply it with another fraction, like
+    0.9, I get 0.27 which is smaller than where it started. if I do this many times,
+    I might end up with something very close to 0\. This could lead to a problem in
+    deep learning called vanishing gradients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I won’t go too deep right now so this article doesn’t take ages to read, but
+    the idea is that if numbers become very close to 0, the model won't be able to
+    learn. The basis of modern ML is calculating gradients and adjusting the weights
+    using those gradients (and a few other ingredients). If those gradients are close
+    to 0, it will be very difficult for the model to learn effectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the contrary, the opposite phenomenon, called exploding gradients, can occur
+    when numbers that are not fractions get multiplied by non-fractions, causing the
+    values to become excessively large. As a result, the model faces difficulties
+    in learning due to the enormous changes in weights and activations, which can
+    lead to instability and divergence during the training process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ML models are somewhat like a small child, they need protection. One of the
+    ways to protect these models from numbers getting too big or too small is normalization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Math***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The layer normalization operation looks frightening (as always) but it’s actually
+    relatively simple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/439edb2efdd1eca95054cc81e4fa924d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Pytorch](https://pytorch.org/), taken from [here](https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the layer normalization operation, we follow these simple steps for each
+    input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subtract its mean from the input.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Divide by the square root of the variance and add an epsilon (some tiny number),
+    used to avoid division by zero.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Multiply the resulting score by a learnable parameter called gamma (γ).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add another learnable parameter called beta (β).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These steps ensure the mean will be close to 0 and the standard deviation close
+    to 1\. The normalization process enhances the training's stability, speed, and
+    overall performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Code***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Summary:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At this point, we have a solid understanding of the main inner workings of the
+    Encoder. Additionally, we have explored Skip Connections, a purely technical (and
+    important) technique in ML that improves the model’s ability to learn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although this section is a bit complicated, you have already acquired a substantial
+    understanding of the Transformers architecture as a whole. As we progress further
+    in the series, this understanding will serve you in understanding the remaining
+    parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember, this is the State of the Art in a complicated field. This isn’t easy
+    stuff. Even if you still don’t understand everything 100%, well done for making
+    this great progress!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next part will be about a foundational (and simpler) concept in Machine
+    Learning, the Feed Forward Neural Network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5c161490b13a6b3464b2ffd894325e1b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from the [original paper](https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf)
+    by Vaswani, A. et al.
+  prefs: []
+  type: TYPE_NORMAL

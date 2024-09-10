@@ -1,0 +1,575 @@
+- en: Language Models for Sentence Completion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/language-models-for-sentence-completion-6a5298a85e43?source=collection_archive---------5-----------------------#2023-09-15](https://towardsdatascience.com/language-models-for-sentence-completion-6a5298a85e43?source=collection_archive---------5-----------------------#2023-09-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A practical application of a language model that picks the most likely candidate
+    word that extends an English sentence by a single word
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dhruvbird?source=post_page-----6a5298a85e43--------------------------------)[![Dhruv
+    Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----6a5298a85e43--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a5298a85e43--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a5298a85e43--------------------------------)
+    [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----6a5298a85e43--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flanguage-models-for-sentence-completion-6a5298a85e43&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----6a5298a85e43---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a5298a85e43--------------------------------)
+    ·13 min read·Sep 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a5298a85e43&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flanguage-models-for-sentence-completion-6a5298a85e43&user=Dhruv+Matani&userId=63f5d5495279&source=-----6a5298a85e43---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a5298a85e43&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flanguage-models-for-sentence-completion-6a5298a85e43&source=-----6a5298a85e43---------------------bookmark_footer-----------)![](../Images/e52731d3997a812b3de2cf04fc95c135.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Brett Jordan](https://unsplash.com/@brett_jordan?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Co-authored with [Naresh Singh](https://medium.com/@brocolishbroxoli).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of contents
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[**Introduction**](#6d2d)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Problem Statement**](#93ee)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Brainstorming a solution**](#7fa3)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Algorithms and Data Structures](#9890)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[NLP (Natural Language Processing)](#d107)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Deep Learning (Neural Networks)](#e846)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**An LSTM model**](#2ecd)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Tokenization](#4a4c)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[The PyTorch Model](#75ba)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Using the model to prune invalid suggestions](#7ad8)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Computing the next word probability](#1049)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**A Transformer model**](#9241)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Conclusion**](#597e)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Language models such as GPT have become very popular recently and are being
+    used for a variety of text generation tasks, such as in ChatGPT or other conversational
+    AI systems. These language models are huge, often exceeding tens of billions of
+    parameters, and need a lot of computing resources and money to run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of English language models, these massive models are [over-parameterized](https://www.reddit.com/r/MachineLearning/comments/ib4rth/d_why_does_models_like_gpt3_or_bert_dont_have/)
+    since they use the model’s parameters to memorize and learn aspects of our world
+    instead of just modeling the English language. We can likely use a much smaller
+    model if we have an application that requires the model to understand just the
+    language and its constructs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The complete code for running inference on the trained model can be found [in
+    this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/next_word_probability/inference-next-word-probability.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem Statement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s assume we’re building a swipe keyboard system that tries to predict the
+    word you type in next on your mobile phone. Based on the pattern traced by the
+    swipe pattern, there are many possibilities for the user’s intended word. However,
+    many of these possible words aren’t actual words in English and can be eliminated.
+    Even after this initial pruning and elimination step, many candidates remain,
+    and we need to pick one as a suggestion for the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To further prune this list of candidates, we can use a deep-learning-based language
+    model that looks at the provided context and tells us which candidate is most
+    likely to complete the sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if the user has typed the sentence *“I’ve scheduled this”* and
+    then swipes a pattern as shown below
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d165ee855a1952f47030d274ae208b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Then, some possible English language words that the user could have meant are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: messing
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: meeting
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: However, if we think about it, it’s probably more likely that the user meant
+    “meeting” and not “messing” because of the word “scheduled” in the earlier part
+    of the sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given everything we know so far, what options do we have for doing this pruning
+    programmatically? Let’s brainstorm some solutions in the section below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brainstorming a solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Algorithms and Data Structures
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using first principles, it seems reasonable to start with a corpus of data,
+    find pairs of words that come together, and train a [Markov model](https://en.wikipedia.org/wiki/Markov_model)
+    that predicts the probability of the pair occurring in a sentence. You’ll notice
+    two significant issues with this approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Space utilization**: There are anywhere [between 250k to 1 million words
+    in the English language](https://www.merriam-webster.com/help/faq-how-many-english-words),
+    which don’t include the numerous proper nouns that are constantly growing in volume.
+    Hence, any traditional software solution modeling the probability of a pair of
+    words occurring together must maintain a lookup table with 250k*250k = 62.5 billion
+    word pairs, which is somewhat excessive. It seems likely that many pairs don’t
+    occur very often and can be pruned. Even after pruning, there are a lot of pairs
+    to worry about.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Completeness**: Encoding the probability of a pair of words doesn’t do justice
+    to the problem at hand. For example, the earlier sentence context is completely
+    lost when you’re looking at just the most recent pair of words. In the sentence
+    *“How is your day coming”* if you want to check the word after “coming”, you’d
+    have a lot of pairs starting with “coming”. This misses the entire sentence context
+    before that word. One can imagine using word triplets, etc.… but this exacerbates
+    the problem of space utilization mentioned above.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s shift our focus to a solution that leverages the nature of the English
+    language and see if that can help us here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NLP (Natural Language Processing)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Historically, the area of [NLP (natural language processing)](https://en.wikipedia.org/wiki/Natural_language_processing)
+    involved understanding the [parts of speech (POS)](https://www.englishclub.com/grammar/parts-of-speech.php)
+    of a sentence and using that information to perform such pruning and prediction
+    decisions. One can imagine using a POS tag associated with each word to determine
+    if the following word in a sentence is valid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the process of computing the parts of speech for a sentence is a complex
+    process in itself, and requires specialized understanding of language as evidenced
+    in [this page on NLTK’s parts of speech tagging](https://www.nltk.org/book/ch05.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s take a look at a deep-learning-based approach that requires a lot
+    more tagged data, but not as much language expertise to build.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep Learning (Neural Networks)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The area of NLP has been upended by the advent of deep learning. With the invention
+    of LSTM and Transformer based language models, the solution more often than not
+    involves throwing some high-quality data at a model and training it to predict
+    the next word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In essence, this is what the GPT model is doing. GPT (Generative Pre-Trained
+    Transformer) models are trained to predict the next word (token) given a prefix
+    of a sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given the sentence prefix *“It is such a wonderful”*, it’s likely for the model
+    to provide the following as high-probability predictions for the word following
+    the sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: day
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: experience
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: world
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: life
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It’s also likely that the following words will have a lower probability of completing
+    the sentence prefix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: red
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: mouse
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: line
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The [Transformer model architecture](https://en.wikipedia.org/wiki/Transformer_(machine_learning_model))
+    is at the heart of systems such as ChatGPT. However, for the more restricted use
+    case of learning English language semantics, we can use a cheaper-to-run model
+    architecture such as an [LSTM (long short-term memory)](https://en.wikipedia.org/wiki/Long_short-term_memory)
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An LSTM model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s build a simple LSTM model and train it to predict the next token given
+    a prefix of tokens. Now, you might ask what a token is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tokenization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Typically for language models, a token can mean
+  prefs: []
+  type: TYPE_NORMAL
+- en: A single character (or a single byte)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: An entire word in the target language
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Something in between 1 and 2\. This is usually called a sub-word
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Mapping a single character (or byte) to a token is very restrictive since we’re
+    overloading that token to hold a lot of context about where it occurs. This is
+    because the character “c” for example, occurs in many different words, and to
+    predict the next character after we see the character “c” requires us to really
+    look hard at the leading context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mapping a single word to a token is also problematic since English itself has
+    anywhere between 250k and 1 million words. In addition, what happens when a new
+    word is added to the language? Do we need to go back and re-train the entire model
+    to account for this new word?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sub-word tokenization is considered the industry standard in the year 2023\.
+    It assigns substrings of bytes frequently occurring together to unique tokens.
+    Typically, language models have anywhere from a few thousand (say 4,000) to tens
+    of thousands (say 60,000) of unique tokens. The algorithm to determine what constitutes
+    a token is determined by the [BPE (Byte pair encoding) algorith](https://huggingface.co/learn/nlp-course/chapter6/5?fw=pt)m.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To choose the number of unique tokens in our vocabulary (called the vocabulary
+    size), we need to be mindful of a few things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we choose too few tokens, we’re back in the regime of a token per character,
+    and it’s hard for the model to learn anything useful.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If we choose too many tokens, we end up in a situation where the model’s embedding
+    tables over-shadow the rest of the model’s weight and it becomes hard to deploy
+    the model in a constrained environment. The size of the embedding table will depend
+    on the number of dimensions we use for each token. It’s not uncommon to use a
+    size of 256, 512, 786, etc… If we use a token embedding dimension of 512, and
+    we have 100k tokens, we end up with an embedding table that uses 200MiB in memory.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hence, we need to strike a balance when choosing the vocabulary size. In this
+    example, we pick 6600 tokens and train our tokenizer with a vocabulary size of
+    6600\. Next, let’s take a look at the model definition itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The PyTorch Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The model itself is pretty straightforward. We have the following layers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Token Embedding (vocab size=6600, embedding dim=512), for a total size of about
+    15MiB (assuming 4 byte float32 as the embedding table’s data type)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: LSTM (num layers=1, hidden dimension=786) for a total size of about 16MiB
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Multi-Layer Perceptron (786 to 3144 to 6600 dimensions) for a total size of
+    about 93MiB
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The complete model has about 31M trainable parameters for a total size of about
+    120MiB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/202d59c74834875e7046d636f26a5ce4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here’s the PyTorch code for the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s the model summary using torchinfo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LSTM Model Summary
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Interpreting the accuracy**: After training this model on 12M English language
+    sentences for about 8 hours on a P100 GPU, we achieved a loss of 4.03, a top-1
+    accuracy of 29% and a top-5 accuracy of 49%. This means that 29% of the time,
+    the model was able to correctly predict the next token, and 49% of the time, the
+    next token in the training set was one of the top 5 predictions by the model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What should our success metric be?** While the top-1 and top-5 accuracy numbers
+    for our model aren’t impressive, they aren’t as important for our problem. Our
+    candidate words are a small set of possible words that fit the swipe pattern.
+    What we want from our model is to be able to select an ideal candidate to complete
+    the sentence such that it is syntactically and semantically coherent. Since our
+    model learns the *nature* of language through the training data, we expect it
+    to assign a higher probability to coherent sentences. For example, if we have
+    the sentence *“The baseball player”* and possible completion candidates (“ran”,
+    “swam”, “hid”), then the word “ran” is a better follow-up word than the other
+    two. So, if our model predicts the word *ran* with a higher probability than the
+    rest, it works for us.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpreting the loss**: A loss of 4.03 means that the negative log-likelihood
+    of the prediction is 4.03, which means that the probability of predicting the
+    next token correctly is e^-4.03 = 0.0178 or 1/56\. A randomly initialized model
+    typically has a loss of about 8.8 which is -log_e(1/6600), since the model randomly
+    predicts 1/6600 tokens (6600 being the vocabulary size). While a loss of 4.03
+    may not seem great, it’s important to remember that the trained model is about
+    120x better than an untrained (or randomly initialized) model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s take a look at how we can use this model to improve suggestions
+    from our swipe keyboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the model to prune invalid suggestions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s take a look at a real example. Suppose we have a partial sentence *“I
+    think”*, and the user makes the swipe pattern shown in blue below, starting at
+    “o”, going between the letters “c” and “v”, and ending between the letters “e”
+    and “v”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b8aa04ccb0955e8ed0c860ae8421faae.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Some possible words that could be represented by this swipe pattern are
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Oct (short for October)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ice
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I’ve (with the apostrophe implied)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Of these suggestions, the most likely one is probably going to be *“I’ve”*.
+    Let’s feed these suggestions into our model and see what it spits out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The value after the = sign is the probability of the word being a valid completion
+    of the sentence prefix. In this case, we see that the word “I’ve” has been assigned
+    the highest probability. Hence, it is the most likely word to follow the sentence
+    prefix “I think”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next question you might have is how we can compute these next-word probabilities.
+    Let’s take a look.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computing the next word probability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To compute the probability that a word is a valid completion of a sentence prefix,
+    we run the model in eval (inference) mode and feed in the tokenized sentence prefix.
+    We also tokenize the word after adding a whitespace prefix to the word. This is
+    done because the HuggingFace pre-tokenizer splits words with spaces at the beginning
+    of the word, so we want to make sure that our inputs are consistent with the tokenization
+    strategy used by HuggingFace Tokenizers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume that the candidate word is made up of 3 tokens T0, T1, and T2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first run the model with the original tokenized sentence prefix. For the
+    last token, we check the probability of predicting token T0\. We add this to the
+    “probs” list.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Next, we run a prediction on the prefix+T0 and check the probability of token
+    T1\. We add this probability to the “probs” list.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Next, we run a prediction on the prefix+T0+T1 and check the probability of token
+    T2\. We add this probability to the “probs” list.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The “probs” list contains the individual probabilities of generating the tokens
+    T0, T1, and T2 in sequence. Since these tokens correspond to the tokenization
+    of the candidate word, we can multiply these probabilities to get the combined
+    probability of the candidate being a completion of the sentence prefix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for computing the completion probabilities is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see some more examples below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: These examples show the probability of the word completing the sentence before
+    it. The candidates are sorted in decreasing order of probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since Transformers are slowly replacing LSTM and RNN models for sequence-based
+    tasks, let’s take a look at what a Transformer model for the same objective would
+    look like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Transformer model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Transformer-based models are a very popular architecture for training language
+    models to predict the next word in a sentence. The specific technique we’ll use
+    is the causal attention mechanism. We’ll train just the [transformer encoder layer
+    in PyTorch](https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html#torch.nn.TransformerEncoder)
+    using causal attention. Causal attention means we’ll allow every token in the
+    sequence to only look at the tokens before it. This resembles the information
+    that a unidirectional LSTM layer uses when trained only in the forward direction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/533424e318bb7df7c8884e5dca7a45db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Transformer model we’ll see here is based directly on the [nn.TransformerEncoder](https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoder.html#torch.nn.TransformerEncoder)
+    and [nn.TransformerEncoderLayer](https://pytorch.org/docs/stable/generated/torch.nn.TransformerEncoderLayer.html#torch.nn.TransformerEncoderLayer)
+    in PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can plug this model in place of the LSTM model that we used before since
+    it’s API is compatible. This model takes longer to train for the same amount of
+    training data and has comparable performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformer models are better for long sequences. In our case, we have sequences
+    of length 256\. Most of the context needed to perform next-word completion tends
+    to be local, so we don’t really need the power of Transformers here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We saw how we can solve very practical NLP problems using deep learning techniques
+    based on LSTM (RNN) and Transformer models. Not every language task requires the
+    use of models with billions of parameters. Specialized applications that require
+    modeling language itself, and not memorizing large volumes of information can
+    be handled using much smaller models that can be deployed easily and more efficiently
+    than the massive language models that we are used to seeing these days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the image(s) except for the first one were created by the author(s).
+  prefs: []
+  type: TYPE_NORMAL

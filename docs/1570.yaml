@@ -1,0 +1,350 @@
+- en: Boosting image generation by intersecting GANs with Diffusion models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/boosting-image-generation-by-intersecting-gans-with-diffusion-models-6a22f935b0f3?source=collection_archive---------9-----------------------#2023-05-09](https://towardsdatascience.com/boosting-image-generation-by-intersecting-gans-with-diffusion-models-6a22f935b0f3?source=collection_archive---------9-----------------------#2023-05-09)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A recipe for stable and efficient image-to-image translation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@essolanoc?source=post_page-----6a22f935b0f3--------------------------------)[![Edgardo
+    Solano Carrillo](../Images/e160dddf2cdcfc793c0e2cd81bfb5b61.png)](https://medium.com/@essolanoc?source=post_page-----6a22f935b0f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a22f935b0f3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a22f935b0f3--------------------------------)
+    [Edgardo Solano Carrillo](https://medium.com/@essolanoc?source=post_page-----6a22f935b0f3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdb88c072b0d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosting-image-generation-by-intersecting-gans-with-diffusion-models-6a22f935b0f3&user=Edgardo+Solano+Carrillo&userId=db88c072b0d3&source=post_page-db88c072b0d3----6a22f935b0f3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a22f935b0f3--------------------------------)
+    ·8 min read·May 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a22f935b0f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosting-image-generation-by-intersecting-gans-with-diffusion-models-6a22f935b0f3&user=Edgardo+Solano+Carrillo&userId=db88c072b0d3&source=-----6a22f935b0f3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a22f935b0f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosting-image-generation-by-intersecting-gans-with-diffusion-models-6a22f935b0f3&source=-----6a22f935b0f3---------------------bookmark_footer-----------)![](../Images/3424e2a8c94a60eb2f2cee483a0cfb08.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ATME is a model in the GAN ∩ Diffusion class. Image generated using DALL·E 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Visual Foundation Models (VFM) are at the core of cutting-edge technologies
+    such as [Visual ChatGPT](https://arxiv.org/abs/2303.04671)¹. In this article,
+    we will briefly discuss recent advances to blend two important ingredients of
+    the VFM soup: GANs and Diffusion models, ending up in ATME at their intersection.
+    ATME is a novel model that I introduced in the paper [Look ATME: The Discriminator
+    Mean Entropy Needs Attention](https://arxiv.org/abs/2304.09024)², with GitHub
+    repository available [here](https://github.com/dlr-mi/atme).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will go through relevant weaknesses and strengths of each type of generative
+    modeling. Then we discuss two categories of solutions to merge them: the naive
+    GAN ∪ Diffusion and, in more depth, the efficient GAN ∩ Diffusion classes of models.
+    At the end, you will get a picture of how research around some of the VFM is currently
+    evolving.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generative models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, a little bit of background. The aim of (conditional) generative models
+    is to learn how to generate data *y* from a target domain using information *x*
+    from a source domain. Both domains can be images, text, semantic maps, audio,
+    etc. Two types of modeling have become very successful: Generative Adversarial
+    Networks (GANs) and Diffusion Probabilistic Models. Concretely,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GANs learn how to sample from the data distribution *p*(*y*∣*x*) by training
+    a generator model that produces data distributed according to *g*​(*y*∣*x*). It
+    uses a discriminator model that guides the generator from blindly to accurately
+    generating data by minimizing a divergence (or distance) between the distributions
+    *g*​ and *p*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Diffusion models learn how to sample from *p*(*y*∣*x*) by reducing the latent
+    variables *y*₁​, *y*₂​, ⋯, *y*ₙ​ from *p*(*y*∣*x*, *y*₁​​, *y*₂, ⋯, *y*ₙ​​). These
+    variables are a sequence of increasingly noisy versions of *y* (or an encoding
+    of *y*), and the reduction is done by learning a denoising model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you need more details about these types of modeling, there are countless
+    sources available online. For GANs, you may want to start from [this article](/must-read-papers-on-gans-b665bbae3317)
+    and, for Diffusion models, from [this one](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1e76447e5b6b44d18afbf198d1576bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Figure 1: Visual ChatGPT* [*demo*](https://github.com/microsoft/TaskMatrix)
+    *from Microsoft. Used with permission.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have set the basics, let’s discuss some applications. Figure 1 shows
+    the official Visual ChatGPT demo. It uses several models for vision-language interactions,
+    some of which are listed in the table below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Table 1: Some of the VFM powering Visual ChatGPT. Inferred from the appendix
+    in the [paper](https://arxiv.org/abs/2303.04671)¹.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of these are generative models, with the majority being based on [Stable
+    Diffusion](https://github.com/CompVis/stable-diffusion). This speaks about a recent
+    switch of interest from GANs to Diffusion models, triggered by [evidence](https://papers.nips.cc/paper/2021/hash/49ad23d1ec9fa4bd8d77d02681df5cfa-Abstract.html)³
+    that the latter are superior on image synthesis than the former. One take away
+    from the present article is that this doesn’t imply that Diffusion models are
+    better than GANs for all image generation tasks, as the aggregation of these models
+    tends to perform better than the independent parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before discussing this and arriving to ATME, let’s pave the way by revisiting
+    the main weaknesses and strengths of GANs and Diffusion models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GANs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main premise introduced in the original GAN [paper](https://papers.nips.cc/paper_files/paper/2014/hash/5ca3e9b122f61f8f06494c97b1afccf3-Abstract.html)⁴
+    and emphasized in the [tutorial](https://arxiv.org/abs/1701.00160) is that, in
+    the limit of a large enough model and infinite data, the minimax game played by
+    the generator and discriminator converges to the Nash equilibrium, where the (vanilla)
+    GAN objective achieves the value −log4\. In practice, however, this is hardly
+    observed. The departures from this theoretical result give rise to what is popularly
+    known as the training instability of GANs. This, together with mode collapse,
+    are their main drawbacks. They are compensated by still high image generation
+    quality achieved, in one shot, with lightweight models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Diffusion Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In contrast, Diffusion models are stable but known to be inefficient due to
+    the large number of steps required to learn the denoising distribution. This is
+    the case because such a distribution is commonly assumed to be Gaussian, which
+    is only justified in the infinitesimal limit of small denoising steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently developed alternatives to reduce the number of denoising steps (even
+    further down to 2), using multi-modal distributions, exist. This requires combining
+    Diffusion models with GANs, as we discuss in the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GAN ∪ Diffusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Current approaches to train GANs with Diffusion are very promising. They can
+    be classified as belonging to the GAN ∪ Diffusion class of models that use generative
+    adversarial training together with **multi-step** diffusion processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to improve training stability and mode coverage in the GANs, these
+    models inject instance noise by following diffusion processes which may have from
+    up to thousands of steps (as in [*Diffusion-GAN*](https://github.com/Zhendong-Wang/Diffusion-GAN)⁵)
+    to as few as two steps (as in [*Denoising Diffusion GANs*](https://nvlabs.github.io/denoising-diffusion-gan/)⁶).
+    These models perform better than strong GAN baselines on various datasets, but
+    still need multiple denoising steps. So,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*is it possible to generate images with a GAN in one shot and still leverage
+    denoising diffusion processes?*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The answer is yes, and this defines the GAN ∩ Diffusion class of models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GAN ∩ Diffusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It turns out that a single trick can make the [pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)⁷
+    visual foundation GAN model stable by design: *paying attention to the discriminator
+    mean entropy*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7ae64932bbe981be9858f7315f79c53.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Figure 2: ATME generates images using the UNet from Diffusion models, which
+    are judged by the patchGAN discriminator from pix2pix. Image by author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The resulting model, [ATME](https://github.com/DLR-MI/atme), is shown in Figure
+    2\. Given a joint distribution *p*(*x*,*y*) of source and target images, the input
+    image *x* at epoch *t* is corrupted with *Wₜ* ​=*W*(*Dₜ-*), as follows
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*xₜ*​ = *x* (1+*Wₜ*​)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: with *W* being a small deterministic net which transforms into *Wₜ*​ the discriminator
+    decision map *Dₜ-*​ at the previous epoch 𝑡- *= t-1*. The transformed map *Wₜ*
+    contains patterns related to patches of the input space where the generator previously
+    failed to cheat the discriminator as well as noise coming from the discriminator
+    not yet being fully optimized and therefore erring on its decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The generator sees corrupted source images and generates target images according
+    to 𝑦̂​ = *y*ᵩ(*xₜ*​, 𝑡̃), using the net *y*ᵩ​ for [denoising diffusion probabilistic
+    models](https://hojonathanho.github.io/diffusion/), which have suitable attention
+    mechanisms. The task of the generator is then to make *x* ⊕ 𝑦̂​​ look indistinguishable
+    from *x* ⊕ *y* to the discriminator (where ⊕ denotes concatenation). In doing
+    so, it learns to remove the injected noise in the input images. Remarkably, the
+    denoising happens along a “time axis” unfold over the course of the training epochs,
+    unlike Diffusion models which require an independent time axis within an epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Flattening of the signals in *Wₜ*​, as a consequence of denoising the input
+    images to the generator, translates to a flat distribution for all the entries
+    of *Dₜ*​. This is precisely the Nash equilibrium, with the discriminator being
+    in a maximum entropy state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: … and where is the diffusion?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The evolution of a corrupted input image, over the course of the training epochs,
+    can be written as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*dxₜ*​​= *x dWₜ*​'
+  prefs: []
+  type: TYPE_NORMAL
+- en: which may be seen as a finite-difference instance of the more general [SDE](https://en.wikipedia.org/wiki/Stochastic_differential_equation)
+    for diffusion processes *dxₜ*​ = *μ*(*xₜ*​​,*t*) *dt* + *σ*(*xₜ*​​,*t*) *dWₜ*​,
+    provided that *Wₜ*​ is a Wiener process (aka standard Brownian motion).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In ATME, there is no design choice to make *W* produce Wiener processes. This
+    rather happens naturally in a significant number of cases, as can be seen from
+    Figure 3, by analyzing the properties of the time series *dWₜ*​​ for 5 randomly
+    selected pixels of 5 randomly selected images during training on the [Maps](http://efrosgans.eecs.berkeley.edu/pix2pix/datasets/)
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, a Wiener process is stationary. This is tested using the Augmented Dickey-Fuller
+    test, whose *p* values for the resulting test statistics are all way less than
+    0.01, so the null hypotheses of having non-stationary time series are all rejected.
+    Second, a Wiener process is a Markov process and then the autocorrelation function
+    of all *dWₜ* should vanish at all lags. This is appreciable from Figure 3 at the
+    99% confidence level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1658f1f8ea0c94d17192b2e69e17e379.png)![](../Images/3aa843f74e35fd69f6d5b56e81e6fe27.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Figure 3: Time series of* dW *for selected images and pixels (top) and corresponding
+    autocorrelation functions (bottom). Image by author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, a Wiener process has Gaussian *dWₜ*​. This is tested using the Shapiro-Wilk
+    test, giving (in 64% of the cases) *p* values for the test statistics greater
+    than 0.01, so the null hypotheses that the series are drawn from a normal distribution
+    cannot be rejected in a significant number of cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72206bd7896a545500abfddeabfec815.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Figure 4: (Rescaled) discriminator decision map (left) with its associated
+    representation (center) and change (right) in the space of the source images.
+    Image by author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the epochs are traversed by the model, the entries of *Dₜ*​​ tends to a flat
+    distribution, as observed from Figure 4 for one of the images processed in Figure
+    3\. A Jupyter notebook with these tests may be found in ATME’s GitHub [repository](https://github.com/DLR-MI/atme).
+  prefs: []
+  type: TYPE_NORMAL
+- en: how to check for stability?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Stability means that, regardless of dataset and initialization of model weights,
+    the GAN objective converges towards the same value (−log4 for a vanilla GAN),
+    provided that the conditions of enough data and model capacity are met. This is
+    typically the case for ATME, as observed in Figure 5, with more examples found
+    in the [paper](https://arxiv.org/abs/2304.09024)². Other popular GANs fail to
+    achieve this, a reason why you might have heard of GAN models being “difficult
+    to train”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c16b9051205cec6c7625ef7649c037b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Figure 5: The GAN objective in ATME tends to the theoretical value at Nash
+    equilibrium. Image by author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By attending the discriminator mean entropy, the denoising procedure in ATME
+    is designed to stably take the GAN towards the maximum entropy equilibrium state.
+    Isn’t this awesome?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ATME produces state-of-the-art results on supervised image-to-image translation
+    at a lesser cost than popular GANs and Latent Diffusion. If you like Physics,
+    you might find interesting how the ideas leading to ATME relate to the violation
+    of the second law of thermodynamics by Maxwell’s demon. You can find this and
+    more in the [paper](https://arxiv.org/abs/2304.09024)².
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e59b922b5673c856a8bfee0f3c4bf41a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Maxwell’s demon (Source:* [*astrogewgaw*](https://astrogewgaw.com/post/demons/)*).
+    Used with permission.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The way in which technology is advancing is impressive and encouraging. Looking
+    forward to seeing what the marriage of GANs with Diffusion models still promises
+    to bring.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s it for now! I hope you enjoyed reading as I did writing 😉
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Chenfei Wu *et al*, Visual ChatGPT: Talking, Drawing and Editing with Visual
+    Foundation Models, arXiv 2303.04671 (2023).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Edgardo Solano-Carrillo *et al*, Look ATME: The Discriminator Mean Entropy
+    Needs Attention, arXiv 2304.09024 (2023).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Prafulla Dhariwal, Alexander Nichol, Diffusion Models Beat GANs on Image
+    Synthesis, Advances in Neural Information Processing Systems 34 (NeurIPS 2021)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4]Ian Goodfellow *et al*, Generative Adversarial Nets, Advances in Neural
+    Information Processing Systems 27 (NIPS 2014).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Zhendong Wang *et al*, Diffusion-GAN: Training GANs with Diffusion, arXiv
+    2303.04671(2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Zhisheng Xiao, Karsten Kreis, Arash Vahdat, Tackling the Generative Learning
+    Trilemma with Denoising Diffusion GANs, International Conference on Learning Representations
+    (ICLR 2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Phillip Isola *et al*, Image-to-Image Translation with Conditional Adversarial
+    Networks, Computer Vision and Pattern Recognition (CVPR 2017).'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,222 @@
+- en: How SQL Execution Orders Varies Across Databases
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-sql-execution-orders-varies-across-databases-b5b949f34f31?source=collection_archive---------0-----------------------#2023-12-07](https://towardsdatascience.com/how-sql-execution-orders-varies-across-databases-b5b949f34f31?source=collection_archive---------0-----------------------#2023-12-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Why you can’t GROUP BY ordinal positions in SQL Server but can in others*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)[![Tobi
+    Sam](../Images/daffb5aeec33842e42fd8ad68fc94b72.png)](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)
+    [Tobi Sam](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F92fab82e0c7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&user=Tobi+Sam&userId=92fab82e0c7a&source=post_page-92fab82e0c7a----b5b949f34f31---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)
+    ·4 min read·Dec 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5b949f34f31&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&user=Tobi+Sam&userId=92fab82e0c7a&source=-----b5b949f34f31---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5b949f34f31&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&source=-----b5b949f34f31---------------------bookmark_footer-----------)![](../Images/8fc3fd8afa97a4a245a0cc1f3bff5fc7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transact-SQL vs MySQL execution order (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After working regularly with open-source databases such as MySQL and PostgreSQL,
+    I recently had the chance to work on a SQL Server project and discovered a subtle
+    but important difference in the SQL landscapes. I observed that in SQL Server,
+    I was unable to GROUP BY ordinal positions (GROUP BY 1, 2, 3…), which is a functionality
+    I frequently used within other databases, particularly for rapid testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This discovery led me to explore several nuances of both database systems, particularly
+    the **SQL execution order**, which will be the focus of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why does this matter? When working with database systems, understanding the
+    subtle differences can greatly impact your workflow and increase your productivity.
+    It can save you significant troubleshooting time. Also, **by** **understanding
+    the SQL execution order of various databases, you can craft more optimal SQL queries**
+    based on the system you are working with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will look into one major use case where this behaviour occurs
+    — GROUP BY — and investigate why. However, this insight can be applied to the
+    HAVING, WHERE or any other SQL command clause.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s begin
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s look at this example in the query below. This will **not** work in SQL
+    Server even though it works in MySQL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you run this, you will probably get an error like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Each GROUP BY expression must contain at least one column that is not an outer
+    reference.`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, this revised query works after replacing the GROUP BY ordinal reference
+    with the explicit expression. You will also notice that you can reference the
+    ordinal positions in the ORDER BY clause, which I found strange:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In SQL Server, I quickly learned that I had to use explicit column names or
+    expressions in the GROUP BY clause. **This is considered a best practice as it
+    makes the code easier to understand**. However, I was curious about why this behavior
+    differed between databases. Additionally, I found it interesting that the `ORDER
+    BY` clause in SQL Server works with ordinal positions, which further piqued my
+    curiosity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Exploring the SELECT statement execution order**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To find out, lets look at the `SELECT` statement execution/processing order
+    for SQL server vs. other databases. It’s important to note that in SQL databases,
+    each part of a query is executed sequentially and that order differs from how
+    it is written.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In SQL Server, for instance, we can see from the image below and from [Microsoft
+    docs](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16&redirectedfrom=MSDN#logical-processing-order-of-the-select-statement)
+    that the FROM clause is the first command to be evaluated. Furthermore, **the
+    SELECT clause runs after the GROUP BY clause**. That is why we were unable to
+    reference a column‘s position or even its alias in the GROUP BY clause in our
+    first example!
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we are free to reference the ordinal position and/or alias in the ORDER
+    BY clause, as that is evaluated after the SELECT clause. The SELECT clause tells
+    the database what columns will be returned and thus, the positioning is known
+    at this point. Cool, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: SQL Server execution order
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/a122deac3dc1a4cc59ea0163ac976429.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: SQL Server SELECT statement processing order (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: MySQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In MySQL however, I found it difficult to find clear documentation stating the
+    order of execution of a SQL query. The execution order seems to depend on the
+    contents of the query and what the query optimiser defines as the best path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But from what we can see from the MySQL docs [here](https://dev.mysql.com/doc/refman/8.0/en/select.html),
+    the clue shows us how the execution order might be and that the **SELECT clause
+    is evaluated before the GROUP BY clause**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For GROUP BY or HAVING clauses, it searches the FROM clause before searching
+    in the **select_expr** values. (For GROUP BY and HAVING, this differs from the
+    pre-MySQL 5.0 behavior that used the same rules as for ORDER BY.)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: GoogleSQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If we also look at the GoogleSQL (formerly Standard SQL) [docs](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#implicit_aliases)
+    which is the syntax used in Google BigQuery, you will see similar deviation from
+    the way queries are executed in SQL Server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GROUP BY and ORDER BY can also refer to a third group: Integer literals, which
+    refer to items in the SELECT list. The integer 1 refers to the first item in the
+    SELECT list, 2 refers to the second item, etc.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As you can see, this behaviour is not supported in SQL Server. The Google docs
+    also mention that GROUP BY, ORDER BY, and HAVING, can refer to aliases from the
+    SELECT list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With that, we can conclude with a high probability that the execution order
+    for these other databases follows a path similar to the image below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MySQL, PostgreSQL & BigQuery probable execution order
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/083618d9b2e8b3c3ff2dfe2af4db2ce8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MySQL SELECT statement execution order (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was a short post where we looked at how the execution order in MySQL, GoogleSQL
+    and other databases’ SQL syntaxes, differ from SQL Server’s, based on the observed
+    behaviours and documentation. SQL Server emphasises explicitness in the GROUP
+    BY clause for code clarity, while MySQL’s execution order definitely evaluates
+    that SELECT clause before the GROUP BY clause, allowing us to reference the ordinal
+    positions in it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to share your thoughts on this subject and catch you in the next one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can [become a Medium member](https://medium.com/@tobisam/membership) to
+    support me and enjoy more stories like this.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[SELECT — Transact-SQL](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16&redirectedfrom=MSDN#logical-processing-order-of-the-select-statement)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[ROWNUM](https://blogs.oracle.com/connect/post/on-rownum-and-limiting-results)
+    — Oracle'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[MySQL reference](https://dev.mysql.com/doc/refman/8.0/en/select.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PostgreSQL](https://www.postgresql.org/docs/current/using-explain.html) -
+    EXPLAIN'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

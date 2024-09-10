@@ -1,0 +1,230 @@
+- en: How to Evaluate Unreported Epidemic Infections with Iterated Filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-evaluate-unreported-epidemic-infections-with-iterated-filtering-b7f470c6b6c6?source=collection_archive---------20-----------------------#2023-02-10](https://towardsdatascience.com/how-to-evaluate-unreported-epidemic-infections-with-iterated-filtering-b7f470c6b6c6?source=collection_archive---------20-----------------------#2023-02-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An implementation with TFP for likelihood-based inference on POMP
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vanillaxiangshuyang?source=post_page-----b7f470c6b6c6--------------------------------)[![Shuyang
+    Xiang](../Images/36a5fd18fd9b7b88cb41094f09b83882.png)](https://medium.com/@vanillaxiangshuyang?source=post_page-----b7f470c6b6c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b7f470c6b6c6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b7f470c6b6c6--------------------------------)
+    [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----b7f470c6b6c6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-unreported-epidemic-infections-with-iterated-filtering-b7f470c6b6c6&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----b7f470c6b6c6---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b7f470c6b6c6--------------------------------)
+    ·6 min read·Feb 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb7f470c6b6c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-unreported-epidemic-infections-with-iterated-filtering-b7f470c6b6c6&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----b7f470c6b6c6---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb7f470c6b6c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-evaluate-unreported-epidemic-infections-with-iterated-filtering-b7f470c6b6c6&source=-----b7f470c6b6c6---------------------bookmark_footer-----------)![](../Images/18ca0a50748e692458a56c74e6777614.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Image by author: a typical SIR model describing epidemic spread'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Understanding the dynamics of disease epidemics has essential importance for
+    public health decision-makers for further prevention measures. However, the inference
+    of epidemic models can be difficult because the disease spread, in the majority
+    of cases, is only partially observed: not all compartments among the whole population
+    can be fully observed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An example of such phenomena is the spread of COVID-19, of which only a part
+    of all positive cases was reported due to multiple possible reasons: some infected
+    people did not have any severe symptoms and took it for granted that they carried
+    no virus, some tested people were false negative, some people did not want to
+    get themselves tested, etc. Therefore, it is obvious that the number of daily
+    reported cases is smaller than that of real infections.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I am going to introduce briefly the iterated filtering algorithm
+    which is designed for inference of such kind of partially observed Markov process
+    (POMP) and use the corresponding API of TensorFlow Probability (TFP) on a specific
+    example of a partially observed epidemic case. I would like to highlight the implementation
+    of the algorithm I have done with TFP which has barely documented the usage of
+    the API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference of POMP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Also known as hidden state space models or stochastic dynamical systems, a
+    partially observed Markov process (POMP) usually contains two model components:
+    an unobserved Markov process {X(t; θ) : t ≥ 0}, either discrete or continuous
+    in time, and an observation model which describes how the data collected at discrete
+    points Y(t) is related to the unobserved states X(t).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/27981a5ebbc149129836375dbf6ccde7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: POMP, [image](https://arxiv.org/abs/1712.03058) by Theresa Stocks
+  prefs: []
+  type: TYPE_NORMAL
+- en: In general, inference of POMP would start by formulating a Markov process and
+    connecting observed data by some observation model to that process and it would
+    learn the posteriors of the model parameters by maximizing the likelihood of such
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But this is never an easy task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The volume of research on inference of POMP indicates both the importance and
+    the difficulty of the problem. We categorize the methods with three criteria:
+    the plug-and-play property; full-information or feature-based; frequentist or
+    Bayesian. You can find a list of available algorithms [here](https://kingaa.github.io/short-course/mif/mif.html#introduction).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Iterated filtering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: But why am I talking about iterate filtering today? This is because, among all
+    the available methods, iterated filtering methods are the only currently available,
+    full-information, plug-and-play, frequentist methods for POMP models and it has
+    succeeded in solving likelihood-based inference problems, especially in epidemiological
+    situations which are computationally intractable for available Bayesian methodology.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can simply understand iterated filtering as the name suggests: filtering
+    by iteration. Here, the word “filter” can be understood to mean an “estimator”
+    that extracts information about a quantity of interest from noisy data, according
+    to Simon Haykin’s [Adaptive Filter Theory](http://users.ics.forth.gr/tsakalid/UVEG09/Book/Haykin-AFT%283rd.Ed.%29_Introduction.pdf).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will introduce briefly the IF2 algorithm of Ionides et al. (2015) and yes,
+    there was an IF1 in 2006 which would not the focus of today. In this IF2 algorithm,
+    we input: (i) the prior of the initial state, (ii) the transmission model of the
+    Markov process, (iii) the observation model describing the relation of the state
+    and the observation, (iv) the observed data and we would like to get the posterior
+    of models parameters by iteration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each iteration consists of a particle filter, carried out with the parameter
+    vector, for each particle, doing a random walk.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 2\. At the end of the time series, the collection of parameter vectors is recycled
+    as starting parameters for the next iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. The random-walk variance decreases at each iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am not going into the details of implementation but I high recommend the readers
+    to look up to the IF2 algorithm pseudocode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc899aa9258b39011478e0270b4cfa6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'IF2 pseudocode: image from [wikipedia](https://en.wikipedia.org/wiki/Iterated_filtering)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An example of epidemics with partially documented infections
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now let us consider the following example of partially observed dynamics: epidemic
+    dynamics described by a [SIR model](https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology#The_SIR_model)
+    which divides the total population into three compartments: susceptible, infectious,
+    and recovered. The progress between compartments was modelized by an ordinary
+    differential equation with two essential parameters: the infection rate and the
+    recovery rate. Let us suppose more that only a portion of infections was documented
+    and we denote the value of the portion by reported rate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To understand the progress of the disease, we have to learn the three parameters
+    mentioned above: the **infection rate**, the **recovery rate** and the **reported
+    rate** given **observed daily reported cases,** which, sorry but I have to emphasize
+    again, are always smaller than the real infections.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us start to learn the parameters of the SIR model in the interest of a [synthetic
+    dataset](https://drive.google.com/drive/folders/1Tqbfi6K3xvF6Z7eekHb6bb8vXW_UP_2-)
+    simulated by the author with reported daily infections. The figure below gives
+    the plot of daily reported cases during the 100 days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbd9a567598a910026ac769c45f202a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: reported infections in 100 days'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference with TFP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The good news is, the IF2 algorithms have been implemented by TFP with [**tfp.experimental.IteratedFilter**](https://www.tensorflow.org/probability/api_docs/python/tfp/experimental/sequential/IteratedFilter)we
+    can use it directly. The bad news is, no documentation is currently available.
+    In the coming chapter, I would like to explain how to use the method in the dataset
+    above. Let us take a look of the API first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To initialize the method, it is necessary to define four arguments: parameter_prior,
+    parameterized_initial_state_prior_fn, parameterized_transition_fn, and parameterized_observation_fn.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our example, we define the parameter_prior as the priors of the three rates
+    we are interested in as uniform distributions that with **tfd.Distribution.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: For parameterized_initial_state_prior_fn, we define it as a function mapping
+    that gives parameters to compartments in SIR models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further, we define parameterized_transition_fn as a function describing how
+    all compartments of the model progress after a one-time step and we would like
+    to remark here the function is nothing but a discretized version of the original
+    SIR model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Coming to parameterized_observation_fn, we define it as a function connecting
+    the SIR compartments to the observed reported infections, that is, at every time
+    step, the reported infections should be the product of the newly reported cases
+    (according to the model, the difference between of susceptible cases of two-time
+    steps) and the reported rate: that is, **reported_case_t=(suspectible_case_{t-1}-
+    suspectible_case_t)*reported_rate**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For detailed code, please refer to the [notebook](https://colab.research.google.com/drive/1CYwlOM8CRFIOb3z57MPw352MamWlfw1x#scrollTo=Q_Nz6U-fgpYX).
+    Once everything delcared, we can call directly **iterated_filter.estimate_parameters**
+    to learn the parameters by the IF2 algorithm. The plot below gives the visualiaztion
+    of the posteriors of the reported rate. We can see that in this example, only
+    ~76% of total infections was reported.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e502b6ee998c9069c2a46f71b765e977.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: boxplot of reporte_rate posteriors'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this blog post, I give brief of iterated filtering and highlight its importance
+    in the analysis of POMP, especially in the study of epidemics spread. I use the
+    IteratedFilter API of TFP on an example of partially reported epidemic infections.
+    All questions are welcome.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,485 @@
+- en: Matrix Multiplication on GPU
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/matrix-multiplication-on-the-gpu-e920e50207a8?source=collection_archive---------1-----------------------#2023-10-09](https://towardsdatascience.com/matrix-multiplication-on-the-gpu-e920e50207a8?source=collection_archive---------1-----------------------#2023-10-09)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to achieve state-of-the-art matrix multiplication performance in CUDA.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)[![Andy
+    Lo](../Images/07ba4bfa6792696a82c251f5e9d5b9ac.png)](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e920e50207a8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e920e50207a8--------------------------------)
+    [Andy Lo](https://medium.com/@andylolu24?source=post_page-----e920e50207a8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b10f678560b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmatrix-multiplication-on-the-gpu-e920e50207a8&user=Andy+Lo&userId=9b10f678560b&source=post_page-9b10f678560b----e920e50207a8---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e920e50207a8--------------------------------)
+    ·10 min read·Oct 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe920e50207a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmatrix-multiplication-on-the-gpu-e920e50207a8&user=Andy+Lo&userId=9b10f678560b&source=-----e920e50207a8---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe920e50207a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmatrix-multiplication-on-the-gpu-e920e50207a8&source=-----e920e50207a8---------------------bookmark_footer-----------)![](../Images/52104d461a859da63d47995f461249b9.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “A minimalist art taking inspiration from Matrix Multiplication, in the style
+    of vaporwave” by DALLE-2
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This blog came from a sudden realisation of how little I knew about how matrix
+    multiplication works on the GPU. Having done so many ML projects, I feel like
+    I ought to understand how the most important operation in ML works: What is this
+    “Tensor Core” thing? Why does everyone say “*data movement is the bottleneck*”?
+    How fast can GPUs actually go?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To answer these questions, I decided that I must go out of my PyTorch bubble
+    and **venture into the abyss of CUDA**. I wrote this blog to document all that
+    I have learnt, and hopefully anyone reading this wouldn’t have to go through the
+    pain of digging through CUDA docs/code as I did.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there is anything that I’ve learnt in this journey, it is **concurrent matrix
+    multiplication is HARD**. Efficient matrix multiplication heavily depends on the
+    specific hardware you are using and the problem size you are trying to solve.
+    There is no one-size-fits-all solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enough nagging, let’s dig in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recap on GPU architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s remind ourselves how (NVIDIA) GPUs work. A GPU achieves parallelism by
+    running many **threads**. Each thread is executed on a single CUDA core, though
+    at a given time, only a subset of the threads are active so there can be many
+    more threads than CUDA cores available. Each thread, no matter it is active or
+    not, has its own set of **registers**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A group of 32 threads is known as a **warp**. All threads in a warp must execute
+    together (or be inactive together). In most cases, there are a lot more inactive
+    warps than active warps, and the **warp scheduler** is responsible for choosing
+    which warps to execute at a given time. This allows the GPU to hide the latency
+    of memory accesses by scheduling other warps to execute while a warp is waiting
+    for data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A group of warps is known as a **threadblock**. All warps in a threadblock are
+    executed in the same **Streaming Multiprocessor** (SM). Each threadblock has its
+    own **shared memory** that can be accessed by all threads in the threadblock.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note: Newer architectures**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: From Volta architecture onwards, each thread also has its own program counter
+    and call stack etc. This means that each thread in a warp can execute different
+    instructions at the same time.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Volta architecture also introduced **Tensor Cores** that are specialised
+    to solve matrix multiplications of specific sizes. Each active warp have access
+    to one Tensor Core.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the newest Hopper architecture, there is a concept of **threadblock clusters**
+    that represents a group of threadblocks. It gives the user more fine-grained control
+    over the scheduling of threadblocks and allows the shared memory of one threadblock
+    to be access by other threadblocks in the same cluster.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Parallelising matrix multiplication
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Suppose we want to compute:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4428aab079a1a6c5d6c3f9e39a458d3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We say that the problem size is (*M*, *N*, *K*) in this case. To parallelise
+    this operation, we can split *A* and *B* into smaller matrices, matrix multiply
+    them individually, and concatenate the results to form *C*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specifically, we can partition *A* row-wise (i.e., *M* into chunks of size
+    *M’*) and *B* column-wise (i.e., *N* into chunks of size *N’*) to give:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1aebc2d7255e497596700febd57338a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can see that each sub-matrix in *C* are independent of each other, so we
+    can easily parallelise the computation of each sub-matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In practice, *K* might be too large to directly load into memory and compute
+    on. Instead, a typical implementation will also split *K* into chunks of size
+    *K’*, iterate over each chunk, and accumulate (by summing) over the partial results.
+    This is known as serial-*K* reduction. (As opposed to *parallel-K reduction*,
+    see section below). Mathematically, this looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2a1425f0cb0de36141cd782c6612f755.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Note: Padding**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: At any point where the problem size is not divisible by the partition size,
+    we need to add **padding**. This is typically done implicitly when we load the
+    partitioned inputs (𝐴ᵢ,ₖ and 𝐵ₖ,ⱼ) into lower-level memory where we ensure the
+    loaded partition (of size M’×K’ for 𝐴ᵢ,ₖ and K’×N’ for 𝐵ₖ,ⱼ) is always “full”
+    by adding zeros. Special care needs to be taken when writing the results back
+    to global memory to avoid out-of-bounds errors.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'On a high level, **three nested partitions** happen to parallelise matrix multiplication
+    on the GPU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. The first partition happens on the **threadblock** level. Each threadblock
+    is responsible for computing *Cᵢ,ⱼ = Aᵢ Bⱼ.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. The second partition happens on the **warp** level. The threadblock-level
+    problem *Cᵢ,ⱼ* is further partitioned such that each warp is responsible for computing
+    *Cᵢ,ⱼ⁽ᵐⁿ⁾ = Aᵢ⁽ᵐ⁾ Bⱼ⁽ⁿ⁾*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3\. The third partition happens on the **instruction** level. Some instructions
+    expect inputs of particular sizes. For example, second-generation Tensor Cores
+    operate on problems of size (16, 8, 8) for *fp16*, whereas a direct implementation
+    on CUDA cores by scalar multiplication would simply operate on size (1, 1, 1).
+    The warp-level problem is thus even further partitioned such that each chunk has
+    a suitable size for the instruction: *Cᵢ,ⱼ⁽ᵐⁿ⁾⁽ᵃᵇ⁾ = Aᵢ⁽ᵐ⁾⁽ᵃ⁾ Bⱼ⁽ⁿ⁾⁽ᵇ⁾.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s a good reason why we need three partition levels, as we will see in
+    the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data redundancy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Matrix multiplication can easily become memory-bound if we naively re-fetch
+    data from global memory to registers every time we perform a computation. The
+    key observation is that many of the sub-inputs *Aᵢ* and *Bⱼ* are reused across
+    different sub-matrix multiplications. For example, *Aᵢ* is required for *Cᵢ,₁
+    , Cᵢ,₂* , ... and *Bⱼ* is required for *C*₁*,ⱼ* , *C*₂*,ⱼ* , … . We can get the
+    best throughput if we can minimise redundant data movement and reuse the loaded
+    data as much as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In CUDA, there are three types of user-accessible memory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/765cbf3a96054ed41752bf1224c377c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Here’s a high-level view of how each memory type is utilised:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each threadblock will first load its required inputs **from global memory into
+    shared memory**. Subsequent accesses to those data would thus be served by the
+    shared memory instead of by the slower global memory.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Within each threadblock, each warp will first load its required inputs **from
+    shared memory into registers**. Subsequent accesses to those data would be served
+    by the fast registers directly.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Diving into the details
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Threadblock level
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'On the threadblock level, the problem is partitioned into sub-problems of size
+    (*M’*, *N’*, *K’*). Thus, each threadblock is responsible for computing a fragment
+    of *C*, denoted as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a08a624cc545b2b965a70ec6b47cd807.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Redundant data movement is minimised by loading the sub-inputs *Aᵢ,ₖ* and *Bₖ,ⱼ*
+    into shared memory. When we are done with computing *Aᵢ,ₖ Bₖ,ⱼ*, the next chunk
+    (*Aᵢ,ₖ₊₁* and *Bₖ₊₁,ⱼ*) will be loaded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Warp level
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'On the warp level, the sub-problem is further partitioned into sub-sub-problems
+    of size (*M’’, N’’, K’’*). Thus, each *warp* is responsible for computing a fragment
+    of *Cᵢ,ⱼ,* denoted as *Cᵢ,ⱼ⁽ᵐ ⁿ⁾*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f37fcc11c765303007fa4ce7af23df12.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Redundant data movement is minimised by loading the sub-sub-inputs *Aᵢ,ₖ⁽ᵐ ˡ⁾
+    and Bₖ,ⱼ⁽ˡ ⁿ⁾* into **registers**. Any accesses to *Aᵢ,ₖ⁽ᵐ ˡ⁾* and *Bₖ,ⱼ⁽ˡ ⁿ⁾*
+    *within* a warp will then be served by the fast registers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note: Distributing data across registers**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It is worth noting that registers are **thread-level only**. This means that
+    inputs in a register cannot be accessed by other threads in a warp. The exact
+    way of how Aᵢ,ₖ⁽ᵐ ˡ⁾and Bₖ,ⱼ⁽ˡ ⁿ⁾ are partitioned into the registers of each thread
+    depends on the specific instruction used. The NVIDIA docs on [Warp Level Matrix
+    Multiply-Accumulate Instructions](https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#warp-level-matrix-instructions)
+    gives a detailed description for each instruction.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tensor core level
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To actually perform the matrix multiplication, we use the **Tensor Cores**
+    on the GPU. My GPU (RTX 2060) has the second generation Tensor Cores, which are
+    specialised to solve fp16 problems of size (*M’’’, N’’’, K’’’*) = (16, 8, 8).
+    Thus, we even further partition *Cᵢ,ⱼ⁽ᵐ ⁿ⁾* to fit the size expected by the instruction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26652d7248aa29b590f21fc6cbf47814.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, all the inputs are already in the registers and thus the data movement
+    overhead is minimal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note: Tensor Cores**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tensor Core operations are **warp-level instructions**, meaning that all the
+    threads in a warp need to execute the Tensor Core instruction at the same time,
+    collaboratively preparing the data to be consumed by **one** Tensor Core.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Choosing the partition sizes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So, given that we want to minimise data movement, we should just choose a partition
+    size as large as possible to utilise all of the shared memory and registers, *right?*
+    Well, not quite.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Threadblock partition size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Asymptotically, as the problem size increases, yes, we do want to use as much
+    shared memory and registers as possible. However, for small problem sizes, we
+    might run into two problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have a large partition size means that we will have fewer threadblocks. Since
+    each threadblock can only execute on one SM, this might mean that we cannot utilise
+    all the SMs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For problem sizes that are not divisible by the partition size, we will have
+    to add more padding to the inputs. This lowers the efficiency as less computation
+    will be done on meaningful inputs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A typical implementation might use a partition size of (*M’, N’, K’*) = (128,
+    256, 32).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Warp partition size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In general, having a large warp partition size means there will be less redundant
+    data movement, but at the cost of having fewer warps. Having too few warps means
+    that we will not be able to hide the latency of memory accesses (because we might
+    run out of other warps to schedule while the current warp is waiting for data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A typical implementation might use a partition size of (*M’’, N’’, K’’*) = (64,
+    64, 32).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instruction partition size
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This is completely determined by what instructions your GPU supports. For my
+    RTX 2060, the ptx instruction for fp16 Tensor Core matrix multiplication (with
+    fp16 accumulation) is `mma.sync.aligned.m16n8k8.row.col.f16.f16.f16.f16`, which
+    expects inputs of size (16, 8, 8).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even more optimisations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The above techniques can get us close to the theoretical peak performance of
+    the GPU when the problem size is large. However, for smaller problem sizes, they
+    are not as efficient. There are two common techniques to further improve the performance
+    of matrix multiplication: **parallel-K reduction** and **software pipelining**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallel-K reduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In cases where *M* and *N* are small, we might only have a few threadblocks.
+    For example, if (*M’, N’*) = (128, 256) and the original problem size has *M*
+    ≤ 128 and *N* ≤ 256, we will only have one threadblock, and so we are only utilising
+    a fraction of the GPU’s compute power! (For example, my RTX 2060 has 30 SMs, so
+    to maximise utilisation we want at least 30 threadblocks.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In cases where *K* is large (even though *M* and *N* are small), we can leverage
+    more parallelism by doing **parallel-*K* reduction**. Recall that in serial-*K*
+    reduction, each threadblock iterates over the following sum:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3f0c3cbaa4b6a6680fab8fd428b2f57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and accumulates the intermediate results into *Cᵢ,ⱼ.* In parallel-*K* reduction,
+    we instead assign each threadblock to only compute *one element of the sum* (i.e.
+    *Aᵢ,ₖ Bₖ,ⱼ*). This allows us to increase the number of threadblocks by a factor
+    of *K/K’*, thus utilising more SMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The caveat is that now, we need to *allocate more memory* to store the results
+    from each threadblock, and *invoke a second kernel* to perform a final reduction
+    over the partial results to get *Cᵢ,ⱼ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Software pipelining
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Normally, CUDA hides the latency of memory accesses by scheduling other warps
+    to execute while a warp is waiting for data. This requires us to have enough warps
+    to mask the latency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the number of warps is typically relatively small when doing GEMM.
+    This is because the number of warps is limited by “The number of available registers
+    per threadblock divided by the number of registers required per warp”. For matrix
+    multiplication, we use a lot of registers per warp to maximise data reuse. As
+    a result, we might not have enough warps to mask the latency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “The accumulator elements typically occupy at least half a thread’s total register
+    budget”. — CUTLASS Docs
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'To mitigate this effect, we can use **software pipelining**. In essence, we
+    can (manually) pre-load the inputs for the next iteration of the loop asynchronously
+    using special instructions. While the inputs are being loaded, we can continue
+    to compute on the current iteration. It is summarised by the following diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d065965816235f5f63c80e4664e724f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Software Pipelining from [CUTLASS](https://github.com/NVIDIA/cutlass/blob/main/media/docs/efficient_gemm.md)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is made possible by the fact that the GPU is like any modern CPU: it can
+    pipeline memory accesses and arithmetic operations as long as there is no data
+    dependency between them. This is known as **instruction-level parallelism**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix multiplication in action
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you want to see how all these concepts come together in a real implementation,
+    check out my implementation of training MNIST from scratch with CUDA. There, I
+    trained a multi-layer perceptron on MNIST using CUDA, achieving **6x speedup over
+    optimised PyTorch** for hidden size of 128:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/andylolu2/cuda-mnist?source=post_page-----e920e50207a8--------------------------------)
+    [## GitHub - andylolu2/cuda-mnist'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Contribute to andylolu2/cuda-mnist development by creating an account on GitHub.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/andylolu2/cuda-mnist?source=post_page-----e920e50207a8--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 1\. [CUTLASS docs](https://github.com/NVIDIA/cutlass/blob/main/media/docs/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. [CUDA docs](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. [CUTLASS examples](https://github.com/NVIDIA/cutlass/tree/main/examples)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,322 @@
+- en: Creating a LLaMa 2 Agent Empowered with Wikipedia Knowledge
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/creating-a-llama-2-agent-empowered-with-wikipedia-knowledge-c048c7c63ef8?source=collection_archive---------2-----------------------#2023-09-26](https://towardsdatascience.com/creating-a-llama-2-agent-empowered-with-wikipedia-knowledge-c048c7c63ef8?source=collection_archive---------2-----------------------#2023-09-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Powering up LLaMa 2 with retrieval augmented generation to seek and use information
+    from Wikipedia.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@gabrielesgroi94?source=post_page-----c048c7c63ef8--------------------------------)[![Gabriele
+    Sgroi, PhD](../Images/b81978d35e6238d160457de2affc2b0e.png)](https://medium.com/@gabrielesgroi94?source=post_page-----c048c7c63ef8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c048c7c63ef8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c048c7c63ef8--------------------------------)
+    [Gabriele Sgroi, PhD](https://medium.com/@gabrielesgroi94?source=post_page-----c048c7c63ef8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97ea0c34751b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-llama-2-agent-empowered-with-wikipedia-knowledge-c048c7c63ef8&user=Gabriele+Sgroi%2C+PhD&userId=97ea0c34751b&source=post_page-97ea0c34751b----c048c7c63ef8---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c048c7c63ef8--------------------------------)
+    ·11 min read·Sep 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc048c7c63ef8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-llama-2-agent-empowered-with-wikipedia-knowledge-c048c7c63ef8&user=Gabriele+Sgroi%2C+PhD&userId=97ea0c34751b&source=-----c048c7c63ef8---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc048c7c63ef8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-a-llama-2-agent-empowered-with-wikipedia-knowledge-c048c7c63ef8&source=-----c048c7c63ef8---------------------bookmark_footer-----------)![](../Images/4fe5a16d530a8b089a1c6ed5cd5ef8ce.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Lysander Yuen](https://unsplash.com/@lysanderyuen?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Large Language Models (LLMs) are one of the hottest trends in AI. They have
+    demonstrated impressive text-generation capabilities, ranging from the ability
+    to carry on conversations with human users to writing code. The rise of open-source
+    LLMs such as LLama, Falcon, Stable Beluga, etc., has made their potential available
+    to the wide AI community, thanks also to the focus on developing smaller and more
+    efficient models that can be run on consumer-grade hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the key ingredients contributing to the success of LLMs is the famous
+    transformer architecture introduced in the revolutionary paper [Attention Is All
+    You Need](https://arxiv.org/abs/1706.03762). The impressive performance of state-of-the-art
+    LLMs is achieved by scaling this architecture to billions of parameters and training
+    on datasets comprising trillions of tokens. This pre-training yields powerful
+    foundation models cable to understand human language that can be further fine-tuned
+    to specific use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The pre-training of Large Language Models is performed in a self-supervised
+    fashion. It requires a huge collection of text corpora but doesn’t need human
+    labeling. This makes it possible to scale up the training to huge datasets that
+    can be created in an automated manner. After transforming the input texts into
+    a sequence of tokens, the pre-training is performed with the objective of predicting
+    the probability of each token in the sequence conditioned on all the previous
+    tokens. In this way, after training, the model is able to generate text autoregressively
+    by sampling one token at a time conditioned on all the tokens sampled so far.
+    Large Language Models have been shown to obtain impressive language capabilities
+    with this pre-training alone. However, by sampling tokens according to the conditional
+    probabilities learned from the training data, the generated text is in general
+    not aligned with human preferences and LLMs struggle to follow specific instructions
+    or human intentions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A significant step forward in aligning the text generated by LLMs with human
+    preferences was achieved with Reinforcement Learning from Human Feedback (RLHF).
+    This technique is at the core of the state-of-the-art chat models such as ChatGPT.
+    With RLHF, after the initial self-supervised pre-training phase, the Large Language
+    Model is further fine-tuned with a reinforcement learning algorithm to maximize
+    a reward calibrated on human preferences. To obtain the reward function, it is
+    usual to train an auxiliary model to learn a scalar reward reflecting human preferences.
+    In this way, the amount of actual human-labeled data needed for the reinforcement
+    learning phase can be kept at a minimum. The training data for the reward models
+    consists of generated texts that have been ranked by humans according to their
+    preferences. The model aims to predict a higher reward for the text ranked higher.
+    Training an LLM with the objective of maximizing a reward reflecting human preferences
+    should result in generated texts that are more aligned with human intentions.
+    In fact, Large Language Models fine-tuned with Reinforcement Learning from Human
+    Feedback have been shown to follow user instructions better while also being less
+    toxic and more truthful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieval Augmented Generation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the typical drawbacks of Large Language Models is that they are trained
+    offline and thus do not have information on events that happened after the training
+    data was collected. Similarly, they cannot use any specific knowledge that was
+    not present in the training data. This can be problematic for specific domains
+    as the data used to train LLMs usually comes from general-domain corpora. One
+    way to circumvent these problems, without requiring expensive fine-tuning, is
+    Retrieval Augmented Generation (RAG). RAG works by augmenting the prompts fed
+    to an LLM with external textual information. This is usually retrieved from an
+    external data source by relevance to the current prompt. In practice, as a first
+    step, this involves transforming the prompt and the external texts into vector
+    embeddings. The latter can be obtained by pooling the output of a transformer
+    encoder model (such as BERT) trained to map texts with similar meanings to embeddings
+    that are close to each other according to a suitable metric. In the case of long
+    texts, they can be split into chunks that are embedded individually, leading to
+    the retrieval of the most relevant passages. Next, the texts whose embeddings
+    are closest to the prompt embedding are retrieved. The concatenation of the prompt
+    and the retrieved text, after suitable formatting, is given as input to the language
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With Retrieval Augmented Generation the model can access information that was
+    not available during training and will base its answers on a selected corpus of
+    text. RAG also makes it possible to inspect the sources the model used to answer,
+    allowing for a more straightforward evaluation of the model outputs by a human
+    user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I will explain how to create a simple agent capable of basing
+    its answers on content retrieved from Wikipedia to demonstrate the ability of
+    LLMs to seek and use external information. Given a prompt by the user, the model
+    will search for appropriate pages on Wikipedia and base its answers on their content.
+    I made the full code available in [this GitHub repo](https://github.com/GabrieleSgroi/wiki_llama).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Llama 2 agent augmented with Wikipedia content
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, I will describe the steps needed to create a simple Llama 2
+    agent that answers questions based on information retrieved from Wikipedia. In
+    particular, the agent will…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create appropriate queries to search pages on Wikipedia that are relevant to
+    the user’s question.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Retrieve, from the pages found on Wikipedia, the one with the content most relevant
+    to the user’s question.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Extract, from the retrieved page, the most relevant passages to the user’s prompt.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Answer the user’s question based on the extracts from the page.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Notice that, more generally, the model could receive a prompt augmented with
+    the full content of the most relevant page or with multiple extracts coming from
+    different top pages ranked by relevance to the user’s prompt. While this could
+    improve the quality of the response from the model, it will increase the required
+    memory as it will inevitably lead to longer prompts. For simplicity, and in order
+    to make a minimal example running on free-tier Google Colab GPUs, I have restricted
+    the agent to use only a few extracts from the most relevant article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us now delve into the various steps in more detail. The first step the agent
+    needs to perform is to create a suitable search query to retrieve content from
+    Wikipedia that contains information to answer the user’s prompt. In order to do
+    that, we will prompt a Llama 2 chat model asking it to return keywords that represent
+    the user prompt. Before going into the specific prompt used, I will shortly recall
+    the general prompt format for Llama 2 chat models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The template that was used during the training procedure for Llama 2 chat models
+    has the following structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The {{ system prompt}} specifies the behavior of the chat model to subsequent
+    prompts and can be useful to adapt the model response to different tasks. The
+    {{user_message}} is the user’s prompt the model needs to answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Going back to the problem of obtaining search queries for Wikipedia, our agent
+    will use a Llama 2 model with the following prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{prompt} will be replaced, before generation, by the user’s input. The example
+    provided as part of the system prompt aims to leverage the in-context learning
+    capabilities of the model. In-context learning refers to the model''s ability
+    to solve new tasks based on a few demonstration examples provided as part of the
+    prompt. In this way, the model can learn that we expect it to provide keywords
+    relevant to the provided prompt separated by commas after the text *[query]*.
+    The latter is used as a delimiter to distinguish the prompt from the answer in
+    the example and it is also useful to extract the queries from the model output.
+    It is already provided as part of the input so that the model will have to generate
+    only what comes after it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the queries are obtained from the model output, they are used to search
+    Wikipedia and retrieve the metadata and text of the returned pages. In the code
+    accompanying the post, I used the [wikipediapackage](https://pypi.org/project/wikipedia/),
+    which is a simple Python package that wraps the [MediaWiki API](https://www.mediawiki.org/wiki/API),
+    to search and retrieve the data from Wikipedia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After extracting the text from the search results, the most relevant page to
+    the original user prompt is selected. This will re-align the retrieved information
+    to the original user’s prompt, potentially eliminating divergences originating
+    from the search queries generated by the model. In order to do so, both the user’s
+    prompt and the summary of the pages from the search result are embedded and stored
+    in a vector database. The article with the closest embedding to the user’s prompt
+    is then retrieved. I used the sentence transformers *all-MiniLM-L6-v2* model as
+    the embedding model and a FAISS vector database with the integration provided
+    by the *langchain* package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having found a relevant page from Wikipedia, since adding its whole text to
+    the prompt could require a lot of memory (or surpass the model tokens limit for
+    context length), our agent will find the most relevant extracts to augment the
+    prompt. This is done by first splitting the page’s text into chunks, and then,
+    as before, embedding them into a vector space and retrieving the ones closest
+    to the prompt embedding. I used again the *all-MiniLM-L6-v2* model to embed the
+    chunks and a FAISS vector database to store and retrieve them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we obtained the retrieved passages from the article, we can combine
+    them with the user’s prompt and feed them to the Llama 2 model to get an answer.
+    The template used for the input is the following
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before generation, {prompt} is replaced by the user prompt, {title} by the title
+    of the Wikipedia page, and {extracts} is replaced by the extracted passages. One
+    could also provide a few examples to leverage again the in-context learning capabilities
+    of the model, but it would make the prompt significantly longer increasing the
+    memory requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us now check if the model is able to answer using up-to-date information
+    that was not present during its training by extracting it from Wikipedia. The
+    following example has been obtained using the smallest chat version of LLaMa 2
+    with 7 billion parameters running on Google Colab free-tier GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have given the model the following prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The model created the following query to search on Wikipedia:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After extracting the passages from the most relevant page, the model returned
+    the following answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The agent also returns the metadata and the extracts of the page it has used
+    for its answer, allowing the user to check its correctness and go into more detail
+    by reading the original page. Here is the metadata for the previous answer
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, I explained how to create a simple agent that can respond to a
+    user’s prompt by searching on Wikipedia and base its answer on the retrieved page.
+    Despite its simplicity, the agent is able to provide up-to-date and accurate answers
+    even with the smallest Llama 2 7B model. The agent also returns the extracts from
+    the page it has used to generate its answer, allowing the user to check the correctness
+    of the information provided by the model and to go into more detail by reading
+    the full original page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wikipedia is an interesting playground to demonstrate the ability of an LLM
+    agent to seek and use external information that was not present in the training
+    data but the same approach can be applied in other settings where external knowledge
+    is needed. This is the case, for example, for applications that require up-to-date
+    answers, fields that need specific knowledge not present in the training data,
+    or extraction of information from private documents. This approach also highlights
+    the potential of collaboration between LLM and humans. The model can quickly return
+    a meaningful answer searching for relevant information from a very large external
+    knowledge base, while the human user can check the validity of the model answer
+    and delve deeper into the matter by inspecting the original source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A straightforward improvement of the agent described in this post can be obtained
+    by combining multiple extracts from different pages in order to provide a larger
+    amount of information to the model. In fact, in case of complex prompts, it could
+    be useful to extract information from more than one Wikipedia page. The resulting
+    increase in memory requirements due to the longer contexts can be partially offset
+    by implementing quantization techniques such as [GPTQ](https://arxiv.org/abs/2210.17323).
+    The results could be further improved by giving the model the possibility to reason
+    over the search results and the retrieved content before giving its final answer
+    to the users, following for example the ReAct framework described in the paper
+    [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629).
+    That way, for example, it is possible to build a model that iteratively collects
+    the most relevant passages from different pages, discarding the ones that are
+    not needed and combining information from different topics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs: []
+  type: TYPE_NORMAL

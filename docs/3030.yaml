@@ -1,0 +1,172 @@
+- en: Clinical Trial Outcome Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/clinical-trial-outcome-prediction-7ce6c27831f9?source=collection_archive---------9-----------------------#2023-10-04](https://towardsdatascience.com/clinical-trial-outcome-prediction-7ce6c27831f9?source=collection_archive---------9-----------------------#2023-10-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Part 2: Predicting clinical trial outcomes using XGBoost'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)[![Lennart
+    Langouche](../Images/ca35c7112cb845d17e1148b4f282600e.png)](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------)
+    [Lennart Langouche](https://medium.com/@lenlan?source=post_page-----7ce6c27831f9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4bee88ffae4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&user=Lennart+Langouche&userId=4bee88ffae4&source=post_page-4bee88ffae4----7ce6c27831f9---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7ce6c27831f9--------------------------------)
+    ·5 min read·Oct 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7ce6c27831f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&user=Lennart+Langouche&userId=4bee88ffae4&source=-----7ce6c27831f9---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7ce6c27831f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclinical-trial-outcome-prediction-7ce6c27831f9&source=-----7ce6c27831f9---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [first part of this series](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)
+    I focused on embedding multi-modal real-world data derived from [ClinicalTrials.gov](http://clinicaltrials.gov).
+    In this article I will implement a basic XGBoost model, train it on the embeddings
+    we created in [Part 1](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)
+    and compare its performance to that of the HINT model (a hierarchical graph neural
+    net) by which this project was inspired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3562ccfd368279055d7b53f61345d436.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Workflow schematic (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These are the steps I will follow in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load training, validation, and test datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Embed *drug molecule(s), inclusion/exclusion criteria, disease indication(s),
+    trial sponsor*, and *number of participants*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Define evaluation metrics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Train XGBoost model and briefly compare with HINT model performance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/f95a6a52f07b976351970569dbb08655.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Focus for Part 2 of this series: Predicting clinical trial outcomes based on
+    feature embeddings created in [Part 1](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)
+    (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can follow all the steps in this Jupyter notebook: [Clinical trial embedding
+    tutorial](https://github.com/lenlan/clinical-trial-prediction/blob/main/predict_clinical_trial_outcome_using_XGBoost.ipynb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load training, validation, and test datasets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Embed drug molecule, protocol, indication, and trial sponsor
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section we load the dictionaries we created in [Part 1](https://medium.com/@lennart.langouche/clinical-trial-outcome-prediction-a4c6d279fd42)
+    of this series and use them to map the values in the train, validation, and test
+    sets into their respective embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Define evaluation metrics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We will use the same evaluation metrics as the ones proposed in the [HINT article](https://doi.org/10.1016/j.patter.2022.100445):
+    ROC AUC, F1, PR-AUC, Precision, Recall, and Accuracy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train XGBoost model and predict train, validation, and test labels
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compare performance with HINT model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This simple XGBoost model was trained on feature embeddings for *drug molecule(s),
+    inclusion/exclusion criteria, disease indication(s), trial sponsor*, and *number
+    of participants* while the HINT authors did not to use the last two features:
+    *trial sponsor* and *number of participants.* We used several large language model
+    embedding tools such as BioBERT and SBERT, and used Morgan encoding for drug representations
+    while the HINT authors used a variety of Neural Nets for all their embeddings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see from the figure below that our feature embeddings, trained on by
+    a simple XGBoost model, perform pretty well compared to the more sophisticated
+    HINT model. Our project has better precision and accuracy on this dataset, but
+    worse recall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/71d338ef8e870b08ccb41d018045cbe7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of this project’s performance to that of the HINT project (image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Next steps could include doing an analysis to figure out to which extent the
+    addition of the features *trial sponsor* and *number of participants* are contributing
+    to improved performance (on some metrics) compared to other factors such as model
+    choice and embedding techniques. Intuitively, it does seem like these features
+    could improve predictive performance, as certain sponsors have historically performed
+    better than others, and one might expect a relationship between trial size and
+    outcome as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now you may wonder: “What is the usefulness of such a predictive model? We
+    can’t possibly rely on such a model and forgo running the trial?” And you are
+    correct (although some companies are creating digital twins of patients with the
+    goal of running trials virtually). A model like the one presented in this series
+    could, for example, be used to improve clinical trial power analysis, a related
+    statistical practice. A power analysis is used to determine the optimal number
+    of participants to enroll in a specific trial, and a strong assumption about the
+    treatment effect has to be made to perform such analysis. A predictive model that
+    utilizes trial information such as drug molecule structure, disease indication,
+    and trial eligibility criteria, like the model we implemented here, can potentially
+    help with creating a more accurate power analysis.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Fu, Tianfan, et al. “Hint: Hierarchical interaction network for clinical-trial-outcome
+    predictions.” *Patterns* 3.4 (2022).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

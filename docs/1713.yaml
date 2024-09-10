@@ -1,0 +1,325 @@
+- en: 'Logistic Regression: Deceptively Flawed'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/logistic-regression-deceptively-flawed-2c3e7f77eac9?source=collection_archive---------15-----------------------#2023-05-23](https://towardsdatascience.com/logistic-regression-deceptively-flawed-2c3e7f77eac9?source=collection_archive---------15-----------------------#2023-05-23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: When can large odds ratios and perfectly separated data bite you?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)[![Igor
+    Šegota](../Images/17c592b71fef9526a0679d47937837f6.png)](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------)
+    [Igor Šegota](https://medium.com/@igor-s?source=post_page-----2c3e7f77eac9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe5f8ebca4ad8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=post_page-e5f8ebca4ad8----2c3e7f77eac9---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2c3e7f77eac9--------------------------------)
+    ·8 min read·May 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2c3e7f77eac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=-----2c3e7f77eac9---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2c3e7f77eac9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flogistic-regression-deceptively-flawed-2c3e7f77eac9&source=-----2c3e7f77eac9---------------------bookmark_footer-----------)![](../Images/fd6846838f4d97d1fe123837c8fb36d1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Alvan Nee](https://unsplash.com/es/@alvannee?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is a second part to a previous post on conceptual understanding of logistic
+    regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/logistic-regression-faceoff-67560de4f492?source=post_page-----2c3e7f77eac9--------------------------------)
+    [## Logistic regression: Faceoff and Conceptual Understanding'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What log-losses and perfectly separated data have to do with hockey sticks?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/logistic-regression-faceoff-67560de4f492?source=post_page-----2c3e7f77eac9--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last time we visualized and explained fitting log-losses in logistic regression.
+    We also showed that this process cannot fit perfectly separated data. In other
+    words, unlike linear regression with ordinary least square fit, logistic regression
+    actually works better if the data is a little bit noisy!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, does this actually matter? *It depends:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: It matters if our goal is to use the output for statistical inference. For example,
+    accurately estimating model coefficients, calculating confidence intervals and
+    to test hypotheses using p-values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It does not matter much or at all, if our goal is to use the output of a logistic
+    model to create a predictive classification model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Statistical inference: statsmodels'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sample data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For this part, we will use Python’s statsmodels library. Keep in mind that
+    statsmodels and scikit-learn (used later) parametrize the probability using *β*s
+    instead of *k* and *x₀*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b56227f9d6f2bd6640839f01a3d90a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where the relationship between *k*, *x₀* and *β₁*, *β₀* is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9226107d5bd05e8238a5d138809310b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'We will continue with datasets we generated in the [first part on logistic
+    regression](/logistic-regression-faceoff-67560de4f492), first with the “imperfect”
+    data `sample_df` , using statsmodels’ formula API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0c76474446a04887204ce5aebabe589a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Our model parameters are *k = 3* and *x₀ = 2.5*, so those translate to *β₁
+    = 3* and *β₀ = -7.5\.* We can compare those with fitted parameters by reading
+    them out from the `coef` column of the bottom table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e4bba19fadc12707c46ebbaba5aa5c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have very few data points and the seed was intentionally chosen to showcase
+    outliers, so the fit is a little bit off, but it is still in the right ballpark.
+    The total log-loss is here reported as “Log-Likelihood”, which is just the negative
+    of total log-loss and equals -6.911.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perfectly separated data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What happens when we run our perfectly separated dataset in statsmodels? Again,
+    it depends!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this case we got an error — no results are output. In other cases of perfect
+    separation, we may get a warning. For example, if we use the same parameters but
+    different random seed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/29d9a85d58eaf5d3be965f408b515d2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Since the second model did not converge either, we can argue that it probably
+    should have also returned an error, not an innocent warning. Logistic regression
+    function in R, `glm(..., family=binomial)` does the same. To quote [R Inferno](https://www.burns-stat.com/pages/Tutor/R_inferno.pdf),
+    Circle 5, Consistency:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a problem with warnings. No one reads them. People have to read error
+    messages because no food pellet falls into the tray after they push the button.
+    With a warning the machine merely beeps at them but they still get their food
+    pellet. Never mind that it might be poison.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Therefore, be careful when doing inference using effect sizes and p-values!
+    In this case the data is perfectly separable — we have a perfect predictor — while
+    the reported p-value (P > |z|) is 0.998\. Ignoring or misunderstanding these warnings
+    may get you miss some obvious features in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatively, consider using a different model. There is a brave new world
+    outside of logistic regression! 🌍
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Prediction: scikit-learn'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sample data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: scikit-learn automates and abstracts much of the calculations while providing
+    a simple and consistent way to run many different models. However, in doing so,
+    it hides a number of things happening in the background. When it is not obvious
+    what is happening under the hood, learning data science concepts from scikit-learn
+    documentation can lead to misunderstanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of these is misunderstandings is that when we run `LogisticRegression()`
+    from `sklearn.linear_model` and use a `.predict()` method, it *makes it seem*
+    as if we are running a classification model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, we can verify that this is still the same old logistic regression by
+    either calling its `.predict_proba()` method or by digging out the model parameters
+    from the model object, which we printed out here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Under the hood, `.predict()` predicts outcomes based on the larger of two probabilities:
+    *p* or *1-p*. If *p > 1-p* then it predicts 1, otherwise it predicts 0\. It does
+    not calculate confidence intervals, does not have p-values and does not do any
+    kind of statistical inference or hypothesis testing. It is still a regression
+    model, just with another thresholding layer on top of it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: `LogisticRegression()` by default uses L2 regularization, which adds
+    an extra term to the log-loss function. To make it comparable with statsmodels,
+    use `LogisticRegression(penalty=None)`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perfectly separable data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The advantage of ignoring the accuracy of fitted coefficients is that even if
+    the coefficients are not accurate, or just plain wrong, the model can still be
+    good enough! As the saying goes, “let not the perfect be the enemy of the good”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'scikit-learn by default uses a different fitting method (called “[lbfgs](https://en.wikipedia.org/wiki/Limited-memory_BFGS)”)
+    than statsmodels. In my very limited set of tests, lbfgs did not error out on
+    perfectly separated data. To see what happens here, let us run the same two datasets
+    we used previously for statsmodels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This algorithm also stops at some point, giving finite values of *β₁* (or *k*),
+    without an error, but it still predicts the correct outcomes. These are perfectly
+    usable model fits for classification!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Log-odds and loose ends
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There is one last topic we did not touch too much. Coefficient *k* (or *β₁*)
+    which multiplies *x*, has another interpretation — a *log odds ratio*. Odds ratio
+    describes the multiplicative change in odds, when *x* increases by 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e8f72fc1b29d7d37a5de1eee98f6643a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This definition states that **odds ratio is a ratio of ratios of probabilities**.
+    If increasing *x* by one unit, increases the probability of *y = 1* from 0.1 (odds
+    0.1 / 0.9 = 0.11) to 0.2 (odds = 0.2 / 0.8 = 0.25), that is represented by odds
+    ratio of 0.25 / 0.1 = 2.27.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When probabilities are small, large odds ratio does not reflect large absolute
+    probabilities. If increasing *x* by one unit, increases the probability of *y
+    = 1:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: from *p(x) = 0.0001* (odds = 0.0001 / (1–0.0001) ≈ 0.0001)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: to *p(x + 1) = 0.001* (odds = 0.001 / (1–0.001) ≈ 0.001)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'then this gives us the odds ratio of 0.001/0.0001 = 10\. Even though the odds
+    ratio is 10, the final absolute probability is still very small: 0.001\. The good
+    news is that **when probability is small, odds ratio becomes easier to interpret**
+    — it is approximately equal to a ratio of two probabilities *p(x + 1) / p(x)*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Compare this to another example where probability increases by a substantial
+    amount, say by 25% from *p(x) = 0.5* to *p(x + 1) = 0.75*: in this case odds ratio
+    is only 3!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, high odds ratio needs to be used with a grain of salt when the probability
+    of *y = 1* is small. There are alternatives to odds ratio, such as [relative risk](https://www.statology.org/interpret-relative-risk/)
+    which are more interpretable, but may not be simple to calculate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the last two posts, we gave an intuitive explanation to logistic regression
+    and show how to run regression models in Python’s statsmodels and scikit-learn
+    libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Take home points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logistic regression outputs a probability — therefore it is a regression algorithm.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Logistic regression is often used for classification. For example, by predicting
+    the outcome with a larger probability — or by setting a custom probability threshold.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Parameters are estimated numerically using the difference between data and two
+    **crossed hockey sticks log-loss curves that serve as a cost function**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use **statsmodels** to run a logistic regression when you are interested in
+    statistical inference (care about accuracy of coefficients, hypothesis testing,
+    p-values, ...).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use **scikit-learn** to run a logistic regression when you just want to predict
+    the outcome or when you need to run a larger model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Perfectly separable data breaks statistical inference: best-fit coefficients
+    do not exist or “are infinite” and p-values will be large (because of large confidence
+    intervals). If we only care about using the model for classification/prediction,
+    then scikit-learn’s implementation works better for perfectly separated data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Do not blindly trust large (log-)odds ratios**. Consider calculating additional
+    metrics, such as absolute probabilities.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I hope this helps you in your data science journey!
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,601 @@
+- en: 'Going Under the Hood of Character-Level RNNs: A NumPy-based Implementation
+    Guide'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/numpy-character-level-rnn-af1428bb10a8?source=collection_archive---------5-----------------------#2023-01-27](https://towardsdatascience.com/numpy-character-level-rnn-af1428bb10a8?source=collection_archive---------5-----------------------#2023-01-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Due to the recent boom of LLMs, it is imperative to grasp the rudiments of language
+    modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://sassonjoe66.medium.com/?source=post_page-----af1428bb10a8--------------------------------)[![Joe
+    Sasson](../Images/f0edde425f64b6b09d3d8d4adc953d2d.png)](https://sassonjoe66.medium.com/?source=post_page-----af1428bb10a8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----af1428bb10a8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----af1428bb10a8--------------------------------)
+    [Joe Sasson](https://sassonjoe66.medium.com/?source=post_page-----af1428bb10a8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F32a49c3f499a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-character-level-rnn-af1428bb10a8&user=Joe+Sasson&userId=32a49c3f499a&source=post_page-32a49c3f499a----af1428bb10a8---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----af1428bb10a8--------------------------------)
+    ·17 min read·Jan 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faf1428bb10a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-character-level-rnn-af1428bb10a8&user=Joe+Sasson&userId=32a49c3f499a&source=-----af1428bb10a8---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faf1428bb10a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnumpy-character-level-rnn-af1428bb10a8&source=-----af1428bb10a8---------------------bookmark_footer-----------)![](../Images/43b8bc23a16ed2edb617b4bdee1b1852.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recurrent neural networks (RNNs) are a powerful type of neural network that
+    have the ability to process sequential data, such as time series or natural language.
+    In this article, we will walk through the process of building a Vanilla RNN from
+    scratch using NumPy. We will begin by discussing the theory and intuition behind
+    RNNs, including their architecture and the types of problems they are well-suited
+    for solving. Next, we will dive into the code, explaining the various components
+    of the RNN and how they interact with one another. Finally, we will demonstrate
+    the effectiveness of our RNN by applying it to a real-world dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specifically, we will be implementing a many-to-many, character-level RNN that
+    uses sequential, online learning. This means that the network processes the input
+    sequences one character at a time and updates the parameters of the network after
+    each character. This allows the network to learn on-the-fly and adapt to new patterns
+    in the data as they are encountered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A character-level RNN means that the input and output are individual characters,
+    rather than words or sentences. This allows the network to learn the underlying
+    patterns and dependencies between characters in a piece of text. The many-to-many
+    architecture refers to the fact that the network receives an input sequence of
+    characters and generates an output sequence of characters. This is different from
+    a many-to-one architecture, where the network receives an input sequence and generates
+    only one output, or a one-to-many architecture, where the network receives only
+    one input and generates an output sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used Andrej Karpathy’s code (found [here](https://gist.github.com/karpathy/d4dee566867f8291f086))
+    as a foundation for my implementation, making several modifications to improve
+    versatility and reliability. I expanded the code to support multiple layers, and
+    also restructured it for better readability and reusability. This project builds
+    on my previous work of creating a simple ANN using NumPy. The source code for
+    that can be found [here](https://github.com/j0sephsasson/numpy-NN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Theory & Intuition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: RNNs can be contrasted with traditional feedforward neural networks (ANNs),
+    which do not have a “memory” mechanism and process each input independently. ANNs
+    are well-suited for problems where the input and output have a fixed size and
+    the input does not contain sequential dependencies. In contrast, RNNs are able
+    to handle variable length input sequences and maintain a “memory” of past inputs
+    through a ***hidden state***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hidden state allows RNNs to capture temporal dependencies and make predictions
+    based on the entire input sequence. To summarize, the network uses information
+    from previous time steps to inform its processing of current inputs. Additionally,
+    more complex NLP architectures can handle long-term dependencies (GPT-3 was trained
+    using a sequence length of 2048), where information from the beginning of the
+    input sequence is still relevant for predicting the output at the end of the sequence.
+    This ability to maintain a “memory” gives RNNs & transformers a significant advantage
+    over ANNs when it comes to processing sequential data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, transformer architectures such as [GPT-3](https://en.wikipedia.org/wiki/GPT-3)
+    and [BERT](https://en.wikipedia.org/wiki/BERT_(language_model)) have become increasingly
+    popular for a wide range of NLP tasks. These architectures are based on [self-attention](https://machinelearningmastery.com/the-transformer-attention-mechanism/)
+    mechanisms that allow the network to selectively focus on different parts of the
+    input sequence. This allows the network to capture long-term dependencies without
+    the need for recurrence, making it more efficient and easier to train than RNNs.
+    The transformer architectures have been shown to achieve state-of-the-art results
+    on a wide range of NLP tasks and have been used in many real-world applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the transformer architectures are more complex than the vanilla RNNs
+    and have different characteristics, the vanilla RNNs still have an important role
+    to play in the field of deep learning. They are simple to understand, easy to
+    implement and debug, and can be used as a building block for other more complex
+    architectures. In this article, we will focus on the vanilla RNNs and peek under
+    the hood to see how they really work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Three main types of vanilla RNNs are:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***one-to-many:*** input a picture of dog and output ‘picture of dog’'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***many-to-one:*** input a sentence and recieve a sentiment (sentiment analysis)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***many-to-many:*** input a sentence and output complete sentence (seen below)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will be implementing the many-to-many architecture as seen below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/34501c57a1b305a03d6a8d446315f618.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Source:** Kaivan Kamali, Deep Learning (Part 2) — Recurrent neural networks
+    (RNN) (Galaxy Training Materials). [https://training.galaxyproject.org/training-material/topics/statistics/tutorials/RNN/tutorial.html](https://training.galaxyproject.org/training-material/topics/statistics/tutorials/RNN/tutorial.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From this point on, we will denote the hidden state at time step t using `h[t]`.
+    In the figure this is `s[t]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, the hidden state from the previous time step `h[t-1]` is combined
+    with the current input `x[t]`, and this is repeated over the number of time steps.
+    Inside the RNN block, we are updating the hidden state for the current time step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For clarification, a time step is just a character, such as ‘a’ or ‘d’. An input
+    sequence contains a variable number of characters or time steps, also known as
+    sequence length, which is a hyper-parameter of the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '***Table of Contents***'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Prepare Data
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: RNN Class
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Forward Pass
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Backward Pass
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Optimizer
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Prepare Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are reading in the data as a string, from a plain text file, and tokenizing
+    the characters. Each unique character (there are 65), will be mapped to an integer
+    and vice-versa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s sample an input & target sequence to our RNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The inputs are a tokenized sequence, the targets are the inputs offset by one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RNN Class
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lets start by discussing the components of an RNN, in contrast to a basic ANN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a traditional feedforward neural network, the parameters governing the interactions
+    between layers are represented by a single weight matrix, denoted as `W`. However,
+    in a Recurrent Neural Network (RNN), the interactions between layers are represented
+    by multiple matrices. In my code, these matrices are specifically: ***Wxh***,
+    ***Whh***, and ***Why***, representing the weights between input and hidden layers,
+    hidden to hidden layers, and hidden to output layers respectively.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `Wxh` matrix connects the input layer to the hidden layer, and is used to
+    transform the input at each time step into a set of activations for the hidden
+    layer. The `Whh` matrix connects the hidden layer at time step t-1 to the hidden
+    layer at time step t, and is used to propagate the hidden state from one time
+    step to the next. The `Why` matrix connects the hidden layer to the output layer,
+    and is used to transform the hidden state into the final output of the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In summary, the main difference between the weights in an ANN and an RNN is
+    that the ANN has one weight matrix, while the RNN has multiple weight matrices
+    that are used to transform the input, propagate the hidden state, and produce
+    the final output. These multiple weights matrices in the RNN allow it to maintain
+    a memory of past inputs and move information through time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Constructor
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we are defining our RNN parameters as discussed above. Something interesting
+    to take note of — the parameters `Why` and `by` represent a linear layer, and
+    could be abstracted even more, into a separate class such as PyTorch’s ‘nn.Linear’
+    module. However, we will keep them as a part of the RNN class for this implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward Pass
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s start at the top, and break it down. What is happening here?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Outside the loop, once per sequence**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***hprev*** is our initial hidden state'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are initializing dictionaries to hold our inputs, hidden states, logits,
+    and probabilities. We will need this during the backward pass.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are initializing the loss to zero.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We are setting our initial hidden state `hprev` equal to `hs[-1]` (reprsenting
+    time step t-1).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Inside the loop, for every time step in the sequence**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perform one-hot encoding on our input sequence
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Update the hidden state at time step ‘t’ and layer ‘l’
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/3a81673b881f0d7431084a89ec104840.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mathematical notation of our hidden state. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, you probably noticed there is some functionality to perform ***dropout***.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dropout is a [regularization](/regularization-in-deep-learning-l1-l2-and-dropout-377e75acc036)
+    technique that aims to prevent overfitting by randomly “dropping out” (setting
+    to zero) certain neurons during the training process. In the code above, the dropout
+    layer is applied before updating the hidden state at time step t, layer l, by
+    multiplying the hidden state at t-1 with a dropout mask. The dropout mask is generated
+    by creating a binary mask where each element is 1 with probability p and 0 otherwise.
+    By doing this, we are randomly “dropping out” a certain number of neurons in the
+    hidden state, which helps to prevent the network from becoming too dependent on
+    any single neuron. This makes the network more robust and less likely to overfit
+    on the training data. After applying dropout, the hidden state is scaled back
+    by dividing it by (1-p) to ensure that the expected value of the hidden state
+    is maintained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`ys[t]` gives us our linear layer output for the current time step'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`ps[t]` gives us our final softmax output (probabilities) for the current time
+    step'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculations for `ys[t]` and `ps[t]` are outside the second loop because there
+    is only one linear layer, as opposed to an arbitrary number of RNN layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we return the loss, and `hs[len(x)-1]` is used as `hprev` for our next
+    sequence. We use the cache to fetch the gradients during the backward pass.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The choice was made to use the indexing `[t][l]` to store the hidden state for
+    the l-th layer at time step t. This is because the model processes the input sequence
+    one timestep at a time, and at each timestep, it updates the hidden state for
+    each layer. By using the indexing `[t][l]`, we are able to keep track of the hidden
+    state for each layer at each timestep, allowing us to easily perform the necessary
+    computations for the forward pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, this indexing allows for easy access to the hidden state of the
+    last timestep, which is returned as `hs[len(x)-1]`, as it is the hidden state
+    of the last timestep in the sequence for each layer. This returned hidden state
+    is used as the initial hidden state for the next sequence during the training
+    process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s perform the forward pass. Remember, there is no batch dimension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Backward Pass
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, some intuition for the backwards pass of a RNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key difference between backpropagation in a basic ANN and an RNN is the
+    way the error is propagated through the network. While both ANNs and RNNs propagate
+    the error from the output layer to the input layer, RNNs also propagate the error
+    backwards through time, adjusting the weights and biases at each time step. This
+    allows RNNs to process sequential data and maintain a “memory” in the form of
+    its hidden state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The BPTT (backpropagation through time) algorithm works by unrolling the RNN
+    over time, creating a computational graph for each time step. The graph for this
+    network can be seen [here](https://github.com/j0sephsasson/numpy-RNN/blob/main/README.md#dag-directed-acyclic-graph).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gradients are then calculated for each time step and accumulated over the
+    entire sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Same as the forward pass, let’s break it down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first thing this function does is initialize the gradients for the weights
+    and biases to zero, similar to what happens in a feedforward ANN. This is something
+    that confused me, so I am going to elaborate a bit more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By resetting the gradients to zero before every sequence, it ensures that the
+    gradients calculated for the current sequence do not accumulate or add up with
+    the gradients calculated in the previous sequences.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This prevents the gradients from becoming too large, which can cause the optimization
+    process to diverge and negatively impact model performance. Additionally, it allows
+    for weight updates to be performed independently for each sequence, which can
+    lead to more stable and consistent optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, it loops through the input sequence in reverse, performing the following
+    computations for each time step t:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice the comment, backprop into y, that link will explain what is happening
+    perfectly. I also go into depth on this in a previous article you can check out
+    [here](/coding-a-neural-network-from-scratch-in-numpy-31f04e4d605).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Calculates the gradient of the hidden state `hs[t][l]` with respect to the loss,
+    denoted by `dh`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculates the gradient of the raw hidden state, denoted by `dhraw`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**What is the difference between dh and dhraw?** Good question.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference between `dh` and `dhraw` is that `dh` is the gradient of the
+    hidden state `hs[t][l]` with respect to the loss, computed by backpropagating
+    the gradient of the probabilities `ps[t]` of the softmax activation of the output
+    layer. `dhraw` is the same gradient, but it is further backpropagated through
+    the non-linear tanh activation function by element-wise multiplying the gradient
+    of the hidden state `dh` with the derivative of the tanh function, which is (1
+    - `hs[t][l]` * `hs[t][l]`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculates the gradient of the hidden bias `bh[l]`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculates the gradient of the input-hidden weights `Wxh[l]` with respect to
+    the loss, denoted by `dWxh[l]`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculates the gradient of the hidden-hidden weights `Whh[l]` with respect to
+    the loss, denoted by `dWhh[l]`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Calculates the gradient of the next hidden state `dhnext[l]`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/e91d9fe6514462f99b70442da08f5562.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mathematical notation of backward pass computations. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s perform the backward pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we return the gradients so we can update the parameters, and that is
+    a segway into my next topic — the optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimizer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Like it says in the RNN class ‘update’ method, we will be using Adagrad for
+    this implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adagrad is an optimization algorithm that adapts the learning rate of each parameter
+    in a neural network individually, based on the historical gradient information.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It’s particularly useful for handling sparse data and is often used in natural
+    language processing tasks. Adagrad makes adjustments to the learning rate at each
+    iteration, ensuring that the model learns from the data as quickly and efficiently
+    as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This block of code updates the parameters of the RNN using the Adagrad optimization
+    algorithm. It keeps track of the sum of squares of the gradients of the parameters
+    (`mWxh`, `mWhh`, `mbh`, `mWhy` and `mby`) and divides the learning rate with the
+    square root of that sum plus a small constant value of `1e-8`, to ensure numerical
+    stability, effectively adjusting the learning rate for each parameter. Additionally,
+    it clips the gradients to prevent [exploding gradients](https://machinelearningmastery.com/exploding-gradients-in-neural-networks/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adagrad adapts the learning rate for each parameter, performing larger updates
+    for infrequent parameters and smaller updates for frequent parameters. Meaning,
+    parameters that are updated infrequently, the learning rate will be larger, so
+    that the model can make bigger adjustments to those parameters. On the other hand,
+    for parameters that are updated frequently, the learning rate will be smaller,
+    so that the model can make small adjustments to those parameters, preventing overfitting.
+    This is in contrast to using a fixed learning rate, which could either under-correct
+    or over-correct the parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s perform the parameter update.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The final piece is actually training the network, where the input sequences
+    are fed through the network, the error is calculated and the optimizer updates
+    the weights and biases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: This block of code is pretty straightforward. We are performing a forward and
+    backward pass, and updating the model parameters every epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Something I would like to point out —
+  prefs: []
+  type: TYPE_NORMAL
+- en: The loss is updated by a weighted average of the current loss and the previous
+    loss.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The current loss is multiplied by 0.001 and added to the previous loss, which
+    is multiplied by 0.999\. This means that the current loss will only have a small
+    impact on the total loss, while the previous losses will have a larger impact.
+    This way, the total loss will not fluctuate as much, and will be more stable over
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By using an EMA (exponential moving average), it is easier to monitor the performance
+    of the network and detect when it is overfitting or underfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91ade5e2003cec0536e4f7e6880e1946.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss & text prediction at iteration zero. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d180c19cec0dddaac9eecb78088be9e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss & text prediction at iteration 14,000\. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/981f59809bea423f9fc013d586b3ee2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss after 50,000 epochs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The training process of our RNN has been successful, we can see the decrease
+    in loss and the improved quality of the generated samples. However, it is important
+    to note that generating original Shakespeare is a complex task, and this particular
+    implementation is a simple vanilla RNN. Therefore, there is room for further improvement
+    and experimentation with different architectures and techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In conclusion, this article has demonstrated the implementation and training
+    of a character-level RNN using Numpy. The many-to-many architecture and online
+    learning approach allows the network to adapt to new patterns in the data as they
+    are encountered, resulting in improved sample generation. While this network is
+    quasi-capable of generating original Shakespeare text, it is important to note
+    that this is a simplified version and there are many other architectures and techniques
+    that can be explored for much better performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Full code & repo [here](https://github.com/j0sephsasson/numpy-RNN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to get in touch & ask questions, or make improvements to the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Thanks for reading!**'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,612 @@
+- en: 'LLMOps: Production Prompt Engineering Patterns with Hamilton'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/llmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2?source=collection_archive---------1-----------------------#2023-09-13](https://towardsdatascience.com/llmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2?source=collection_archive---------1-----------------------#2023-09-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An overview of the production-grade ways to iterate on prompts with Hamilton
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)[![Stefan
+    Krawczyk](../Images/150405abaad9590e1dc2589168ed2fa3.png)](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5c3a20178ad2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5c3a20178ad2--------------------------------)
+    [Stefan Krawczyk](https://medium.com/@stefan.krawczyk?source=post_page-----5c3a20178ad2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F193628e26f00&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2&user=Stefan+Krawczyk&userId=193628e26f00&source=post_page-193628e26f00----5c3a20178ad2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5c3a20178ad2--------------------------------)
+    ·13 min read·Sep 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5c3a20178ad2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2&user=Stefan+Krawczyk&userId=193628e26f00&source=-----5c3a20178ad2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5c3a20178ad2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllmops-production-prompt-engineering-patterns-with-hamilton-5c3a20178ad2&source=-----5c3a20178ad2---------------------bookmark_footer-----------)![](../Images/e12ddab031956fa56ab4177df69ca46a.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompts. How do you evolve them in a production context? *This post is based
+    on one that originally appeared* [*here*](https://blog.dagworks.io/p/llmops-production-prompt-engineering)*.*
+    Image from [pixabay](https://pixabay.com/illustrations/picture-frame-banner-status-badge-3042585/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What you send to your large language model (LLM) is quite important. Small variations
+    and changes can have large impacts on outputs, so as your product evolves, the
+    need to evolve your prompts will too. LLMs are also constantly being developed
+    and released, and so as LLMs change, your prompts will also need to change. Therefore
+    it’s important to set up an iteration pattern to operationalize how you “deploy”
+    your prompts so you and your team can move efficiently, but also ensure that production
+    issues are minimized, if not avoided. In this post, we’ll guide you through the
+    best practices of managing prompts with [Hamilton](http://github.com/dagworks-inc/hamilton),
+    an open source micro-orchestration framework, making analogies to [MLOps](https://en.wikipedia.org/wiki/MLOps)
+    patterns, and discussing trade-offs along the way. The high level takeaways of
+    this post are still applicable even if you don’t use Hamilton.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A few things before we start:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am one of the co-creators of [Hamilton](http://github.com/dagworks-inc/hamilton).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Not familiar with [Hamilton](http://github.com/dagworks-inc/hamilton)? Scroll
+    all the way to the bottom for more links.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If you’re looking for a post that talks about “context management” this isn’t
+    that post. But it is the post that will help you with the nuts and bolts on how
+    to iterate and create that production grade “prompt context management” iteration
+    story.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We’ll use prompt & prompt template interchangeably.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We’ll assume an “online” web-service setting is where these prompts are being
+    used.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We’ll be using our [Hamilton’s PDF summarizer example](https://github.com/DAGWorks-Inc/hamilton/tree/main/examples/LLM_Workflows/pdf_summarizer)
+    to project our patterns onto.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What’s our credibility here? We’ve spent our careers building self-service data/MLOps
+    tooling, most famously for Stitch Fix’s 100+ Data Scientists. So we’ve seen our
+    share of outages and approaches play out over time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Prompts are to LLMs what hyper-parameters are to ML models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Point:** Prompts + LLM APIs are analogous to hyper-parameters + machine learning
+    models.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In terms of “Ops” practices, LLMOps is still in its infancy. MLOps is a little
+    older, but still neither are widely adopted if you’re comparing it to how widespread
+    knowledge is around DevOps practices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DevOps practices largely concern themselves with how you ship code to production,
+    and MLOps practices how to ship code ***& data artifacts*** (e.g., statistical
+    models)to production. So what about LLMOps? Personally, I think it’s closer to
+    MLOps since you have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: your LLM workflow is simply code.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: and an LLM API is a data artifact that can be “tweaked” using prompts, similar
+    to a machine learning (ML) model and its hyper-parameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Therefore, you most likely care about versioning the LLM API + prompts together
+    tightly for good production practices. For instance, in MLOps practice, you’d
+    want a process in place to validate your ML model still behaves correctly whenever
+    its hyper-parameters are changed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How should you think about operationalizing a prompt?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To be clear, the two parts to control for are the *LLM* and the *prompts*. Much
+    like MLOps, when the code or the model artifact changes, you want to be able to
+    determine which did. For LLMOps, we’ll want the same discernment, separating the
+    LLM workflow from the LLM API + prompts. Importantly, we should consider LLMs
+    (self-hosted or APIs) to be mostly static since we less frequently update (or
+    even control) their internals. So, changing the *prompts* part of LLM API + prompts
+    is effectively like creating a new model artifact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two main ways to treat prompts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prompts as dynamic runtime variables**. The template used isn’t static to
+    a deployment.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Prompts as code.** The prompt template is static/ predetermined given a deployment.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The main difference is the amount of moving parts you need to manage to ensure
+    a great production story. Below, we dig into how to use Hamilton in the context
+    of these two approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompts as dynamic runtime variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dynamically Pass/Load Prompts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Prompts are just strings. Since strings are a primitive type in most languages,
+    this means that they are quite easy to pass around. The idea is to abstract your
+    code so that at runtime you pass in the prompts required. More concretely, you’d
+    “load/reload” prompt templates whenever there’s an “updated” one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MLOps analogy here, would be to auto-reload the ML model artifact (e.g.,
+    a pkl file) whenever a new model is available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9be4a5424bd19e9f1f9b4908676d99d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'MLOps Analogy: diagram showing how ML model auto reloading would look. Image
+    by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5eba88a24da31dd531ba38a42de38f3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram showing what dynamically reloading/querying prompts would look like.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The benefit here is that you can very quickly roll out new prompts because you
+    do not need to redeploy your application!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The downside to this iteration speed is increased operational burden:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To someone monitoring your application, it’ll be unclear when the change occurred
+    and whether it’s propagated itself through your systems. For example, you just
+    pushed a new prompt, and the LLM now returns more tokens per request, causing
+    latency to spike; whoever is monitoring will likely be puzzled, unless you have
+    a great change log culture.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Rollback semantics involve having to know about *another* system. You can’t
+    just rollback a prior deployment to fix things.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You’ll need great monitoring to understand what was run and when; e.g., when
+    customer service gives you a ticket to investigate, how do you know what prompt
+    was in use?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You’ll need to manage and monitor whatever system you’re using to manage and
+    store your prompts. This will be an extra system you’ll need to maintain outside
+    of whatever is serving your code.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You’ll need to manage two processes, one for updating and pushing the service,
+    and one for updating and pushing prompts. Synchronizing these changes will be
+    on you. For example, you need to make a code change to your service to handle
+    a new prompt. You will need to coordinate changing two systems to make it work,
+    which is extra operational overhead to manage.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How it would work with Hamilton
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Our PDF summarizer flow would look something like this if you remove `summarize_text_from_summaries_prompt`
+    and `summarize_chunk_of_text_prompt` function definitions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c2edc36ce6f03b6ef456e4e855bc4bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: summarization_shortened.py. Note the two inputs `*_prompt` that denote prompts
+    that are now required as input to the dataflow to function. With Hamilton you’ll
+    be able to determine what inputs should be required for your prompt template by
+    just looking at a diagram like this. Diagram created via Hamilton. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To operate things, you’ll want to either inject the prompts at request time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or you change your code to dynamically load prompts, i.e., add functions to
+    retrieve prompts from an external system as part of the Hamilton dataflow. At
+    each invocation, they will query for the prompt to use (you can of course cache
+    this for performance):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Driver code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: How would I log prompts used and monitor flows?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here we outline a few ways to monitor what went on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Log results of execution. That is run Hamilton, then emit information to wherever
+    you want it to go.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note. In the above, Hamilton allows you to request* **any *intermediate***
+    *outputs simply by requesting “functions” (i.e. nodes in the diagram) by name.
+    If we really want to get all the intermediate outputs of the entire dataflow,
+    we can do so and log it wherever we want to!*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Use loggers inside Hamilton functions (to see the power of this approach, [see
+    my old talk on structured logs](https://www.youtube.com/watch?v=4Y3VdS2pLF4)):'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Extend Hamilton to emit this information. You use Hamilton to capture information
+    from executed functions, i.e. nodes, without needing to insert logging statement
+    inside the function’s body. This promotes reusability since you can toggle logging
+    between development and production settings at the Driver level. See [GraphAdapters](https://hamilton.dagworks.io/en/latest/reference/graph-adapters/),
+    or write your own [Python decorator](https://realpython.com/primer-on-python-decorators/#simple-decorators)
+    to wrap functions for monitoring.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In any of the above code, you could easily pull in a 3rd party tool to help
+    track & monitor the code, as well as the external API call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompts as code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Prompts as static strings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since prompts are simply strings, they’re also very amenable to being stored
+    along with your source code. The idea is to store as many prompt versions as you
+    like within your code so that at runtime, the set of prompts available is fixed
+    and deterministic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MLOps analogy here is, instead of dynamically reloading models, you instead
+    bake the ML model into the container/hard code the reference. Once deployed, your
+    app has everything that it needs. The deployment is immutable; nothing changes
+    once it’s up. This makes debugging & determining what’s going on, much simpler.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6b4892b68bdd963d6a95375f8129072.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'MLOps Analogy: make an immutable deployment by making the model fixed for your
+    app’s deployment. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1a0b5cfaa56786c4fa4908b3a0c9b93.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram showing how treating prompts as code enables you to leverage your CI/CD
+    and build an immutable deployment for talking to your LLM API. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This approach has many operational benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whenever a new prompt is pushed, it forces a new deployment. Rollback semantics
+    are clear if there’s an issue with a new prompt.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You can submit a pull request (PR) for the source code and prompts at the same
+    time. It becomes simpler to review what the change is, and the downstream dependencies
+    of what these prompts will touch/interact with.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You can add checks to your CI/CD system to ensure bad prompts don’t make it
+    to production.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It’s simpler to debug an issue. You just pull the (Docker) container that was
+    created and you’ll be able to exactly replicate any customer issue quickly and
+    easily.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: There is no other “prompt system” to maintain or manage. Simplifying operations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It doesn’t preclude adding extra monitoring and visibility.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How it would work with Hamilton
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The prompts would be encoded into functions into the dataflow/directed acyclic
+    graph (DAG):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e6312bfd0b4ee92760f5999a4e30b8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What summarization.py in the PDF summarizer example looks like. The prompt templates
+    are part of the code. Diagram created via Hamilton. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pairing this code with [git](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control),
+    we have a lightweight versioning system for your entire dataflow (i.e. “chain”),
+    so you can always discern what state the world was in, given a git commit SHA.
+    If you want to manage and have access to multiple prompts at any given point in
+    time, Hamilton has two powerful abstractions to enable you to do so: `@config.when`
+    and *Python modules*. This allows you to store and keep available all older prompt
+    versions together and specify which one to use via code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '@config.when ([docs](https://hamilton.dagworks.io/en/latest/reference/decorators/config_when/))'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Hamilton has a concept of decorators, which are just annotations on functions.
+    The `@config.when` decorator allows to specify alternative implementations for
+    a functions, i.e. “node”, in your dataflow. In this case, we specify alternative
+    prompts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can keep adding functions annotated with `@config.when`, allowing you to
+    swap between them using configuration passed to the Hamilton `Driver`. When instantiating
+    the `Driver`, it will construct the dataflow using the prompt implementation associated
+    with the configuration value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Module switching
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Alternatively to using `@config.when`, you can instead place your different
+    prompt implementations into different Python modules. Then, at `Driver` construction
+    time, pass the correct module for the context you want to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So here we have one module housing V1 of our prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here we have one module housing V2 (see how they differ slightly):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the driver code below, we choose the right module to use based on some context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the module approach allows us to encapsulate and version whole sets of
+    prompts together. If you want to go back in time (via git), or see what a blessed
+    prompt version was, you just need to navigate to the correct commit, and then
+    look in the right module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How would I log prompts used and monitor flows?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Assuming you’re using git to track your code, you wouldn’t need to record what
+    prompts were being used. Instead, you’d just need to know what git commit SHA
+    is deployed and you’ll be able to track the version of your code and prompts simultaneously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To monitor flows, just like the above approach, you have the same monitoring
+    hooks available at your disposal, and I wont repeat them here, but they are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Request any intermediate outputs and log them yourself outside of Hamilton.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Log them from within the function yourself, or build a [Python decorator](https://realpython.com/primer-on-python-decorators/#simple-decorators)
+    / [GraphAdapter](https://hamilton.dagworks.io/en/latest/reference/graph-adapters/)
+    to do it at the framework level.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Integrate 3rd party tooling for monitoring your code and LLM API calls.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: or all the above!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What about A/B testing my prompts?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With any ML initiative, it’s important to measure business impacts of changes.
+    Likewise, with LLMs + prompts, it’ll be important to test and measure changes
+    against important business metrics. In the MLOps world, you’d be A/B testing ML
+    models to evaluate their business value by dividing traffic between them. To ensure
+    the randomness necessary to A/B tests, you wouldn’t know at runtime which model
+    to use until a coin is flipped. However, to get those models out, they both would
+    have follow a process to qualify them. So for prompts, we should think similarly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above two prompt engineering patterns don’t preclude you from being able
+    to A/B test prompts, but it means you need to manage a process to enable however
+    many prompt templates you’re testing in parallel. If you’re also adjusting code
+    paths, having them in code will be simpler to discern and debug what is going
+    on, and you can make use of the ``@config.when`` decorator / python module swapping
+    for this purpose. Versus, having to critically rely on your logging/monitoring/observability
+    stack to tell you what prompt was used if you’re dynamically loading/passing them
+    in and then having to mentally map which prompts go with which code paths.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, this all gets harder if you start needing to change multiple prompts for
+    an A/B test because you have several of them in a flow. For example you have two
+    prompts in your workflow and you’re changing LLMs, you’ll want to A/B test the
+    change holistically, rather than individually per prompt. Our advice, by putting
+    the prompts into code your operational life will be simpler, since you’ll know
+    what two prompts belong to what code paths without having to do any mental mapping.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we explained two patterns for managing prompts in a production
+    environment with Hamilton. The first approach treats **prompts as** **dynamic
+    runtime variables,** while the second, treats **prompts as code** for production
+    settings. If you value reducing operational burden, then our advice is to encode
+    prompts as code, as it is operationally simpler, unless the speed to change them
+    really matters for you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To recap:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prompts as dynamic runtime variables**. Use an external system to pass the
+    prompts to your Hamilton dataflows, or use Hamilton to pull them from a DB. For
+    debugging & monitoring, it’s important to be able to determine what prompt was
+    used for a given invocation. You can integrate open source tools, or use something
+    like the DAGWorks Platform to help ensure you know what was used for any invocation
+    of your code.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Prompts as code.** Encoding the prompts as code allows easy versioning with
+    git. Change management can be done via pull requests and CI/CD checks. It works
+    well with Hamilton’s features like `@config.when` and module switching at the
+    Driver level because it determines clearly what version of the prompt is used.
+    This approach strengthens the use of any tooling you might use to monitor or track,
+    like the DAGWorks Platform, as prompts for a deployment are immutable.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We want to hear from you!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you’re excited by any of this, or have strong opinions, leave a comment,
+    or drop by our Slack channel! Some links to do praise/complain/chat:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 📣 [join our community on Slack](https://join.slack.com/t/hamilton-opensource/shared_invite/zt-1bjs72asx-wcUTgH7q7QX1igiQ5bbdcg)
+    — we’re more than happy to help answer questions you might have or get you started.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ⭐️ us on [GitHub](https://github.com/DAGWorks-Inc/hamilton).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 📝 leave us an [issue](https://github.com/DAGWorks-Inc/hamilton/issues) if you
+    find something.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 📚 read our [documentation](https://hamilton.dagworks.io/en/latest/).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ⌨️ interactively [learn about Hamilton in your browser](https://www.tryhamilton.dev/).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Other Hamilton links/posts you might be interested in:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[tryhamilton.dev](https://www.tryhamilton.dev/) — an interactive tutorial in
+    your browser!'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Hamilton + Lineage in 10 minutes](/lineage-hamilton-in-10-minutes-c2b8a944e2e6)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How to use Hamilton with Pandas in 5 Minutes](/how-to-use-hamilton-with-pandas-in-5-minutes-89f63e5af8f5)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How to use Hamilton with Ray in 5 minutes](/scaling-hamilton-with-ray-in-5-minutes-3beb1755fc09)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How to use Hamilton in a Notebook environment](/how-to-iterate-with-hamilton-in-a-notebook-8ec0f85851ed)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[General backstory & introduction on Hamilton](/functions-dags-introducing-hamilton-a-microframework-for-dataframe-generation-more-8e34b84efc1d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[The perks of creating dataflows with Hamilton](https://medium.com/@thijean/the-perks-of-creating-dataflows-with-hamilton-36e8c56dd2a)
+    (Organic user post on Hamilton!)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

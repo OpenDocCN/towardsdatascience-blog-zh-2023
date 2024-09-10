@@ -1,0 +1,634 @@
+- en: Monitoring NLP models in production
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20](https://towardsdatascience.com/monitoring-nlp-models-in-production-ac65745772cf?source=collection_archive---------4-----------------------#2023-02-20)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A code tutorial on detecting drift in text data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[![Elena
+    Samuylova](../Images/bc3024500f8b90a97f13d82ecaa1c9e7.png)](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)
+    [Elena Samuylova](https://medium.com/@elena.samuylova?source=post_page-----ac65745772cf--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9621354b583a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=post_page-9621354b583a----ac65745772cf---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ac65745772cf--------------------------------)
+    ·13 min read·Feb 20, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&user=Elena+Samuylova&userId=9621354b583a&source=-----ac65745772cf---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fac65745772cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonitoring-nlp-models-in-production-ac65745772cf&source=-----ac65745772cf---------------------bookmark_footer-----------)![](../Images/29f88501939d130d890f1672efc66d29.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All production ML models need [monitoring](https://www.evidentlyai.com/blog/pragmatic-ml-monitoring-metrics).
+    NLP models are no exception. But, monitoring models that use text data can be
+    quite different from, say, a model built on tabular data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In this tutorial, we will dive into a specific example.** We will explore
+    issues affecting the performance of NLP models in production, imitate them on
+    an example toy dataset, and show how to monitor and debug them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will work with a drug review dataset and go through the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train a simple review classification model, and evaluate its quality on a validation
+    dataset;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Imitate data quality issues, test their impact on the model accuracy, and explore
+    how one can identify them in advance;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Apply the model to the new data, and explore how to detect and debug model quality
+    decay when applied to previously unseen inputs.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will use the [Evidently open-source Python library](https://github.com/evidentlyai/evidently)
+    to evaluate and debug model issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can reproduce the steps and explore additional details in the* [*example
+    Colab notebook*](https://colab.research.google.com/drive/15ON-Ub_1QUYkDbdLpyt-XyEx34MD28E1)*.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The use case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/70b7ab28a5ca20556f1eb7af415191fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s imagine that you want to **classify reviews of medications.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: This NLP use case is common in e-commerce. For example, users might leave reviews
+    on the online pharmacy website. You might want to assign a category to each review
+    based on its content, such as “side effects,” “ease of use,” or “effectiveness.”
+    Once you create a model, you can automatically classify each newly submitted review.
+    Tags will improve the user experience, helping find relevant content faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You might use a similar classification model in other scenarios. For example,
+    to surface relevant information and enrich user experience in a healthcare-focused
+    chat app. In this case, you’d likely classify the reviews in batches and store
+    them in some database. You can retrieve them on demand to surface the content
+    to the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take this use case as an inspiration and start with a simpler classification
+    model. Our goal is to predict whether **the overall review sentiment** is highly
+    positive or negative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To solve this problem, you first need a labeled dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bec67970ac4767dc4d9bbd76ea6d4d8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For illustration purposes, we will work with a [drug review dataset](https://archive.ics.uci.edu/ml/datasets/Drug+Review+Dataset+%28Drugs.com%29)
+    from the UCI repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Disclaimer:*** *this created model is used solely for research and educational
+    purposes to illustrate the ML model evaluation and monitoring process. It should
+    not be used in any other form or purpose or to inform any actual decisions.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The dataset is fairly large. We will start with one particular subset: reviews
+    of painkiller medications. We will split them into two parts. 60% goes to the
+    “training” partition. The other 40% is the “validation” part.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will train a model to distinguish between reviews with ratings “1” (negative
+    review) and “10” (positive review), making it a simple binary classification problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, you often have limited labeled data. It is not unusual to start
+    with a dataset representing only a subset of the data to which the model might
+    eventually be applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we train the model, we can evaluate its accuracy on the validation dataset.
+    Here is what we got: the accuracy on the validation dataset is 0.836\. Let’s consider
+    it to be good enough for our demo purposes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can expect similar quality in production on similar data. If the accuracy
+    falls considerably below this level, we should react and dig deeper into what
+    is happening.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/507f774ac6b71d1cfbbdc1e95eba5286.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Note:** this is a simple demo. If you are working with a real use case, don’t
+    forget about cross-validation to make better-informed expectations about your
+    model quality.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model in production
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once we put the model in production, we apply it to the new, unseen data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the e-commerce example, we will likely wrap the model as an API. We will
+    call the model once a new review is submitted on the website and assign a category
+    to display based on the model’s response. In the chat app scenario, we will likely
+    perform batch scoring. We will write the new predictions with assigned labels
+    to a database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ‍ **In both cases, you typically do not get immediate feedback.** There is no
+    quick way to know if the predicted labels are correct. However, you do need *something*
+    to keep tabs on the model’s performance to ensure it works as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/995ce8d5d0943125e79b605401c4805e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are different ways to understand if the model is doing well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You can have a feedback mechanism directly in the website UI.** For example,
+    you can allow the review authors or readers to report incorrectly assigned categories
+    and suggest a better one. If you get a lot of reports or corrections, you can
+    react to this and investigate.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Manual labeling as quality control.** In the simplest form, the model creator
+    can look at some of the model predictions to see if it behaves as expected. You
+    can also engage external labelers from time to time to label a portion of the
+    data. This way, you can directly evaluate the quality of the model predictions
+    against expert-assigned labels.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In both cases, the model checks are reactive: you can only notice and address
+    any model quality issues **after** you get the labels and evaluate the accuracy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While you might often accept some delay or even quality drops (since the cost
+    of error is tolerable), trying to detect the issues in advance is a good practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two frequent culprits of model quality decay are data quality issues and
+    changes in the input data distributions. Let’s explore how one can detect those!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Example 1: data quality and integrity'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/93c8d467152f2715cc8b248474802871.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data quality issues come in all shapes and sizes.** For example, you might
+    have some bugs in the input data processing that leak HTML tags into the text
+    of the reviews. Data might also be corrupted due to wrong encoding, the presence
+    of special symbols, text in different languages, emojis, and so on. There might
+    be bugs in the feature transformation code, post-processing, or cleaning steps
+    that you run as part of a scoring pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In our case, we artificially changed the dataset.** We took the same validation
+    dataset and made a few changes: injected random HTML tags and translated some
+    reviews into French. The goal was to “break” the dataset, imitating the data quality
+    issues.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can see the complete code in the accompanying* [*notebook*](https://colab.research.google.com/drive/15ON-Ub_1QUYkDbdLpyt-XyEx34MD28E1)*.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Now, let’s check the model quality on this modified data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79b684d8650e9248e80b4fb171f1bd39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model quality is below what was seen in the initial validation on the “clean”
+    dataset. The accuracy is only 0.747.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How can we troubleshoot this decay?** Had it occurred in practice, our next
+    step would be to dig into the model’s performance and data to understand what
+    is happening. Let’s have a look!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll use [Evidently Python library](https://github.com/evidentlyai/evidently).
+    It contains various evaluation metrics and tests and helps generate interactive
+    reports for different scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, we will create a custom report by combining several evaluations
+    we want to run to understand data changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To apply Evidently, we first need to prepare the data and map the schema so
+    that Evidently can parse it correctly. This is called “column mapping.” We re-use
+    it across all our evaluations since the data schema stays the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is how we point to the columns with the predictions, target values and
+    specify that the column with reviews should be treated as the text column:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we generate the report. To do that, we need to do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: pass our original validation data as “reference” (the baseline for comparison)
+    and the modified validation data as “current,”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: specify the types of evaluations (“metrics”) that we want to include in the
+    report,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: call the visual report to explore in the Jupyter notebook or Colab.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In our case, we choose the evaluate target, prediction, and data drift. First,
+    we want to see if the model outputs have changed. Second, we want to see if the
+    input text has changed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ‍ **There are a few ways to evaluate the similarity between text datasets.**
+    One way is to compare the descriptive statistics of the text data (such as length
+    of text, the share of out-of-vocabulary words, and the share of non-letter symbols)
+    and explore if they have shifted between the two datasets. This option is available
+    in Evidently as the **Text Descriptors Drift** metric. We will include it in the
+    combined report in addition to evaluating drift in the model predictions and target.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is how you can call it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we display the report, one can see no drift in the true labels or predicted
+    probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ff9eadc4b9e316df5e0b600b7677af4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But some input text properties are different!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/54d0cbb0432144ee736f70f8ac52bf8a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under the hood, Evidently calculates these descriptors and applies different
+    statistical tests and distance metrics to examine if there is a significant shift
+    between the two datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, it points out a **change in the distribution of text length**.
+    If we expand the details in the report, we can see some additional plots that
+    help understand the shift.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some reviews are now suspiciously long:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dfe31d04294252342c2fcfdaaca6b62f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The vocabulary has also shifted.** Multiple reviews contain over 30% of out-of-vocabulary
+    words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6fba019ed3de59b38b551767960974db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These findings can help us find examples of changes to understand what is going
+    on. For instance, we can query our dataset for all the long reviews with over
+    1000 words and reviews with over 30% of out-of-vocabulary words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we surface the examples, we can quickly see what is going on here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Texts containing HTML tags directly in the body are passed to the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The reviews are in a new, unexpected language
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is one of the query results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73d9980b30bf109fd6af00299f610299.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the example notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Knowing what exactly has happened, we can now resolve the issue with the data
+    engineering team (to sort out the pipelines) and the product team (to make sure
+    that the reviews in French are expected, and it is time to create a separate model
+    for those).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Example 2: data distribution change'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/ce069d5fe9c72783104b64de2273ea69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is another type of change that might occur in production: change in the
+    **content** of the texts the model is tasked to analyze. Such a shift can ultimately
+    lead to model quality degradation or **model drift**. It can come in different
+    forms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One is **concept drift,** when some concepts the model learns evolve. For example,
+    some words or symbols can gradually change their meaning. Maybe some emoji previously
+    representative of a “positive” review is now frequently used with the opposite
+    intention. Or perhaps there is a second new drug on the market with the same active
+    ingredient, which converts one “concept” into two different ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another is **data drift,** when the model is applied to new data different from
+    the training. The relationships the model has learned still hold. But it hasn’t
+    seen anything related to the patterns on the latest data and thus cannot score
+    it that well. For example, you will observe data drift if you apply the model
+    trained to classify medical reviews to other products.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the difference between data and concept drift is useful when interpreting
+    the changes. However, to detect them, we would typically use the same approach.
+    If you already have the labels, **the true model quality** (e.g., accuracy) is
+    the best measure of model drift. If you do not have the labels or want to debug
+    the quality drop, you can look at the **change in the input data and prediction**
+    and then interpret it using your domain understanding**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s return to our example dataset and see how the model drift can look in
+    practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**We will now apply our model to a new, unseen dataset.** We will use a different
+    category of drug reviews: they are no longer related to the painkiller medication
+    but instead to the anti-depressant drugs. We may still expect reasonable quality:
+    reviewers could use overlapping words to describe whether or not some medication
+    works.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model does not fail completely, but the accuracy is only 0.779.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae6d6708b6c5720ebdc9e3c6b39c4559.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is lower than expected. Let’s investigate!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can again generate the drift report and will immediately notice some changes.
+    Notably, the distribution of labels has drifted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e147694988fe7ed6597367cf8c4cf55.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reviews are also longer in the current dataset, and OOV words appear more often.
+    But there is nothing as obvious as in the case above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/453e3c043d60b54a65131852e8afc109.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can try something else to debug what is happening: instead of comparing
+    text stats, look to evaluate if the **content** of the dataset has changed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are many methods to detect data drift. With tabular data, you’d typically
+    look at the distributions of the individual features in the dataset. With text
+    data, this approach is not so convenient: you probably do not want to count the
+    distribution of each word in the dataset. There are simply too many, and the results
+    will be hard to interpret.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ‍**Evidently applies a different approach for text drift detection:** [**a domain
+    classifier**](https://www.evidentlyai.com/blog/evidently-data-quality-monitoring-and-drift-detection-for-text-data)**.**
+    It trains a background model to distinguish between the reference and the current
+    dataset. The ROC AUC of the binary classifier shows if the drift is detected.
+    If a model can reliably identify the reviews that belong to the current or reference
+    dataset, the two datasets are probably sufficiently different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e2b46a3cb38cf68cad5643f7634f1bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This approach, among others, is described in the paper “ [Failing loudly](https://arxiv.org/abs/1810.11953):
+    An Empirical Study of Methods for Detecting Dataset Shift.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is not without caveats. If you have some temporal information in the new
+    dataset (for example, each review includes the date), the model might quickly
+    learn to distinguish between the datasets. This might be simply because one of
+    them contains the word “March” and another “February,” or due to the mention of
+    the Black Friday promotions. However, we can evaluate this by looking at the top
+    features of the domain classifier model and some examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If the text data drift is detected, Evidently will automatically provide some
+    helpful information:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Typical words in the current and reference dataset**. These words are most
+    indicative when predicting which dataset a specific review belongs to.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Examples of texts** from current and reference datasets that were the easiest
+    for a classifier to label correctly (with predicted probabilities being very close
+    to 0 or 1).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To use this method, we will create a new report and include the metric that
+    helps detect drift in a given column. For columns containing text data, domain
+    classifier is the default method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is what it shows for our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**First, it does indeed detect the distribution drift.** The classifier model
+    is very confident and has a ROC AUC of 0.94\. Second, the top distinctive features
+    very explicitly point to the possible change in the contents of the text.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reference dataset contains words like “pain” and “migraine.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a9043c06299641496b3e0f8d03e3619.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The current dataset has words like “depression” and “antidepressant.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c1f9519f7804f1dc52681350fc62e2b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author. Screenshot from the Evidently library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The same is clear from the specific example reviews. They refer to the different
+    groups of drugs, and the authors use different vocabulary to describe whether
+    a particular medication helped. For example, “improve mood” differs from “relieve
+    pain,” making it more difficult for the model to classify the review’s sentiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we identify the reason for model drift, we can devise a solution: typically,
+    retrain the model using the newly labeled data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to apply this in production?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this toy example, we showed the debugging workflow. We measured the factual
+    model accuracy and dug deeper to identify the reasons for the quality drop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In practice, you can perform data quality checks proactively.** For example,
+    you can implement this early quality control step in your batch scoring pipeline.
+    You can test your data to surface potential issues before you get the actual labels
+    or even score the model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you detect issues like the HTML tags in the body of the review, you can
+    take immediate action to resolve them: by updating and re-running the pre-processing
+    pipeline.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You can do the same for data drift checks**. Every time you get a new batch
+    of data, you can evaluate its key characteristics and how similar it is to the
+    previous batch.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you detect drift and see that it is indeed due to new types of content or
+    topics appearing, you can also take proactive steps. In this case, it most likely
+    means initiating a new labeling process and subsequent model retraining.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Evidently*** *is an open-source Python library that helps evaluate, test,
+    and monitor ML models in production. You can use it to detect data drift, data
+    quality issues or track model performance for tabular and text data.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[*Check it out on GitHub ⟶*](https://github.com/evidentlyai/evidently)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What’s next?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Evaluating text data drift can involve other challenges. For example, you might
+    need to monitor drift in embeddings instead of raw text data. You can also run
+    additional tests and evaluations, for example, related to the model’s robustness
+    and fairness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Sign up here](https://www.evidentlyai.com/user-newsletter) if you want to
+    get updates on the new hands-on tutorials and new feature releases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*https://www.evidentlyai.com*](https://www.evidentlyai.com/blog/tutorial-detecting-drift-in-text-data)
+    *on February 20, 2023, and co-authored with Natalia Tarasova.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,568 @@
+- en: PyTorch Model Performance Analysis and Optimization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-10c3c5822869?source=collection_archive---------1-----------------------#2023-06-12](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-10c3c5822869?source=collection_archive---------1-----------------------#2023-06-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to Use PyTorch Profiler and TensorBoard to Accelerate Training and Reduce
+    Cost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----10c3c5822869--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----10c3c5822869--------------------------------)[](https://towardsdatascience.com/?source=post_page-----10c3c5822869--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----10c3c5822869--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----10c3c5822869--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-10c3c5822869&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----10c3c5822869---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----10c3c5822869--------------------------------)
+    ·14 min read·Jun 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F10c3c5822869&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-10c3c5822869&user=Chaim+Rand&userId=9440b37e27fe&source=-----10c3c5822869---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F10c3c5822869&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-10c3c5822869&source=-----10c3c5822869---------------------bookmark_footer-----------)![](../Images/7f84d26fc7820a898904c7592bfaed50.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Torsten Dederichs](https://unsplash.com/es/@tdederichs?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training deep learning models, especially large ones, can be a costly expenditure.
+    One of the main methods we have at our disposal for managing these costs is performance
+    optimization. Performance optimization is an iterative process in which we consistently
+    search for opportunities to increase the performance of our application and then
+    take advantage of those opportunities. In previous posts (e.g., [here](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851))
+    we have stressed the importance of having appropriate tools for conducting this
+    analysis. The tools of choice will likely depend on a number of factors including
+    the type of training accelerator (e.g., GPU, HPU, or other) and the training framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7992ab67fcc7dccf2f93ae2d9e2c713.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance Optimization Flow (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The focus in this post will be on training in PyTorch on GPU. More specifically,
+    we will focus on the PyTorch’s built-in performance analyzer, [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html),
+    and on one of the ways to view its results, the [PyTorch Profiler TensorBoard
+    plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post is not meant to be a replacement for the official PyTorch documentation
+    on either [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    or the use of the TensorBoard plugin [for analyzing the profiler results](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
+    Our intention is rather to demonstrate how these tools might be used during the
+    course of one’s daily development. In fact, if you haven’t already, we recommend
+    that you take a look over the official documentation before reading this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a while, I have been intrigued by one portion in particular of the [TensorBoard-plugin
+    tutorial](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
+    The tutorial introduces a classification model (based on the Resnet architecture)
+    that is trained on the popular Cifar10 dataset. It proceeds to demonstrate how
+    PyTorch Profiler and the TensorBoard plugin can be used to [identify and fix a
+    bottleneck in the data loader](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html#improve-performance-with-the-help-of-profiler).
+    Performance bottlenecks in the input data pipeline are not uncommon and we have
+    discussed them at length in some of our previous posts (e.g., [here](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851)).
+    What is surprising about the tutorial is the final (post-optimization) results
+    that are presented (as of the time of this writing) which we have pasted in below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3037fbe369a1e810193072797343f468.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance Following Optimization (From [PyTorch Website](https://pytorch.org/tutorials/_static/img/profiler_overview2.png))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you look closely, you will see that the post-optimization GPU utilization
+    is 40.46%. Now there is no way to sugarcoat this: These results are absolutely
+    abysmal and should keep you up at night. As we have expanded on in the past (e.g.,
+    [here](/cloud-ml-performance-checklist-caa51e798002)), the GPU is the most expensive
+    resource in our training machine and our goal should be to maximize its utilization.
+    A 40.46% utilization result usually represents a significant opportunity for training
+    acceleration and cost savings. Surely, we can do better! In this blog post we
+    will *try* to do better. We will start by attempting to reproduce the results
+    presented in the official tutorial and see whether we can use the same tools to
+    further improve the training performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The code block below contains the training loop defined by the [TensorBoard-plugin
+    tutorial](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html),
+    with two minor modifications:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use a fake dataset with the same properties and behaviors as the [CIFAR10](https://pytorch.org/vision/stable/generated/torchvision.datasets.CIFAR10.html)
+    dataset that was used in the tutorial. The motivation for this change can be found
+    [here](http://groups.csail.mit.edu/vision/TinyImages/).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We initialize the [torch.profiler.schedule](https://pytorch.org/docs/stable/profiler.html#torch.profiler.schedule)
+    with the *warmup* flag set to *3* and the *repeat* flag set to *1*. We found that
+    this slight increase in the number of warmup steps improves the stability of the
+    profiling results.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The GPU that was used in the tutorial was a Tesla V100-DGXS-32GB. In this post
+    we attempt to reproduce — and improve on — the performance results from the tutorial
+    using an [Amazon EC2 p3.2xlarge](https://aws.amazon.com/ec2/instance-types/p3/)
+    instance that contains a Tesla V100-SXM2–16GB GPU. Although they share the same
+    architecture, there are some differences between the two GPUs which you can learn
+    about [here](https://www.nvidia.com/en-us/data-center/v100/). We ran the training
+    script using an [AWS PyTorch 2.0 Docker image](https://github.com/aws/deep-learning-containers).
+    The performance results of the training script as displayed in the overview page
+    of the TensorBoard viewer is captured in the image below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1be993ae78153718412f84ece3a05abf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Baseline Performance Results as Shown in the TensorBoard Profiler Overview Tab
+    (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We first note that, contrary to the tutorial, the Overview page (of [torch-tb-profiler](https://pypi.org/project/torch-tb-profiler/)
+    version 0.4.1) in our experiment combined the three profiling steps into one .
+    Thus, the average overall step time is 80 milliseconds and not 240 milliseconds
+    as reported. This can be seen clearly in the Trace tab (which, in our experience,
+    almost always provides a more accurate report) where each step takes ~80 milliseconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa7e6b427fb8929b878a816affdb8996.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Baseline Performance Results as Shown in the TensorBoard Profiler Trace View
+    Tab (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that our starting point of 31.65% GPU utilization and a step time of 80
+    milliseconds is different than the starting point presented in the tutorial of
+    23.54% and 132 milliseconds, respectively. This is likely a result of differences
+    in the training environment including the GPU type and the PyTorch version. We
+    also note that while the tutorial baseline results clearly diagnose the performance
+    issue as a bottleneck in the DataLoader, our results do not. We have often found
+    that data loading bottlenecks will disguise themselves as a high percentage of
+    “CPU Exec” or “Other” in the Overview tab.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #1: Multi-process Data Loading'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s start by applying [multi process data loading](https://pytorch.org/docs/stable/data.html#single-and-multi-process-data-loading)
+    as [described in the tutorial](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html#improve-performance-with-the-help-of-profiler).
+    Being that the [Amazon EC2 p3.2xlarge](https://aws.amazon.com/ec2/instance-types/p3/)
+    instance has 8 vCPUs, we set the number of [DataLoader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
+    workers to 8 for maximum performance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results of this optimization are displayed below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7c0643684275394383b2a2154d54f5b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Multi-proc Data Loading in the TensorBoard Profiler Overview Tab
+    (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The change to a single line of code increased the GPU utilization by more than
+    200% (31.65% from to 72.81%), and more than halved our training step time, (from
+    80 milliseconds down to 37).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where the optimization process in the tutorial comes to end. Although
+    our GPU utilization (72.81%) is quite a bit higher than the results in the tutorial
+    (40.46%), I have no doubt that, like us, you find these results to still be quite
+    unsatisfactory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Personal commentary that you should feel free to skip**: Imagine how much
+    global money could be saved if PyTorch applied multi-process data loading **by
+    default** when training on GPU! True, there may be some unwanted side-effects
+    to using multiprocessing. Nevertheless, there must be some form of auto-detection
+    algorithm that could be run that would rule out the presence of potentially problematic
+    scenarios and apply this optimization accordingly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #2: Memory Pinning'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we analyze the Trace view of our last experiment, we can see that a significant
+    amount of time (10 out of 37 milliseconds) is still spent on loading the training
+    data into the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d1d7033866a30dc56d38e38515eba0d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Multi-proc Data Loading in the Trace View Tab (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address this, we will apply another PyTorch-recommended optimization for
+    streamlining the data input flow, [memory pinning](https://pytorch.org/docs/stable/notes/cuda.html#use-pinned-memory-buffers).
+    Using pinned memory can increase the speed of host to GPU data copy and, more
+    importantly, allows us to make them asynchronous. This means that we can prepare
+    the next training batch **in the GPU** in parallel to running the training step
+    on the current batch. It is important to note that although [asynchronous execution](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)
+    will generally increase performance, it can also **reduce the accuracy of time
+    measurements**. For the purposes of our blog post we will continue to use the
+    measurements reported by PyTorch Profiler. See [here](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)
+    for instructions on how to attain precise measurements. For additional details
+    on memory pinning and its side effects, please see the [PyTorch documentation](https://pytorch.org/docs/stable/notes/cuda.html#use-pinned-memory-buffers).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This memory-pinning optimization requires changes to two lines of code. First,
+    we set the *pin_memory* flag of the [DataLoader](https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader)
+    to True.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we modify the host-to-device memory transfer (in the *train* function)
+    to be non-blocking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results of the memory pinning optimization are displayed below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99308bf791b6cab1174661fa1a488451.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Memory Pinning in the TensorBoard Profiler Overview Tab (Captured
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our GPU utilization now stands at a respectable 92.37% and our step time has
+    further decreased. But we can still do better. Note that despite this optimization,
+    the performance report continues to indicate that we are spending a lot of time
+    copying the data into the GPU. We will come back to this in step 4 below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #3: Increase Batch Size'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For our next optimization, we draw our attention to the [Memory View](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html#analyze-performance-with-other-advanced-features)
+    of the last experiment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2b16dc265436222bd68a440d24fd5ac9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Memory View in TensorBoard Profiler (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chart shows that out of 16 GB of GPU memory, we are peaking at less than
+    1 GB of utilization. This is an extreme example of resource under-utilization
+    that often (though not always) indicates an opportunity to boost performance.
+    One way to control the memory utilization is to increase the batch size. In the
+    image below we display the performance results when we increase the batch size
+    to 512 (and the memory utilization to 11.3 GB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0c4604a9367bc204d0d41ea6113f89f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Increasing Batch Size in the TensorBoard Profiler Overview Tab (Captured
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the GPU utilization measure did not change much, our training speed
+    has increased considerably, from 1200 samples per second (46 milliseconds for
+    batch size 32) to 1584 samples per second (324 milliseconds for batch size 512).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Caution**: Contrary to our previous optimizations, increasing the batch size
+    could have an impact on the behavior of your training application. Different models
+    exhibit different levels of sensitivity to a change in batch size. Some may require
+    nothing more than some tuning to the optimizer settings. For others, adjusting
+    to a large batch size may be more difficult or even impossible. See [this previous
+    post](/a-guide-to-highly-distributed-dnn-training-9e4814fb8bd3) for some of the
+    challenges involved in training on large batches.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #4: Reduce Host to Device Copy'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'You probably noticed the big red eyesore representing the host-to-device data
+    copy in the pie chart from our previous results. The most direct way of trying
+    to address this kind of bottleneck is to see if we can reduce the amount of data
+    in each batch. Notice that in the case of our image input, we convert the data
+    type from an 8-bit unsigned integer to a 32-bit float and apply normalization
+    before performing the data copy. In the code block below, we propose a change
+    to the input data flow in which we delay the data type conversion and normalization
+    until the data is on the GPU:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As a result of this change the amount of data being copied from the CPU to
+    the GPU is reduced by 4x and the red eyesore virtually disappears:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f892c522888084fa498da4e0e0103bbe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Reducing CPU to GPU Copy in the TensorBoard Profiler Overview Tab
+    (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now stand at a new high of 97.51%(!!) GPU utilization and a training speed
+    of 1670 samples per second! Let’s see what else we can do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #5: Set Gradients to None'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At this stage we appear to be fully utilizing the GPU, but that doesn’t mean
+    that we can’t utilize it more effectively. One popular optimization that is said
+    to reduce memory operations in the GPU is to set the model parameters gradients
+    to *None* rather than *zero* in each training step. Please see the [PyTorch documentation](https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html#use-parameter-grad-none-instead-of-model-zero-grad-or-optimizer-zero-grad)
+    for more details on this optimization. All that is required to implement this
+    optimization is to set the *set_to_none* of the *optimizer.zero_grad* call to
+    *True*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our case this optimization did not boost our performance in any meaningful
+    way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #6: Automatic Mixed Precision'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The GPU Kernel View displays the amount of time that the GPU kernels were active
+    and can be a helpful resource for improving GPU utilization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a4d656c21df4c0b7f6dc79187fd8989.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Kernel View in TensorBoard Profiler (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the most glaring details in this report is the lack of use of the GPU
+    [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/). Available
+    on relatively newer GPU architectures, [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/)
+    are dedicated processing units for matrix multiplication that can boost AI application
+    performance significantly. Their lack of use may represent a major opportunity
+    for optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Being that Tensor Cores are specifically designed for mixed-precision computing,
+    one straight-forward way to increase their utilization is to modify our model
+    to use [Automatic Mixed Precision (AMP)](https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html).
+    In AMP mode portions of the model are automatically cast to lower-precision 16-bit
+    floats and run on the GPU TensorCores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importantly, note that a full implementation of AMP may require [gradient scaling](https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html#adding-gradscaler)
+    which we do not include in our demonstration. Be sure to see the [documentation](https://pytorch.org/tutorials/recipes/recipes/amp_recipe.html)
+    on mixed precision training before adapting it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The modification to the training step required to enable AMP is demonstrated
+    in the code block below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The impact to the Tensor Core utilization is displayed in the image below. Although
+    it continues to indicate opportunity for further improvement, with just one line
+    of code the utilization jumped from 0% to 26.3%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9c1640ca3893f2528ea939153468c655.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tensor Core Utilization with AMP optimization from Kernel View in TensorBoard
+    Profiler (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In addition to increasing Tensor Core utilization, using AMP lowers the GPU
+    memory utilization freeing up more space to increase the batch size. The image
+    below captures the training performance results following the AMP optimization
+    and the batch size set to **1024**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fbeaa6ad297094aa3f249dc2a64ade35.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of AMP Optimization in the TensorBoard Profiler Overview Tab (Captured
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the GPU utilization has slightly decreased, our primary throughput
+    metric has further increased by nearly 50%, from 1670 samples per second to 2477\.
+    We are on a roll!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Caution**: Lowering the precision of portions of your model could have a
+    meaningful effect on its convergence. As in the case of increasing the batch size
+    (see above) the impact of using mixed precision will vary per model. In some cases,
+    AMP will work with little to no effort. Other times you might need to work a bit
+    harder to tune the autoscaler. Still other times you might need to set the precision
+    types of different portions of the model explicitly (i.e., *manual* mixed precision).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more details on using mixed precision as a method for memory optimization
+    please see our [previous blog post](/how-to-increase-training-performance-through-memory-optimization-1000d30351c8)
+    on the topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization #7: Train in Graph Mode'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The final optimization we will apply is model compilation. Contrary to the default
+    PyTorch eager-execution mode in which each PyTorch operation is run “eagerly”,
+    the [compile](https://pytorch.org/docs/stable/generated/torch.compile.html) API
+    converts your model into an intermediate computation graph which it then compiles
+    into low-level compute kernels in a manner that is optimal for the underlying
+    training accelerator. For more on model compilation in PyTorch 2, check out our
+    [previous post](https://medium.com/towards-data-science/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d)
+    on the topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following code block demonstrates the change required to apply model compilation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The results of the model compilation optimization are displayed below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb76afa59cdbd5da27b174ba4da08e85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Graph Compilation in the TensorBoard Profiler Overview Tab (Captured
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model compilation further increases our throughput to 3268 samples per second
+    compared to 2477 in the previous experiment, an additional 32% (!!) boost in performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The manner in which graph compilation changes the training step is very evident
+    in the different views of the TensorBoard plugin. The Kernel View, for example,
+    indicates the use of new (fused) GPU kernels, and the Trace View (shown below)
+    displays a wholly different pattern than what we saw previously.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c8f0a07215f762ff0d0d411563111c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of Graph Compilation in the TensorBoard Profiler Trace View Tab (Captured
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interim Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the table below we summarize the results of the successive optimizations
+    we have applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d3db3ec31e38435735bf806d5c9f6f2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance Results Summary (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By applying our iterative approach of **analysis and optimization** using PyTorch
+    Profiler and the TensorBoard plugin, **we were able to increase performance by
+    817%**!!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Is our work complete? Absolutely not!** Each optimization that we implement
+    uncovers new potential opportunities for performance improvement. These opportunities
+    are presented in the form of resources being freed up (e.g., the way in which
+    moving to mixed precision enabled our increasing the batch size) or in the form
+    of newly uncovered performance bottlenecks (e.g., the way in which our final optimization
+    uncovered a bottleneck in host-to-device data transfer). Furthermore, there are
+    many other well-known forms of optimization that we did not attempt in this post
+    (e.g., see [here](https://pytorch.org/tutorials/recipes/recipes/tuning_guide.html)
+    and [here](https://pytorch.org/docs/stable/notes/cuda.html)). And lastly, new
+    library optimizations (e.g., the model compilation feature that we demonstrated
+    in step 7), are released all the time, further enabling our performance improvement
+    objectives. As we emphasized in the introduction, to fully leverage such opportunities,
+    performance optimization must be an iterative and consistent part of your development
+    workflow.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have demonstrated the significant potential of performance optimization
+    on a toy classification model. Although there are other performance analyzers
+    that you can use, each with their pros and cons, we chose PyTorch Profiler and
+    the TensorBoard plugin due to their ease of integration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should emphasize that the path to successful optimization will vary greatly
+    based on the details of the training project, including the model architecture
+    and training environment. In practice, reaching your goals may be more difficult
+    than in the example we presented here. Some of the techniques we described may
+    have little impact on your performance or might even make it worse. We also note
+    that the precise optimizations that we chose, and the order in which we chose
+    to apply them, was somewhat arbitrary. You are highly encouraged to develop your
+    own tools and techniques for reaching your optimization goals based on the specific
+    details of your project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance optimization of machine learning workloads is sometimes viewed as
+    secondary, non-critical, and odious. I hope that we have succeeded in convincing
+    you that the potential for savings in development time and cost warrant a meaningful
+    investment in performance analysis and optimization. And, hey, you might even
+    find it to be fun :).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What Next?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This was just the tip of the iceberg. There is a lot more to performance optimization
+    than we have covered here. In a [sequel to this post](https://medium.com/towards-data-science/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91),
+    we will dive into a performance issue that is quite common in PyTorch models in
+    which portions of the computation is run on the CPU rather than the GPU, often
+    in a manner that is unbeknownst to the developer. We also encourage you to check
+    out our [other posts on medium](https://chaimrand.medium.com/), many of which
+    cover different elements of performance optimization of machine learning workloads.
+  prefs: []
+  type: TYPE_NORMAL

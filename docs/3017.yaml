@@ -1,0 +1,466 @@
+- en: 'Optical Flow with RAFT: Part 2'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/optical-flow-with-raft-part-2-f0376a972c25?source=collection_archive---------8-----------------------#2023-10-03](https://towardsdatascience.com/optical-flow-with-raft-part-2-f0376a972c25?source=collection_archive---------8-----------------------#2023-10-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Unpacking a Deep Optical Flow Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@itberrios6?source=post_page-----f0376a972c25--------------------------------)[![Isaac
+    Berrios](../Images/e36cdbfc91b71ceb91c6e4191e1e0833.png)](https://medium.com/@itberrios6?source=post_page-----f0376a972c25--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f0376a972c25--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f0376a972c25--------------------------------)
+    [Isaac Berrios](https://medium.com/@itberrios6?source=post_page-----f0376a972c25--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffbadc8e8ee44&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptical-flow-with-raft-part-2-f0376a972c25&user=Isaac+Berrios&userId=fbadc8e8ee44&source=post_page-fbadc8e8ee44----f0376a972c25---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f0376a972c25--------------------------------)
+    ·10 min read·Oct 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff0376a972c25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptical-flow-with-raft-part-2-f0376a972c25&user=Isaac+Berrios&userId=fbadc8e8ee44&source=-----f0376a972c25---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff0376a972c25&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptical-flow-with-raft-part-2-f0376a972c25&source=-----f0376a972c25---------------------bookmark_footer-----------)![](../Images/5575917b4ef6fceae3fe047ad5c9c16c.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Kevin Hansen](https://unsplash.com/@kevinhansenfoto?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we will take an alternative look at [RAFT](https://arxiv.org/pdf/2003.12039.pdf).
+    The head on approach in part 1 was able to break down the details of the network,
+    but here we will visualize these details and build valuable intuition. [In part
+    1](/optical-flow-with-raft-part-1-f984b4a33993) we aimed to understand RAFT so
+    that we can use it as is; in part 2 we will aim to understand RAFT in a manner
+    that allows us to leverage different parts of its architecture for our own models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s an overview of the post:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Motivation**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**RAFT Architecture**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**The Lookup Operator**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Iterative Updates**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Motivation**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The concepts from RAFT are utilized in many subsequent works, and understanding
+    RAFT is key to understanding these new approaches. How can you know which parts
+    of RAFT can or should be leveraged? Why do many subsequent works make use of the
+    correlation volume? Answers to these questions come from grasping the inner workings
+    of RAFT, it’s not always enough to understand what a paper presents at face value,
+    sometimes we need to go deeper and RAFT is no exception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAFT Architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To begin let’s get a quick refresher on RAFT, its architecture can be broken
+    down into its three fundamental blocks and it is shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba7083f8d850dff02dfa034d097a49cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 1\. Architecture of RAFT. Modified from [Source](https://arxiv.org/pdf/2003.12039.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature Extraction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The **Feature Encoder** is a Convolutional Neural Network (CNN) that extracts
+    features from images *I₁* and *I₂* using shared weights. The **Context encoder**
+    extracts both context and hidden features, both of which are input into the iterative
+    update block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b271f2ab7872d61354a8e84e538bbcbe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Function mappings for the feature network f and the context network g. Source:
+    Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/464cbe1c3c517286214c66e6d7dcf357.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Computation of the 4D correlation Volume. Modified from [Source](https://arxiv.org/pdf/2003.12039.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visual Similarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The dot product of the two feature maps forms a 4D **all-pairs correlation
+    volume**, where each pixel of *g¹* maps to all pixels of *g²*, each of these mappings
+    is referred to as a **2D response map**. *Where g¹ and g² are extracted feature
+    map tensors from I₁ and I₂, respectively.* Average Pooling is performed over the
+    last two dimensions of the correlation volume with kernel sizes: 1, 2, 4, 8.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a6d33f0bc89d459238bf26e1345bbe9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2\. Left: Relationship of a single pixel in *I₁* to all pixels of *I₂.*
+    Right: 2D response maps of various correlation volumes in the correlation pyramid.
+    [Source](https://arxiv.org/pdf/2003.12039.pdf).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We stack these correlation volumes into a 5D **correlation pyramid** with each
+    level relating the fine pixels of *g¹* to the increasingly coarse pixel features
+    of *g²*. This allows us to capture information about both large and small pixel
+    displacements. The **lookup operator** extracts correlation features from the
+    correlation volume. It takes a fine feature pixel of *g¹* along with its corresponding
+    optical flow field and computes its new apparent location, this is known as its
+    **correspondence**. It then forms a 2D grid around it with a predefined radius
+    *r*, and subsequently performs [subpixel](https://dsp.stackexchange.com/questions/34103/subpixel-what-is-it)
+    [bilinear resampling](https://en.wikipedia.org/wiki/Bilinear_interpolation#Application_in_image_processing)
+    along the grid to get new grid values. This resampled feature grid contains flow
+    (descent) direction information, the lookup operator does this for each pixel
+    in each layer of the pyramid. These pixel wise feature grids are referred to as
+    **correlation features** which are then reshaped and input into the **iterative
+    update block**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Iterative Updates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The iterative update block takes four inputs: context features, correlation
+    features, current flow estimate, and hidden features. The flow and correlation
+    features are encoded together as motion features since they both describe the
+    relative motion of the feature pixels. The context features do not change, they
+    function as a stable reference for the update block to use. The block itself consists
+    of a [ConvGRU](https://arxiv.org/pdf/1511.06432.pdf) that computes a set amount
+    of recurrent updates followed by a Flow Head that consists of convolutional layers
+    to convert the hidden state to a flow estimate at 1/8 the original input resolution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9cd5d3879b2b09b1701845575fe6e931.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. RAFT Update Block for large architecture with different sub-blocks
+    highlighted. Blue-Feature extraction block, Red — Recurrent Update Block, Green
+    — Flow Head. Modified from [Source](https://arxiv.org/pdf/2003.12039.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The update operator functions like an Optimization Algorithm, meaning that
+    it starts from an initial flow ***f₀*** and iteratively computes new flow values
+    *Δfₖ* that are added to the previous flow estimate: *fₖ₊₁ = fₖ + Δfₖ* until it
+    converges to a fixed value: ***fₖ → f****. As we perform the iterative updates,
+    both the flow estimate and the correlation features (not the correlation pyramid)
+    are continuously being refined. Once the iterations are exhausted the flow estimate
+    is upsampled from 1/8 to the original resolution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convex Upsampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Convex Upsampling** estimates each fine pixel as the [convex combination](https://www.math.ucla.edu/~baker/149/handouts/cc_convex/node4.html)
+    of its neighboring 3x3 grid of coarse pixels. The weights are parameterized by
+    a neural network that is able to learn optimal weights for each fine pixel. An
+    example is shown below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/85c37d6ee2a54440ef1ef992fc8238d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4\. Top: Comparison of Bilinear VS Convex Upsampling. Bottom: Convex
+    Upsampling example at a single full res pixel (purple). [Source](https://arxiv.org/pdf/2003.12039.pdf).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning the Flow Offset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s important to remember that RAFT doesn’t necessarily estimate the flow,
+    it estimates the *flow offset* from a starting point, and the output is an accumulation
+    of these flow offsets. The first estimate is an update of the previous flow of
+    **0** at the pixel locations of *I₁*. Information about *I₁* comes from the initial
+    hidden state and the context features, this provides continuous feedback in the
+    update block that guides the learning to enable RAFT to estimate the flow offset
+    rather than estimate the flow afresh
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAFT doesn’t estimate the flow, its update block estimates the flow offset from
+    a starting point and the model outputs the accumulation of flow offsets
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: During training, the recurrent updates of the network mimic the steps of an
+    Optimization Algorithm, where each new flow estimate *fₖ₊₁ = fₖ + Δfₖ* is increasingly
+    scrutinized by the objective function forcing the network to learn more conservative
+    estimates for *Δfₖ* as the number of iterations increases. The objective function
+    captures all flow updates and is the sum of weighted *l1* distances between the
+    flow predictions and ground truth, with exponentially increasing weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/383fe7364b5d7933ecc3cd10277d536c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss for RAFT, γ = 0.8\. [Source](https://arxiv.org/pdf/2003.12039.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This imitation of an Optimization Algorithm along with the radius of the lookup
+    operator work together to constrain the search space for each update. which in
+    turn reduces the risk of over-fitting, leads to faster training and, improves
+    generalization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unpacking RAFT
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we can start unpacking RAFT and gain insight as to how it makes predictions.
+    The code for this tutorial is located on [GitHub](https://github.com/itberrios/CV_projects/blob/main/RAFT/RAFT_dive.ipynb)
+    where the RAFT code has been modified to output its intermediate feature maps
+    at each major block. The test images are of a counter-clockwise rotating ceiling
+    fan, which provides flows in almost all directions. To get a large flow displacement
+    we will skip a couple of images in the sequence, this will make the flow features
+    more obvious and easier to study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4adb00bf6d078b255e1f8c66f077a6d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5\. Predicted Optical Flow. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s inspect the maps from the Feature Encoder Block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b503bd5f9ee96b974c97d463bf3d6220.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6\. Feature Maps (0–127) from the Feature encoder block. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Feature Encoder produces *fmap 1* and *fmap 2,* they both look like noise,
+    but in reality they hold crucial information for the flow estimate. The hidden
+    feature maps resemble the input image *I₁*, and they directly seed the hidden
+    state of the ConvGRU in the update block providing valuable information about
+    the pixels in *I₁*. The context feature maps have some resemblance of the input
+    image in that they highlight the strong features such as corners and edges. The
+    original paper suggests that the context features improve the networks ability
+    to accurately discern the spatial motion boundaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Correlations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Correlation Pyramid is crucial for computing accurate optical flow, since
+    it is able to capture the correspondences of pixels from *I₁* to *I₂*. As we will
+    see shortly, **the Correlation Volume is the backbone of RAFT**, and we will visualize
+    its superb ability to capture pixel displacement. We will approach this by inspecting
+    several test pixels and see how their 2D response maps are able to capture the
+    relative displacements. We can only see features, yet information about the pixel
+    displacements will still be evident.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Correlation Pyramid** captures the correspondences of pixels in the image
+    sequence across multiple levels of resolution.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The figure below shows the estimated flow of a test image with a few annotated
+    test pixels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f902c4b6f07dd5992db526543609a8fc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7\. Flow image with annotated test pixels. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The estimated horizontal and vertical flow field components for each pixel
+    are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pixel 0: (-49.4, -4.3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Pixel 1: (-5.8, -26.4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Pixel 2: (23.5, -9.3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Accessing the Correlation Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To access the correlation maps for a given test pixel, we add the following
+    function to the corr.py script which obtains the integer index for a given test
+    pixel at any pyramid level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once we obtain the test pixel index we can obtain its 2D response map, resampled
+    correlation features, and correspondence for each pyramid level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing the Correlation Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For each pixel, the 2D response map GIFs of the first pyramid level for the
+    first 15 updates are shown below in figures 8-10\. The correspondence is denoted
+    by the red square. The large correlation values (bright spots) indicate the relative
+    pixel location in *I₂*. Notice how the correspondence converges around the high
+    correlation value as the network learns the flow offsets. Even though these are
+    large displacements, the all-pairs correlation at the first pyramid level is still
+    able to capture them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9b9f909bb8dc4e9c80e17e81a37ad73d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8\. Pyramid level 1, 2D Correlation Response map for pixel 0\. Source:
+    Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/844f559361369f87bbcce34eeacc2c90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 9\. Pyramid level 1, 2D Correlation Response map for pixel 1\. Source:
+    Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c448c644aebe747cf566e489f19037d3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 10\. Pyramid level 1, 2D Correlation Response map for pixel 2\. Source:
+    Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Correlation Pyramid is able to capture all levels of correlation, but it’s
+    not always obvious. As we go up the pyramid level, things start to become more
+    abstract and it becomes increasingly difficult to determine what RAFT is actually
+    doing and the fact that we are looking at correlations of extracted features makes
+    things even more ambiguous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieving the Descent Direction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The correspondence is used to propose the descent direction via the lookup
+    operator. The correlation lookup operator places a grid of radius *r* around the
+    new correspondence location: *x’ = (u + f¹(u) + v + f²(v))*, where *(****f¹****,*
+    ***f²****)* is the current flow field estimate. The the grid around x’ is used
+    to bilinearly resample from the correlation volume. These resampled grids are
+    the correlation features that are fed into the Update Operator to predict the
+    next flow estimate. The image below shows the first pyramid level 2D correlation
+    response at pixel 1 along with its corresponding bilinearly resampled grid; the
+    top row is the first iteration with a zero flow initialization and the bottom
+    row is the second iteration.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9308199d73b8c7e95ff70a223754e6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11\. Pixel 1 Zoomed Correlation Response and Bilinearly Resampled grid.
+    Top: iteration 0, Bottom: iteration 1\. Correspondence is in (rows, cols). Source:
+    Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice in the top row, how the correlation response on the left is the same
+    as the resampled grid on the right, this is due to the zero flow initialization.
+    We also notice something very important about the bilinearly resampled grid in
+    the top right, the largest value is directly to the left of the center. If we
+    move three pixels to the right and one pixel up, or (3, -1), then we would land
+    on this large value. This is the ***proposed*** descent direction that has been
+    retrieved from the correlation volumes. In the iterative update block the network
+    uses this information to formulate the actual descent direction *Δfₖ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the bottom row, we can see that the correspondence has moved roughly from
+    (39, 34) to (41.93, 33.3), which is a displacement of (2.93, -0.7), showing that
+    the network has actually utilized the proposed descent direction. In the resampled
+    grid on the bottom right, we see that the largest value is in the center and aligned
+    with the correspondence, indicating that the network already has a flow prediction
+    that is close to convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motion Features
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The motion features are the convolutional encoding of the correlation features
+    and the current flow estimate. They provide pixel flow information to be refined
+    by the update block. Some of the motion feature maps at each iteration are displayed
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/740100ab4278f039ce2ce90d8cf04c36.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12\. Motions Feature map at different iterations. Yes, I cherry picked
+    the interesting features. Source: Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It seems like the motion features correspond to pixels with large movements,
+    and different feature maps seems to correspond to different pixel flows this is
+    apparent with features 126 and 127 on the right of figure 12\. They all converge
+    in a similar manner to the actual flow predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have learned about RAFT and its inner workings. We have seen
+    how the extracted hidden features provide useful information about *I₁* while
+    the extracted context features provide reference info about the strong features
+    of *I₁*. We have visualized how the correlation volume is able to capture information
+    about small and large pixel displacements. It turns out that the correlation concepts
+    from RAFT are used in many subsequent works, the intuition built from the visualizations
+    reinforces this pattern. If you have made it this far congratulations! You now
+    have a deeper understanding of RAFT than what is presented at surface level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Teed, Z., & Deng, J. (2020). Raft: Recurrent all-pairs field transforms
+    for optical flow. *Computer Vision — ECCV 2020*, 402–419\. [https://doi.org/10.1007/978-3-030-58536-5_24](https://doi.org/10.1007/978-3-030-58536-5_24)'
+  prefs: []
+  type: TYPE_NORMAL

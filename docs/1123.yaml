@@ -1,0 +1,395 @@
+- en: Serving ML Models with TorchServe
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/serving-ml-models-with-torchserve-1578eca5aa20?source=collection_archive---------9-----------------------#2023-03-29](https://towardsdatascience.com/serving-ml-models-with-torchserve-1578eca5aa20?source=collection_archive---------9-----------------------#2023-03-29)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A complete end-to-end example of serving an ML model for image classification
+    task
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)[![Andrey
+    Golovin](../Images/3afbee89a80374b346e57c8f317c9b3a.png)](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------)
+    [Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----1578eca5aa20--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc18c39659707&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&user=Andrey+Golovin&userId=c18c39659707&source=post_page-c18c39659707----1578eca5aa20---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1578eca5aa20--------------------------------)
+    ·8 min read·Mar 29, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1578eca5aa20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&user=Andrey+Golovin&userId=c18c39659707&source=-----1578eca5aa20---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1578eca5aa20&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fserving-ml-models-with-torchserve-1578eca5aa20&source=-----1578eca5aa20---------------------bookmark_footer-----------)![](../Images/d444be3fa94d97d5bc6f951f3e33825c.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This post will walk you through a process of serving your deep learning Torch
+    model with the TorchServe framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are quite a bit of articles about this topic. However, typically they
+    are focused either on deploying TorchServe itself or on writing custom handlers
+    and getting the end results. That was a motivation for me to write this post.
+    It covers both parts and gives end-to-end example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The image classification challenge was taken as an example. At the end of the
+    day you will be able to deploy TorchServe server, serve a model, send any random
+    picture of a clothes and finally get the predicted label of a clothes class. I
+    believe this is what people may expect from an ML model served as API endpoint
+    for classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Brief intro
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Say, your data science team designed a wonderful DL model. It’s a great accomplishment
+    with no doubts. However, to make a value out of it the model needs to be somehow
+    exposed to the outside world (if it’s not a Kaggle competition). This is called
+    model serving. In this post I’ll not touch serving patterns for batch operations
+    as well as streaming patterns purely based on streaming frameworks. I’ll focus
+    on one option of serving a model as API (never mind if this API is called by a
+    streaming framework or by any custom service). More precisely, this option is
+    the TorchServe framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, when you decide to serve your model as API you have at least the following
+    options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: web frameworks such as Flask, Django, FastAPI etc
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: cloud services like AWS Sagemaker endpoints
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: dedicated serving frameworks like Tensorflow Serving, Nvidia Triton and TorchServe
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All have its pros and cons and the choice might be not always straightforward.
+    Let’s practically explore the TorchServe option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Structure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first part will briefly describe how a model was trained. It’s not important
+    for the TorchServe however I believe it helps to follow the end-to-end process.
+    Then a custom handler will be explained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second part will focus on deployment of the TorchServe framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Source code for this post is located here: [git repo](https://github.com/quasi-researcher/torchserve_example)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing a DL model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For this toy example I selected the image classification task based on FashionMNIST
+    dataset. In case you’re not familiar with the dataset it’s 70k of grayscale 28x28
+    images of different clothes. There are 10 classes of the clothes. So, a DL classification
+    model will return 10 logit values. For the sake of simplicity a model is based
+    on the TinyVGG architecture (in case you want to visualize it with CNN explainer):
+    simply few convolution and max pooling layers with RELU activation. The notebook
+    [*model_creation_notebook*](https://github.com/quasi-researcher/torchserve_example/blob/master/model_creation_notebook.ipynb)
+    in the repo shows all the process of training and saving the model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In brief the notebook just downloads the data, defines the model architecture,
+    trains the model and saves state dict with torch save. There are two artifacts
+    relevant to TorchServe: a class with definition of the model architecture and
+    the saved model (.pth file).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing artifacts for TorchServe to serve the model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Two modules need to be prepared: model file and custom handler.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Model file**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As per documentation “*A model file should contain the model architecture. This
+    file is mandatory in case of eager mode models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This file should contain a single class that inherits from torch.nn.Module.*”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, let’s just copy the class definition from the model training notebook and
+    save it as *model.py* (any name you prefer):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Handler**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: TorchServe offers some default handlers (e.g. image_classifier) but I doubt
+    it can be used as is for real cases. So, most likely you will need to create a
+    custom handler for your task. The handler actually defines how to preprocess data
+    from http request, how to feed it into the model, how to postprocess the model’s
+    output and what to return as the final result in the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are two options — module level entry point and class level entry point.
+    See the official documentation [here](https://github.com/pytorch/serve/blob/master/docs/custom_service.md).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I’ll implement the class level option. It basically means that I need to create
+    a custom Python class and define two mandatory functions: *initialize* and *handle*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, to make it easier let’s inherit from the *BaseHandler* class.
+    The *initialize* function defines how to load the model. Since we don’t have any
+    specific requirements here let’s just use the definition from the super class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The *handle* function basically defines how to process the data. In the simplest
+    case the flow is: *preprocess >> inference >> postprocess*. In real applications
+    likely you’ll need to define your custom preprocess and postprocess functions.
+    For the inference function for this example I’ll use the default definition in
+    the super class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Preprocess function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Say, you built an app for image classification. The app sends the request to
+    TorchServe with an image as payload. It’s probably unlikely that the image always
+    complies with the image format used for model training. Also you’d probably train
+    your model on batches of samples and tensor dimensions must be adjusted. So, let’s
+    make a simple preprocess function: resize image to the required shape, make it
+    grayscale, transform to Torch tensor and make it as one-sample batch.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Postprocess function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A multiclass classification model will return a list of logit or softmax probabilities.
+    But in real scenario you’d rather need a predicted class or a predicted class
+    with the probability value or maybe top N predicted labels. Of course, you can
+    do it somewhere in the main app/other service but it means you bind the logic
+    of your app with the ML training process. So, let’s return the predicted class
+    directly in the response.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (for the sake of simplicity the list of labels is hardcoded here. In github
+    version the handler reads is from config)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Start Torch server
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ok, the model file and the handler are ready. Now let’s deploy TorchServe server.
+    Code above assumes that you have already installed pytorch. Another prerequisite
+    is JDK 11 installed (note, just JRE is not enough, you need JDK).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For TorchServe you need to install two packages: *torchserve* and *torch-model-archiver*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After successful installation the first step is to prepare a .mar file — archive
+    with the model artifacts. CLI interface of torch-model-archiver is aimed to do
+    it. Type in terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Arguments are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-*model name*: a name you want to give to the model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-*version*: semantic version for versioning'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-*model file*: file with class definition of the model architecture'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-*serialized file*: .pth file from torch.save()'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-*handler*: Python module with handler'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result the .mar file called as model name (in this example *fashion_mnist.mar*)
+    will be generated in the directory where CLI command is executed. So, better to
+    cd to your project directory before calling the command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next step finally is to start the server. Type in terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-*model store*: directory where the mar files are located'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '-*models*: name(s) of the model(s) and path to the corresponding mar file.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, that model name in archiver defines how your .mar file will be named.
+    The model name in torchserve defines the API endpoint name to invoke the model.
+    So, those names can be the same or different, it’s up to you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After those two command the server shall be up and running. By default TorchServe
+    uses three ports: 8080, 8081 and 8082 for inference, management and metrics correspondingly.
+    Go to your browser/curl/Postman and send a request to'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*http://localhost:8080/ping*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If TorchServe works correctly you should see *{‘status’: ‘Healthy’}*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0df4ccbecb4662d7a41d15f337d6c058.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A couple of hints for possible issues**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. If after *torchserve -start* command you see errors in the log with mentioning
+    “*..no module named captum*” then install it manually. I encountered this error
+    with the *torchserve 0.7.1*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. It may happen that some port is already busy with another process. Then
+    likely you will see ‘*Partially healthy*’ status and some errors in log.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To check which process uses the port on Mac type (for example for 8081):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: One option can be to kill the process to free the port. But it might be not
+    always a good idea if the process is somehow important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead it’s possible to specify any new port for TorchServe in a simple config
+    file. Say, you have some application which is already working on 8081 port. Let’s
+    change the default port for TorchServe management API by creating torch_config
+    file with just one line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*(you can choose any free port)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next we need to let TorchServe know about the config. First, stop the unhealthy
+    server by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then restart it as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Request the predictions from the model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this step it’s assumed the server is up and running correctly. Let’s pass
+    a random clothes image to the inference API and get the predicted label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The endpoint for inference is
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*http://localhost:8080/predictions/model_name*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example it’s *http://localhost:8080/predictions/fmnist*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s curl it and pass an image as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'for example with the sample image from the repo:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*(X flag is to specify the method /POST/, -T flag is to transfer a file)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the response we should see the predicted label:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ba3d410efe561befca4dbac6a11f21a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Well, by following along this blog post we were able to create a REST API endpoint
+    to which we can send an image and get the predicted label of the image. By repeating
+    the same procedure on a server instead of local machine one can leverage it to
+    create an endpoint for user-facing app, for other services or for instance endpoint
+    for streaming ML application (see this interesting paper for a reason why you
+    likely should not do that: [*https://sites.bu.edu/casp/files/2022/05/Horchidan22Evaluating.pdf*](https://sites.bu.edu/casp/files/2022/05/Horchidan22Evaluating.pdf))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stay tuned, in the next part I’ll expand the example: let’s make a mock of
+    Flask app for business logic and invoke an ML model served via TorchServe (and
+    deploy everything with Kubernetes).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A simple use case: user-facing app with tons of business logic and with many
+    different features. Say, one feature is uploading an image to apply a desired
+    style to it with a style transfer ML model. The ML model can be served with TorchServe
+    and thus the ML part will be completely decoupled from business logic and other
+    features in the main app.'
+  prefs: []
+  type: TYPE_NORMAL

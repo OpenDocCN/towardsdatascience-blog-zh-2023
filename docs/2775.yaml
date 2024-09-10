@@ -1,0 +1,280 @@
+- en: Is PyTorch’s Nesterov Momentum Implementation Wrong?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/is-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008?source=collection_archive---------10-----------------------#2023-09-02](https://towardsdatascience.com/is-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008?source=collection_archive---------10-----------------------#2023-09-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)[![Jason
+    Vega](../Images/712b2e34c1af7a8572193296bdd8b206.png)](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------)
+    [Jason Vega](https://medium.com/@jasonvega14?source=post_page-----5dc5f5032008--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa9932c231079&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&user=Jason+Vega&userId=a9932c231079&source=post_page-a9932c231079----5dc5f5032008---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dc5f5032008--------------------------------)
+    ·6 min read·Sep 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5dc5f5032008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&user=Jason+Vega&userId=a9932c231079&source=-----5dc5f5032008---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5dc5f5032008&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-pytorchs-nesterov-momentum-implementation-wrong-5dc5f5032008&source=-----5dc5f5032008---------------------bookmark_footer-----------)![](../Images/0e58bb7374f65a47beb941d924f19ba1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Momentum helps SGD traverse complex loss landscapes more efficiently. Photo
+    by [Maxim Berg](https://unsplash.com/@maxberg?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you look closely at PyTorch’s [documentation](https://pytorch.org/docs/stable/generated/torch.optim.SGD.html)
+    of SGD, you will find that their implementation of Nesterov momentum has a few
+    differences from the formulation found in the [original paper](http://proceedings.mlr.press/v28/sutskever13.pdf).
+    Most notably, PyTorch’s implementation evaluates the gradient at the current parameters,
+    whereas the whole point of Nesterov momentum is to evaluate the gradient at shifted
+    parameters. Unfortunately, it appears that discussion about these discrepancies
+    on the internet is scarce. In this post, we will examine and explain the differences
+    between PyTorch’s implementation and the original formulation of Nesterov momentum.
+    Ultimately, we will see how PyTorch’s implementation is not wrong, but rather
+    an approximation, and speculate about the benefit of their implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Formulations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The [original paper](http://proceedings.mlr.press/v28/sutskever13.pdf) describes
+    Nesterov momentum using the following update rules:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where *v_{t+1}* and *θ_{t+1}* are the velocity vector and model parameters
+    respectively at time *t*, *μ* is the momentum factor, and *ε* is the learning
+    rate. The note in PyTorch’s SGD [documentation](https://pytorch.org/docs/stable/generated/torch.optim.SGD.html)
+    states they use the following update rules:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where *g_{t+1}* represents the gradient used to compute *v_{t+1}*. We can expand
+    the update rule for *θ_{t+1}* to get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From this we can infer that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and the update rules become:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are the update rules that PyTorch uses in theory. I mentioned earlier
+    that PyTorch actually evaluates the gradient at the current parameters instead
+    of the shifted parameters. This can be seen by looking at the algorithm description
+    in the PyTorch SGD documentation. We will investigate this further later on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that for both the original (1, 2) and PyTorch (3, 4) formulations, if
+    *v_0 = 0*, then the first update to *θ* becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the PyTorch SGD documentation note states that the algorithm initializes
+    the momentum buffer to the gradient at the first step, we will later show that
+    this implies *v_0 = 0*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preliminary Differences
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are two immediate differences when going from the original (1, 2) to
+    the PyTorch (3, 4) formulation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The learning rate is moved outside of *v_{t+1}*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the update rule for *v_{t+1}*, the term involving the gradient is added instead
+    of subtracted, and in the update rule for *θ_{t+1}*, the term involving the velocity
+    vector is subtracted instead of added. The difference in sign inside the gradient
+    term is simply a consequence of this as shown in the previous section.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To understand these differences, let’s first expand the update rules. As hinted
+    at [here](https://github.com/pytorch/pytorch/issues/1099#issuecomment-289190614),
+    the effect of the first difference is more apparent if we consider learning rate
+    schedules. So, we consider a generalization of the update rules where *ε* is no
+    longer fixed but can now vary over time, and denote *ε_t* as the learning rate
+    at time step *t*. For brevity, let:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assuming *v_0 = 0,* the original formulation becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and the PyTorch formulation becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the original formulation (6), if the learning rate were to change at time
+    *t*, then only the magnitude of the term at *i = t* in the summation would be
+    affected, and the magnitudes of all the other terms would remain the same. As
+    a result, the immediate influence of the learning rate change is quite limited,
+    and we would have to wait for the learning rate change to “trickle” down over
+    subsequent time steps to have a stronger influence on the overall step size. In
+    contrast, in the PyTorch formulation (7), if the learning rate were to change
+    at time *t*, then the magnitude of the entire step would be affected immediately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For *v_0 = 0*, it is clear from the expanded rules that the second difference
+    ultimately has no effect; in either formulation, the step works out to a discounted
+    sum of gradients that is subtracted from the current parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Primary Differences
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Ignoring weight decay and dampening, by analyzing the SGD algorithm in PyTorch’s
+    [documentation](https://pytorch.org/docs/stable/generated/torch.optim.SGD.html),
+    we can see that the implemented update rules are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *θ’_{t+1}* are the model parameters at time *t* and
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will refer to equations 3 and 4 as the PyTorch “note” formulation, and equations
+    8 and 9 as the PyTorch “implemented” formulation. We make a distinction between
+    *θ* and *θ’* for a reason that will become apparent soon. The most glaring difference
+    from the note formulation is that the gradient is evaluated at the current parameters
+    rather than the shifted parameters. From this alone it may appear that the update
+    rules the algorithm implements is not a proper implementation of Nesterov momentum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will now examine how the PyTorch algorithm ultimately approximates Nesterov
+    momentum. Derivations for an older version of PyTorch can be found [here](https://github.com/fidlej/optim/raw/master/dok/nesterov_simple.pdf)
+    from Ivo Danihelka, referenced in [this GitHub issue](https://github.com/torch/optim/issues/27).
+    Derivations for the current version of PyTorch can be found [here](https://github.com/pytorch/pytorch/pull/5920#issuecomment-375181908),
+    which is a relatively straightforward adjustment from the previous derivations.
+    We provide a LaTeX rendering of these (re-derived) derivations here for the reader’s
+    convenience. The implemented formulation is derived by a simple change of variables.
+    Specifically, we let:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It immediately becomes clear that the note update rule for *v_{t+1}* (3) becomes
+    equivalent to the implemented update rule for *v_{t+1}* (8) after the change of
+    variables. We now want to derive an update rule for *θ’_{t+1}* in terms of *θ’_t*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is exactly the update rule we saw implemented in PyTorch (9). At a high
+    level, the PyTorch implementation assumes the current parameters *θ’_t* are already
+    the shifted version of the “actual” parameters *θ_t*. Hence, at each time step,
+    the “actual” parameters *θ_t* are related to the current parameters *θ’_t* by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it appears from the source code that the PyTorch SGD implementation
+    does not make any correction at the end of the algorithm to retrieve the final
+    “actual” parameters, so the final output is technically an approximation of the
+    “actual” parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, we now show that *v_0* must be 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Moreover, we can confirm that the first update to the “actual” parameters is
+    the same first update made in the original formulation when *v_0 = 0*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that this is equivalent to equation 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Benefit of the Implemented Formulation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Of course, the big remaining question is: Why does PyTorch bother at all to
+    reformulate Nesterov momentum from equations 3 and 4 to equations 8 and 9? One
+    possible explanation is that the reformulation might provide some savings in the
+    number of arithmetic operations required. To evaluate this possible explanation,
+    let’s count the number of arithmetic operations. For the note formulation (3,
+    4), we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, there are a total of seven operations. For the implemented formulation
+    (8, 9), we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, there are a total of six operations. The second gradient in the PyTorch
+    implementation just uses the saved result from the first gradient computation,
+    so only one gradient computation is performed at each time step. So, one apparent
+    benefit is that the PyTorch implementation cuts down on one additional multiplication
+    operation at each step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In summary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The update rules stated in PyTorch’s SGD documentation note (3, 4) have a different
+    location for the learning rate compared to the original Nesterov momentum update
+    rules (1, 2). This allows learning rate schedules to have an immediate effect
+    on the overall step size, whereas the original formulation would have the effect
+    of learning rate changes to “trickle” down over subsequent time steps.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The update rules implemented in the PyTorch SGD algorithm (8, 9) are an approximation
+    to the update rules stated in the documentation note (3, 4) after a simple change
+    of variables. Although the “actual” parameters are easily recoverable from the
+    current parameters at each time step, the PyTorch implementation does not make
+    any such correction at the end of the algorithm, and so the final parameters technically
+    remain an approximation of the “actual” final parameters.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: An apparent benefit of the PyTorch implementation is that it avoids an additional
+    multiplication operation at each time step.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: “SGD.” SGD — PyTorch 2.0 Documentation, pytorch.org/docs/stable/generated/torch.optim.SGD.html.
+    Accessed 2 Sept. 2023.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sutskever, Ilya, et al. “[On the importance of initialization and momentum in
+    deep learning.](http://proceedings.mlr.press/v28/sutskever13.pdf)” International
+    Conference on Machine Learning. PMLR, 2013.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Danihelka, Ivo. “[Nesterov’s Momentum Made Simple.](https://github.com/fidlej/optim/raw/master/dok/nesterov_simple.pdf)”
+    25 Aug. 2012.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Chintala, Soumith. “nesterov momentum is wrong in sgd · Issue #27 · torch/optim.”
+    GitHub, 13 Oct. 2014, [github.com/torch/optim/issues/27](https://github.com/torch/optim/issues/27).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Gross, Sam. “Add a note in the docs about the momentum formulation used in
+    optim · Issue #1099 · pytorch/pytorch.” GitHub, 25 Mar. 2017, [github.com/pytorch/pytorch/issues/1099#issuecomment-289190614](https://github.com/pytorch/pytorch/issues/1099#issuecomment-289190614).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Zhao, Yilong. “fix Nesterov Momentum Bug · Issue #5920 · pytorch/pytorch.”
+    GitHub, 21 Mar. 2018, [https://github.com/pytorch/pytorch/pull/5920#issuecomment-375181908](https://github.com/pytorch/pytorch/pull/5920#issuecomment-375181908).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

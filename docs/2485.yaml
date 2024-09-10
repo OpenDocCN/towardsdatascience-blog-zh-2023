@@ -1,0 +1,280 @@
+- en: Spoken language recognition on Mozilla Common Voice — Part I.
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/spoken-language-recognition-on-mozilla-common-voice-part-i-3f5400bbbcd8?source=collection_archive---------9-----------------------#2023-08-02](https://towardsdatascience.com/spoken-language-recognition-on-mozilla-common-voice-part-i-3f5400bbbcd8?source=collection_archive---------9-----------------------#2023-08-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@sergeyvilov?source=post_page-----3f5400bbbcd8--------------------------------)[![Sergey
+    Vilov](../Images/42efe223e2aa575250e050cf3660cf20.png)](https://medium.com/@sergeyvilov?source=post_page-----3f5400bbbcd8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3f5400bbbcd8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3f5400bbbcd8--------------------------------)
+    [Sergey Vilov](https://medium.com/@sergeyvilov?source=post_page-----3f5400bbbcd8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33297faf768d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-part-i-3f5400bbbcd8&user=Sergey+Vilov&userId=33297faf768d&source=post_page-33297faf768d----3f5400bbbcd8---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3f5400bbbcd8--------------------------------)
+    ·6 min read·Aug 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3f5400bbbcd8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-part-i-3f5400bbbcd8&user=Sergey+Vilov&userId=33297faf768d&source=-----3f5400bbbcd8---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3f5400bbbcd8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fspoken-language-recognition-on-mozilla-common-voice-part-i-3f5400bbbcd8&source=-----3f5400bbbcd8---------------------bookmark_footer-----------)![](../Images/9b9afdc8d66a02cc489220c16c907be9.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Sebastian Unrau](https://unsplash.com/@sebastian_unrau?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the most challenging AI tasks is identifying the speaker’s language for
+    the purpose of subsequent speech-to-text conversion. This problem might arise,
+    for example, when people living in the same household and speaking different languages
+    use the same voice-control device such as a garage lock or a smart home system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this series of articles, we will try to maximize spoken language recognition
+    accuracy using the [Mozilla Common Voice](https://commonvoice.mozilla.org/en)
+    (MCV) Dataset. In particular, we will compare several neural network models trained
+    to distinguish between German, English, Spanish, French, and Russian.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this first part we shall discuss data selection, preprocessing, and embedding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data selection**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: MCV is by far the largest publicly available voice dataset, comprising short
+    records (average duration = 5.3s) in as many as 112 languages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our language recognition task, we choose 5 languages: German, English,
+    Spanish, French, and Russian. For German, English, Spanish, and French, we consider
+    only accents labelled in MCV as *Deutschland Deutsch*, *United States English*,
+    *España*, and *Français de France* correspondingly. For each language, we select
+    a subset of adult records among [validated](https://github.com/common-voice/cv-dataset)
+    samples.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We used a train/val/test split with 40K/5K/5K audio clips per language. To get
+    objective evaluation, we ensured that speakers (*client_id*) did not overlap between
+    the three sets. When splitting data, we first filled the test and validation sets
+    with records from poorly represented speakers, then we allocated the remaining
+    data to the train set. This improved speakers diversity in the val/test sets and
+    led to a more objective estimation of the generalization error. To avoid that
+    a single speaker dominates in the train set, we limited the maximal number of
+    records per *client_id* to 2000\. On average, we got 26 records per speaker. We
+    also made sure that the number of female records matches the number of male records.
+    Finally, we upsampled the train set if the resulting number of records was below
+    40K. The final distribution of counts is depicted in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a58b234bfa3d4766c0df4267235357b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Class distribution in the train set (image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The resulting dataframe with indicated split is available [here](https://github.com/sergeyvilov/MCV-spoken-language-recognition/tree/master).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data Preprocessing**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'All MCV audio files are provided in the .mp3 format. Although .mp3 is great
+    for compact storage of music, it is not widely supported by audio processing libraries,
+    such as librosa in python. So, we first need to convert all files to .wav. In
+    addition, the original MCV sampling rate is 44kHz. This implies the maximal encoded
+    frequency of 22kHz (according to the [Nyquist theorem](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem)).
+    This would be an overkill for a spoken language recognition task: in English,
+    for example, most phonemes do not exceed 3kHz in conversational speech. So, we
+    can also lower the sampling rate downto 16kHz. This will not only reduce the file
+    size, but also accelerate generation of embeddings.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Both operations can be executed within one command using [ffmpeg](https://github.com/FFmpeg/FFmpeg):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Feature engineering**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Relevant information is usually extracted from audio clips by computing embeddings.
+    We will consider four more or less common embeddings for speech recognition /
+    spoken language recognition tasks: mel spectrogram, MFCC, RASTA-PLP, and GFCC.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Mel Spectrogram**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The principles of mel spectrograms have widely been discussed [on Medium](https://medium.com/analytics-vidhya/understanding-the-mel-spectrogram-fca2afa2ce53).
+    An awesome step-by-step tutorial on mel spectrograms and MFCC can also be found
+    [here](http://practicalcryptography.com/miscellaneous/machine-learning/guide-mel-frequency-cepstral-coefficients-mfccs/#eqn2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To obtain the mel spectrogram, the input signal is first subject to pre-emphasis
+    filtering. Then, Fourier Transform is performed on sliding windows consecutively
+    applied to the obtained waveform. After that, the frequency scale is transformed
+    to the mel scale which is linear with respect to human perception of intervals.
+    Finally, a filter bank of overlapping triangular filters is [applied](https://jonathan-hui.medium.com/speech-recognition-feature-extraction-mfcc-plp-5455f5a69dd9)
+    to the power spectrum on the mel scale to mimic how the human ear perceives sound.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MFCC**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Mel coefficients are highly correlated, which might be undesirable for some
+    machine learning algorithms (for example, it is more convenient to have a diagonal
+    covariance matrix for Gaussian Mixture Models). [To decorrelate](https://dsp.stackexchange.com/questions/15938/is-this-a-correct-interpretation-of-the-dct-step-in-mfcc-calculation/15945#15945)
+    mel filter banks, mel-frequency cepstral coefficients (MFCC) are obtained by computing
+    Discrete Cosine Transformation (DCT) on log filterbank energies. Only a few first
+    MFCC are usually used. Exact steps are outlined [here](https://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RASTA-PLP**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Perceptual Linear Prediction (PLP) (Hermansky and Hynek, 1990) are another way
+    to compute embeddings for music clips.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differences between PLP and MFCC lie in the filter-banks, the equal-loudness
+    pre-emphasis, the intensity-to-loudness conversion and in the application of linear
+    prediction (Hönig et al, 2005).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/641298716a4efc46073768344ec401b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Overview of PLP and MFCC techniques (from Hönig et al, 2005)
+  prefs: []
+  type: TYPE_NORMAL
+- en: PLP were reported (Woodland et al., 1996) to be more robust than MFCC when there
+    is acoustic mismatch between training and test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compared to PLP, RASTA-PLP (Hermansky et al., 1991) performs additional filtering
+    in the logarithmic spectral domain, which makes the method more robust to linear
+    spectral distortions introduced by communication channels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**GFCC**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gammatone frequency cepstral coefficients (GFCC) were reported to be less noise-sensitive
+    than MFCC (Zhao, 2012; Shao, 2007). Compared to MFCC, Gammatone filters are computed
+    on the equivalent rectangular bandwidth scale (instead of the mel scale) and the
+    cubic root operation (instead of logarithm) is applied prior to computing DCT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The figure below shows an example signal alongside with its different embeddings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/522eb0418bc3963b2e626237e0f7523b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example audio file and its embeddings (image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Comparing embeddings**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To choose the most efficient embedding, we trained the Attention LSTM network
+    from De Andrade et al., 2018\. For time reasons, we trained the neural network
+    only on 5K clips.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The figure below compares the validation accuracy for all embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/436e3bb20bee57dd01c008b7f3450441.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance of different embeddings on the 5K dataset (image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, mel spectrograms with the first 13 filter banks perform closely to RASTA-PLP
+    with *model_order*=13.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is interesting to note that mel spectrograms outperform MFCC. This fits previous
+    claims (see [here](https://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html),
+    and [here](https://stackoverflow.com/questions/60439741/why-do-mel-filterbank-energies-outperform-mfccs-for-speech-commands-recognition))
+    that mel spectrograms are a better choice for neural network classifiers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One other observation is that the performance usually drops for higher number
+    of coefficients. This can be due to overfitting since high order coefficients
+    often [represent](https://jonathan-hui.medium.com/speech-recognition-feature-extraction-mfcc-plp-5455f5a69dd9)
+    speaker-related features that are not generalizable to the test set where different
+    speakers are chosen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to time constraints, we did not test any combinations of embeddings, although
+    it was previously [observed](/from-mfccs-xor-gfccs-to-mfccs-and-gfccs-urban-sounds-classification-case-study-a087ac007901)
+    that they may provide superior accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since mel spectrograms are much faster to compute than RASTA-PLP, we will use
+    these embeddings in further experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**In Part II we will run several neural network models and chose the one that
+    classifies languages the best.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: De Andrade, Douglas Coimbra, et al. “A neural attention model for speech command
+    recognition.” *arXiv preprint arXiv:1808.08929* (2018).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Hermansky, Hynek. “Perceptual linear predictive (PLP) analysis of speech.”
+    *the Journal of the Acoustical Society of America* 87.4 (1990): 1738–1752.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hönig, Florian, et al. “Revising perceptual linear prediction (PLP).” *Ninth
+    European Conference on Speech Communication and Technology*. 2005.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hermansky, Hynek, et al. “RASTA-PLP speech analysis.” *Proc. IEEE Int’l Conf.
+    Acoustics, speech and signal processing*. Vol. 1\. 1991.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Shao, Yang, Soundararajan Srinivasan, and DeLiang Wang. “Incorporating auditory
+    feature uncertainties in robust speaker identification.” *2007 IEEE International
+    Conference on Acoustics, Speech and Signal Processing-ICASSP’07*. Vol. 4\. IEEE,
+    2007.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Woodland, Philip C., Mark John Francis Gales, and David Pye. “Improving environmental
+    robustness in large vocabulary speech recognition.” *1996 IEEE International Conference
+    on Acoustics, Speech, and Signal Processing Conference Proceedings*. Vol. 1\.
+    IEEE, 1996.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Zhao, Xiaojia, Yang Shao, and DeLiang Wang. “CASA-based robust speaker identification.”
+    *IEEE Transactions on Audio, Speech, and Language Processing* 20.5 (2012): 1608–1616.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

@@ -1,0 +1,526 @@
+- en: Automatically Detecting Label Errors in Datasets with CleanLab
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/automatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345?source=collection_archive---------3-----------------------#2023-07-22](https://towardsdatascience.com/automatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345?source=collection_archive---------3-----------------------#2023-07-22)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Tale of AI and wrongly-classified Brazilian Federal Laws
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)[![João
+    Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------)
+    [João Pedro](https://joaopedro214.medium.com/?source=post_page-----e0a3ea5fb345--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----e0a3ea5fb345---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e0a3ea5fb345--------------------------------)
+    ·10 min read·Jul 22, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe0a3ea5fb345&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----e0a3ea5fb345---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe0a3ea5fb345&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fautomatically-detecting-label-errors-in-datasets-with-cleanlab-e0a3ea5fb345&source=-----e0a3ea5fb345---------------------bookmark_footer-----------)![](../Images/36477c5670bfa2ec58e04ee972390139.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Gustavo Leighton](https://unsplash.com/@g_leighton?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A few weeks ago, while doing my usual search for datasets to develop my personal
+    projects, I came across the Brazilian Chamber of Deputies Open Data Portal, which
+    contains a lot of data — including the deputies' costs, parties metadata, etc
+    — everything available trough a nice [API](https://dadosabertos.camara.leg.br/swagger/api.html#staticfile).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After a few hours of searching and inspecting, something very interesting caught
+    my attention: The compilation of all the laws proposed by the parliamentarians
+    with their ‘*ementas’* (concise summary), author, year, and, more importantly,
+    their **themes** (health, security, finance, etc…) — categorized by the Chamber’s
+    Documentation and Information Center (Centro de Documentação e Informação da Câmara,
+    on literal translation).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A spark shined in my brain — “*I’ll make a supervised classification pipeline
+    to* ***predict the theme of a law******using its summary****, exploring some infrastructure
+    aspect of Machine learning, like data versioning with DVC or something like that.*”
+    I quickly wrote a script and gathered an extensive dataset comprising over 60,000
+    laws, spanning the period from 1990 to 2022.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I’ve already worked a little with Judiciary and Legislative data, so I had a feeling that this task would not be hard.
+    But, to make things even easier, I choose to classify only whether a law proposal
+    (LP) is about “*Tributes and commemorative dates*” or not (binary classification).
+    In theory, it should be easy, as the texts are very simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a26315bf71eaec67b082f036007bfbbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Original summaries and a literal translation by ChatGPT - I. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But, no matter what I tried to do, my performance did not rise above the ~0.80
+    mark on the f1 score, with a relatively low recall (for the positive class) of
+    0.5–0.7.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, my dataset is highly unbalanced, with this class representing less
+    than 5% of the dataset size, but there is something more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After some investigation, inspecting the data with regex-based queries, and
+    looking into the wrong-classified records, I found several examples incorrectly
+    labeled. With my crude approach, I’ve found ~200 false negatives, which represent
+    ~7.5% of the “true” positives and 0.33% of all my dataset, without mentioning
+    the false positives. See a few below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/86340626c166a22cac095a5946da6dbd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Wrongly classified examples. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These examples were rotting my validation metrics — “*How many of them could
+    exist? Will I have to search the errors manually?*”
+  prefs: []
+  type: TYPE_NORMAL
+- en: But then **Confident Learning** materialized as the **Clean Lab** python package,
+    came to save me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e88f7af7141237d5d19f6b5f3c4f018.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Clean Lab Logo. Image from [GitHub](https://github.com/cleanlab/cleanlab).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Confident Learning?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Correctly labeling data is one of the most time-consuming and costly steps in
+    any supervised machine-learning project. Techniques like crowdsourcing, semi-supervised
+    learning, fine-tuning, and many others try to reduce the cost of collecting labels
+    or the need for such labels in model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, we are already a step ahead of this problem. We have labels given
+    by professionals, probably government workers with adequate *know-how*. But my
+    non-professional eyes with my crude regex approach could spot mistakes as soon
+    as they broke my performance expectations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The point is: How many errors are still in the data?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s not reasonable to inspect every single law — An **automatic** way of detecting
+    **incorrect labels** is necessary, and that’s what Confident Learning is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In summary, it uses statistics gathered from model probability predictions to
+    estimate errors in the dataset. It can detect noise, outliers, and — the main
+    subject of this post — **label errors**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ll not go into the details of CL, but there is a [very nice article](/confident-learning-err-did-you-say-your-data-is-clean-ef2597903328)
+    covering its main points and a [YT video](https://youtu.be/BnOTv0f9Msk) from the
+    creator of **CleanLab** talking about its research on the field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see how it works in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data was gathered from the Brazilian Chamber of Deputies Open Data Portal,
+    containing law proposals (LP) from 1990 to 2022\. The final dataset contains ~60K
+    LPs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A single LP can have multiple themes associated with it, like Health and Finance,
+    and this information is also available in the Open Data Portal. To make it easier
+    to handle, I’ve encoded the theme information by binarizing each individual theme
+    in a separate column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As previously mentioned, the theme used in this post is “*Tributes and commemorative
+    dates*”. I choose it because its *ementas* are very short and simple, so the labels
+    errors are easy to identify.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data and the code are available in the [project’s GitHub repository](https://github.com/jaumpedro214/data-analysis-camara-federal-pls).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our goal is to fix every single label error in the “*Tributes and commemorative
+    dates*” automatically and finish this post with a nice and clean Dataset ready
+    to be used in a Machine Learning problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setup the environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All needed to run this project are the classical ML/Data Science Python packages
+    (Pandas, Numpy & Scikit-Learn) + the CleanLab package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Just install these requirements and we’re ready to go.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detecting Label Errors with CL
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The CleanLab package comes natively with the ability to identify many types
+    of dataset problems, like outliers and duplicate/near-duplicate entries, but we’ll
+    be only interested in the **label errors**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**CleanLab** uses probabilities generated by a Machine Learning model representing
+    its confidence of an entry being a certain label. If the dataset has *n* entries
+    and *m* classes, then this will be represented by an *n* by *m* matrix P, where
+    P[i, j] represents the probability of row *i* being of class *j*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These probabilities and the “true” labels are used in the CleanLab internals
+    to estimate the errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s practice:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Importing packages*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*loading data…*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: First of all, let’s generate the probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As mentioned in the CleanLab documentation, to achieve better performance is
+    crucial that the probabilities are generated [on out-of-sample records](https://docs.cleanlab.ai/stable/tutorials/pred_probs_cross_val.html#pred-probs-cross-val)
+    (’non-training’ data). This is important as the models naturally tend to be over-confident
+    when predicting probabilities on training data. The most usual way to generate
+    out-of-sample probabilities in a dataset is to use a K-Fold strategy, as shown
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'NOTE: It’s important to be aware of the class distribution — Hence the StratifiedKFold
+    object. The chosen class represents less than 5% of the dataset, a naive sampling
+    approach could easily lead to poor-quality probabilities generated by models trained
+    on wrongly balanced datasets.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: CleanLab uses a class called Datalab to handle its error-detection jobs. It
+    receives the DataFrame containing our data and the label column’s name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we just need to pass the previously calculated probabilities to it …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: … to start finding issues
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/18b86c0c2d30b30543c431a2c24802a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: And is simple as that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *get_issues*(”label”) function returns a DataFrame with the metrics and
+    indicators calculated by CleanLab for each record. The most important columns
+    are ‘*is_label_issue*’ and ‘*predicted_label*’, representing respectively if a
+    record has a label issue and the possible correct label for it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can merge this information in the original DataFrame to inspect which examples
+    are problematic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s check a few examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3860e3258b8a00fd1fdbe455d23c18ab.png)![](../Images/78d445cc8ecdad5f1e1925259f2b4547.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To me, these laws are clearly associated with *Tributes and Commemorative Dates*;
+    however, they are not appropriately categorized as such.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nice ! — CleanLab was able to find 312 label errors in our dataset, but what
+    to do now?
+  prefs: []
+  type: TYPE_NORMAL
+- en: These errors could be either objects of a manual inspection for correction (in
+    an active-learning manner) or instantly corrected (supposing that CleanLab did
+    its job right). The former is more time-consuming but could lead to better results,
+    while the latter is faster, but could lead to more errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regardless of the chosen path, CleanLab reduced the labor from 60K records to
+    a few hundred — in the worst case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*But there is a catch.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we be sure that CleanLab found **all** the errors in the dataset?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, if we run the above pipeline but with the errors fixed as ground truth,
+    CleanLab will find more errors…
+  prefs: []
+  type: TYPE_NORMAL
+- en: More errors, but *hopefully* fewer errors than the first run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And we can repeat this logic as many times as we want: Find errors, fix errors,
+    retrain the model with the new presumed better-quality labels, find errors again
+    …'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10bf4f2f521ce9afa9cba9dd8aabecb2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fixing errors iteratively. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the hope that after some interactions the number of errors will be zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Iteratively fixing errors with CleanLab
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To implement this idea all that we need to do is to repeat the process above
+    in a loop, the code below does just that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s review it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In each iteration, the OOS probabilities are generated just as shown previously:
+    using the *cross_val_predict* method with StratifiedKFold. The current set of
+    probabilities (in each iteration) is used to build a new Datalab object and find
+    the new label issues.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The found issues are merged with the current dataset and fixed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I choose the strategy of appending the fixed labels as a new column instead
+    of replacing the original one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8de06e839952d37d0a01ab1a3d2f79db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Appending the fixed labels. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LABEL_COLUMN_0 is the original label, LABEL_COLUMN_1 is the label column fixed
+    1 time, LABEL_COLUMN_2 is the label column fixed 2 times, and so on…
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In addition to this process, the usual classification metrics are also computed
+    and stored for later inspection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After 8 interactions (~16min) the process is finished.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The table below shows the performance metrics computed during the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4703adfb83c3b6e815df7719203e2aef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A total of **393 label errors** were found in the dataset in the 8 iterations.
+    As expected, the number of errors found decreased with each iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s interesting to note that this process was able to “converge” to a “solution”
+    with only 6 iterations — staying at 0 errors in the last 2\. This is a good indication
+    that, in this case, the CleanLab implementation is robust and did not find any
+    more errors by ‘accident’ that could lead to oscillations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though the number of errors represents only 0.6% of the dataset, the f1
+    score increased from 0.81 to 0.90, ~11%. This is probably due to the classes being
+    highly unbalanced, as the new 322 positive labels represent a total of ~12% in
+    the number of original positive examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But was CleanLab really able to find meaningful errors? Let’s check a few examples
+    to see if they make sense.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**False negatives fixed**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cd56b85d5a050f44f03bbfaa5af56e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Original summaries and a literal translation by ChatGPT — II. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above texts indeed resemble “tributes and commemorative dates”, suggesting
+    that they should be appropriately categorized as such — Point to CleanLab
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**False positives fixed**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6e491d0925dc75bee1219f14afc62bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Original summaries and a literal translation by ChatGPT — III. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have a few errors in this case, the 2nd and 4th laws aren’t false positives.
+    Not so good, but still ok.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve repeated this inspection sampling new ‘fixed’ laws several times and, in
+    general, CleanLab has a nearly perfect performance in detecting false negatives
+    but gets a little confused with the false positives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, even though we probably don’t have a *perfectly* labeled dataset, I feel
+    way more **confident** in training a machine **learning** model in it now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For long the machine learning area suffered from poor quality models and lack
+    of computer power, but this time is gone. Now, the real bottleneck for most ML
+    applications is data. But not raw data, refined data — with good labels, well-formatted,
+    without too much noise or outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because no matter how big and powerful a model is, how much statistics and
+    maths you mix into your pipeline, any of this will save you from the most basic
+    law of computer science: garbage in, garbage out.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And this project was a witness to this principle — I’ve tested several models,
+    Deep Learning architectures, sampling techniques, and vectorization methods to,
+    in the end, discover that the problem was on the basics: my data was wrong.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In such a scenario, investing in data quality techniques became a critical aspect
+    to create successful ML projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we explored CleanLab, a package that helped us to detect and fix
+    wrong labels in the dataset. It not only enabled us to significantly improve the
+    quality of our dataset but it also did this in an automatic, reproducible, and
+    cheap way — with no human intervention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this project helped you in understanding a little more about Confident
+    Learning and the CleanLab package. As always, I’m not an expert in any of the
+    subjects addressed in this post, and I strongly recommend further reading, see
+    some references below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading! ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All the code is available in [this GitHub repository](https://github.com/jaumpedro214/data-analysis-camara-federal-pls).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data used — [Open Data Portal Federal Chamber](https://dadosabertos.camara.leg.br/faq/faq-home.html#r14).
+    [Open-Data — Law nº 12.527]
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: All the images are created by the Author, unless otherwise specified.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[1] Cleanlab. (n.d.). *GitHub — cleanlab/cleanlab: The standard data-centric
+    AI package for data quality and machine learning with messy, real-world data and
+    labels.* [GitHub](https://github.com/cleanlab/cleanlab).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2][*Computing Out-of-Sample Predicted Probabilities with Cross-Validation*](https://docs.cleanlab.ai/stable/tutorials/pred_probs_cross_val.html#pred-probs-cross-val)
+    *— cleanlab*. (n.d.).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Databricks. (2022, July 19). *CleanLab: AI to find and fix errors in ML
+    datasets* [Video]. [YouTube](https://www.youtube.com/watch?v=BnOTv0f9Msk).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4][*FAQ*](https://docs.cleanlab.ai/stable/tutorials/faq.html) *— cleanlab*.
+    (n.d.).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Mall, S. (2023, May 25). Are label errors imperative? Is confident learning
+    useful? [*Medium*](/confident-learning-err-did-you-say-your-data-is-clean-ef2597903328).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Northcutt, C. G. (2021). *Confident Learning: Estimating uncertainty in
+    Dataset labels*. [arXiv.org](https://arxiv.org/abs/1911.00068).'
+  prefs: []
+  type: TYPE_NORMAL

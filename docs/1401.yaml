@@ -1,0 +1,505 @@
+- en: Which GPT-like Model Engineering Techniques Work on System Logs?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/which-gpt-like-engineering-strategies-work-on-system-logs-6b0a3a1ebcad?source=collection_archive---------4-----------------------#2023-04-21](https://towardsdatascience.com/which-gpt-like-engineering-strategies-work-on-system-logs-6b0a3a1ebcad?source=collection_archive---------4-----------------------#2023-04-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Evaluation of Transformer Neural Network Modeling Methodologies applied to Behavior
+    Malware Traces
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ditrizna.medium.com/?source=post_page-----6b0a3a1ebcad--------------------------------)[![Dmitrijs
+    Trizna](../Images/4a7a925e4383f4b3b087e85c0fba0ca4.png)](https://ditrizna.medium.com/?source=post_page-----6b0a3a1ebcad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6b0a3a1ebcad--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6b0a3a1ebcad--------------------------------)
+    [Dmitrijs Trizna](https://ditrizna.medium.com/?source=post_page-----6b0a3a1ebcad--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2fbea2ebee7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-gpt-like-engineering-strategies-work-on-system-logs-6b0a3a1ebcad&user=Dmitrijs+Trizna&userId=2fbea2ebee7a&source=post_page-2fbea2ebee7a----6b0a3a1ebcad---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6b0a3a1ebcad--------------------------------)
+    ·11 min read·Apr 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6b0a3a1ebcad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-gpt-like-engineering-strategies-work-on-system-logs-6b0a3a1ebcad&user=Dmitrijs+Trizna&userId=2fbea2ebee7a&source=-----6b0a3a1ebcad---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6b0a3a1ebcad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhich-gpt-like-engineering-strategies-work-on-system-logs-6b0a3a1ebcad&source=-----6b0a3a1ebcad---------------------bookmark_footer-----------)![](../Images/5967ed06f8450798de7f9b1ede580fd8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Figure 1\. Self-attention activations from the Transformer model trained on
+    malware emulation reports. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article evaluates various Transformer Neural Network (AI model powering
+    GPT) engineering methodologies applied to machine data — malware behavioral logs
+    from the [Speakeasy emulator](https://github.com/mandiant/speakeasy). Data used
+    in these experiments have been freely available since released as part of this
+    publication on [hybrid malware analysis [Trizna]](https://dl.acm.org/doi/10.1145/3560830.3563726),
+    with archives downloadable [here](https://github.com/dtrizna/quo.vadis/tree/main/data/emulation.dataset).
+    You have access to data and are free to replicate or advance results!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Originally, Transformer was presented as an encoder/decoder architecture suitable
+    for sequence-to-sequence tasks like natural language translation. Later it was
+    adopted to suit other tasks like masked decoder-only models of GPT to be good
+    at text generation. Since we will use Transformer for inference, the *model* only
+    consists of the *encoder layers* ([model’s PyTorch code](https://github.com/dtrizna/nebula/blob/dev/nebula/models/attention.py#L165)),
+    similar to architectures used, for instance, in BERT [[Devlin et al.](https://arxiv.org/abs/1810.04805)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Speculatively, the same conclusions about the Transformer engineering methods
+    drawn in this article can be expanded to any set of system logs, for instance,
+    operating system telemetry like Sysmon on Windows or corresponding Linux frameworks
+    like *auditd,* application level logs as *kube-audit* events from Kubernetes API
+    server, or access log from HTTP servers, and counting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ae080fd4ed8153a5de56ab3a30845c9a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. A schematic and simplified view of pre-processing filtered JSON events
+    to a sequence of tokens with filters and normalization. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While part of an ongoing study, the article *avoids broader discussion* on
+    this data and architecture combination and instead focuses on the methodology
+    and PyTorch code of Transformer modeling techniques to evaluate the **relative**
+    *utility* of *engineering strategies* rather than absolute performance. List of
+    evaluated configurations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: triangular, cosine, step, and one-cycle learning rate schedulers;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: accumulated gradients;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: gradient clipping;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: attention block’s pre-norm vs. post-norm;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: data optimizations;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: learning rate dependence on model size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For all the configuration options, I do a three-fold cross-validation run and
+    report mean ROC curves for validation and test sets, as well as training losses.
+    This article *does not cover* the models’ *self-supervised pre-training* but *focuses
+    on* malware classification’s *downstream task* (i.e., supervised learning).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Several publications have already systematically analyzed Transformer’s engineering
+    advancements in *natural languages*, which we will explore on *machine data*.
+    Given the desire to further investigate the ideas presented here, I suggest studying,
+    for instance, [”cramming” paper [Geiping and Goldstein]](https://arxiv.org/abs/2212.14034).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimizing the Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data consists of JSON reports representing emulation results from ~120k
+    malware and benignware samples, with malicious examples spanning seven malware
+    types like ransomware, trojans, backdoors, etc. However, I limit experiments to
+    binary classification, with the *Clean* label representing the benign class and
+    all others representing malicious samples. Worth noting that the test set was
+    collected three months after the training set to introduce an evaluation in the
+    presence of concept drift.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since emulation is an imperfect way to obtain the behavior of evasive malware
+    samples, further [filters and normalization](https://github.com/dtrizna/nebula/blob/dev/nebula/preprocessing/pe.py#L90)
+    are applied to the reports mentioned above to drop failed or incomplete emulations,
+    resulting in **76126** samples within the training set and **17407** samples in
+    the test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Field filters for sequence length reduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Based on our observations, any semantical logic stored in machine data spans
+    a *very* long sequence of tokens, including countless occurrences of metadata
+    and environmental specifics that represent little relevancy for modeling tasks.
+    Arguably, this is one of the most drastic differences between natural and machine
+    languages. The former has concise semantics in relatively short-length sentences
+    with no or little futile components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is unfortunate for self-attention models since it has **quadratic** complexity
+    on input length, meaning longer sequences is exponentially more expensive to train.
+    This is because every element in the input to self-attention must attend to every
+    other member in the same sequence — see the title Figure 1 above for visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, applying a domain knowledge-based filter when working with machine
+    data is *mandatory*. In our case, JSON events [are filtered](https://github.com/dtrizna/nebula/blob/dev/nebula/constants.py#L40)
+    based on manipulations on (1) files, (2) registry, (3) network access, as well
+    as (4) API call names, arguments, and return values. This significantly increased
+    epistemic density (i.e., relevant knowledge per token ratio) and data quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sequence length is limited to **512** tokens during the experiments below to
+    iterate over configuration combinations faster, but keeping longer sequences for
+    final performance evaluations or production implementations is advisable. There
+    is evidence that task-related performances benefit from longer sequences, as depicted
+    in the heatmap below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc4aeebd30b5faa015b1cd7ab5758f4b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. Mean True Positive Rates under False Positive Rate of 0.001 (one
+    false alert per 1000 detections), depending on variable sequence lengths and vocabulary
+    sizes. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tokenization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Machine data can have a significantly larger vocabulary than natural language,
+    as no distinct lexical boundaries or grammatical rules often define the language
+    being used.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In system logs, it is common to see arbitrary character combinations like */tmp/83afba/setup.bin*
+    or *jre1.8.0_311,* which explode vocabulary given improper handling. For instance,
+    I observe ~3 000 unique API names, with ~1 000 appearing only once in the training
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, every extra field from the original JSON you include for analysis
+    by the model significantly increases the vocabulary size. Consider the logarithmic
+    plot below, which visualizes the frequency distribution of tokens in the training
+    sets with different JSON fields filter setups:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/066b58af3d4822f4a8aa4bfd16a694e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. Token frequency distribution concerning different JSON field filters
+    applied to the training set. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, given a field filter that uses API calls, file, network, and registry
+    records total vocabulary size is about 250k tokens. Given no filters were applied,
+    this number jumps close to 800k tokens, exploding vocabulary more than three times
+    and significantly reducing the epistemic density (valuable information per token)
+    of the data. This emphasizes the importance of appropriate domain knowledge-influenced
+    filters to raise the data quality the model receives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The same applies to normalization on arbitrary value fields like hashes and
+    IP addresses. For instance, leaving hashes untreated drastically expands vocabulary
+    while normalizing it to values like *<sha256>* and *<md5>* with the function below
+    yields only a few easy-to-interpret placeholders that the model can use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just a single and simple example, while all normalization implemented
+    in my pipeline can be found [here](https://github.com/dtrizna/nebula/blob/main/nebula/preprocessing/normalization.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, another essential trick is improving tokenization itself so that technical
+    variability in machine data does not indefinitely create new tokens. Natural languages
+    already offer a solution that fits machine data perfectly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I define a custom JSON Byte Pair Encoding (BPE) tokenizer ([code](https://github.com/dtrizna/nebula/blob/dev/nebula/preprocessing/json.py#L253))
+    based on Google’s [SentencePiece](https://github.com/google/sentencepiece/), which
+    analyzes the relative co-occurrence of bytes. That way, tokens do not represent
+    distinct values in technical language but parts of longer value sequences, as
+    exemplified below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3375d3246d908127be865a862d03aed1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. Example of whitespace tokens. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/056ee6ee14f9ac78052f4b45adeffca0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. Example of sentencepiece’s BPE tokens. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I limit further experiments to the vocabulary of **50k** BPE tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model size and learning rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The learning rate (LR) choice is straightforward and known to any deep learning
+    practitioner. However, I want to emphasize that for Transformer architectures,
+    selecting an appropriate LR range for a given model size is especially crucial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider this table from the [GPT-3 paper [Brown et al.]](https://arxiv.org/pdf/2005.14165.pdf)
+    that reports the configuration of different models and variability in the learning
+    rate used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2ae834f8402acab18417442e34f9d17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table 1 from [GPT-3 paper [Brown et al.]](https://arxiv.org/pdf/2005.14165.pdf).
+    Note how the learning rate and batch size vary depending on the number of trainable
+    model parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note the significance of learning rate reduction once the model grows, with
+    ~10x reduction in LR with ~1000x increase in model size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because of the hardware setup (single consumer type GPU), I use a model of modest
+    size with ~5–6 M parameters. Since this article evaluates *relative configuration
+    utility* rather than achieving state-of-the-art absolute values, it is a good
+    size that allows iterating over many configurations fast, providing a good benchmark
+    on the larger model’s behavior. Industry shows that model size (as the number
+    of parameters in non-embedding layers) strongly predicts performance [[Kaplan
+    et al.](https://arxiv.org/abs/2001.08361)] — this property is referred to as “scaling
+    law.” Therefore, model’s size and dataset increase should yield necessary detection
+    rates upon production release.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I decided to loop over a set of learning rates from 0.003 to 0.0001, decreasing
+    each next ~3 times. The results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bcd94fc8936edb3d12662b01173374f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. Mean values of validation and test set ROC curves and training losses
+    for variable learning rates over three cv folds. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is clearly seen that 0.003 is too big, whereas 0.0001 is too small, with
+    the optimal value being somewhere between 0.0003–0.001\. I selected LR close to
+    the bottom line ~0.0003 for further tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning Rate Scheduler
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once an appropriate value of maximal learning rate for a given model is selected,
+    I explored various schedulers of learning rate value. Scheduler refers to a function
+    that modifies learning rate value during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I [define multiple schedulers](https://github.com/dtrizna/nebula/blob/main/nebula/optimization.py)
+    based on ones reported in the most promising publications, specifically: (1) step,
+    (2) triangular, (3) one-cycle, and (4) cosine with LR transformation over training
+    time as depicted below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29cb9d0cebbdb0a5139fffd8376f0647.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 8\. Learning rate changes over training steps with different schedulers.
+    Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The results of experiments (including a run without any scheduler at all) are
+    reported below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10cffad1da2da2f5bc973998016d0d18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 9\. Results of various scheduler applications. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We clearly see that schedulers that have a “warmup” stage — i.e., do not stop
+    from max LR value (“triangular” and “one-cycle”), have higher training loss during
+    the first ~2000 updates. From ROC on the test set, we might conclude that one-cycle
+    performs the worst, and no scheduler might have higher True Positive Rate (TPR,
+    aka detection rate) values under low False Positive Rate (FPR) demands.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To resolve ambiguity, here are exact AUC and TPR values under specific FPR
+    with the lowest of 0.0001 (meaning one false alert in 10 000 analyses) on the
+    test set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3e2c8de4873d17b72ab35c982316619.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table 1\. Mean True-Positive Rates (values) under specific False-Positive Rates
+    (columns) and AUC on the test set over 3 cv folds. Table by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And this reveals that training with the“step” schedule has the best results
+    under especially low False Positive requirements, while overall best AUC has run
+    with the “triangular” scheduler. Indeed, [there is evidence](https://twitter.com/giffmana/status/1608568411855937536?s=20)
+    that “warmup” might be important, especially for self-supervised pre-training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interesting to note that training with no scheduler provides poor results under
+    the lowest FPR. This might indicate that “cooldown” (i.e., gradual reduction of
+    LR value closer to the end) is especially important to find the best model’s checkpoint
+    in local minima. Using a scheduler with “cooldown” might be crucial for information
+    security applications, where False Positives drain a human analyst’s alert budget
+    and are costly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are further interested in thoroughly examining the topic of LR schedulers,
+    the following [TDS article](/a-visual-guide-to-learning-rate-schedulers-in-pytorch-24bbb262c863)
+    might interest you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Accumulating gradients
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A curious reader noted batch size difference in GPT-3 Table 1 above when we
+    discussed learning rate variability on model size. Different model sizes require
+    a distinctive number of samples to produce an optimal gradient update. For the
+    smallest models, GPT authors used batch sizes of 500k samples, while for the largest,
+    including GPT-3 itself, they processed 3.2M samples for each weight update.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given limited resource training, batch sizes that fit on a single GPU are under-optimal.
+    Gradient vector computed from 64 or 96 samples might have skewed direction, slowing
+    convergence. Therefore, resources that discuss training under limited constraints
+    refer to the technique of accumulating gradients before updating weights (i.e.,
+    calling `optimizer.step()` in PyTorch). Training loop with gradient accumulation
+    looks like follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The tricky point is that training speed is different under the various configurations
+    of `accumulation_steps`. For example, updating gradients every step is slower
+    than doing that every 16 steps. Therefore, I set up the same time budget of ten
+    minutes per training run — to evaluate the efficiency of every configuration with
+    the same amount of computing resources. This allowed runs with lower update rates
+    to iterate over more batches within the same time (thus, different lengths of
+    training losses below). The results are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbd73532369c9bf6e1e1460ad35353d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 10\. Mean values of validation and test set ROC curves and training losses
+    for variable accumulated gradient batch values over three cv folds. Image by the
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For some reason, we see that this technique drastically decreases the performance
+    of the final model. The same pattern appears whether gradient accumulation is
+    implemented in native PyTorch as exemplified above or [using accelerate from HuggingFace](https://huggingface.co/docs/accelerate/usage_guides/gradient_accumulation).
+    Therefore, it shouldn’t be a bug in the implementation. Even though models with
+    accumulation loop over significantly more batches within the same training budget,
+    a classical implementation with ~5x fewer data achieve higher detection rates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient Clipping
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Gradient clipping is a method of setting an upper limit to the gradient value
+    during a parameter update. Exploding gradients were a significant drawback of
+    Recurrent Neural Networks (RNNs), and gradient clipping was introduced as a cure
+    for exploding gradients in RNNs. However, practically all recent Transformer-focused
+    papers also implement this technique. It stabilizes the training process with
+    no significant drawbacks. PyTorch provides a dedicated [clip_grad_norm_](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html)
+    function to implement this logic with a single line of code within the training
+    loop (just before `optimizer.step()` a call, for [example](https://github.com/dtrizna/nebula/blob/dev/nebula/__init__.py#L189)).
+    The results with variable values in a range from 0 to 1 are as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0228dc09a485ad2739c90e30c9aef91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 11\. Mean values of validation and test set ROC curves and training losses
+    for variable gradient clipping limits over three cv folds. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We clearly see that clipping values at 0.1 are sub-optimal, while there are
+    no clear conclusions on the other three options by curves. Therefore, as before,
+    looking at TPR at specific FPR and AUC values in the table below is highly informative:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23ab31c3854c75b5edf29fd4b26bdcc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table 2\. Mean True-Positive Rates (values) under specific False-Positive Rates
+    (columns) and AUC on the test set over 3 cv folds. Table by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here it is obvious that gradient clipping of 1.0 provides the best metrics,
+    with the highest overall AUC and at least a 3% benefit over other options under
+    extremely low FP conditions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Layer Normalization — Input or Output
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Original Transformer implementation applies [Layer Normalization](https://arxiv.org/abs/1607.06450)
+    on the output from a self-attention block. Contemporary literature, however, agrees
+    that input normalization outperforms the vanilla setup (for more details, see
+    *PreNorm vs. PostNorm* discussions, e.g. [[1](https://arxiv.org/abs/2002.04745)],
+    [[2](https://sh-tsang.medium.com/review-pre-ln-transformer-on-layer-normalization-in-the-transformer-architecture-b6c91a89e9ab)]).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notable that PyTorch’s default behavior is still classical *PostNorm*, but
+    it is easy to modify with a single [norm_first](https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/transformer.py#L38)
+    boolean of a Transformer Encoder block. Our results confirm public opinions, with
+    input normalization outperforming classical realization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55e1a146fa7878844c5cd1c44cc9b831.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 12\. Mean values of validation and test set ROC curves and training losses
+    for pre-norm and post-norm configurations. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An ongoing debate is whether [RMSNorm](https://arxiv.org/abs/1910.07467) outperforms
+    conventional LayerNorm, where implementations like [LLaMa](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)
+    use RMSNorm, while [other experiments](https://arxiv.org/abs/2212.14034) reveal
+    no benefits. We excluded this from our analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Through experimentation, we found that certain configurations, such as (1) input
+    normalization, (2) “triangular” or “step” learning rate schedulers, and (3) gradient
+    clipping around 1.0, effectively improved model performance. On the other hand,
+    gradient accumulation does not improve performance, which is subject to further
+    exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, we discussed important caveats of engineering a Transformer model
+    for machine data, such as (1) domain knowledge influenced filter, normalization,
+    and tokenization to reduce vocabulary and (2) learning rate choice concerning
+    the model size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned above, speculatively, the same conclusions about Transformer engineering
+    methods could be extended to other types of system logs, such as operating system
+    telemetry or access logs from HTTP servers, and I hope that this article contributes
+    to the challenging task of adopting modern AI techniques to ease the day-to-day
+    tasks of industry professionals.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,323 @@
+- en: 'Grad-CAM in Pytorch: Use of Forward and Backward Hooks'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/grad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569?source=collection_archive---------3-----------------------#2023-04-17](https://towardsdatascience.com/grad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569?source=collection_archive---------3-----------------------#2023-04-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using gradients to understand how your model predicts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)[![Vinícius
+    Almeida](../Images/5b757439dc5a5c2ad1b6ae7c26c1091b.png)](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------)
+    [Vinícius Almeida](https://medium.com/@almeida.va93?source=post_page-----7eba5e38d569--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa64bbd309&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&user=Vin%C3%ADcius+Almeida&userId=a64bbd309&source=post_page-a64bbd309----7eba5e38d569---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7eba5e38d569--------------------------------)
+    ·10 min read·Apr 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7eba5e38d569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&user=Vin%C3%ADcius+Almeida&userId=a64bbd309&source=-----7eba5e38d569---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7eba5e38d569&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgrad-cam-in-pytorch-use-of-forward-and-backward-hooks-7eba5e38d569&source=-----7eba5e38d569---------------------bookmark_footer-----------)![](../Images/da05b94c0bd22bca614f81df9c7e4411.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author. X-ray image from the [kaggle chest X-ray dataset](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I took notice of a technique called Grad-CAM that enables the inspection of
+    how a convolutional neural network predicts its outputs. For example, in a classifier,
+    you can gain insight into how your neural network used the input to make its prediction.
+    It all started with the [original paper](https://arxiv.org/pdf/1610.02391.pdf)
+    that described it. In this article, we’re going to implement it using the Pytorch
+    library in a way that you can apply to any convolutional neural network without
+    needing to change anything in the neural network module you already have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I read a paper here on Medium called “[**Implementing Grad-CAM in PyTorch**](https://medium.com/@stepanulyanin/implementing-grad-cam-in-pytorch-ea0937c31e82),”
+    by [Stepan Ulyanin](https://medium.com/u/5fb91fc37062?source=post_page-----7eba5e38d569--------------------------------),
+    which inspired me to implement the same algorithm in a slightly different way.
+    Stepan proposed an approach that requires you to rewrite the forward function
+    of your model to compute Grad-CAM. Thanks to Pytorch, we can achieve the same
+    result without changing the forward function by registering forward and backward
+    hooks. I hope this article contributes a little to the amazing work that Stepan
+    wrote.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s dive into it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Load and inspect the pre-trained model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To demonstrate the implementation of Grad-CAM, I’ll use a [chest X-ray dataset
+    from Kaggle](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
+    and a pre-trained classifier I made, capable of classifying an X-ray as having
+    pneumonia or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, let’s inspect the model’s architecture. Since we are interested in understanding
+    which aspects of our input image contributed to the prediction, we need to identify
+    the last convolutional layer, specifically its activation function. This layer
+    contains the representation of the most complex features the model learned to
+    classify its inputs. Thus, it is the most capable of helping us understand the
+    model’s behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This model was designed to receive 256x256 images with 3 channels. Therefore,
+    its input is expected to have a shape of [batch size, 3, 256, 256]. Every ResNet
+    block ends with a ReLU activation function. For our objective here, we need to
+    select the last ResNet block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In Pytorch, we can make this selection quite easily using the model’s attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Pytorch methods for registering hooks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Pytorch has many functions to handle hooks, which are functions that allow you
+    to process information that flows through the model during the forward or backward
+    pass. You can use it to inspect intermediate gradient values, make changes to
+    specific layers’ outputs, and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, we’ll focus on two methods of the *nn.Module* class. Let’s have a closer
+    look at them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**2.1\. register_full_backward_hook(*hook*, *prepend=False*)**](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This method registers a backward hook on the module, which means that the hook
+    function will run when the *backward()* method is called.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The backward hook function receives as inputs the module itself, the gradients
+    with respect to the layer’s input, and the gradients with respect to the layer’s
+    output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: It returns a *torch.utils.hooks.RemovableHandle,* which allows you to remove
+    the hook later. Therefore, it is useful to assign it to a variable. We’ll get
+    back to this later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**2.2\. register_forward_hook(*hook*, ***, *prepend=False*, *with_kwargs=False*)**](https://pytorch.org/docs/stable/generated/torch.nn.Module.html?highlight=register_forward_hook#torch.nn.Module.register_forward_hook)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is quite similar to the previous one, except that the hook function runs
+    in the forward pass, i.e., when the layer of interest processes its input and
+    returns its outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The hook function has a slightly different signature. It gives you access to
+    the layer’s outputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: It also returns a *torch.utils.hooks.RemovableHandle.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Adding backward and forward hooks to your model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we need to define our backward and forward hook functions. To compute
+    Grad-CAM, we need the gradients with respect to the last convolutional layer’s
+    outputs, as well as its activations, i.e., the outputs of the layer’s activation
+    function. Therefore, our hook functions will only extract those values for us
+    during inference and the backward pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After defining our hook functions and the variables that will store the activations
+    and the gradients, we need to register the hooks on the layer of interest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. Retrieving the gradients and activations we need
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we have set up the hooks for our model, let’s load an image for which
+    we will compute Grad-CAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2798cafb46a9b31ec0019e9919908330.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is the image we’re going to use. Sample image from the [kaggle chest X-ray
+    dataset](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to preprocess it to prepare it for being fed into the model for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we need to perform the forward pass using this image tensor as input. And
+    we must execute the backward pass for our backward hook to function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our hook functions returned the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we can use the *gradients* and the *activations* variables to compute
+    our heatmap!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Computing Grad-CAM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To compute Grad-CAM we’ll use the original paper equations and [Stepan Ulyanin](https://medium.com/u/5fb91fc37062?source=post_page-----7eba5e38d569--------------------------------)’s
+    implementation of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61da9f300c996d8a4996f12f22305578.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image extracted from the [original article](https://arxiv.org/pdf/1610.02391.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8acbcd883249f79bed6f314862bb804f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image extracted from the [original article](https://arxiv.org/pdf/1610.02391.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b6e8487f800472175117ec71c45d5b9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here is our heatmap. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth noting that the activations we obtained through the forward hook
+    contain 1,024 feature maps each capturing different aspects of the input image,
+    each with a spatial resolution of 8x8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, the gradients we obtained through the backward hook represent
+    the importance of each feature map for the final prediction. By computing the
+    element-wise product of the gradients and activations, we obtain a weighted sum
+    of the feature maps, which highlights the most relevant parts of the image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, by computing the global average of the weighted feature maps, we obtain
+    a single heatmap that indicates the regions of the image that are most important
+    for the model’s prediction. This technique, known as Grad-CAM, provides a visual
+    explanation of the model’s decision-making process and can help us interpret and
+    debug the model’s behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Combining the original image and the heatmap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following code superimposes one image over another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/30a1d5807bfd211f93d31f3b18fab292.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here’s the result. Since it is a normal X-ray, the model looked most at normal
+    structures that are expected in a normal X-ray. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e04552838aa71c2a5c149ca9153ec221.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In another example, we have an X-ray with pneumonia. And Grad-CAM correctly
+    shows areas of the chest X-ray that a doctor must examine to confirm the presence
+    of pneumonia. Image by author. X-ray image from the [kaggle chest X-ray dataset](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, to remove the hooks from your model, you just need to call the *remove*
+    method in each of the handles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I hope this article helped clarify how Grad-CAM works, how to implement it using
+    Pytorch, and how one can do it by using forward and backward hooks without changing
+    the original model’s forward function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’d like to thank [Stepan Ulyanin](https://medium.com/u/5fb91fc37062?source=post_page-----7eba5e38d569--------------------------------)
+    for his article and for helping me better understand Grad-CAM. I hope I could
+    contribute something to readers as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’d also like to leave the Python library torch-cam as a reference. It has other
+    implementations of Grad-CAM, so you don’t need to do this from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/frgfm/torch-cam?source=post_page-----7eba5e38d569--------------------------------)
+    [## GitHub - frgfm/torch-cam: Class activation maps for your PyTorch models (CAM,
+    Grad-CAM, Grad-CAM++…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Simple way to leverage the class-specific activation of convolutional layers
+    in PyTorch. Source: image from woopets…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/frgfm/torch-cam?source=post_page-----7eba5e38d569--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

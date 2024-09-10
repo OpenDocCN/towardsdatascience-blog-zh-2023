@@ -1,0 +1,276 @@
+- en: Challenges in Stop Generation within Llama 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/challenges-in-stop-generation-within-llama-2-25f5fea8dea2?source=collection_archive---------1-----------------------#2023-09-10](https://towardsdatascience.com/challenges-in-stop-generation-within-llama-2-25f5fea8dea2?source=collection_archive---------1-----------------------#2023-09-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An Exploration with Potential Solutions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)[![Shuyang
+    Xiang](../Images/36a5fd18fd9b7b88cb41094f09b83882.png)](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------)
+    [Shuyang Xiang](https://medium.com/@vanillaxiangshuyang?source=post_page-----25f5fea8dea2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b74bc8c860d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&user=Shuyang+Xiang&userId=9b74bc8c860d&source=post_page-9b74bc8c860d----25f5fea8dea2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----25f5fea8dea2--------------------------------)
+    ·9 min read·Sep 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F25f5fea8dea2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&user=Shuyang+Xiang&userId=9b74bc8c860d&source=-----25f5fea8dea2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25f5fea8dea2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchallenges-in-stop-generation-within-llama-2-25f5fea8dea2&source=-----25f5fea8dea2---------------------bookmark_footer-----------)![](../Images/919c3755f4c37f74e7796e7097458f19.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Llama: Photo by [Liudmila Shuvalova](https://unsplash.com/@liudmila19)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The launch of Llama 2 by Meta has ignited excitement within the community, marking
+    the dawn of an era for well performed large language models that were previously
+    only accessible through company-specific APIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it is important to acknowledge some imperfections inherent in these
+    models. Among them, the stop generation issue stands out prominently. My personal
+    experiences have shown that these models often struggle to determine the appropriate
+    ‘stop’ point, leaving them uncertain about when to end a text generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I will delve into the issue of stop generation failures in
+    the smallest Llama 2 model, the Llama 2–7b model, and discuss several potential
+    remedies. The implementation in the coming sections can be found in this GoogleGolab
+    [notebook](https://colab.research.google.com/drive/12R6HXUYMbhGh6dhMUH6FiOWWUIrJCaz6?authuser=1#scrollTo=VjJCzLmYmWEo)
+    with the runtime type T4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stop generation failure
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will harness the power of a Llama 2–7b model using a T4
+    GPU equipped with ample high RAM resources in Google Colab (2.21 credits/hour).
+    It is essential to bear in mind that the T4 GPU comes with a VRAM capacity of
+    16 GB, precisely enough to house Llama 2–7b’s weights (7b × 2 bytes = 14 GB in
+    FP16).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To efficiently manage VRAM usage, we will employ a technique called quantization.
+    Quantization is an approach that focuses on minimizing both computational and
+    memory requirements during inference by representing weights and activations using
+    low-precision data types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now delve into the following code snippet. Here, we’ll demonstrate how
+    to load the “meta-llama/Llama-2–7b-chat-hf” model with a Bite and Byte configuration
+    and set up a text generation pipeline based on this loaded model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This configuration enables us to generate text for a given prompt in under
+    one minute. Let’s put it to the test with a straightforward question: “What can
+    I do in Paris?” Below, you’ll find the answer (Please keep in mind that your results
+    might vary due to temperature settings).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s apparent that the model struggles to produce a satisfactory response; it
+    appears to have difficulty knowing when to conclude its output. Upon tokenizing
+    the generated text, it becomes evident that the final token is not a 2, which
+    represents the eos (end-of-sequence) token in the model’s tokenizer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Upon closer examination of the token scores (probabilities) provided by the
+    model, I noticed that the **token_id 2 (eso_token_id) has a score of “-inf.”**
+    This implies that it has no possibility of being generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attempts of problem resolution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will explore several potential solutions aimed at addressing
+    the issue at hand. It’s essential to keep in mind that the solutions discussed
+    herein represent proactive efforts, but they may not always provide resolutions
+    to the problems in question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logits Processor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A language model like Llama 2 processes a sequence of text tokens as input
+    and produces a sequence of conditional probabilities for the next token, based
+    on the context from the initial token to the current one. In light of this, it’s
+    worth considering manual adjustments to these probabilities as we approach the
+    maximum token limit, with the goal of increasing the likelihood of encountering
+    the eos token. We do it by defining our customized LogitsProcessor called “EosTokenRewardLogitsProcessor”
+    swith two initial inputs eos_token_id and max_length where the latter represents
+    the max length at which the model should generate a eos token:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the “__call__” method of the class, we enhance the probability (score) of
+    the eos_token based on the sequence’s length. When the length approaches 80% of
+    the specified maximum length, we set the eos_token_id’s score to 1e2 multiplied
+    by a length ratio and adjust the scores of other tokens downward accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now declare the logits processor in the pipeline’s definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run the pipeline again with same prompt “What Can I do in Paris” and we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: It works well! We have got a complete answer even if it might look short.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the model fails to generate the EOS token, why not consider instructing it
+    to do so? The concept of enhancing the model’s performance by fine-tuning it with
+    a dataset that includes answers concluding with the EOS token is certainly a promising
+    avenue to explore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this section, I will use shamelessly the groundwork laid out in this blog
+    post that employed a parameter-efficient fine-tuning (PEFT) method, such as QLoRA,
+    to fine-tune the Llama 2–7b model. Much like its predecessor, LoRA, QLoRA utilizes
+    a small set of trainable parameters (adapters) while keeping the core model parameters
+    unchanged. It introduces two noteworthy innovations: 4-bit NormalFloat (NF4),
+    an information-theoretically optimal data quantization method for normal data,
+    and Double Quantization. For a more in-depth understanding, please consult the
+    [original paper](https://arxiv.org/abs/2305.14314), should you have any further
+    interest in this topic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us train the model on a dataset called ‘timdettmers/openassistant-guanaco’
+    where you can find on hugging face database. This dataset has the following format
+    where the human and assistant’s conversation is separated by “###”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a593fefb022a90da04e27e82ecb7e454.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image author: “timdettmers/openassistant-guanaco’/ dataset'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before training, we have to transform the data into the Llama 2 prompt template:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I will skip the detail of the dataset transformation here. Now let us take
+    a look of the main part of training given by the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the context of a dataset comprising instructions and responses, our approach
+    involved the use of a Supervised Trainer (SFTainer) in conjunction with the QLoRA
+    method to fine-tune the weight parameters within the Language Model (LLM). Our
+    primary objective was to minimize the discrepancies between the generated answers
+    and the ground-truth responses, which served as our reference labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A significant parameter within this configuration is “lora r,” representing
+    a relatively small value pertaining to both the second and first dimensions of
+    the pairs of rank-decomposition weight matrices. Training occurred exclusively
+    on these two matrices, complementing the existing weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We train the model for 250 steps with training loss given in the plot below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/21bae74012046266638a79cc1aba0c4c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: training loss of llama 2 for 250 steps'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let us run the pipeline with the fine-tuned model. This time, we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is rather a beautiful answer!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bonus: give a different prompt'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Ultimately, there’s a straightforward yet effective trick at our disposal,
+    especially when the model’s verbosity is not a concern. We can explicitly mention
+    in the prompt that we require a concise response. For instance, when I ask the
+    model, “What can I do in Paris? Respond in five sentences or fewer,” it provides:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is a short but clean and complete answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Stopping Criteria: an unsucessful attempt'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For those who are interested, Hugging Face has introduced another API called
+    StoppingCriteria, intended for establishing specific conditions that compel a
+    sequence to halt. However, when it comes to defining a customized criterion that
+    stops the model upon encountering certain tokens (e.g., ‘\n’), it may not provide
+    a comprehensive solution to the issue. As an example, I attempted to create a
+    StopOnTokens class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, the model still fails to give a complete answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this blog post, I highlighted the issue of generation stop in Llama 2 and
+    introduced several interim solutions. Again, I skip lots of details of implementations
+    and I recommend you to have a deeper look of my notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6efeaff2e28e01d03f2e75eca9f4d09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by [Jose Aragones](https://unsplash.com/@jodaarba)
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it’s important to note that these solutions are meant to enhance the
+    user-friendliness of the responses in the short term, but we are eagerly anticipating
+    a permanent fix to address this matter.
+  prefs: []
+  type: TYPE_NORMAL

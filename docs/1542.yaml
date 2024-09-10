@@ -1,0 +1,347 @@
+- en: Infinitely Scalable Storage for Kubernetes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07](https://towardsdatascience.com/infinitely-scalable-storage-for-kubernetes-9a20393e37e4?source=collection_archive---------3-----------------------#2023-05-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A destructive experiment to make sure our data recover
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[![Flavien
+    Berwick](../Images/545083139e3cd14233a9a758b4ba762c.png)](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)
+    [Flavien Berwick](https://medium.com/@flavienb?source=post_page-----9a20393e37e4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F615f38f3989a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&user=Flavien+Berwick&userId=615f38f3989a&source=post_page-615f38f3989a----9a20393e37e4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9a20393e37e4--------------------------------)
+    ·6 min read·May 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9a20393e37e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&user=Flavien+Berwick&userId=615f38f3989a&source=-----9a20393e37e4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9a20393e37e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finfinitely-scalable-storage-for-kubernetes-9a20393e37e4&source=-----9a20393e37e4---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, you just need storage that works. The luxury of having a Cloud provider
+    storage class is not always possible, and you have to manage it all by yourself.
+    This is the challenge I had to answer for my on-premise client in healthcare.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, you will learn why and how to install Rook Ceph to provide
+    your Kubernetes cluster with an easy-to-use replicated storage class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will then deploy a file-sharing app, destroy the node on which it is deployed,
+    and see what happens. Will Ceph make our files accessible again?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0adf23b4539f2fc1d127b4ebb0e5336f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Containers to the horizon. [Photo by Kelly on Pexels](https://www.pexels.com/photo/rows-of-colorful-containers-in-industrial-area-6595781/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing a storage solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Storage has always been a challenge in Kubernetes as it doesn’t natively provide
+    redundant and distributed storage solutions. With native Kubernetes, you can only
+    attach a hostPath volume for persistent storage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: My client has its own on-premise infrastructure and wanted to make sure none
+    of its data would get lost if one of its servers went down. Most of its apps are
+    monoliths and don’t natively include data replication mechanisms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So I had to choose from [a variety of storage solutions](https://vitobotta.com/2019/08/06/kubernetes-storage-openebs-rook-longhorn-storageos-robin-portworx/).
+    My client didn’t need ultra-high performances but wanted a stable solution. I
+    came to choose Rook Ceph because :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is a CNCF-graduated project ([guarantee of stability and quality](https://github.com/cncf/toc/blob/main/process/graduation_criteria.md#graduation-stage))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Is open source with great documentation and [community support](https://github.com/rook/rook/issues?)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is easy to deploy and use
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performances [are fair](https://vitobotta.com/2019/08/06/kubernetes-storage-openebs-rook-longhorn-storageos-robin-portworx/)
+    (chapter “The benchmarks”)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Prepare your cluster
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We need a Kubernetes cluster of a minimum of 3 nodes and 1 empty attached disk
+    for each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I recommend using [Scaleway Kapsule](https://www.scaleway.com/en/kubernetes-kapsule)
+    to easily instantiate a Kubernetes cluster and attribute unformatted disks. Once
+    the Kubernetes cluster has started, we will create an attached volume (disk) for
+    each node :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go to “Instances”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Select your node
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Click the “Attached volumes” tab
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Click “+” (Create volume) and create a new disk
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Download your *kubeconf* file and place it in `~/.kube/config` . You should
+    now get access to your cluster with your *kubectl* CLI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install Rook Ceph
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**1.** This blog post has a [companion repo on GitHub](https://github.com/flavienbwk/ceph-kubernetes),
+    let’s clone it to have all resources we need'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**2\.** Clone the Rook repo and deploy the Rook Ceph operator'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**3\.** Create the Ceph cluster'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Wait several minutes for Ceph to configure the disks. Health should be `HEALTH_OK`
+    :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**4\.** Create the storage classes'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rook Ceph can provide you with two main storage classes. One is RBD and allows
+    you to have a replicated storage in `ReadWriteOnce` mode. The second one we’ll
+    install is CephFS, which allows you to have replicated storage in `ReadWriteMany`
+    mode. RBD stands for *RADOS Block Device* and allows you to have a storage class
+    to provision volumes in your Kubernetes cluster. This only supports `ReadWriteOnce`
+    volumes (RWO). CephFS acts like a replicated NFS server. This is what will allow
+    us to create volumes in `ReadWriteMany` mode (RWX).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**5\.** Deploy the Ceph dashboard'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Forward dashboard’s HTTP access :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Connect with the username `admin` and the following password :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: You should get the following page browsing [*https://localhost:8443*](https://localhost:8443)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3fbc9a0b4427c3e2c71116133ce5d448.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author: Ceph dashboard'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying an app
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will deploy a self-hosted file-sharing app ([psitransfer](https://github.com/psi-4ward/psitransfer))
+    to check if our volumes bind correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1.** Deploy the file-sharing app (NodePort 30080)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**2.** See on which node it is deployed'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Retrieve the IP of this node (through the Scaleway interface) and check the
+    app is running at *http://nodeip:30080*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\.** Let''s upload some files'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download the [5MB](http://212.183.159.230/5MB.zip), [10MB](http://212.183.159.230/10MB.zip)
+    and [20MB](http://212.183.159.230/20MB.zip) files from [xcal1.vodafone.co.uk website](http://xcal1.vodafone.co.uk/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Upload them to our file transfer app. Click the link that appears on the screen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You should now see the tree files imported. Click on it and **keep the link
+    in your browser tab**, we'll use it later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After uploading around 400MB of files, we can see the replication of data is
+    coherent across disks. We see that the 3 disks are written simultaneously while
+    we upload files. In the following screenshot, usage is 1% for each disk: although
+    I uploaded on the same host, it seems the replication is working as expected with
+    data equally persisted across the 3 disks (OSDs). Disk 2 has a lot of "read" activity
+    as the 2 other disks synchronize data from it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d5eac05176d2cea5167815e58df40a20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Ceph''s dashboard should look like this now :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f85692aa66c5d10385c2ed4e7953ba15.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: C. Destroy and see
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We're going to stop the node hosting the web app to make sure data was replicated
+    on the other nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See on which node the app is deployed
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Power off the node from the Scaleway console
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This simulates a power failure on a node. It should become `NotReady` after
+    several minutes :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And Node 3 is unavailable on our Ceph dashboard :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44c6bfae7fa77f59ce43d5a5e387e61b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Ceph''s dashboard should now look like this :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6e839f15f8cadbd73b5a670420d3a84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**3\.** Reschedule our pod'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The scheduled pod node is unavailable. However, our pod still thinks it is
+    active :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Delete it to reschedule it on another node :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Check the status of the newly-restarted pod. Your app should be available again
+    at the link previously kept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24657c632e2ca8c88632d90bd220c2fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To avoid having to manually delete the pod to be rescheduled when a node gets
+    "NotReady", scale the number of replicas of your app to at least 3 by default.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can now restart the previously powered-off node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When to use *rook-ceph-block* or rook-cephfs ?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If your applications need better performance and require block storage with
+    RWO access mode, use the *rook-ceph-block* (RBD) storage class. On the other hand,
+    if your applications need a shared file system with RWX (CephFS) access mode and
+    POSIX compliance, use the *rook-cephfs* storage class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If choosing RBD and trying to reschedule a pod while its original node is offline
+    as we did with CephFS, you will get an error from the PVC stating: "*Volume is
+    already exclusively attached to one node and can''t be attached to another*".
+    In that case, you just need to wait for the PVC to bind back (it took ~6 minutes
+    for my cluster to automatically re-attribute the PVC to my pod, allowing it to
+    start).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Try this behavior [following the associated repo chapter](https://github.com/flavienbwk/ceph-kubernetes#when-to-use-rook-ceph-block-or-rook-cephfs-).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final word
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You have learned how to install and deploy an app with Ceph. You have even proven
+    that it replicates data. Congrats ✨
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images, unless otherwise noted, are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

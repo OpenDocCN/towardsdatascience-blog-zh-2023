@@ -1,0 +1,392 @@
+- en: Finding data slices in unstructured data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/finding-data-slices-in-unstructured-data-f36244bb044e?source=collection_archive---------7-----------------------#2023-08-18](https://towardsdatascience.com/finding-data-slices-in-unstructured-data-f36244bb044e?source=collection_archive---------7-----------------------#2023-08-18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A short introduction to data-slicing methods including hands-on examples on
+    the CIFAR-100 dataset.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)[![Stefan
+    Suwelack](../Images/33b66c9119d47fd668bad7b739586200.png)](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------)
+    [Stefan Suwelack](https://medium.com/@stefan.suwelack?source=post_page-----f36244bb044e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faa4f0c2a0e38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&user=Stefan+Suwelack&userId=aa4f0c2a0e38&source=post_page-aa4f0c2a0e38----f36244bb044e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f36244bb044e--------------------------------)
+    ·9 min read·Aug 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff36244bb044e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&user=Stefan+Suwelack&userId=aa4f0c2a0e38&source=-----f36244bb044e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff36244bb044e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-data-slices-in-unstructured-data-f36244bb044e&source=-----f36244bb044e---------------------bookmark_footer-----------)![](../Images/6be6049b15d746a07cf5bf5d512a8baa.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data slices on CIFAR100\. Source: created by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'tl;dr:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data slices are semantically meaningful subsets of the data, where the model
+    performs anomalously. When dealing with an unstructured data problem (e.g. images,
+    text), finding these slices is an important part of every data scientist’s job.
+    In practice this task involves a lot of individual experience and manual work.
+    In this post, we present some methods and tools to make finding data slices more
+    systematic and efficient. We discuss current challenges and demonstrate some hands-on
+    example workflows based on open-source tooling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is an [interactive demo](https://huggingface.co/spaces/renumics/cifar100-sliceguard-demo)
+    based on the CIFAR100 dataset available.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Debugging, testing and monitoring artificial intelligence (AI) systems is hard.
+    Most efforts in the [software 2.0](https://karpathy.medium.com/software-2-0-a64152b37c35)
+    development process is spent on curating high-quality data sets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An important strategy for developing robust machine learning (ML) algorithms
+    is to identify so called data slices. Data slices are semantically meaningful
+    subsets where the model performs anomalously. Identifying and tracking these data
+    segments is at the heart of every data-centric AI development process. It is also
+    a core aspect for deploying safe AI solutions in domains such as healthcare and
+    automated driver assistance systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditionally, finding data slices has been an integral part of a data scientist’s
+    work. In practice, finding data slices heavily relies on the individual experience
+    and domain knowledge of the data scientist. In the wake of the data-centric AI
+    movement, there is a lot of current work and tooling that seek to make this process
+    more systematic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we give an overview over the current state of data slice finding
+    on unstructured data. We specifically demonstrate some hands-on example workflows
+    based on open-source tooling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is slice finding?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data scientists use simple manual slice finding techniques all the time. The
+    most famous example is probably the confusion matrix, a debugging method for classification
+    problems. In practice, the slice finding process relies on a combination of pre-computed
+    heuristics, the individual experience of the data scientist and a lot of interactive
+    data exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A classical data slice can be described by a conjunction of predicates on tabular
+    features or metadata. In a people dataset this might be persons in a certain age
+    range who are male and above 1.85m tall. In an engine condition monitoring dataset,
+    a data slice might consist of data points in a certain RPM, operating hour, and
+    torque range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the case of unstructured data, the semantic data slice definition can be
+    more implicit: It can be a human understandable description such as “*driving
+    scenarios in light rain on a curvy road with heavy traffic in the mountains*”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Identifying data slices on unstructured dataset can be done in two different
+    ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metadata can be extracted from the unstructured data either with classical signal
+    processing algorithms (e.g. dark images, low SNR audio), or pre-trained deep neural
+    networks for auto-tagging. Slice finding can then be done on this metadata.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Latent representations in the embedding space can be used to group data clusters.
+    These clusters can then be inspected to identify relevant data slices directly.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/4b8165e71e6a983fdff9db17166d17b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Workflow to identify data slices on unstructured data. Source: created by the
+    author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Automated slice finding techniques always seek to balance the support of the
+    slice (should be large) with the severity of the model performance anomaly (should
+    also be large).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Slice finding methods on tabular data share a lot of similarities with decision
+    trees: In the context of ML model analysis, both techniques can be used to formulate
+    rules that describe where model errors exist. However, there is one important
+    difference: The slice finding problem allows for overlapping slices. This makes
+    the problem computationally hard because it is more difficult to prune the search
+    space.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is data slice finding important?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Especially within the last decade, the machine learning community did benefit
+    tremendously from benchmark datasets: Starting with ImageNet, such datasets and
+    competitions have been a big success factor for deep learning algorithms on unstructured
+    data problems. In this context, the quality of a new algorithm is typically judged
+    based on very few quantitative metrics such as F1-score or mean average precision.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With more and more ML models being deployed into production, it has become
+    apparent that real-world datasets are very different from their benchmark peers:
+    Real data is typically very noisy and imbalanced, but also rich in metadata information.
+    For some use cases, cleaning and annotating these datasets can be prohibitively
+    expensive.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many teams have found that iterating the training dataset and monitoring drift
+    in production is necessary to build and maintain safe AI systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finding data slices is a core part of this iteration process. Only by knowing
+    where the model fails, it becomes possible to improve the system performance:
+    By collecting more data, by correcting false labels, by selecting the best features
+    or by simply restricting the operation domain of the system.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is data slice finding so difficult?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A critical aspect of slice finding is its computational complexity. We can
+    illustrate this with a small example: Consider n binary features with one-hot
+    encoding (can be obtained by binning or recoding, for example). Then the search
+    space of all possible feature combination is O(2^n). This exponential nature means
+    that heuristics are typically used for pruning. Consequently, automated slice
+    finding not only takes quite long (depending on the number of features), but the
+    output will not be an optimal stable solution, but some heuristics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: During the AI development process, poor model performance often stems from different
+    root causes. Given the inherent stochastic nature of ML models, this can easily
+    lead to spurious findings that have to be manually inspected and verified. Thus,
+    even if a slice finding technique can produce a theoretically optimal result,
+    it’s results must be manually inspected and verified. Building tools that allow
+    cross-functional teams to this efficiently is a bottleneck for many ML teams.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We already stated that it is typically desirable to find slices with a large
+    support, but also a distinct gap in model performance from the dataset baseline.
+    Often, the relationships between different data slices are hierarchical in nature.
+    Handling these hierarchies both during the automated slice finding process and
+    during the interactive review phase is quite challenging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Automated slice finding methods are most effective on metadata-rich problems.
+    This is often the case for real-world problems. In contrast, Benchmark datasets
+    are always quite sparse in metadata. Two primary reasons for this are data protection
+    and anonymization requirements. With the lack of suitable example datasets, it
+    is very difficult both to develop and to demonstrate effective slice finding workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We (unfortunately) must deal with this challenge in the following example section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hands-on: Finding data slices on CIFAR-100'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The CIFAR-100 dataset is an established computer vision benchmark. We use it
+    for this tutorial as its small size makes it easy to handle and keeps computational
+    requirements low. The results are also easy to understand as they don’t require
+    special domain knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, CIFAR-100 is already perfectly balanced, highly curated and lacks
+    meaningful metadata. The results of the slice finding workflows we produce in
+    this section are thus not as meaningful as in a real-world setting. However, the
+    presented workflows should be sufficient to understand how to quickly use them
+    on your real-world data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a preparation step we compute image metadata with the [Cleanvision](https://github.com/cleanlab/cleanvision)
+    library. More information on this enrichment can be found in our [data-centric
+    AI playbook](https://renumics.com/docs/playbook/cv-issues).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also define some important variables for our data slice analysis: The features
+    to be analyzed as well as the names of the label and prediction columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most slicing techniques only work on binned features. As the SliceLine and
+    WisePizza libraries do not provide binning functionality themselves, we perform
+    this as a pre-processing step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SliceLine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The [Sliceline algorithm](https://mboehm7.github.io/resources/sigmod2021b_sliceline.pdf)
+    was proposed by Sagadeeva et al- in 2021\. It is intended to work with large tabular
+    datasets that contain many features. It leverages a novel pruning technique based
+    on sparse linear algebra techniques and allows to find data slices quickly even
+    on a single machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial, we use the [SliceLine implementation](https://github.com/DataDome/sliceline)
+    from the DataDome team. It runs very stable, but currently only supports Python
+    versions <=3.9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Most parameters of the SliceLine algorithm are very straight forward: The minimal
+    support of the slice (*min_sup*), the maximum number of predicates to define a
+    slice (*max_l*) and the maximum number of slices to be returned (*k*). The parameter
+    *alpha* assigns a weight to the importance of the slice error and essential controls
+    the trade-off between the size and the error drop-off of the slice.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We call the SliceLine library to get the 20 most interesting slices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To interactively explore the slices, we enrich the description of each data
+    slice:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start Spotlight to explore the data slices interactively. You can directly
+    experience the results in the [Huggingface space](https://huggingface.co/spaces/renumics/cifar100-sliceline-demo).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b19e40e350f9a75c6e45b5ed4884a198.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 3: Interactively exploring data slices generated by SliceLine. An [interactive
+    demo](https://huggingface.co/spaces/renumics/cifar100-sliceline-demo) is available
+    on Huggingface. Source: created by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that the Sliceline algorithm did find some meaningful data slices in
+    the CIFAR-100 dataset. The classes *maple tree*, *willow tree* and *oak tree*
+    seem to be problematic. We also find that data points in these classes that have
+    a high *dark score* are particularly challenging. Upon closer inspection we identify
+    that this is because trees with a bright background are difficult for the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wise Pizza
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[WisePizza](https://github.com/transferwise/wise-pizza) is a recent development
+    by the team from Wise. It is aimed at finding and visualizing interesting data
+    slices in tabular data. The core idea is to use Lasso regression to find importance
+    coefficients for each slice. More information on how Wise Pizza works can be found
+    in the [blog post](/figuring-out-the-most-unusual-segments-in-data-af5fbeacb2b2).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is important to note that WisePizza was not developed as a ML debugging
+    tool. Instead, it is primarily aimed at supporting segment analysis during EDA.
+    That is why it is possible to manually define segment candidates and assign a
+    weight to them. In our experiments, we run WisePizza directly on the dataset and
+    set the weight for each data point to 1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To explore the issues in our unstructured data set, we extract issues in the
+    same way as in the Sliceline example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f21a4cb9282ba3e0536421a599bd9d54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 4: WisePizza also identifies the willow tree class with large dark scores
+    as problematic. However, the slices are not as fine-granular as the SliceLine
+    results. Source: created by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From Fig.4 wee see that on the simple CIFAR-100 benchmark dataset, WisePizza
+    finds relevant segments: It also lists the *willow tree* class with a high *dark
+    score* as the top slice. However, the following results are limited to different
+    class categories and are not as fine-granular as the SliceLine output. One reason
+    is that the WisePizza algorithm does not directly provide a weighting mechanism
+    between the support of the slice and the accuracy drop.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sliceguard
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The [Sliceguard](https://github.com/Renumics/sliceguard) library uses [hierarchical
+    clustering](https://arxiv.org/abs/2203.12997) to determine possible data slices.
+    Then, methods from fair learning are used to rank these clusters and predicates
+    are mined through explainable AI techniques. More information on Sliceguard can
+    be found in [this blog post](https://medium.com/@daniel-klitzke/fast-audio-machine-learning-model-debugging-using-embedding-space-clustering-1fc1ca232592).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main reason we built Sliceguard is the fact that it not only works on tabular
+    data, but also directly on embeddings. The library offers a lot of built-in functionality
+    for pre-processing (e.g. binning) and post-processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can run Sliceguard on CIFAR-100 with just a few lines of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sliceguard uses [Spotlight](https://renumics.com/docs/getting-started) to provide
+    an interactive visualization of the identified data slices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sliceguard can uncover fine-granular data slices on the CIFAR-100 datset (Fig.
+    5). In addition to the previously discovered data slices in the tree categories,
+    we also identify other issues (e.g. in the *mouse* class).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2513d68f56ea9fffb1cbb85b7c2f7b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 5: Sliceguard uncovers fine-granular data slices. An [interactive demo](https://huggingface.co/spaces/renumics/cifar100-sliceline-demo)
+    is available on Huggingface. Source: created by the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have presented three open source tools for mining data slices. Even on the
+    simple CIFAR-100 benchmark, they can be used to uncover critical data segments
+    quickly. Identifying these data slices is an important step to understand model
+    failure modes and to improve the training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [SliceLine](https://github.com/DataDome/sliceline) tool works on tabular
+    data and identifies data slices that are described by a combination of predicates.
+    [Sliceguard](https://github.com/Renumics/sliceguard) does not return a mathematically
+    guaranteed optimal combination of predicates, but it can directly work with embeddings.
+    Additionally, it can be run on unstructured data sets with just a few lines of
+    code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, both SliceLine and Sliceguard are very helpful for identifying
+    data slices. However, both tools cannot be used for a fully automated slice analysis.
+    Instead, they provide powerful heuristics that can be combined with interactive
+    exploration. If done correctly, this approach is an important tool for interdisciplinary
+    data teams to build reliable ML systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do you have experience with the presented data slicing tools or can you recommend
+    other open source libraries? I’d be happy to hear from you in the comments.
+  prefs: []
+  type: TYPE_NORMAL

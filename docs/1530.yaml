@@ -1,0 +1,518 @@
+- en: Train Image Segmentation Models to Accept User Feedback via Voronoi Tiling,
+    Part 1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29?source=collection_archive---------6-----------------------#2023-05-05](https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29?source=collection_archive---------6-----------------------#2023-05-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to train an off-the-shelf image segmentation model to respond to user feedback
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://florin-andrei.medium.com/?source=post_page-----8ab85d410d29--------------------------------)[![Florin
+    Andrei](../Images/372ac3e80dbc03cbd20295ec1df5fa6f.png)](https://florin-andrei.medium.com/?source=post_page-----8ab85d410d29--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8ab85d410d29--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8ab85d410d29--------------------------------)
+    [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----8ab85d410d29--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----8ab85d410d29---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8ab85d410d29--------------------------------)
+    ·13 min read·May 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8ab85d410d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----8ab85d410d29---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8ab85d410d29&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29&source=-----8ab85d410d29---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (The second part of this series is [here](/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9).)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Image segmentation](https://en.wikipedia.org/wiki/Image_segmentation) is a
+    popular topic in machine learning, with many practical applications. Vision models
+    can be trained to partition images based on some criteria, usually following the
+    contour of a familiar type of object. When the model can not only segment an image,
+    but also distinguish between different types of objects, this is called semantic
+    segmentation. Self-driving cars use semantic segmentation to identify the objects
+    nearby: pedestrians, stop signs, the road, other cars, etc. Another application
+    is in the field of medicine (radiology), where models could be trained to identify
+    malignant tumors in ultrasound images. And the examples could continue.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article assumes you’re familiar with the basic concepts of image segmentation,
+    and with optimization algorithms such as [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing).
+    To keep the total size reasonable, no code is quoted in the article — but see
+    [my GitHub repository](https://github.com/FlorinAndrei/segmentation_click_train),
+    also linked in the final section, for all the project’s code. I’ve also placed
+    links to code in relevant places throughout the text. [This is the main notebook
+    with the code used to generate images for this article](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/article.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Goals of the Project
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A bit of background first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In December 2022 I’ve completed the final semester of my MS in Data Science
+    study at the University of Wisconsin-La Crosse. [My capstone project](https://github.com/FlorinAndrei/datascience_capstone_project),
+    under the supervision of Dr. Jeff Baggett of UWLAX, aimed to build semantic segmentation
+    models that could detect tissue lesions in breast ultrasound images. Some of these
+    lesions are malignant, and it’s important to have good diagnostic tools to catch
+    the disease in its early stages. Segmentation models, pre-trained on large, generic
+    datasets such as ImageNet, can be fine-tuned on medical ultrasound imaging data.
+    By feeding images from an ultrasound scanner to such a model, we get predictions
+    from the model indicating whether a lesion is present in the scanned area, where
+    it is located, what is its shape, and optionally hints about its nature (malignant
+    or benign).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s an example of an image segmentation model performing a prediction on
+    an ultrasound image taken from the [Dataset of Breast Ultrasound Images](https://www.sciencedirect.com/science/article/pii/S2352340919312181):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d425a8e0cfb06b241ce07217a779b17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The frame on the left is the ultrasound image from the dataset; it contains
+    what appears to be a lesion that may or may not be malignant (the dark area).
+    The frame in the center is the ground-truth label, also part of the dataset; a
+    human expert has drawn a contour around the region of interest (lesion); such
+    labels are used to train the model, and measure its performance after training.
+    The frame on the right is my model’s prediction, which in this case is close to
+    the ground-truth label. In this case, the model is not set to distinguish between
+    malignant and benign lesions, they are all shown in yellow tones here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Building on top of the capstone described above, this project (also part of
+    [the CADBUSI project at UWLAX](https://datascienceuwl.github.io/CADBUSI/) just
+    like the capstone) starts with this key observation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Medical imaging is somewhat different from other segmentation applications,
+    in that the user (radiologist) looking at the model’s output has significant expertise
+    in the field. The user is not completely passive, like in most other applications.
+    And the question is not whether the model outperforms the human operator in how
+    well it identifies a lesion, but it’s rather how to combine what the model can
+    do, and what the user knows, in order to get better results overall.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The user may agree with the model’s prediction in every way. Or there may be
+    disagreement between the model and the user. Also, the user may possess knowledge
+    about the patient that the model does not have. It would be useful if the user
+    could provide hints or feedback to the model, extra input data as far as the model
+    is concerned, in order to arrive at a higher quality prediction that combines
+    the strengths of both model and user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, the user should be able to provide feedback to the model in a
+    simple way — e.g. by clicking the image with their mouse to highlight important
+    areas. The coordinates of the user-generated mouse clicks become additional input
+    to the model, which should then adjust its predictions accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re building the model from scratch, you can design the input any way
+    you want, to include various kinds of data. But in that case you need to do the
+    full pre-training cycle (e.g. using ImageNet), which takes significant compute
+    and time resources. If you use an off-the-shelf model, pre-trained on ImageNet,
+    that saves a lot of time and effort, but it may seem like there is no room in
+    the model’s input for the user feedback — these models are designed to take an
+    image as the input and nothing else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unless, of course, you could identify redundancies in the input of an off-the-shelf
+    model. That would mean there are redundant channels in the input that could be
+    re-purposed to provide user feedback to the model, in addition to the usual imaging
+    data. This series of articles will describe how to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: identify input redundancies in off-the-shelf image segmentation models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: use redundant input channels to provide user feedback
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train the models to recognize the user feedback correctly
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: automate the whole process as much as possible
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When Models Are Wrong
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s consider this case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df010196dc9b67941aaa0ad4819a8673.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There seems to be a region of interest (RoI) on the left-hand side of the image
+    — a small, dark, oval shape. This is shown in the label as a yellow area. But
+    the model’s prediction is the null set — there are no yellow pixels in the prediction
+    frame. The model does not appear to believe there is an RoI in this image. We,
+    playing the role of the human expert here, disagree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Or this case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1adc58e59d3d60a789e21cb2180237e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The human expert (the author of the label) believes there is only one true RoI
+    in the image. The model, however, identifies two separate RoIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In cases like these, where the predictions are quite marginal, and the human
+    expert may have reason to disagree with the model’s predictions, it would be useful
+    to allow feedback from the user to steer or guide the model’s predictions based
+    on information or knowledge that the user has but the model doesn’t.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, the user should be able to provide feedback via a very simple method,
+    such as clicking various areas in the image — the information provided by the
+    click coordinates should then be taken into account by the model to adjust its
+    predictions. The click coordinates become part of the model input. This could
+    be accomplished in a number of different ways.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The PseudoClick paper by Liu et al. (2022) describes a model architecture where
+    the clicks are provided to the model via separate input layers: the model has
+    an input for the actual image, and a different input for the clicks. If you build
+    your model from scratch, you can design it any way you like, and you could take
+    suggestions from the PseudoClick architecture.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But if you use an off-the-shelf model, you have to use the existing input. This
+    is described in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the Color Channels to Provide Feedback
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you use an off-the-shelf vision model, chances are it was built to work
+    with color images — the input to the model is actually three identical layers,
+    one for each color channel: Red, Green, and Blue. If the input is black-and-white,
+    which is the case for ultrasound images, the same information (pure luminance)
+    is distributed the same way across all color channels. In other words, having
+    three separate channels for the same information seems redundant.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Would the model work the same if only one color channel was used for monochrome
+    images? Let’s say we zero out two color channels (R and G), and we keep the image
+    information only in the B channel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a37d1dfe1a2c2533e2117f76cce104c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing this idea with a pre-trained image segmentation model such as the SegFormer
+    MiT-b3 ([available on the HuggingFace repository](https://huggingface.co/nvidia/mit-b3),
+    pre-trained on ImageNet), it is immediately obvious that the model performance
+    measured with the usual image segmentation metrics ([IoU](https://en.wikipedia.org/wiki/Jaccard_index),
+    [Dice](https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient))
+    does not change. The model works essentially the same. The redundancy from the
+    color channels does not help, nor does it harm, when doing predictions on monochrome
+    images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That means we could keep the image data only in the B channel, and use the R
+    and G channels for the additional input — the user-generated clicks. Not just
+    that, but we have two separate channels, R and G, which could provide different
+    kinds of input to the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That’s exactly what we need: one kind of click should be “activating” or “positive”,
+    telling the model *“this is a region of interest, focus here”*, while the other
+    kind should be “inhibitory” or “negative”, telling the model *“nothing is happening
+    here, avoid this area”*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The question is, what is the best way to place the clicks in the training data
+    to make the models responsive to user input? This is described in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: True Positives, False Positives, False Negatives
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The prediction from a segmentation model is an area in the image where the pixels
+    are marked in some way — e.g. by a non-zero value. When the predicted area matches
+    closely the ground-truth label for that image, we say the model performs well.
+    The predicted pixels that match the label are called true positives (TP).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Where the model makes non-zero predictions but the pixels in the label are
+    zero, those pixels are false positives (FP). Where the pixels in the label are
+    non-zero, but the model’s predictions are zero, those are false negatives (FN).
+    Here’s an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/775921ac2983817bdef629c4ebaf270d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The left-hand frame is the label. The center frame is the model’s prediction.
+    In the right-hand frame, we’ve marked the true positives (TP) with white: the
+    prediction pixels match the label pixels. The false positives (FP) are the non—zero
+    prediction pixels that are zero in the label, and are marked green. The false
+    negatives (FN) are the zero-value prediction pixels where there are non-zero pixels
+    in the label, and are marked red.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we knew the image areas where the models tend to be wrong and make false
+    predictions (FP, FN), we could add clicks to the original dataset, marking the
+    FP and FN areas. Since we’ve moved all the image information to the Blue channel,
+    we could use the Red and Green channels for these clicks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, we could mark the False Positive areas with clicks in the Red
+    channel. These, we hope, will become “inhibitory” or “negative” clicks that will
+    steer the model away from making predictions there. The False Negative areas could
+    be marked with clicks in the Green channel, which will become “activating” or
+    “positive” clicks and guide the model to focus more on those areas. Examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e1d8d17f4481965a6f75aad3f46bb87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a8ae7bf47de6111503eb31dd631d71e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the images shown above, we’ve placed Red channel clicks (negative clicks)
+    in the False Positive areas (where the model predicts an RoI that doesn’t exist),
+    and we’ve placed Green channel clicks (positive clicks) in the False Negative
+    areas (where the model predicts nothing but there is an actual RoI). For good
+    measure, we place a few more Green channel clicks in the True Positive areas,
+    to “anchor” the prediction and make sure the TP areas remain stable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The complete training procedure using the clicks is described below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to Train Models With Clicks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'These are the main steps involved in training models to become responsive to
+    user input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: decide on a particular off-the-shelf image segmentation model, such as SegFormer
+    MiT-b3 pre-trained with ImageNet
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: process all your monochrome images such that the image data only exists in the
+    B channel; the R and G channels will be made blank
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: split the image dataset into 5 folds; fine-tune a model for each fold; this
+    will create 5 models, each fine-tuned for a different fold in the dataset; let’s
+    call these **the baseline models**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: use each one of the 5 baseline models to make predictions on the images it has
+    not seen in training; this will generate predictions for all images in the dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for each prediction, determine the TP, FP, FN areas; cover the FP, FN, and optionally
+    TP areas with R and G clicks as described above; small areas receive one click
+    each; large areas receive multiple clicks; for now, assume that the click coordinates
+    are generated manually (more on this later)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: embed the clicks into the R and G channels in the dataset, but leave the B channel
+    untouched; each click will be a 3x3 pixels area in the R or G channels where we
+    set the pixel values to the maximum value for that channel (e.g. 255 for the uint8
+    dtype)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: using the same 5 folds, train 5 new models on the dataset with the clicks added
+    to the R and G channels; let’s call these **the click-trained models**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In other words, we train the **baseline models** to “forecast” where the models
+    tend to be wrong, we add clicks as needed to the “wrong” areas, then train new
+    models (**click-trained models**) with the clicks added to the dataset. We hope
+    that the click-trained models will become responsive to clicks provided via the
+    R and G channels. [The full code is shown here](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/train_models.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For clarity, this is what the images will look like, after all processing,
+    with the clicks added:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cea79304fcb931c1efe9288e8105ef2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5cf078da733a15cbe82ffbd083419b39.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The left-hand frame is the ground-truth label we’re trying to match. The center
+    frame is the prediction from the baseline models. The right-hand frame shows the
+    processed images used to train the click-trained models — all image data has been
+    moved to the B channel, and clicks have been added to the R and G channels as
+    needed to modify predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You don’t need to actually modify the dataset to add the R and G clicks. You
+    could simply register the click coordinates, and modify the dataloader to apply
+    the clicks dynamically when the models are trained. This variant is far more flexible
+    if you need to re-generate click coordinates for whatever reason.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, you could take a hint from image augmentation techniques, and apply the
+    clicks in training with some probability. The clicks are not always added to the
+    input, but only in some fraction of cases, randomly. I’ve used a probability of
+    0.9 with good results. The idea is to not make the models over-dependent on clicks.
+    Fine-tuning this parameter may require further exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Does it work?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It sure does. Here is a click-trained model making predictions, then responding
+    to user feedback in real time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We ask the model to make predictions, and it covers the two dark areas in the
+    upper half of the image. We disagree with the model — we think the area on the
+    left is not a region of interest, so we place an inhibitory (red) click on it.
+    We also place an activating (green) click on the area to the right. Now the model’s
+    predictions follow the additional information that we have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It should be noted that a single click, about 3x3 pixels in size, influences
+    the model’s predictions in an area a few hundreds of pixels in diameter. Also,
+    the model takes into account both the presence of the click, and the features
+    visible in the image: placing a click in an RoI makes the model fill that whole
+    region with a prediction mask, following the contour visible in the image.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are cases where the model follows the user feedback quite easily — this
+    is where there is high ambiguity / low confidence for the predictions in the model
+    output. There are other cases where the model’s predictions will resist being
+    “evicted” from an RoI by a negative click — this is when there is low ambiguity
+    / high confidence in the model’s own output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scalability
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main problem with the technique described so far is scalability. We’ve assumed
+    that the click coordinates are generated manually. In other words, a human operator
+    needs to literally sift through all images, compare ground-truth labels with predictions,
+    decide where to place the clicks, and how many clicks to place, and record all
+    click coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This obviously doesn’t scale. It is already tedious and time-consuming, but
+    not impossible, to generate a single set of clicks for one dataset containing
+    hundreds of images. If the dataset contains thousands of images or more, or especially
+    if the set of clicks needs to be re-generated as the baseline models change, the
+    task becomes impossible. Some kind of automation is needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[That will be the topic of Part 2 of this series](/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9).
+    We will show how to automate the creation of click coordinates, to the point where
+    the training process could run completely unsupervised. [Part 2](/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9)
+    will describe an algorithm that generates the clicks in a way that is very similar
+    to the decisions that a human operator would make.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Links, Citations, Comments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This project is an extension of my capstone project from the final semester
+    of my MS in Data Science studies: [https://github.com/FlorinAndrei/datascience_capstone_project](https://github.com/FlorinAndrei/datascience_capstone_project)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both the capstone and this work were done within the Computer Aided Diagnosis
+    for Breast Ultrasound Imagery (CADBUSI) project at the University of Wisconsin-La
+    Crosse, under the supervision of Dr. Jeff Baggett. [https://datascienceuwl.github.io/CADBUSI/](https://datascienceuwl.github.io/CADBUSI/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The GitHub repository with code for this article: [https://github.com/FlorinAndrei/segmentation_click_train](https://github.com/FlorinAndrei/segmentation_click_train)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All ultrasound images used in this article are part of the Dataset of Breast
+    Ultrasound Images, available under the CC BY 4.0 license. Citation link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Al-Dhabyani, W., Gomaa, M., Khaled, H., & Fahmy, A. (2019). Dataset of Breast
+    Ultrasound Images. *ResearchGate*. Retrieved May 1, 2023 from [https://www.sciencedirect.com/science/article/pii/S2352340919312181](https://www.sciencedirect.com/science/article/pii/S2352340919312181)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Other links, citations and comments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Liu, Q., Zheng, M., Planche, B., Karanam, S., Chen, T., Niethammer, M., & Wu,
+    Z. (2022). PseudoClick: Interactive Image Segmentation with Click Imitation. *arXiv.org*.
+    Retrieved May 1, 2023, from [https://arxiv.org/abs/2207.05282](https://arxiv.org/abs/2207.05282)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Xie, E., Wang, W., Yu, Z., Anandkumar, A., Alvarez, J. M., & Luo. P. (2021).
+    SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers.
+    arXiv.org. Retrieved May 1, 2023, from [https://arxiv.org/abs/2105.15203](https://arxiv.org/abs/2105.15203)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pretrained SegFormer models at HuggingFace: [https://huggingface.co/docs/transformers/model_doc/segformer](https://huggingface.co/docs/transformers/model_doc/segformer)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Images in this article that are not part of the Dataset of Breast Ultrasound
+    Images are created by the author.
+  prefs: []
+  type: TYPE_NORMAL

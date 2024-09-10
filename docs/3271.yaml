@@ -1,0 +1,359 @@
+- en: How Nightshade Works
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-nightshade-works-b1ae14ae76c3?source=collection_archive---------1-----------------------#2023-11-03](https://towardsdatascience.com/how-nightshade-works-b1ae14ae76c3?source=collection_archive---------1-----------------------#2023-11-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Confusing image-generating AI with poisoned data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)[![Dorian
+    Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------)
+    [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----b1ae14ae76c3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----b1ae14ae76c3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b1ae14ae76c3--------------------------------)
+    ·10 min read·Nov 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb1ae14ae76c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&user=Dorian+Drost&userId=1d49ea537d1c&source=-----b1ae14ae76c3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb1ae14ae76c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-nightshade-works-b1ae14ae76c3&source=-----b1ae14ae76c3---------------------bookmark_footer-----------)![](../Images/06b719db201217808f3920a3b86de4c9.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just like the high walls of a castle, Nightshade can be a way to defend intellectual
+    properties against illegitimate use. Photo by [Nabih El Boustani](https://unsplash.com/@nounouis?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The recent emergence of [*Nightshade*](https://arxiv.org/abs/2310.13828), an
+    algorithm that allows to create poisoned data for confusing image-generating AI
+    models, has given new life to the discussion on adversarial attacks on such models.
+    This discussion is also influenced by ethical and social considerations, as such
+    attacks may provide a way for artists, content creators, and others to fight back
+    if they feel treated unjustly by the fact that AI models use their content without
+    permission, but could also be used with bad intentions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I want to explain the core concepts of Nightshade. To this
+    end, I will first explain the general idea of data poisoning and highlight its
+    shortcomings. Then I will introduce you to Nightshade, an algorithm that overcomes
+    some of the disadvantages of the naive approach. In the end, I will briefly discuss
+    some ethical considerations that come from its use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data poisoning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/af49aea3e5964e2f1d180c6f498af741.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Poisonous or not? Photo by [Fiona Smallwood](https://unsplash.com/@thepeoplesdigital?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the idea of data poisoning in general. Say you want to influence
+    image-generating AIs in such a way, that they fail to generate certain kinds of
+    images, or are unable to understand certain prompts. Why do you want to do this?
+    The most likely non-destructive reasons might be, that you are an artist and want
+    to avoid that an image-generating model is able to generate images in your style,
+    or that you have created a new comic character that should not be reproduced by
+    an image-generating model without your permission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, what do you do? Let us start with understanding a basic concept of how generative
+    AI learns. Of course, an image-generating AI depends on its training data. To
+    be precise, it relies on the fact that there are images showing a certain concept
+    (say a *dog*) and that those images are associated with a text describing their
+    content (e.g. an image caption like *a cute dog with glasses*). From that, it
+    learns to extract certain visual properties that images share, which also share
+    certain keywords in their captions. That is, the model learns *what dogs look
+    like* by learning the properties of all those images that mention *dog* in their
+    caption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, what would happen if you would introduce images that show dogs, but whose
+    captions always mention *cats*? In the end, *dog* and *cat* are just symbols for
+    what can be seen in the images. If the images that show dogs are labeled as cats,
+    the model will just learn that the symbol *cat* refers to what we would call *dog*.
+    Without any prior knowledge of the English language, how would the model know
+    that the labels are wrong if they are so consistent? If you don’t speak German,
+    and I would show you a hundred images of dogs and tell you their label is *Katze*,
+    you would assume that *Katze* is the German word for *dog.* You wouldn’t know
+    that the actual German word for *dog* is *Hund,* and *Katze* means *cat* because
+    you just learned the correlation between the labels and the images’ properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The process just described is called *data poisoning,* stemming from the idea
+    that you introduce data instances, that have a malicious effect on the model’s
+    training (just like a poison has a malicious effect on your health).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naive poisoning attacks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/8632fa35f988b5aed9475c9f689dd709.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A cute dog with glasses, thinking about how to attack an image-generating model.
+    Photo by [Jamie Street](https://unsplash.com/@jamie452?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a naive approach, you could take the aforementioned idea and use it to confuse
+    machine learning models like Stable Diffusion. Say you want to make Stable Diffusion
+    create images of cats when being prompted for dogs. For that, you would need to
+    create many images of cats, label them as *dogs,* and upload them to the internet.
+    Then you hope that those images are scraped for the next training of a Stable
+    Diffusion model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If many of your images become part of the next training run, that could indeed
+    lead to confusion between cats and dogs. However, there are some drawbacks to
+    that approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will need many images. Since there are many other images of cats that are
+    not poisoned, you need a large number of images to have an impact at all. If you
+    provide only 10 poisoned images, and there are 1000 non-poisoned images of cats
+    on the other side, you almost have no influence on the training. Typically, you
+    can expect to poison 20% or more of all images to have an effect.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that you do not know which images exactly will be part of the training.
+    Hence, if you want to introduce 500 poisoned images into the training, you may
+    have to create 5000 and spread them all over the internet, because only some of
+    them may actually be scraped for training.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you upload images of cats, labeled as *dogs*, humans can easily detect that.
+    Before using your images for training, they may be filtered out by a quality gate
+    (being a human or a specialized AI).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Nightshade
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/89ec939d3c8c67ec4065cc2af1df3fee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The nightshade algorithm has its name from a very poisonous plant. Photo by
+    [Georg Eiermann](https://unsplash.com/@georgeiermann?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s take a look at *Nightshade*, an algorithm that aims at overcoming
+    those disadvantages. For that, Nightshade uses two key concepts: It creates images
+    that have the maximum effect on the model (which leads to a need for fewer images
+    in total) and that are indistinguishable from non-poisoned images for humans.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, how to get the maximum effect out of the images? In theory, you would
+    want to use those images, that lead to the biggest change of the gradient during
+    the training. However, to find out which images those are, you would have to observe
+    the training process, which you can’t do, in general. The authors of Nightshade
+    propose a different solution though: You take an image, that has been generated
+    by the model you want to poison. That is, if you want to have cat images labeled
+    as dogs, you prompt the model with a simple prompt like *an image of a cat*. The
+    image it creates will be a very typical representation of what the model understood
+    to be a cat. If this image is seen in training, it will have a very high influence
+    on the understanding of the concept cat (a much higher than rather untypical images
+    of cats have). Hence, if you poison that image, you will get a very large effect
+    on the model’s training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Second, we said that Nightshade’s images should be indistinguishable from non-poisoned
+    images. To reach this goal, Nightshade takes natural images and applies a perturbation
+    (i.e. a small change in the pixel’s values), until the image is perceived differently
+    by the model. Continuing with our dog vs. cat example from above, we would take
+    an image generated by the model that shows a cat. This image we refer to as the
+    *anchor image* or xᵃ in the upcoming formulas. Next, we take a very typical image
+    of a dog, which we refer to as xₜ. To this image xₜ, we now add the perturbation
+    δ s.t. it optimizes the following objective:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9a43af97d7fafd49aa3a4825c482c826.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *F()* is the image feature extractor used by the model, *Dist* is a distance
+    function and *p* is an upper bound for the δ, to avoid the image changing too
+    much. That means we want to find δ s.t. the distance between the features of the
+    perturbated dog image (F(xₜ + δ)) and the anchor image (showing the cat, F(xᵃ))
+    is as small as possible. In other words, we want the two images to look alike
+    from the model’s perspective. Be aware, that F(x), the result of the feature extractor,
+    is how the model *sees* the image in feature space, which is different from how
+    you see the image (in pixel space, if you want).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following images, you won’t be able to spot any difference between the
+    original and the poisoned images (at least I can’t). However, in their feature
+    space, they differ a lot. The features of the poisoned dog image, for example,
+    are very close to the features of a cat image and hence for the model it almost
+    looks like a cat.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ab1ef415b193785dc81a66adfde6204.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two examples of poisoned images. The images in the lower line are perturbated
+    versions of the upper ones. Although no difference can be seen by a human, the
+    original and poisoned images look very different from a model’s perspective. Image
+    taken from the Nightshade paper[1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this technique, we are able to generate images that have a very big effect
+    on the model’s training and that can’t be detected as being poisoned. If you would
+    upload these images to the internet, no human would be suspicious at all and hence
+    it is very unlikely, that they would be filtered out by any quality gate. In addition,
+    since they are so powerful, you don’t need to poison 20% of all dog images in
+    the training data, as you would with the naive approach. With Nightshade, 50 to
+    100 images are typically enough to ruin a model's performance on a particular
+    concept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generalizability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Beyond the points we just saw, Nightshade has another interesting advantage,
+    which is its ability to generalize in multiple ways.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First of all, poisoning a certain keyword also influences concepts that are
+    related in a linguistic or semantic fashion. E.g. poisoning images of the concept
+    *dog* also influences keywords like *puppy* or *husky*, which are related to *dog*.
+    In the following examples, the concept *dog* has been poisoned and this also impedes
+    the generation of *puppies* and *huskies*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d7ee38ee05cb93705b036d29642c55f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of how poisoning a concept (dog) also impedes the generation of related
+    concepts (puppy, husky, wolf). Image taken from the Nightshade paper[1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a likewise fashion, poisoning a concept such as *fantasy* also influences
+    concepts that are related semantically, but leaves other concepts unaffected,
+    as can be seen in the following example. As you see, a concept like *dragon*,
+    which is close to the poisoned *fantasy,* is affected, while a concept like *chair*
+    is not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cacb3836b0f65edcff5ece31a9a62e37.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of how poisoning a concept (fantasy) also impedes related concepts
+    (e.g. dragon). Note that non-related concepts (e.g. chair) are not affected. Image
+    taken from the Nightshade paper[1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, when poisoning multiple concepts, the ability to generate images
+    may break down in its entirety. In the following example, 100, 250, or 500 concepts
+    have been poisoned. With more concepts being poisoned, the generation of other
+    concepts, that have not been poisoned at all (like *person* or *painting* in the
+    example), is heavily impeded as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00245ac22b1a1cb87635c2fa244f56b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example is how poisoning many concepts impedes the ability to generate images
+    in general. Note that the concepts *person,* painting, *and seashell have not
+    been poisoned specifically. Image taken from the Nightshade paper[1].*
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to that, Nightshade’s effects also generalize over different target
+    models. Remember that we used the model we wanted to attack to generate the anchor
+    images, that helped us construct our poisoned images. The idea behind that was,
+    that those images are very prototypical and hence would have a strong influence
+    on the training. We also needed access to the feature extractor to optimize the
+    perturbation. Naturally, Nightshade’s influence is strongest if these anchor images
+    are generated by the model that is to be attacked and if that model’s feature
+    extractor can be used for the optimization. However, even if anchor images and
+    feature extractor come from another model, the poisoning works quite well. That
+    is, you could generate your poisoned images with the help of, say, Stable Diffusion
+    2, even if you want to attack Stable Diffusion XL. This may be of interest if
+    you don’t have access to the model you actually want to attack.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ethical Concerns
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far, I introduced Nightshade as a method that can be used by content creators
+    to defend their intellectual properties against illegitimate use. However, as
+    there are always two sides to a coin, data poisoning can as well be used in a
+    harmful manner, may it be on purpose or not. Needless to say, data poisoning can
+    be used to deliberately disturb generative AI models, cause financial damage to
+    their creators, and impede scientific research. An AI company destroying the training
+    data of their competitors to improve their own model in contrast is only one of
+    countless examples of malign usages of data poisoning. However, even if you just
+    want to defend your own content, we just saw, that poisoning many concepts impedes
+    the AI’s ability to generate images in total. Hence, if many people make use of
+    Nightshade, this may destroy image-generating AIs even on those concepts that
+    would be legitimate to use. Hence, even with the intention to protect their own
+    content, a content creator using Nightshade may cause unwanted damage. Whether
+    and to which extent such collateral damage has to be accepted is a question for
+    a vivid open debate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On top of that, as you can imagine, attacking the capabilities of generative
+    AI is a battle of constant ups and downs. Whenever new attacks are invented, the
+    other side comes up with new defense mechanisms. Although the authors claim that
+    Nightshade is quite robust against common defense mechanisms (e.g. detecting images
+    as being poisoned by a specialized classifier or other properties), it may only
+    be a matter of time until new defenses are discovered that counteract Nightshade.
+    From that perspective, Nightshade may allow creators to protect their content
+    for the time being but may become outdated sooner or later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we just saw, Nightshade is an algorithm to create poisoned datasets, that
+    goes beyond the naive approach of labeling data with incorrect labels. It creates
+    images that are not detectable as being poisoned by humans and that can influence
+    an image-generating AI heavily even with a low number of examples. This drastically
+    increases the chance of the poisoned images becoming part of the training and
+    having an effect there. Even more, it promises to generalize in a number of ways,
+    which makes the attacks more powerful and less easy to defend against. With that,
+    Nightshade provides a new way of fighting back against the illegitimate use of
+    content for model training, for which no permission has been given by its creators,
+    but also includes the potential of destructive use and hence calls for a debate
+    on its ethical implications. Being used with noble intentions, Nightshade can
+    help defend intellectual properties such as an artist’s style or inventions though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sources
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'That is the original paper introducing Nightshade:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Shan, S., Ding, W., Passananti, J., Zheng, H., & Zhao, B. Y. (2023). Prompt-Specific
+    Poisoning Attacks on Text-to-Image Generative Models. *arXiv preprint arXiv:2310.13828*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Like this article?* [*Follow me*](https://medium.com/@doriandrost) *to be
+    notified of my future posts.*'
+  prefs: []
+  type: TYPE_NORMAL

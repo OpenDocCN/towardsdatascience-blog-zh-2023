@@ -1,0 +1,356 @@
+- en: Effective Data Augmentation for OCR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/effective-data-augmentation-for-ocr-8013080aa9fa?source=collection_archive---------10-----------------------#2023-04-06](https://towardsdatascience.com/effective-data-augmentation-for-ocr-8013080aa9fa?source=collection_archive---------10-----------------------#2023-04-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: My recipe to reach those last percents of (ac)cu(re)teness
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)[![Toon
+    Beerten](../Images/f169eaa8cefa00f17176955596972d57.png)](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------)
+    [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----8013080aa9fa--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----8013080aa9fa---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8013080aa9fa--------------------------------)
+    ·7 min read·Apr 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8013080aa9fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&user=Toon+Beerten&userId=3aef462e13b5&source=-----8013080aa9fa---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8013080aa9fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-data-augmentation-for-ocr-8013080aa9fa&source=-----8013080aa9fa---------------------bookmark_footer-----------)![](../Images/e6dd122357975bca3efc671c05bae100.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author (generated [with](https://huggingface.co/spaces/albarji/mixture-of-diffusers))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Background**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I faced a challenge of handwritten amounts that needed to be recognized as precise
+    as possible. The difficulty lies in keeping the false positives below 0.01% .
+    The amount of samples in the dataset was fixed, so data augmentation is the logical
+    go-to. A quick search revealed no of-the-shelf method for Optical Character Recognition
+    (OCR). So I pulled up my sleeves and created a data augmentation routine myself.
+    It was used during training and helped my model reach the objective. Read on to
+    know how.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By introducing small changes each time an image is trained, the model is less
+    likely to overfit and generalize better. I used it in conjunction with TROCR,
+    but any other model should benefit as well.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Test setup**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since I can’t share images from my proprietary dataset, I wanted to use samples
+    from the [IAM Handwriting Database](https://fki.tic.heia-fr.ch/databases/iam-handwriting-database),
+    but I didn’t get a reply to my request for permission to use it in this article.
+    So I created some of my own examples for demonstrating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I will make use of O[penCV](https://opencv.org/) and the [albumentations](https://albumentations.ai/)
+    library, for three kinds of alterations: morphological, noise and transformations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenCV is a well known computer vision library. Albumentations is a relatively
+    new Python library for easy yet powerful image augmentations.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: There is also a nice [demo website](https://demo.albumentations.ai/) where you
+    can try what albumentations can do. It is however limited because you can’t use
+    your own image to test on. So, I created a Jupyter [notebook](https://github.com/Toon-nooT/notebooks)
+    that I used to render all augmented images in this article. Feel free to open
+    it in [colab](https://colab.research.google.com/github/Toon-nooT/notebooks/blob/main/OCR_data_augmentations.ipynb)
+    and experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will first show the alterations by itself with some explanation and then i
+    will discuss my technique to combine all of them. I will suppose that all images
+    are grayscale and will have undergone already contrast enhancement (eg. CLAHE).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1st augmentation technique: **morphological** alterations'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'These relate to the form of structure. To put it in simpler terms: they can
+    be used to make the text lines appear to be written with a finer or thicker pen.
+    *Erosion* and *dilation* they are called. Unfortunately these are not (yet?) part
+    of the albumentations library, so i have to resort to opencv for this.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To create the effect that somebody used a pen with a fatter line width, we
+    can **dilate** the original:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b9a2f4972ba437ab7beb639d560dceb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: original vs dilated (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Erosion** on the other hand (pun intended) simulates that the text has been
+    written with a finer pen:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/518656273e4ca8bd9851b3e271c01fec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: original vs erosion (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be careful here that the last parameter — which is the number of iterations
+    — is not set too high (here it was set to 3), otherwise you end up with the handwriting
+    completely removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: For my dataset I could only set it to 1, so this really depends on your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2nd augmentation technique: **noise introduction**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can either remove black pixels or add white pixels to the image. there are
+    several methods to that. I have experimented with many of them, but here is my
+    shortlist:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RandomRain** with **black** drop color is very damaging. Even for me it’s
+    hard to still read the text. That’s why i opt to set the chance of this happening
+    very low:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0204f3ade1e653b39a087303d12f0e66.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RandomRain examples (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RandomShadow** will smudge the text with lines of varying intensity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1ac0e10469d87375b5f5e2a4dffb45b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RandomShadow (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**PixelDropout** gently turns random pixels into black:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be81c47bd860ec1f9fb3693e1dbc18d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: black pixels with PixelDropout (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike with black color drops, **RandomRain** with **white** drop color disintegrates
+    the writing, which hardens the training. Much like the bad quality you see when
+    a photocopy of a xerox of a fax was taken. The probability of this transform happening
+    can be set much higher.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5755ce839ed7e7fc6508076eef3793cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RandomRain — white version (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a lesser extent **PixelDropout** to **white** does the same. But it results
+    more in a more general faded image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32ba83dfe76e12fea60af4a02368b9a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PixelDropout with white pixels (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3rd augmentation technique: transformations'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**ShiftScaleRotate**: be careful here with the parameters. Try to avoid that
+    some text is cut off and falls outside the original dimensions. There is both
+    a zoom and rotation going on. Be sure to not overdo it with too big parameters.
+    Otherwise you’ll have more chance that the 1st sample will happen. You can see
+    it actually moves text outside of the image. This can be prevented by choosing
+    a larger bounding box — so effectively adding more whitespace around the text.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0363993a0a4467f8609d17c980a84961.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: zoomed and rotated (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Blur**. The old (but gold) reliable. Will be performed in different intensities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7775913f3b1f7790b6ebd6e838e0b9cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: blurred handwritten text (*Image by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The big finale: combining them all together:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is where the power lies. We can randomly combine these effects to create
+    unique images to include in each training epoch. Careful consideration needs to
+    be taken that you don’t do too many methods of the same type. We can do this with
+    the function in albumentation *OneOf* . *OneOf* contains a list of possible transformations
+    and like the name implies, will only execute one of these with possibility P.
+    So it makes sense to group transformations that do more or less the same, to avoid
+    overdoing it. Here is the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: P stands for the chance of something happening. It’s a value between 0 and 1,
+    where 1 means it always happens and 0 never.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'So, let’s see it in action:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e99d22b622bdf6f7bbcae9fbc5a7bb59.png)![](../Images/598a475fa77f1eefe28a95e47e1162d2.png)![](../Images/375968cfdc0a6ec7874d0b48ee5ea3e9.png)![](../Images/d57b638661a531d581e0a8b3fdcd60ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: augmented text (*Images by author*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looks pretty neat, no?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**alternative approach:** 🌮'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the [EASTER 2.0](https://arxiv.org/abs/2205.14879) paper, they came up with
+    the [TACo](https://github.com/kartikgill/taco-box) technique. It stand for Tiling
+    and Corruption. (🌮 haha)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is capable of this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a280195c5c28677c2534bf0d9d10eddd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: figure by [Kartik Chaudhary / Raghav Bali](https://github.com/kartikgill/taco-box)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have not tried this out because my intuition tells me too much is destroyed
+    from the original. In my opinion, if i can’t read it, a computer can neither.
+    I might be wrong however, when you consider that as a human, you could guess it
+    is ‘TACO’, if you see ‘TA█O’. We would look at the surrounding letters. and taco
+    is a common word. But a computer with a dictionary behind it might make it ‘TAMO’,
+    which happens to be an english word for ‘japanese ash’*.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve discussed many image manipulations and how they would be good for the
+    task of OCR. I hope this could proof to be useful for you or at least gave you
+    some inspiration to try it out yourselves. You can use my recipe as a baseline,
+    but you’ll probably need to finetune a few parameters for it to be perfect for
+    your dataset. Let me know how much your models have increased in accuracy!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I made the technique publicly available in this Jupyter [notebook](https://github.com/Toon-nooT/notebooks/blob/main/OCR_data_augmentations.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may also like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://toon-beerten.medium.com/hands-on-document-data-extraction-with-transformer-7130df3b6132?source=post_page-----8013080aa9fa--------------------------------)
+    [## Hands-on: document data extraction with 🍩 transformer'
+  prefs: []
+  type: TYPE_NORMAL
+- en: My experience using donut transformers model to extract invoice indexes.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: toon-beerten.medium.com](https://toon-beerten.medium.com/hands-on-document-data-extraction-with-transformer-7130df3b6132?source=post_page-----8013080aa9fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://opencv.org/?source=post_page-----8013080aa9fa--------------------------------)
+    [## Home - OpenCV'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenCV provides a real-time optimized Computer Vision library, tools, and hardware.
+    It also supports model execution…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: opencv.org](https://opencv.org/?source=post_page-----8013080aa9fa--------------------------------)
+    [](https://albumentations.ai/?source=post_page-----8013080aa9fa--------------------------------)
+    [## Albumentations
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Albumentations Albumentations is a Python library for fast and flexible
+    image augmentations. Albumentations…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: albumentations.ai](https://albumentations.ai/?source=post_page-----8013080aa9fa--------------------------------)
+    [](https://fki.tic.heia-fr.ch/databases/iam-handwriting-database?source=post_page-----8013080aa9fa--------------------------------)
+    [## Research Group on Computer Vision and Artificial Intelligence - Computer Vision
+    and Artificial…
+  prefs: []
+  type: TYPE_NORMAL
+- en: The IAM Handwriting Database contains forms of handwritten English text which
+    can be used to train and test handwritten…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'fki.tic.heia-fr.ch](https://fki.tic.heia-fr.ch/databases/iam-handwriting-database?source=post_page-----8013080aa9fa--------------------------------)
+    [](https://arxiv.org/abs/2205.14879?source=post_page-----8013080aa9fa--------------------------------)
+    [## Easter2.0: Improving convolutional models for handwritten text recognition'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convolutional Neural Networks (CNN) have shown promising results for the task
+    of Handwritten Text Recognition (HTR) but…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: arxiv.org](https://arxiv.org/abs/2205.14879?source=post_page-----8013080aa9fa--------------------------------)
+    [](https://github.com/Toon-nooT/notebooks?source=post_page-----8013080aa9fa--------------------------------)
+    [## GitHub - Toon-nooT/notebooks
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/Toon-nooT/notebooks?source=post_page-----8013080aa9fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

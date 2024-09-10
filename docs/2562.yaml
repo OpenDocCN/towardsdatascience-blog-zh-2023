@@ -1,0 +1,370 @@
+- en: 'HashGNN: Deep Dive into Neo4j GDS’s New Node Embedding Algorithm'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/hashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c?source=collection_archive---------7-----------------------#2023-08-10](https://towardsdatascience.com/hashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c?source=collection_archive---------7-----------------------#2023-08-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this article, we will explore alongside a small example how HashGNN hashes
+    graph nodes into an embedding space.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)[![Philipp
+    Brunenberg](../Images/b2384bcc51966f669f84c949a33ebfcc.png)](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------)
+    [Philipp Brunenberg](https://medium.com/@philipp.brunenberg?source=post_page-----5ce9c3029a5c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6edbaee01d5d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c&user=Philipp+Brunenberg&userId=6edbaee01d5d&source=post_page-6edbaee01d5d----5ce9c3029a5c---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce9c3029a5c--------------------------------)
+    ·9 min read·Aug 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce9c3029a5c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c&user=Philipp+Brunenberg&userId=6edbaee01d5d&source=-----5ce9c3029a5c---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ce9c3029a5c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhashgnn-deep-dive-into-neo4j-gdss-new-node-embedding-algorithm-5ce9c3029a5c&source=-----5ce9c3029a5c---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you prefer watching a video on this, you can do so [here](https://youtu.be/fccFuyjNEcM).
+  prefs: []
+  type: TYPE_NORMAL
+- en: HashGG (#GNN) is a node embedding technique, which employs concepts of Message
+    Passing Neural Networks (MPNN) to capture high-order proximity and node properties.
+    It significantly speeds-up calculation in comparison to traditional Neural Networks
+    by utilizing an approximation technique called MinHashing. Therefore, it is a
+    hash-based approach and introduces a trade-off between efficiency and accuracy.
+    In this article, we will understand what all of that means and will explore along
+    a small example how the algorithms works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Node Embeddings: Nodes with similar contexts should be close in the embedding
+    space'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Many graph machine learning use-cases like link prediction and node classification
+    require the calculation of similarities of nodes. In a graph context, these similarities
+    are most expressive when they capture (i) the neighborhood (i.e. the graph structure)
+    and (ii) the properties of the node to be embedded. Node embedding algorithms
+    project nodes into a low-dimensional embedding space — i.e. they assign each node
+    a numerical vector. These vectors — the embeddings — can be used for further numerical
+    predictive analysis (e.g. machine learning algorithms). Embedding algorithms optimize
+    for the metric: Nodes with a similar graph context (neighborhood) and/or properties
+    should be mapped close in the embedding space. Graph embedding algorithms usually
+    employ two fundamental steps: (i) Define a mechanism to sample the context of
+    nodes (Random walk in node2vec, k-fold transition matrix in FastRP), and (ii)
+    subsequently reduce the dimensionality while preserving pairwise distances (SGD
+    in node2vec, random projections in FastRP).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'HashGNN: Circumvent training a Neural Network'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The clue about HashGNN is that it does not require us to train a Neural Network
+    based on a loss function, as we would have to in a traditional Message Passing
+    Neural Network. As node embedding algorithms optimize for “similar nodes should
+    be close in the embedding space”, the evaluation of the loss involves calculating
+    the true similarity of a node pair. This is then used as feedback to the training,
+    how accurate the predictions are, and to adjust the weights accordingly. Often,
+    the cosine similarity is used as similarity measure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: HashGNN circumvents the model training and actually does not employ a Neural
+    Network altogether. Instead of training weight matrices and defining a loss function,
+    it uses a randomized hashing scheme, which hashes node vectors to the same signature
+    with the probability of their similarity, meaning that we can embed nodes without
+    the necessity of comparing nodes directly against each other (i.e. no need to
+    calculate a cosine similarity). This hashing technique is known as MinHashing
+    and was originally defined to approximate the similarity of two sets without comparing
+    them. As sets are encoded as binary vectors, HashGNN requires a binary node representation.
+    In order to understand how this can be used to embed nodes of a general graph,
+    several techniques are required. Let’s have a look.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MinHashing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First of all, let’s talk about MinHashing. MinHashing is a locality-sensitive
+    hashing technique to approximate the Jaccard similarity of two sets. The Jaccard
+    similarity measures the overlap (intersection) of two sets by dividing the intersection
+    size by the number of the unique elements present (union) in the two sets. It
+    is defined on sets, which are encoded as binary vectors: Each element in the universe
+    (the set of all elements) is assigned a unique row index. If a particular set
+    contains an element, this is represented as value 1 in the respective row of the
+    set’s vector. The MinHashing algorithm hashes each set’s binary vector independently
+    and uses `K` hash functions to generate a `K`-dimensional signature for it. The
+    intuitive explanation of MinHashing is to randomly select a non-zero element `K`
+    times, by choosing the one with the smallest hash value. This will yield the signature
+    vector for the input set. The interesting part is, that if we do this for two
+    sets without comparing them, they will hash to the same signature with the probability
+    of their Jaccard similarity (if `K` is large enough). In other words: The probability
+    converges against the Jaccard similarity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92b7a735435b2b2a6c645fd5ac4fbc0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Jaccard similarity measures the similarity of two sets. Generally, sets
+    can also be encoded as binary vectors. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the illustration: Example sets `s1` and `s2` are represented as binary vectors.
+    We can easily compute the Jaccard similarity by comparing the two and counting
+    the rows where both vectors have a 1\. These are quite simple operations, but
+    the complexity resides in the pair-wise comparison of vectors if we have many
+    vectors.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca3602e2959515ed684910fab2596254.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The MinHashing algorithm generates k permutations of the set features and selects
+    the feature with the smallest hashing value to create the minHash signature vector.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our universe `U` has size 6 and we choose `K` (the number of hash functions)
+    to be 3\. We can easily generate new hash functions by using a simple formula
+    and boundaries for `a`, `b` and `c`. Now, what we actually do is to hash the indices
+    of our vectors (`1-6`), each relating to a single element in our universe, with
+    each of our hash functions. This will give us 3 random permutations of the indices
+    and therefore elements in our universe. Subsequently, we can take our set vectors
+    `s1` and `s2` and use them as masks on our permuted features. For each permutation
+    and set vector, we select the index of the smallest hash value, which is present
+    in the set. This will yield two 3-dimensional vectors, one for each set, which
+    is called the MinHash signature of the set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MinHashing simply selects random features from the input sets, and we need the
+    hash functions only as a means to reproduce this randomness equally on all input
+    sets. We have to use the same set of hash functions on all vectors, so that the
+    signature values of two input sets collide if both have the selected element present.
+    The signature values will collide with the probability of the sets’ Jaccard similarities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: WLKNN (Weisfeiler-Lehman Kernel Neural Network)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: HashGNN uses a message passing scheme as defined in Weisfeiler-Lehman Kernel
+    Neural Networks (WLKNN) to capture high-order graph structure and node properties.
+    It defines the context sampling strategy as mentioned earlier for HashGNN. The
+    WLK runs in `T` iterations. In each iteration, it generates a new node vector
+    for each node by combining the node's current vector with the vectors of all directly
+    connected neighbors. Therefore, it is considered to pass messages (node vectors)
+    along the edges to neighboring nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d8c869a768d2965965db28608e63dcd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The WLK runs in T iterations. In each iteration it passes node information along
+    the edges to the neighboring nodes. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After `T` iterations, each node contains information of nodes at `T` hops distance
+    (high-order). The calculation of the new node vector in iteration `t` essentially
+    aggregates all neighbor messages (from iteration `t-1`) into a single neighbor
+    message and then combines it with the node vector of the previous iteration. Additionally,
+    the WLKNN employs three neural networks (weight matrices and activation function);
+    (i) for the aggregated neighbor vector, (ii) for the node vector and (iii) for
+    the combination of the two. It is a notable feature of the WLK that the calculation
+    in iteration `t` is only dependent on the result of iteration `t-1`. Therefore,
+    it can be considered a Markov chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd153c49ff0f6c9c916dadd15064c065.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'WLK: In each iteration each node vector gets updated with information from
+    neighboring nodes. Therefore, after t iterations, each node contains information
+    from nodes with t-hop distance. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: HashGNN by example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s explore how HashGNN combines the two approaches to embed graph vectors
+    efficiently to embedding vectors. Just like the WLKNN, the HashGNN algorithm runs
+    in `T` iterations, calculating a new node vector for every node by aggregating
+    the neighbor vectors and its own node vector from the previous iteration. However,
+    instead of training three weight matrices, it uses three hashing schemes for locality-sensitive
+    hashing. Each of the hashing schemes consists of `K` randomly constructed hashing
+    functions to draw `K` random features from a binary vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2518fbe2829144f4daf4ba000e1e1fa8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The HashGNN Algorithm: We initialize the node vectors with their binary feature
+    vectors. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In each iteration we perform the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1: Calculate the node’s signature vector:** Min-hash (randomly select
+    `K` features) the node vector from the previous iteration using hashing scheme
+    3\. In the first iteration the nodes are initialized with their binary feature
+    vectors (we''ll talk about how to binarize nodes later). The resulting signature
+    (or message) vector is the one which is passed along the edges to all neighbors.
+    Therefore, we have to do this for all nodes first in every iteration.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6cb39108a5ad1faa4c451660f264125.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'HashGNN Step 1: in each iteration is to calculate the message vector for each
+    node by using hashing scheme 3\. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2: Construct the neighbor vector:** In each node, we’ll receive the
+    signature vectors from all directly connected neighbors and aggregate them into
+    a single binary vector. Subsequently, we use hashing scheme 2 to select `K` random
+    features from the aggregated neighbor vector and call the result the neighbor
+    vector.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/773b590d410d722cdbdb6f9c82944cf1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'HashGNN Step 2: We collect the message vectors from all neighbors and aggregate
+    them. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3: Combine node and neighbor vector into new node vector:** Finally,
+    we use hashing scheme 1 to randomly select `K` features from the node vector of
+    the previous iteration and combine the result with the neighbor vector. The resulting
+    vector is the new node vector which is the starting point for the next iteration.
+    Note, that this is not the same as in step 1: There, we apply hashing scheme 3
+    on the node vector to construct the message/signature vector.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a3caa1e99ca7dc8ef64304c84234ba7d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'HashGNN Step 3: We combine the min-hashed node vector with the aggregated neighbor
+    vector to arrive at the resulting node vector for this iteration. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, the resulting (new) node vector has influence of its own node
+    features (3 & 5), as well as its neighbors’ features (2 & 5). After iteration
+    1 the node vector will capture information from neighbors with 1 hop distance.
+    However, as we use this as input for iteration 2, it will already be influenced
+    by features 2 hops away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/208f648a73632a7df517c06f669af84a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After the first iteration, the new node vector has influence from its own features
+    and the neighboring node’s features. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neo4j GDS generalizations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: HashGNN was implemented by the Neo4j GDS (Graph Data Science Library) and adds
+    some useful generalizations to the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One important auxiliary step in the GDS is feature binarization. MinHashing
+    and therefore HashGNN requires binary vectors as input. Neo4j offers an additional
+    preparation step to transform real-valued node vectors into binary feature vectors.
+    They utilize a technique called hyperplane rounding. The algorithm works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1: Define node features:** Define the (real-valued) node properties
+    to be used as node features. This is done using the parameter `featureProperties`.
+    We will call this the node input vector `f`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2: Construct random binary classifiers:** Define one hyperplane for
+    each target dimension. The number of resulting dimensions is controlled by the
+    parameter `dimensions`. A hyperplane is a high-dimensional plane and, as long
+    as it resides in the origin, can be described solely by its normal vector `n`.
+    The `n` vector is orthogonal to the plane''s surface and therefore describes its
+    orientation. In our case the `n` vector needs to be of the same dimensionality
+    as the node input vectors (`dim(f) = dim(n)`). To construct a hyperplane, we simply
+    draw `dim(f)` times from a Gaussian distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2f1bc2713cd84e395263a60dd11230e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Binarization of features: We use hyperplane rounding to construct binary features
+    from real-valued input vectors. We use one random Gaussian classifier for each
+    target dimension. Image by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3: Classify node vectors:** Calculate the dot-product of the node input
+    vector and each hyperplane vector, which yields the angle between the hyperplane
+    and the input vector. Using a `threshold` parameter, we can decide whether the
+    input vector is above (1) or below (0) the hyperplane and assign the respective
+    value to the resulting binary feature vector. This is exactly what also happens
+    in a binary classification — with the only difference that we do not iteratively
+    optimize our hyperplane, but rather use random Gaussian classifiers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/60c9c061a86addd96ac456bd37d3013f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using n hyperplanes leads to n-dimensional binary node signatures. Image by
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In essence, we draw one random Gaussian classifier for each target dimension
+    and set a threshold parameter. Then, we classify our input vectors for each target
+    dimension and obtain a `d`-dimensional binary vector which we use as input for
+    HashGNN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: HashGNN uses locality-sensitive hashing to embed node vectors into an embedding
+    space. By using this technique, it circumvents the computationally intensive,
+    iterative training of a Neural Network (or other optimization), as well as direct
+    node comparisons. The authors of the paper report a 2–4 orders of magnitude faster
+    runtime than learning based algorithms like SEAL and P-GNN, while still producing
+    highly comparable (in some cases even better) accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57a5e45e97bc200333c9ccaf5309e684.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'HashGNN is 2–4 orders of magnitudes faster than learning-based algorithms,
+    while delivering comparable results. Image taken from: [https://arxiv.org/abs/2105.14280.](https://arxiv.org/abs/2105.14280.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: HashGNN is implemented in the Neo4j GDS (Graph Data Science Library) and can
+    therefore be used out-of-the-box on your Neo4j graph. In the next post, I will
+    go into practical details about how to use it, and what to keep in mind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for stopping by and see you next time. 🚀
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Original Paper: Hashing-Accelerated Graph Neural Networks for Link Prediction](https://doi.org/10.48550/arXiv.2105.14280)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Neo4j GDS Documentation: HashGNN](https://neo4j.com/docs/graph-data-science/current/machine-learning/node-embeddings/hashgnn/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

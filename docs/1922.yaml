@@ -1,0 +1,519 @@
+- en: 'Anomaly Detection Using Sigma Rules: Build Your Own Spark Streaming Detections'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a?source=collection_archive---------9-----------------------#2023-06-12](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a?source=collection_archive---------9-----------------------#2023-06-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Easily deploy Sigma rules in Spark streaming pipelines: a future-proof solution
+    supporting the upcoming Sigma 2 specification'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)[![Jean-Claude
+    Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------)
+    [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----657bcef3988a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----657bcef3988a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----657bcef3988a--------------------------------)
+    ·13 min read·Jun 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F657bcef3988a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&user=Jean-Claude+Cote&userId=444ed0089012&source=-----657bcef3988a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F657bcef3988a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-build-your-own-spark-streaming-detections-657bcef3988a&source=-----657bcef3988a---------------------bookmark_footer-----------)![](../Images/4b42af8eea5eda23fe3f372446f76e3e.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by Dana Walker on Unsplash
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our previous articles we elaborated and designed a stateful function named
+    flux-capacitor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The flux-capacitor stateful function that can remember parent-child (and ancestor)
+    relationships between log events. It can also remember events occurring on the
+    same host in a certain window of time, the Sigma specification refers to this
+    as [temporal proximity correlation](https://github.com/SigmaHQ/sigma-specification/blob/version_2/Sigma_meta_rules.md#temporal-proximity-temporal)
+    .
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a deep-dive into the design of flux-capacitor refer to [part 1](/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)
+    , [part 2](/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f),
+    [part 3](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-3-temporal-correlation-using-bloom-filters-a45ffd5e9069),
+    [part 4](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72),
+    and [part5](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-5-flux-capacitor-optimization-118e538cf8c4).
+    However, you don’t need to understand the implementation of the function to use
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article we first show a Spark streaming job which performs discreet
+    detections. A discreet detection is a Sigma rule which uses the features and values
+    of a single log line (a single event).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we leverage the flux-capacitor function to handle stateful parent-child
+    relationships between log events. The flux-capacitor is also able to detect a
+    number of events occurring on the same host in a certain window of time; these
+    are called [temporal proximity correlation](https://github.com/SigmaHQ/sigma-specification/blob/version_2/Sigma_meta_rules.md#temporal-proximity-temporal)
+    in the upcoming Sigma specification. A complete demo of these spark streaming
+    jobs is available in our [git repo](https://github.com/cccs-jc/flux-capacitor/tree/main/demo)
+    .
+  prefs: []
+  type: TYPE_NORMAL
+- en: Discreet Detections
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Performing discrete tests is fairly straightforward, thanks to all the built-in
+    functions that come out-of-the-box in Spark. Spark has support for reading streaming
+    sources, writing to sinks, checkpointing, stream-stream joins, windowed aggregations
+    and many more. For a complete list of the possible functionalities, see the comprehensive
+    Spark [Structured Streaming Programming Guide](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a high level diagram showing a Spark streaming job that consumes events
+    from an Iceberg table of “start-process” windows events (1). A classic example
+    of this is found in [Windows Security Logs (Event ID 4688)](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4688).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0eb3451a5438b63e377a4817ab08a34b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Topology for discrete detections
+  prefs: []
+  type: TYPE_NORMAL
+- en: The source table (1) is named `process_telemetry_table`. The Spark job reads
+    all events, detects anomalous events, tags these events and writes them to table
+    (3) named `tagged_telemetry_table`. Events deemed anomalous are also written to
+    a table (4) containing alerts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Periodically we poll a git repository (5) containing the SQL auto-generated
+    from the Sigma rules we want to apply. If the SQL statements change, we restart
+    the streaming job to add these new detections to the pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take [this Sigma rule](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_rundll32_sys.yml)
+    as an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ca41e731f3209b3cd8ed45e6b459ab8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: screenshot from *proc_creation_win_rundll32_sys.yml at* Sigma HQ
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `detection` section is the heart of the Sigma rule and consists of a `condition`
+    and 1 or more named tests. The `selection1` and `selection2` are named boolean
+    tests. The author of the Sigma rule can give meaniningful names to these tests.
+    The `condition` is where the user can combine the tests in a final evaluation.
+    See the [Sigma specification](https://github.com/SigmaHQ/sigma-specification/blob/main/Sigma_specification.md)
+    for more details on writing a Sigma rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From now on we will refer to these named boolean tests as **tags**.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The inner workings of the Spark streaming job is broken down into 4 logical
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: read the source table `process_telemetry_table`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: perform pattern matching
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: evaluate final condition
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: write the results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **Pattern Match** step consist of evaluating the tags found in the Sigma
+    rule and the **Eval final condition** evaluates the`condition.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fd233b7e5570fa7d71ae6bb3ef22d63b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: On the right of this diagram we show what the row would look like at this stage
+    of processing. The columns in blue represent values read from the source table.
+    The **Pattern Match** step adds a column named `Sigma tags` which is a map of
+    all the tests performed and whether the test passed or failed. The gray column
+    contains the final Sigma rule evaluations. Finally, the brown columns are added
+    in the foreachBatch function. A GUID is generated, the rule names that are true
+    are extracted from the Sigma tags map and the detection `action` is retrieved
+    from a lookup map of rule-name to rule-type. This gives context to the alerts
+    produced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This diagram depicts how attributes of the event are combined into tags, final
+    evaluation and finally contextual information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b263bf773a143eb5cfb0592ee7008645.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s now look at the actual pyspark code. First, we connect spark to the source
+    table using the `readStream` function and specifying the name from which the iceberg
+    table is read. The `load` function returns a dataframe, which we use to create
+    a view named `process_telemetry_view`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The data in the `process_telemetry_view` looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'On this view we apply a **Pattern Matching** step which consists of an auto-generated
+    SQL statement produced by the Sigma compiler. The `patern_match.sql` file looks
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use `spark.sql()` to apply this statement to the `process_telemetry_view`
+    view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that the results of each tag found in the Sigma rule are stored in a
+    map of boolean values. The `sigma` column holds the results of each tag found
+    in each Sigma rule. By using a **MapType** we can easily introduce new Sigma rules
+    without affecting the schema of the table. Adding a new rule simply adds a new
+    entry in the `sigma`column (a **MapType**) .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Similarly, the **Eval final condition** step applies the conditions from the
+    Sigma rules. The `condition`s are compiled into an SQL statement, which use [map](https://spark.apache.org/docs/latest/api/sql/#map),
+    [map_filter](https://spark.apache.org/docs/latest/api/sql/#map_filter), [map_keys](https://spark.apache.org/docs/latest/api/sql/#map_keys),
+    to build a column named `sigma_final`. This column holds the name of all the rules
+    that have a `condition` that evaluates to true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The auto-generated statement is applied using `spark.sql()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s the results with the newly added `sigma_final` column, an array of rules
+    that fire.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We are now ready to start the streaming job for our dataframe. Notice that we
+    pass in a call back function `for_each_batch_function` to the `foreachBatch`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `for_each_batch_function` is called at every micro-batch and is given the
+    evaluated `batchdf` dataframe. The `for_each_batch_function` writes the entirety
+    of `batchdf` to the `tagged_telementry_table` and also writes alerts for any of
+    the Sigma rules that evaluated to true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The details of [insert_into_tagged_telemetry.sql](https://github.com/cccs-jc/flux-capacitor/blob/main/demo/templates/static/insert_into_tagged_telemetry.sql)
+    and [publish_suspected_anomalies.sql](https://github.com/cccs-jc/flux-capacitor/blob/main/demo/templates/static/publish_suspected_anomalies.sql)
+    can be found in our git repo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned above, writing a streaming anomaly detection handling discreet
+    test is relatively straightforward using the built-in functionality found in Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detections Base on Past Events
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thus far we showed how to detect events with discrete Sigma rules. In this section
+    we leverage the flux-capacitor function to enable caching tags and testing tags
+    of past events. As discussed in our previous articles, the flux-capacitor lets
+    us detect parent-child relationships and also sequences of arbitrating features
+    of past events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These types of Sigma rules need to simultaneously consider the tags of the current
+    event and of past events. In order to perform the final rule evaluation, we introduce
+    a **Time travel tags** step to retrieve all of past tags for an event and merge
+    them with the current event. This is what the flux-capacitor function is designed
+    to do, it caches and retrieves past tags. Now that past tags and current tags
+    are on the same row, the **Eval final condition** can be evaluated just like we
+    did in our discreet example above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The detection now looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72738e4cf51dcc5349ebc938550a7b6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The flux-capacitor is given the `Sigma tags` produced by the **Pattern Match**
+    step. The flux-capacitor stores these tags for later retrieval. The column in
+    red has the same schema as the `Sigma tags` column we used before. However, it
+    combines current and past tags, which the flux-capacitor retrieved from its internal
+    state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding caching and retrieval of past tags is easy thanks to the flux-capacitor
+    function. Here’s how we applied the flux-capacitor function in our Spark anomaly
+    detection. First, pass the dataframe produced by the **Pattern Match** step to
+    the `flux_stateful_function` and the function returns another dataframe, which
+    contains past tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: To control the behavior of the `flux_stateful_function` we pass in a `flux_update_spec`.
+    The flux-capacitor specification is a yaml file produced by the Sigma compiler.
+    The specification details which tags should be cached and retrieved and how they
+    should be handled. The `action` attribute can be set to `parent`, `ancestor` or
+    `temporal`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use a concrete example from Sigma HQ [proc_creation_win_rundll32_executable_invalid_extension.yml](https://github.com/SigmaHQ/sigma/blob/cd71edc09ca915f389e50df5b1bbb5ecd4b7f89d/rules/windows/process_creation/proc_creation_win_rundll32_executable_invalid_extension.yml)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fde734fc81eb09c0f278e96b1e224af3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: screenshot from Sigma HQ github
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again the heart of the detection consists of tags and of a final `condition`
+    which puts all these tags together. Note however that this rule (that we will
+    refer to as Rule 1) involves tests against `CommandLine` and also test on the
+    parent process `ParentImage`. **ParentImage** is not a field found in the start-process
+    logs. Rather it refers to the **Image** field of the parent process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As seen before, this Sigma rule will be compiled into SQL to evaluate the tags
+    and to combine them into a final condition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to propagate the parent tags, the Sigma compiler also produces a flux-capacitor
+    specification. Rule 1 is a `parent` rule and thus the specification must specify
+    what are the parent and child fields. In our logs these correspond to `id` and
+    `parent_id`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The specification also specifies which `tags` should be cached and retrieved
+    by the flux-capacitor function. Here is the auto-generated specification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note Rule 0 is not included in the flux-capacitor function since it has no temporal
+    tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Illustrating Tag Propagation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In order to better understand what the flux-capacitor does, you can use the
+    function outside a streaming analytic. Here we show a simple **ancestor** example.
+    We want to propagate the tag `pf`. For example `pf` might represent a `CommandLine`
+    containing `rundll32.exe`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Printing the dataframe `df_input` we see that pid500 started and had a `CommandLine`
+    with the `pf` feature. Then pid500 started pid600\. Later pid600 started pid700\.
+    Pid700 had a child feature `cf`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Sigma rule is a combination of both `pf` and `cf`. In order to bring the
+    `pf` tag back on the current row, we need to apply time-travel to the `pf` tag.
+    Applying the flux-capacitor function to the `df_input` dataframe
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We obtain the `df_output` dataframe. Notice how the `pf` tag is propagated through
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: This notebook [TagPropagationIllustration.ipynb](https://github.com/cccs-jc/flux-capacitor/blob/main/TagPropagationIllustration.ipynb)
+    contains more examples like this for parent-child and temporal proximity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building Alerts with Context
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The flux-capacitor function caches all the past tags. In order to conserve memory,
+    it caches these tags using bloom filter segments. Bloom filters have an extremely
+    small memory footprint, are quick to query and to update. However, they do introduce
+    possible false positive. It is thus possible that one of our detections is in
+    fact a false positive. In order to remedy this we put the suspected anomalies
+    in a queue (4) for re-evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To eliminate false positives, the second Spark streaming job named the **Alert
+    Builder** reads the suspected anomalies (5) and retrieves the events (6) that
+    are required to re-evaluate the rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example in the case of a parent-child Sigma rule, the **Alert Builder**
+    will read the suspected anomaly (5) retrieving a child process event. Next, in
+    (6) it will retrieve the parent process of this child event. Then using these
+    two events it re-evaluates the Sigma rule. However, this time the flux-capacitor
+    is configured to store tags in a hash map, rather than in bloom filters. This
+    eliminates false positives and as a bonus we have all the events involved in this
+    detection. We store this alert along with the rows of evidence (parent and child
+    events) into an alert table (7).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6575682d95874f7fcb18edd3a782350.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Topology with stateful detections (temporal)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **Alert Builder** handles a fraction of the volume processed by (2) the
+    **Streaming Detections**. Thanks to the low volume read in (5) historical searches
+    into the tagged telemetry (6) are possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a more in-depth look, take a look at the Spark jobs for the **Streaming
+    Detections** [streaming_detections.py](https://github.com/cccs-jc/flux-capacitor/blob/main/demo/streaming_detections.py)
+    and the **Alert Builder** [streaming_alert_builder.py](https://github.com/cccs-jc/flux-capacitor/blob/main/demo/streaming_alert_builder.py)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To evaluate the performance of this proof of concept we ran tests on machines
+    with 16 CPU and 64G of ram. We wrote a simple data producer that creates 5,000
+    synthetic events per seconds and ran the experiment for 30 days.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Spark Streaming Detections job runs on one machine. The job is configured
+    to trigger every minute. Each micro-batch (trigger) reads 300,000 events and takes
+    on average 20 seconds to complete. The job can easily keep up with the incoming
+    events rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3bb4704c4c25749eb975554046d78d31.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spark Streaming Detections
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Spark **Alert Builder** also runs on a single machine and is configured
+    to trigger every minute. This job takes between 30 and 50 seconds to complete.
+    This job is very sensitive to organization of the `tagged_telemetry_table` . Here
+    we see the effect of the maintenance job which organizes and sorts the latest
+    data at every hour. Thus at every hour, the Spark **Alert Builder**’s micro-batch
+    execution time drops back to 30 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd1823abdcf1deeef64c22eb56dbec6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spark Streaming Alert Builder
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table Maintenance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our Spark streaming jobs trigger every minute and thus produce small data files
+    every minute. In order to allow for fast searches and retrieval in this table,
+    it’s important to compact and sort the data periodically. Fortunately Iceberg
+    comes with [built-in procedures](https://iceberg.apache.org/docs/latest/maintenance/)
+    to organize and maintain your tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example this script [maintenance.py](https://github.com/cccs-jc/flux-capacitor/blob/main/demo/maintenance.py)
+    runs every hour to sort and compact the newly added files of the Iceberg `tagged_telemetry_table`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: At the end of the day we also re-sort this table, yielding maximum search performance
+    over long search periods (months of data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Another maintenance task we do is deleting old data from the streaming tables.
+    These tables are only used as buffers between producers and consumers. Thus every
+    day we age off the streaming tables keeping 7 days of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, every day we perform standard Iceberg table maintenance tasks, like
+    expiring snapshots and removing orphan files. We run these maintenance jobs on
+    all of our tables and schedule these jobs on [Airflow](https://airflow.apache.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article we showed how build a Spark streaming anomaly detection framework
+    that generically applies Sigma rules. New Sigma rules can easily be added to the
+    system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This proof of concept was extensively tested on synthetic data to evaluate its
+    stability and scalability. It shows great promise and further evaluation will
+    be performed on a production system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

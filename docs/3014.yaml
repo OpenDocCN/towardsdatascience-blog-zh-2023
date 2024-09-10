@@ -1,0 +1,500 @@
+- en: Mastering Language Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mastering-language-models-32e1d891511a?source=collection_archive---------5-----------------------#2023-10-03](https://towardsdatascience.com/mastering-language-models-32e1d891511a?source=collection_archive---------5-----------------------#2023-10-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Navigating the quality-diversity tradeoff with temperature, top-p, top-k, and
+    more
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)[![Samuel
+    Montgomery](../Images/52f12c797b53706ad1039459238ece44.png)](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------)
+    [Samuel Montgomery](https://medium.com/@samuel.montgomery59?source=post_page-----32e1d891511a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbf5cf7332a65&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&user=Samuel+Montgomery&userId=bf5cf7332a65&source=post_page-bf5cf7332a65----32e1d891511a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32e1d891511a--------------------------------)
+    ·12 min read·Oct 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32e1d891511a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&user=Samuel+Montgomery&userId=bf5cf7332a65&source=-----32e1d891511a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32e1d891511a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmastering-language-models-32e1d891511a&source=-----32e1d891511a---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you have ever used a language model through a playground or an API, you may
+    have been asked to choose some input parameters. For many of us, the meaning of
+    these parameters (and the right way to use them) is less than totally clear.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9bdc5e91439bacb53807788c292484d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A screenshot showing parameter selection in the SillyTavern interface. Image
+    by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will teach you how to use these parameters to control hallucinations,
+    inject creativity into your model’s outputs, and make other fine-grained adjustments
+    to optimize behavior. Much like prompt engineering, input parameter tuning can
+    get your model running at 110%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the end of this article, you’ll be an expert on five essential input parameters
+    — temperature, top-p, top-k, frequency penalty, and presence penalty. You’ll also
+    learn how each of these parameters helps us navigate the quality-diversity tradeoff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, grab a coffee, and let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: · [Background](#5876)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Quality, Diversity, and Temperature](#1164)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Top-k and Top-p](#a476)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Frequency and Presence Penalties](#e517)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [The Parameter-Tuning Cheat Sheet](#c9f4)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Wrapping up](#7610)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we get around to selecting our input parameters, we will need to go over
+    some background information. Let’s talk about how these models choose the words
+    that they generate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To read a document, a language model breaks it down into a sequence of tokens.
+    A token is just a small chunk of text that the model can easily understand: It
+    could be a word, a syllable, or a character. For example, “Megaputer Intelligence
+    Inc.” might be broken down into five tokens: [“Mega”, “puter ”, “Intelligence”,
+    “Inc”, “.”].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most language models we are familiar with operate by repeatedly generating the
+    next token in a sequence. Each time the model wants to generate another token,
+    it re-reads the entire sequence and predicts the token that should come next.
+    This strategy is known as *autoregressive* generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff9f86565a19ba6f422e13157cd7b039.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Autoregressive generation of tokens by a language model. GIF by [Echo Lu](https://www.linkedin.com/in/echoxlu/),
+    containing a modification of an image by [Annie Surla](https://developer.nvidia.com/blog/author/anniesurla/)
+    from [NVIDIA](https://developer.nvidia.com/blog/how-to-get-better-outputs-from-your-large-language-model/).
+    Modified with permission from owner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This explains why ChatGPT prints the words out one at a time: It is streaming
+    the words to you as it writes them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To choose the next token in the sequence, a language model first assigns a likelihood
+    score to each token in its vocabulary. A token gets a high likelihood score if
+    it is a good continuation of the text and a low likelihood score if it is a poor
+    continuation of the text, as assessed by the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40490cd101aa2e34bdc072b88614741d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A language model assigns likelihood scores to predict the next token in the
+    sequence. Original image by [Annie Surla](https://developer.nvidia.com/blog/author/anniesurla/)
+    from [NVIDIA](https://developer.nvidia.com/blog/how-to-get-better-outputs-from-your-large-language-model/),
+    modified by [Echo Lu](https://www.linkedin.com/in/echoxlu/) with permission from
+    owner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After the likelihood scores are assigned, a token is chosen using a token sampling
+    scheme that takes the likelihood scores into account. The token sampling scheme
+    may incorporate some randomness so that the language model does not answer the
+    same question in the same way every time. This randomness can be a nice feature
+    in chatbots or other applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*TLDR: Language models break down text into tokens, predict the next token
+    in the sequence, and mix in some randomness. Repeat as needed to generate language.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quality, Diversity, and Temperature
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: But why would we ever want to pick the second-best token, the third-best token,
+    or any other token besides the best, for that matter? Wouldn’t we want to pick
+    the best token (the one with the highest likelihood score) every time? Often,
+    we do. But if we picked the best answer every time, we would get the same answer
+    every time. If we want a diverse range of answers, we may have to give up some
+    quality to get it. This sacrifice of quality for diversity is called a quality-diversity
+    tradeoff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this in mind, *temperature* tells the machine how to navigate the quality-diversity
+    tradeoff. Low temperatures mean more quality, while high temperatures mean more
+    diversity. When the temperature is set to zero, the model always samples the token
+    with the highest likelihood score, resulting in zero diversity between queries,
+    but ensuring that we always pick the highest quality continuation as assessed
+    by the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quite often, we will want to set the temperature to zero. As a rule, you should
+    always choose temperature zero for any prompt that you will pass to the model
+    only once, as this is most likely to get you a good answer. In my job as a data
+    analyst, I set the temperature to zero for entity extraction, fact extraction,
+    sentiment analysis, and most other standard tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At higher temperatures, we see more garbage and hallucinations, less coherence,
+    and lower quality of responses on average, but also more creativity and diversity
+    of answers. We recommend that you should *only* use non-zero temperatures when
+    you want to ask the same question twice and get two different answers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72a0df19da4637d3f2f8b985de25958c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Higher temperatures bring diversity, creativity, and multiplicity of answers
+    but also add garbage, incoherence, and hallucinations. Image by [Echo Lu](https://www.linkedin.com/in/echoxlu/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And why would we ever want two different answers to the same prompt? In some
+    cases, having many answers to one prompt can be useful. For example, there is
+    a technique in which we generate multiple answers to a prompt and keep only the
+    best, which often produces better results than a single query at temperature zero.
+    Another use case is synthetic data generation: We want many diverse synthetic
+    data points, not just one data point that’s really good. We may discuss these
+    use cases (and others) in later articles, but more often than not, we want only
+    one answer per prompt. **When in doubt, choose temperature zero!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is important to note that while temperature zero should *in theory* produce
+    the same answer every time, this may not be true in practice! This is because
+    the GPUs the model is running on can be prone to small miscalculations, such as
+    rounding errors. These errors introduce a low level of randomness into the calculations,
+    even at temperature zero. Since changing one token in a text can significantly
+    alter its meaning, a single error may cause a cascade of different token choices
+    later in the text, resulting in an almost totally different output. But rest assured
+    that this usually has a negligible impact on quality. We only mention it so that
+    you’re not surprised when you get some randomness at temperatures zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many more ways than temperature alone to navigate the quality-diversity
+    tradeoff. In the next section, we will discuss some modifications to the temperature
+    sampling technique. But if you are content with using temperature zero, feel free
+    to skip it for now. You may rest soundly knowing that your choice of these parameters
+    at temperature zero will not affect your answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*TLDR: Temperature increases diversity but decreases quality by adding randomness
+    to the model’s outputs.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Top-k and Top-p
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One common way to tweak our token-sampling formula is called top-k sampling.
+    Top-k sampling is a lot like ordinary temperature sampling, except that the lowest
+    likelihood tokens are excluded from being picked: Only the “top k” best choices
+    are considered, which is where we get the name. The advantage of this method is
+    that it stops us from picking truly bad tokens.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s suppose, for example, that we are trying to make a completion for “The
+    sun rises in the…” Then, without top-k sampling, the model considers every token
+    in its vocabulary as a possible continuation of the sequence. Then there is some
+    non-zero chance that it will write something ridiculous like “The sun rises in
+    the refrigerator.” With top-k sampling, the model filters out these truly bad
+    picks and only considers the k best options. By clipping off the long tail, we
+    lose a little diversity, but our quality shoots way up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d2e8cbeca38c147e31be7b9657736f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top-k sampling improves quality by keeping only the k best candidate tokens
+    and throwing out the rest. Image by [Echo Lu](https://www.linkedin.com/in/echoxlu/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Top-k sampling is a way to have your cake and eat it too: It gets you the diversity
+    you need at a smaller cost to quality than with temperature alone. Since this
+    technique is so wildly effective, it has inspired many variants.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One common variant of top-k sampling is called top-p sampling, which is also
+    known as nucleus sampling. Top-p sampling is a lot like top-k, except that it
+    uses likelihood scores instead of token ranks to determine where it clips the
+    tail. More specifically, it only considers those top-ranked tokens whose combined
+    likelihood exceeds the threshold p, throwing out the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The power of top-p sampling compared to top-k sampling becomes evident when
+    there are many poor or mediocre continuations. Suppose, for example, that there
+    are only a handful of good picks for the next token, and there are dozens that
+    just vaguely make sense. If we were using top-k sampling with k=25, we would be
+    considering many poor continuations. In contrast, if we used top-p sampling to
+    filter out the bottom 10% of the probability distribution, we might only consider
+    those good tokens while filtering out the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, top-p sampling tends to give better results compared to top-k sampling.
+    By focusing on the cumulative likelihood, it adapts to the context of the input
+    and provides a more flexible cut-off. So, in conclusion, top-p and top-k sampling
+    can both be used at non-zero temperatures to capture diversity at a lower quality
+    cost, but top-p sampling usually does it better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tip: For both of these settings, lower value = more filtering. At zero, they
+    will filter out all but the top-ranked token, which has the same effect as setting
+    the temperature to zero. So please use these parameters, be aware that setting
+    them too low will give up all of your diversity.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*TLDR: Top-k and top-p increase quality at only a small cost to diversity.
+    They achieve this by removing the worst token choices before random sampling.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Frequency and Presence Penalties
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We have just two more parameters to discuss before we start to wrap things
+    up: The frequency and presence penalties. These parameters are — big surprise—
+    yet another way to navigate the quality-diversity tradeoff. But while the temperature
+    parameter achieves diversity by adding randomness to the token sampling procedure,
+    the frequency and presence penalties add diversity by penalizing the reuse of
+    tokens that have already occurred in the text. This makes the sampling of old
+    and overused tokens less likely, influencing the model to make more novel token
+    choices.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The frequency penalty adds a penalty to a token for each time it has occurred
+    in the text. This discourages repeated use of the same tokens/words/phrases and
+    also has the side effect of causing the model to discuss more diverse subject
+    matter and change topics more often. On the other hand, the presence penalty is
+    a flat penalty that is applied if a token has already occurred in the text. This
+    causes the model to introduce more new tokens/words/phrases, which causes it to
+    discuss more diverse subject matter and change topics more often without significantly
+    discouraging the repetition of frequently used words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Much like temperature, the frequency and presence penalties lead us away from
+    the “best” possible answer and toward a more creative one. But instead of doing
+    this with randomness, they add targeted penalties that are carefully calculated
+    to inject diversity into the answer. On some of those rare tasks requiring a non-zero
+    temperature (when you require many answers to the same prompt), you might also
+    consider adding a small frequency or presence penalty to the mix to boost creativity.
+    But for prompts having just one right answer that you want to find in just one
+    try, your odds of success are highest when you set all of these parameters to
+    zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a rule, when there is one right answer, and you are asking just one time,
+    you should set the frequency and presence penalties to zero. But what if there
+    are many right answers, such as in text summarization? In this case, you have
+    a little discretion. If you find a model’s outputs boring, uncreative, repetitive,
+    or limited in scope, judicious application of the frequency or presence penalties
+    could be a good way to spice things up. But our final suggestion for these parameters
+    is the same as for temperature: **When in doubt, choose zero!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should note that while temperature and frequency/presence penalties both
+    add diversity to the model’s responses, the kind of diversity that they add is
+    not the same. The frequency/presence penalties increase the diversity *within
+    a single response.* This means that a response will have more distinct words,
+    phrases, topics, and subject matters than it would have without these penalties.
+    But when you pass the same prompt twice, you are not more likely to get two different
+    answers. This is in contrast with temperature, which increases diversity *between
+    responses:* At higher temperatures, you will get a more diverse range of answers
+    when passing the same prompt to the model many times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I like to refer to this distinction as within-response diversity vs. between-response
+    diversity. The temperature parameter adds both within-response AND between-response
+    diversity, while the frequency/presence penalties add only within-response diversity.
+    So, when we need diversity, our choice of parameters should depend on the kind
+    of diversity we need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*TLDR: The frequency and presence penalties increase the diversity of subject
+    matters discussed by a model and make it change topics more often. The frequency
+    penalty also increases diversity of word choice by reducing the repetition of
+    words and phrases.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Parameter-Tuning Cheat Sheet
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This section is intended as a practical guide for choosing your model’s input
+    parameters. We first provide some hard-and-fast rules for deciding which values
+    to set to zero. Then, we give some tips to help you find the right values for
+    your non-zero parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I strongly encourage you to use this cheat sheet when choosing your input parameters.
+    Go ahead and bookmark this page now so you don’t lose it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rules for setting parameters to zero:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Temperature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a **single answer** per prompt: Zero.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For **many answers** per prompt: Non-zero.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Frequency and Presence Penalties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When there is **one correct answer:** Zero.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When there are **many correct answers:** Optional.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Top-p/Top-k:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With **zero temperature**: The output is not affected.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'With **non-zero temperature**: Non-zero.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If your language model has additional parameters not listed here, it is always
+    okay to leave them at their default values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tips for tuning the non-zero parameters:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Make a list of those parameters that should have non-zero values, and then go
+    to a playground and fiddle around with some test prompts to see what works. ***But
+    if the rules above say to leave a parameter at zero, leave it at zero!***
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tuning temperature/top-p/top-k:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more diversity/randomness, increase the temperature.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With non-zero temperatures, start with a top-p around 0.95 (or top-k around
+    250) and lower it as needed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Troubleshooting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there is too much nonsense, garbage, or hallucination, decrease temperature
+    and/or decrease top-p/top-k.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the temperature is high and diversity is low, increase top-p/top-k.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Tip: While some interfaces allow you to use top-p and top-k at the same time,
+    we prefer to keep things simple by choosing one or the other. Top-k is easier
+    to use and understand, but top-p is often more effective.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tuning frequency penalty and presence penalty:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more diverse topics and subject matters, increase the presence penalty.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For more diverse and less repetitive language, increase the frequency penalty.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Troubleshooting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the outputs seem scattered and change topics too quickly, decrease the presence
+    penalty.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If there are too many new and unusual words, or if the presence penalty is set
+    to zero and you still get too many topic changes, decrease the frequency penalty.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*TLDR: You can use this section as a cheat sheet for tuning language models.
+    You are* ***definitely*** *going to**forget these rules, so bookmark this page
+    and use it later as a reference.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While there are limitless ways to define a token sampling strategy, the parameters
+    we’ve discussed here — temperature, top-k, top-p, frequency penalty, and presence
+    penalty — are among the most commonly used. These are the parameters that you
+    can expect to find in models like Claude, Llama, and the GPT series. In this article,
+    we have shown that all of these parameters are really just here to help us navigate
+    the quality-diversity tradeoff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we go, there is one last input parameter to mention: maximum token length.
+    The maximum token length is just the cutoff where the model stops printing its
+    answer, even if it isn’t finished. After that complex discussion, we hope this
+    one is self-explanatory. 🙂'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we move further in this series, we’ll do more deep dives into topics such
+    as prompt engineering, choosing the right language model for your use case, and
+    more! I will also show some real-world use cases from my work as a data analysis
+    consultant at Megaputer Intelligence. Stay tuned for more insights, and happy
+    modeling!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*TLDR: When in doubt, set the temperature, frequency penalty, and presence
+    penalty to zero. If that doesn’t work for you, reference the cheat sheet above.*'
+  prefs: []
+  type: TYPE_NORMAL

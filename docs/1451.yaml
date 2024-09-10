@@ -1,0 +1,381 @@
+- en: Effectively Annotate Text Data for Transformers via Active Learning + Re-labeling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/effectively-annotate-text-data-for-transformers-via-active-learning-re-labeling-25fe036d79f?source=collection_archive---------2-----------------------#2023-04-27](https://towardsdatascience.com/effectively-annotate-text-data-for-transformers-via-active-learning-re-labeling-25fe036d79f?source=collection_archive---------2-----------------------#2023-04-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Boost Transformer model performance with Active Learning assisted data labeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@chrismauck10?source=post_page-----25fe036d79f--------------------------------)[![Chris
+    Mauck](../Images/d0aeb4d0458544afdfdd59915a962b18.png)](https://medium.com/@chrismauck10?source=post_page-----25fe036d79f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----25fe036d79f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----25fe036d79f--------------------------------)
+    [Chris Mauck](https://medium.com/@chrismauck10?source=post_page-----25fe036d79f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F96a38f7ac238&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffectively-annotate-text-data-for-transformers-via-active-learning-re-labeling-25fe036d79f&user=Chris+Mauck&userId=96a38f7ac238&source=post_page-96a38f7ac238----25fe036d79f---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----25fe036d79f--------------------------------)
+    ·9 min read·Apr 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F25fe036d79f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffectively-annotate-text-data-for-transformers-via-active-learning-re-labeling-25fe036d79f&user=Chris+Mauck&userId=96a38f7ac238&source=-----25fe036d79f---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F25fe036d79f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffectively-annotate-text-data-for-transformers-via-active-learning-re-labeling-25fe036d79f&source=-----25fe036d79f---------------------bookmark_footer-----------)![](../Images/368c78a18b228e319f02837c08250e17.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ActiveLab chooses which data you should (re)label to train a more effective
+    model. Given the same labeling budget, ActiveLab outperforms other selection methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I highlight the use of active learning to improve a fine-tuned
+    Transformer model for text classification, while keeping the total number of collected
+    labels from human annotators low. When resource constraints prevent you from acquiring
+    labels for the entirety of your data, active learning aims to save both time and
+    money by selecting which examples data annotators should spend their effort labeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ActiveLab greatly reduces labeling costs and time spent to achieve a given model
+    performance compared to standard data annotation. In the experiments demonstrated
+    in this article, ActiveLab hits 90% model accuracy at only 35% of the label spend
+    as standard training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Active Learning?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Active Learning helps prioritize what data to label in order to maximize the
+    performance of a supervised machine learning model trained on the labeled data.
+    This process usually happens iteratively — at each round, active learning tells
+    us which examples we should collect additional annotations for to improve our
+    current model the most **under a limited labeling budget**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Active Learning is most useful to efficiently annotate data in settings where
+    you have a large pool of unlabeled data and a limited labeling budget. Here you
+    want to decide which examples to label in order to train an accurate model. An
+    important assumption of the methods presented here (and most Machine Learning)
+    is that the individual examples are independent and identically distributed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is ActiveLab?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[ActiveLab](https://arxiv.org/abs/2301.11856) is an active learning algorithm
+    that is particularly useful when the annotators are noisy because it helps decide
+    when we should collect one more annotation for a previously annotated example
+    (whose label seems suspect) vs. for a not-yet-annotated example. After collecting
+    these new annotations for a batch of data to increase our training dataset, we
+    re-train our model and evaluate its test accuracy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[CROWDLAB](https://cleanlab.ai/blog/multiannotator/) is a method to estimate
+    our confidence in a consensus label from multi-annotator data, which produces
+    accurate estimates via a weighted ensemble of *any* trained model’s probabilistic
+    prediction *p_M*​ and the individual labels assigned by each annotator *j*. ActiveLab
+    forms a similar weighted ensemble estimate, treating each annotator’s selection
+    as a probabilistic decision *p_j* output by another predictor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e514002fa30e38d71af8523c27eab17f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ActiveLab decides to re-label data when the probability of the current consensus
+    label for a previously-annotated datapoint falls below our (purely model-based)
+    confidence in the predicted label for an unannotated datapoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ActiveLab is best for data labeling applications where data annotators are imperfect
+    and you are able to train a reasonable classifier model (which is able to produce
+    better than random predictions). The method works with any data modality and classifier
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I recently joined [Cleanlab](https://cleanlab.ai/) as a Data Scientist and am
+    excited to share how ActiveLab (part of our [open-source library](https://github.com/cleanlab/cleanlab?utm_medium=tds),
+    freely available under AGPL-v3 license) can be used in various workflows to improve
+    datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here I consider a binary text classification task: predicting whether a specific
+    phrase is polite or impolite. Compared to random selection of which examples to
+    collect an additional annotation for, active learning with ActiveLab consistently
+    produces much better Transformer models at each round (around **50%** of the error-rate),
+    no matter the total labeling budget!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rest of this article walks through the open-source code you can use to
+    achieve these results. You can run all of the code to reproduce my active learning
+    experiments here: [Colab Notebook](https://colab.research.google.com/github/cmauck10/active-learning/blob/master/active-learning.ipynb)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classifying the Politeness of Text
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The dataset I consider here is a variant of the [Stanford Politeness Corpus](https://convokit.cornell.edu/documentation/wiki_politeness.html).
+    It is structured as a binary text classification task, to classify whether each
+    phrase is polite or impolite. Human annotators are given a selected text phrase
+    and they provide an (imperfect) annotation regarding its politeness: 0 for impolite
+    and 1 for polite.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a Transformer classifier on the annotated data, we measure model accuracy
+    over a set of held-out test examples, where I feel confident about their ground
+    truth labels because they are derived from a consensus amongst 5 annotators who
+    labeled each of these examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As for the training data, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`X_labeled_full`: our initial training set with just a small set of 100 text
+    examples labeled with 2 annotations per example.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`X_unlabeled`: a large set of 1900 unlabeled text examples we can consider
+    having annotators label.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here are a few examples from `X_labeled_full`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hi, nice article. What is meant by “speculative townhouses?” Ones that were
+    built for prospective renters rather than for committed buyers**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Annotation (by annotator #61): polite'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Annotation (by annotator #99): polite'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. **Congrats, or should I say good luck?**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Annotation (by annotator #16): polite'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Annotation (by annotator #22): impolite'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3\. **4.5 million hits on Google turning up the non-Columbia campuses. What
+    are you talking about?**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Annotation (by annotator #22): impolite'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Annotation (by annotator #61): impolite'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For each **active learning** round we:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute ActiveLab consensus labels for each training example derived from all
+    annotations collected thus far.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Train our Transformer classification model on the current training set using
+    these consensus labels.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Evaluate test accuracy on the test set (which has high-quality ground truth
+    labels).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Run cross-validation to get out-of-sample predicted class probabilities from
+    our model for the entire training set and unlabeled set.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Get ActiveLab active learning scores for each example in the training set and
+    unlabeled set. These scores estimate how informative it would be to collect another
+    annotation for each example.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select a subset (*n = batch_size*) of examples with the lowest active learning
+    scores.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Collect one additional annotation for each of the *n* selected examples.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Add the new annotations (and new previously non-annotated examples if selected)
+    to our training set for the next iteration.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I subsequently compare models trained on data labeled via active learning vs.
+    data labeled via **random selection**. For each random selection round, I use
+    majority vote consensus instead of ActiveLab consensus (in Step 1) and then just
+    randomly select the **n** examples to collect an additional label for instead
+    of using ActiveLab scores (in Step 6).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Training and Evaluation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here is the code we use for model training and evaluation, using the [Hugging
+    Face library](https://huggingface.co/docs/transformers/model_doc/distilbert) which
+    offers many state-of-the-art Transformer networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: I first tokenize my test and train sets, and then initialize a pre-trained DistilBert
+    Transformer model. Fine-tuning DistilBert with 300 training steps produced a good
+    balance between accuracy and training time for my data. This classifier outputs
+    predicted class probabilities which I convert to class predictions before evaluating
+    their accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use Active Learning Scores to Decide What to Label Next
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here is the code we use to score each example via an active learning estimate
+    of how informative collecting one more label for this example will be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: During each round of Active Learning, we fit our Transformer model via 3-fold
+    cross-validation on the current training set. This allows us to get out-of-sample
+    predicted class probabilities for each example in the training set and we can
+    also use the trained Transformer to get out-of-sample predicted class probabilities
+    for each example in the unlabeled pool. All of this is internally implemented
+    in the `get_pred_probs` helper method. The use of out-of-sample predictions helps
+    us avoid bias due to potential overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once I have these probabilistic predictions, I pass them into the `get_active_learning_scores`
+    method from the open-source [cleanlab](https://github.com/cleanlab/cleanlab) package,
+    which implements the [ActiveLab algorithm](https://arxiv.org/abs/2301.11856).
+    This method provides us with scores for all of our labeled and unlabeled data.
+    Lower scores indicate data points for which collecting one additional label should
+    be most informative for our current model (scores are directly comparable between
+    labeled and unlabeled data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I form a batch of examples with the lowest scores as the examples to collect
+    an annotation for (via the `get_idx_to_label` method). Here I always collect the
+    exact same number of annotations in each round (under both the active learning
+    and random selection approaches). For this application, I limit the maximum number
+    of annotations per example to 5 (don’t want to spend effort labeling the same
+    example over and over again).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding new Annotations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here is the code used to add new annotations for the chosen examples to the
+    current training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `combined_example_ids` are the ids of the text examples we want to collect
+    an annotation for. For each of these, we use the `get_annotation` helper method
+    to collect a new annotation from an annotator. Here, we prioritize selecting annotations
+    from annotators who have already annotated another example. If none of the annotators
+    for the given example exist in the training set, we randomly select one. In this
+    case, we add a new column to our training set which represents the new annotator.
+    Finally, we add the newly collected annotation to the training set. If the corresponding
+    example was previously non-annotated, we also add it to the training set and remove
+    it from the unlabeled collection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve now completed one round of collecting new annotations and retrain the
+    Transformer model on the updated training set. We repeat this process in multiple
+    rounds to keep growing the training dataset and improving our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I ran 25 rounds of active learning (labeling batches of data and retraining
+    the Transformer model), collecting 25 annotations in each round. I repeated all
+    of this, the next time using random selection to choose which examples to annotate
+    in each round — as a baseline comparison. Before additional data are annotated,
+    both approaches start with the same initial training set of 100 examples (hence
+    achieving roughly the same Transformer accuracy in the first round). Because of
+    inherent stochasticity in training Transformers, I ran this entire process five
+    times (for each data labeling strategy) and report the standard deviation (shaded
+    region) and mean (solid line) of test accuracies across the five replicate runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Takeaway: ActiveLab greatly reduces time and labeling costs to achieve a
+    given model performance compared to standard data annotation. For example, ActiveLab
+    hits 90% model accuracy at only 35% of the label spend as standard training.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/211af98037fbd0c02e3592929148ee88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ActiveLab outperforms random selection substantially when averaged over 5 runs.
+    The standard deviation is shaded and the solid line is the mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see that choosing what data to annotate next has drastic effects on model
+    performance. Active learning using ActiveLab consistently outperforms random selection
+    by a significant margin at each round. For example, in round 4 with 275 total
+    annotations in the training set, we obtain **91% accuracy via active learning**
+    vs. only 76% accuracy without a clever selection strategy of what to annotate.
+    Overall, the resulting Transformer models fit on the dataset constructed via active
+    learning have around **50%** of the error-rate, no matter the total labeling budget.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While active learning has its advantages, it may not always be the most beneficial
+    approach. For instance, when the data labeling process is inexpensive, or when
+    there is a selection bias or distribution shift between the unlabeled dataset
+    and the data that the model will encounter during deployment. Additionally, active
+    learning feedback loops rely on the classifier model’s ability to generate predictions
+    that are more informative than random. When this is not the case, active learning
+    may not provide any significant signal about the data’s informativeness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**When labeling data for text classification, you should consider active learning
+    with the re-labeling option to better account for imperfect annotators.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,623 @@
+- en: 'Mean Absolute Log Error (MALE): A Better “Relative” Performance Metric'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75?source=collection_archive---------3-----------------------#2023-01-18](https://towardsdatascience.com/mean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75?source=collection_archive---------3-----------------------#2023-01-18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Introducing the MAE and MSE of “relative” performance metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)[![Christopher
+    McDonald](../Images/8e32cbb5f2341d215aa3da02acb83dd4.png)](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------)
+    [Christopher McDonald](https://medium.com/@chrismcdonald1?source=post_page-----a8fd17bc5f75--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fafe20c406abe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&user=Christopher+McDonald&userId=afe20c406abe&source=post_page-afe20c406abe----a8fd17bc5f75---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a8fd17bc5f75--------------------------------)
+    ·11 min read·Jan 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa8fd17bc5f75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&user=Christopher+McDonald&userId=afe20c406abe&source=-----a8fd17bc5f75---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa8fd17bc5f75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmean-absolute-log-error-male-a-better-relative-performance-metric-a8fd17bc5f75&source=-----a8fd17bc5f75---------------------bookmark_footer-----------)![](../Images/cffc543319dfc74c5a9b9bedab7131ba.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Photo: [William Warby](https://unsplash.com/@wwarby?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the forecasting world, and the ML and Statistics worlds more generally, performance
+    metrics play a critical role.
+  prefs: []
+  type: TYPE_NORMAL
+- en: They’re used during model fitting, hyperparameter tuning and model selection
+    to find the best possible model for your data; and they are used to understand
+    and explain how well your model predicts the future, in absolute terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, my aim is to convince you that for many forecasting¹ problems,
+    you should measure model performance using the Mean Absolute Log Error (MALE)
+    or the closely related Root Mean Square Log Error (RMSLE).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just as the MAE and RMSE use the “raw” distance between forecasts and true values,
+    the MALE and RMSLE use the “relative” (log) distance; you can think of the MALE
+    and RMSLE as the MAE and RMSE of “relative” metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, I’m confident I can persuade you that these metrics are not only the
+    best choice, but that they’re the *obvious* choice in many situations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before I explain why, let’s quickly review what problem performance metrics
+    solve, and where the existing metrics are lacking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Error measures and performance metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, let’s distinguish between two closely related concepts: error measures
+    and performance metrics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An *error measure* (or just *error*) tells you how “far” a forecast *f* is from
+    the observed value *y*. Examples are the “raw” error RE = f — y and the percentage
+    error PE = (f — y) / y.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By contrast, a *performance metric* (or just *metric*) uses an error measure
+    to tell you how good some model (or set of forecasts) is overall. One example
+    is the MSE, which takes the mean of the squared “raw” error over all points in
+    your data set:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are they good for?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Error measures and performance metrics are used during model fitting, as part
+    of the model’s loss function; during model tuning, in order to select appropriate
+    hyperparameters for the model; and during model selection, where they’re used
+    to select the best model type. They play a big role in determining the final model
+    you end up with, so it’s important that they capture what you care about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'They’re also used when trying to understand and explain the performance of
+    a model: for example in statements like “we can predict next quarters’ sales with
+    an average error of 15%”. So they also need to be interpretable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far, so obvious (hopefully). These concepts will come in handy later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Strictly positive data and relative errors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As I will discuss in another post (coming soon!), different forecast metrics
+    are appropriate in different situations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if you care about errors measured in percent (and your data are
+    strictly positive) then “relative” metrics such as the MAPE or sMAPE are often
+    recommended; if you care about errors measured in real units (e.g. number of apples),
+    or your data can be zero or negative, then “raw” metrics such as MAE or MSE are
+    more appropriate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to compare or aggregate performance metrics across time series,
+    then you might want to use scaled metrics [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this post I’ll focus on metrics for a particular type of problem. Specifically,
+    one where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data are *strictly positive*: they do not take zero or negative values.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The forecaster (i.e., you!) cares about *relative* rather than *raw* errors².
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While many forecasting problems are of this type, not all are — it’s important
+    to choose an appropriate metric for your problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Current Solutions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What errors do forecasters use?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gneiting [2] found that the mean absolute percentage error (MAPE) was the most
+    widely used measure of forecast accuracy in businesses and organizations, as of
+    the mid 2000s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at popular statistical forecasting packages — for example the “[fable](https://fabletools.tidyverts.org/reference/index.html#section-accuracy-evaluation)”
+    package in R, or the “[gluonts](https://ts.gluon.ai/v0.11.x/api/gluonts/gluonts.evaluation.metrics.html?highlight=metrics#module-gluonts.evaluation.metrics)”
+    package in Python — suggests that the MAPE (and its friend the sMAPE) are still
+    the main “relative” performance metrics used in practical forecasting applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The MAPE is popular because it can handle data where the scale varies over time;
+    it is relatively comparable across time series; deals reasonably well with outliers;
+    and has a simple interpretation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the MAPE and sMAPE have problems — let’s see what they are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problems with the MAPE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What’s the problem with the MAPE?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Well, as its name indicates, the MAPE uses the *percentage error* as its error
+    measure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This error measure is notorious for punishing overestimates more than underestimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an extreme example, if you overestimate the observed value by 10x, you get
+    an absolute percentage error (APE = |PE|) of 9; whereas if you underestimate it
+    by 10x, you get an APE of only 0.9 — only 1/10th the error!
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a smaller problem (but still a problem) in more realistic cases, where
+    your forecasts are closer to the truth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another way to look at the PE’s problem is that errors from underestimates are
+    squished into the range from -1 to 0 (i.e. -100% to 0%), whereas errors from overestimates
+    can take any value from 0 to infinity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problems with the sMAPE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A proposed solution to this underestimation problem is the symmetric MAPE (sMAPE),
+    which instead uses the “symmetric percentage error” error measure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The sPE *squishes* the error of overestimates so they are on the same scale
+    as the errors from of underestimates; this means underestimates and overestimates
+    are punished equally harshly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But while the sMAPE successfully solves the “underestimation” problem, it creates
+    two other problems³:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The metric is now more difficult to interpret.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since sPE errors are bounded, it won’t tell you about extreme outliers in your
+    data. (This can be a feature or a bug, depending on your point of view.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: (Sub)Optimal models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Last, let’s think a bit about what the MAPE and sMAPE *optimize for*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a reminder, when you optimize a model using the MAE or MSE, your model will
+    end up predicting the median or mean of the distribution, respectively⁴. (Provided
+    you have enough data and a good enough model.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By contrast, when you optimize for the MAPE or sMAPE, your model ends up predicting…
+    nothing in particular.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is, what quantity your model ends up predicting will depend on the distribution
+    of your target *y*, but it won’t (generally) be the mean or median of the distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This behaviour is not particularly nice. Can we do better?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Log Error
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Better error measures…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ve seen that the problems of the MAPE and sMAPE come from their *error measures*
+    — the percentage error (PE) and the symmetric percentage error (sPE).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can we find a better way to measure relative error between forecasts *f* and
+    observed values *y*? (Maybe something analogous to the “raw” error *f* — *y* used
+    by the MAE and MSE?)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'My solution⁵ is the *Log Error* (LE):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In words, it is the difference between the log of the forecast and observed
+    values⁶— or equivalently, the log of the ratio between the forecast and observed
+    values⁷. It’s closely related to the percentage error: LE = log(1 + PE).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This error measure has a number of nice properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is zero if and only if the forecast is exactly correct (*f* = *y*).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Underestimates and overestimates are punished equally harshly: for example,
+    the absolute log error (ALE = |LE|) for underestimating *y* by 2x is the same
+    as for overestimating *y* by 2x.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Errors add⁸: in math, LE(*x*, *y*) + LE(*y*, *z*) = LE(*x*, *z*). This distinguishes
+    it from the PE and sPE, and makes the LE look like the “raw” error measure used
+    by the MSE and MAE.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One way to think about the LE is that it solves the problems of the PE and the
+    sPE by *stretching* error underestimates and *squishing* error overestimates onto
+    the full real line (-∞, ∞) using the log transformation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another way to think about it is as the *raw error* on the *log scale* — i.e.
+    just the raw distance between the forecast and the observed value, on the log
+    of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And as I’ll explain later, it is closely analogous to the “raw” error measure
+    used by the MAE and MSE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: …lead to better metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have a nicer relative error measure, let’s return to what we’re
+    really interested in: performance metrics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As for the MAPE or sMAPE, to get a metric from our error measure we take the
+    mean of its absolute value over all our data points:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result is the *Mean Absolute Log Error* metric, or “MALE” for short.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alternatively, we can use the square of the LE to get the *Root Mean Square
+    Log Error* (RMSLE):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compared to the MALE, this metric is more sensitive to outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These metrics have a few advantages over the other “relative” metrics, which
+    I’ll discuss below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What they estimate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When you optimize for the MALE, you get models which predict the median of your
+    distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(Or more formally: the Bayes estimator under MALE loss is the median.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you use the “squared-error” version (RMSLE), you get models which predict
+    the geometric mean of your data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is in contrast to the MAPE and sMAPE, which are biased in general.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To translate the MALE metric into something your boss will understand, you can
+    transform it back onto a relative scale by taking the exponential, i.e.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This gives you the *(geometric) mean relative error*. For example, an EMALE
+    of 1.2 means you expect to be wrong by a factor of 1.2 in either direction, on
+    average. (Explain this to your boss as a 20% average percentage error.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is an improvement over the sMAPE, which has no direct interpretation, and
+    over the MAPE, which though technically simple can be a bit misleading⁹.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can use the same trick for the RMSLE:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Like the RMSE, this is not directly interpretable, but it gives a good sense
+    of how large your errors will be in relative terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Empirical evidence
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While the empirical evidence is weak on which metric performs better “in the
+    wild”, what evidence there is weakly suggests that the MALE and RMSLE perform
+    at least as well as the sMAPE in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, Tofallis [3] shows that the RMSLE metric
+  prefs: []
+  type: TYPE_NORMAL
+- en: Produces a better model fit than the MAPE on a few example data sets. (No surprises
+    there.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Outperforms the MAPE and sMAPE in a model selection task using simulated data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Koutsandreas et al. [4] don’t find much difference between the performance of
+    different metrics (including the MALE but not the RMSLE) for model selection.
+    But the small differences they do find support the claim that the MALE metric
+    tends to select accurate models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simplicity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The MALE and RMSLE are easy to understand, remember and code — even easier
+    than the MAPE or sMAPE. For example, in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comparing MALE to Other Metrics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: MAE and MSE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you’ve been paying attention, you might have noticed some similarities between
+    the MAE / MSE and the MALE / RMSLE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, there is a close connection between these two sets of metrics: specifically,
+    optimizing for the MALE (or RMSLE) is the same as optimizing for the MAE (or MSE)
+    on the log of the data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perhaps this is obvious, but let’s see it explicitly for the MAE:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In fact, you can think of the MAE and MALE as metrics in the same family: the
+    only difference is that the MAE uses the raw distance between forecasts and observed
+    values, whereas the MALE uses relative (log) distances.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does this mean?
+  prefs: []
+  type: TYPE_NORMAL
+- en: One implication is that for models which use MSE (or MAE) as their loss functions
+    during training, you can optimize instead for RMSLE (or MALE) simply by taking
+    the log of your data before training¹⁰.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Just remember to convert back to the original scale afterwards!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: MAPE and sMAPE
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'All 3 of the absolute percentage error (APE), symmetric absolute percentage
+    error (sAPE) and the absolute log error (ALE) are similar when the forecast is
+    close to the true value, as you can see from this graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b427f54c83ab7656a45669bb7de371f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of the Absolute Percentage Error (APE), Symmetric Absolute Percentage
+    Error (sAPE) and Absolute Log Error (ALE) for an observed value of y = 1\. Image
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So in practice, provided your errors are sufficiently small (e.g. less than
+    10%), it probably doesn’t make much difference which of the MALE, sMAPE or MAPE
+    you use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ALE is is between the APE and sAPE in sensitivity to outliers. For example,
+    compared to being wrong by +10x, being wrong by +100x gives you 1.2 times your
+    original sAPE, 2 times your original ALE, and 9 times your original APE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaled metrics
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since the MALE and RMSLE are in relative units (rather than real units), they
+    can be used to compare the performance of models across time series, or to aggregate
+    performance metrics across different time series. (Just like other relative metrics.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This works well when the level of noise (in relative terms) is similar between
+    your different time series. But what if, for example, some of your series are
+    very noisy / difficult to predict, and others not so much?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, you can [normalize](https://otexts.com/fpp3/accuracy.html#scaled-errors)
+    your errors by the error of a benchmark method (e.g. the naive or seasonal naive
+    methods) to place them on the same scale [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the *scaled* log error (SLE) of a forecast for time *T + h* given
+    training data for *t* = 1, 2, …, *T* is
+  prefs: []
+  type: TYPE_NORMAL
+- en: And the mean absolute scaled log error is
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this post, I have argued that for certain forecasting problems, you should
+    measure forecast errors using the Log Error (LE), rather than “raw” or percentage
+    errors. This means measuring model performance using metrics based on the LE:
+    specifically the Mean Absolute Log Error (MALE) and the Root Mean Square Log Error
+    (RMSLE).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These metrics should be used only if your data are strictly positive, and you
+    are interested in accuracy measured in relative (percent) terms and not real terms.
+    In this case, they have the following benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: They have a clear and simple interpretation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Optimizing for them produces estimates of the median (MALE) or geometric mean
+    (RMSLE).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: They can be easily compared and aggregated across different time series.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: They avoid the well-known problems of the mean absolute percentage error (MAPE)
+    and the symmetric mean absolute percentage error (sMAPE).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The MALE and RMSLE can be thought of the MAE and RMSE of “relative” performance
+    metrics. I think they should be the default choice if you are interested in measuring
+    errors in relative terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have I persuaded you? Why / why not? Let me know in the comments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] R. Hyndman and A. Koehler, [Another look at measures of forecast accuracy](https://doi.org/10.1016/j.ijforecast.2006.03.001)
+    (2006), International Journal of Forecasting 22(4).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] T. Gneiting, [Making and evaluating point forecasts](https://doi.org/10.1198/jasa.2011.r10138)
+    (2011), Journal of the American Statistical Association 106(494).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] C. Tofallis, [A better measure of relative prediction accuracy for model
+    selection and model estimation](https://doi.org/10.1057/jors.2014.103) (2015),
+    Journal of the Operational Research Society 66(8).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] D. Koutsandreas, S. Evangelos, P. Fotios and A. Vassilios, [On the selection
+    of forecasting accuracy measures](https://doi.org/10.1080/01605682.2021.1892464)
+    (2022), Journal of the Operational Research Society 73(5).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Footnotes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I focus on the forecasting field - because this seems to be where “relative”
+    error metrics are currently most used - but the same arguments apply for other
+    ML fields.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Relative errors only really make sense when you’re talking about strictly positive
+    data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It’s worth noting that typically none of these problems are too serious, and
+    the sMAPE has been successfully applied in practice.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More precisely, this is the optimal predictor (“Bayes estimator”) for this loss
+    function.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This error measure has been discussed by Tofallis [3] and [others](https://doi.org/10.1002/2017SW001669);
+    I think the idea is obvious enough that many people must have thought of it and
+    used it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Any base can be used in the logarithm; here I assume we’re using base *e*, i.e.
+    the natural logarithm.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For this reason it has also been called the “Log Accuracy Ratio”. I prefer “Log
+    Error”, since this is shorter and makes it clear that it is an error measure.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This property is not strictly for an error measure, but it is a nice one to
+    have.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In particular, a percentage error of +20% means you were wrong by a factor 1.2,
+    whereas a percentage error of -20% means you were wrong by a factor of 1.25 (1
+    / 0.8). This lack of symmetry is liable to cause confusion.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You may wonder why it’s worth defining and naming these new metrics at all,
+    if working with them is simply equivalent to working with the MAE / RMSE on the
+    log of your data. In my opinion, explicitly defining and naming these metrics
+    helps you to think more clearly about what is being optimized when working with
+    data on the log scale, as well as making this easier to communicate. (Saying “I
+    optimized for / evaluated the MALE” is shorter and less confusing than “I optimized
+    for / evaluated the MAE on the log of the data”.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

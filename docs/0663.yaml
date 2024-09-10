@@ -1,0 +1,390 @@
+- en: Batched Bandit Problems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/batched-bandit-problems-ea73dba5da7a?source=collection_archive---------8-----------------------#2023-02-17](https://towardsdatascience.com/batched-bandit-problems-ea73dba5da7a?source=collection_archive---------8-----------------------#2023-02-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Multi-Armed Bandits with delayed rewards in successive trials
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@smsmith714?source=post_page-----ea73dba5da7a--------------------------------)[![Sean
+    Smith](../Images/611395d113b10ec4bbfaf781301139c7.png)](https://medium.com/@smsmith714?source=post_page-----ea73dba5da7a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea73dba5da7a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea73dba5da7a--------------------------------)
+    [Sean Smith](https://medium.com/@smsmith714?source=post_page-----ea73dba5da7a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6957f6523097&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-bandit-problems-ea73dba5da7a&user=Sean+Smith&userId=6957f6523097&source=post_page-6957f6523097----ea73dba5da7a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea73dba5da7a--------------------------------)
+    ·11 min read·Feb 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fea73dba5da7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-bandit-problems-ea73dba5da7a&user=Sean+Smith&userId=6957f6523097&source=-----ea73dba5da7a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fea73dba5da7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-bandit-problems-ea73dba5da7a&source=-----ea73dba5da7a---------------------bookmark_footer-----------)![](../Images/390d82fb35fa2b239f2be68c33aee022.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Erik Mclean](https://unsplash.com/@introspectivedsgn?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiments are vital to any business operation. While AB tests are the defacto
+    standard, you’d be surprised to find many practitioners are not running proper
+    randomized experiments. A more likely scenario involves seasoned experimenters
+    using their judgement of when to pull a treatment, overriding the sacred power
+    analysis that would allow for a formal statistical inference. At it’s heart though,
+    this solves the problem of regret so many randomized experiments struggle with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The savvy reader has noticed I teed up a great intro to dive into a conversation
+    about bandits, but this conversation is slightly different from other articles.
+    Here we focus on a class of bandit problems that receives little attention outside
+    of academia: batched bandit problems. In the typical bandit scenario, an agent
+    executes an action and instantly enjoys a reward. This paradigm is often sufficient
+    in the world of digital marketing and website optimization, but what about when
+    rewards are not instantaneous?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take this example, you’re running an email campaign, but no one in the marketing
+    department can decide which of 5 pieces of copy will be the most effective. Your
+    key KPI will be click through rate and is **measured if the user clicks through
+    the ad at any point during 5 days after receiving the email.**For now, assume
+    all users respond equivalently. The window to run the campaign is small. Given
+    this information, **how will you quickly decide which creative works the best
+    and maximize the CTR over the course of the campaign?**
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article is broken up into a few sections. First we discuss the concept
+    of the *grid*, the configuration of how many subjects receive the treatment during
+    each batch. We move on to look at how to format an epsilon-greedy bandit algorithm
+    as a batched bandit problem, and extend that to any bandit algorithm. We then
+    study Batched Successive Elimination (BaSE) and it’s similarity to the radomized
+    experiment (AB Test). Finally, we look at some experiments to study the effect
+    of number of batches and number of arms and how those influence regret. We’ll
+    see how those algorithms compare to a randomized experiment with the same grid
+    configurations. A discussion around the experimental results is provided, which
+    is followed by general guidelines concluded from the simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recap the Bandit Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Suppose we have a set of Actions **A** each corresponding to an *arm,* each
+    with it’s own associated reward **R**. In our case, **R** will be a Bernoulli
+    distributed random variable with a true mean equal to the CTR for our ad copy.
+    In code this looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The goal of the multi-bandit problem is given the set **A,** we want to learn
+    which arm has the maximum payoff, or the highest true mean value. We define a
+    *policy* as the function that tells us which arm is the best to pull. The catch
+    here is that while we are learning, or *exploring* the action space, we are playing
+    sub-optimal actions. Therefore, the point of bandit algorithms is to balance exploring
+    the possible actions and then *exploiting* actions that appear promising.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article assumes readers will be familiar with the Multi-Armed Bandit problem
+    and the epsilon-greedy approach to the explore-exploit problem. For those who
+    are not, this [article](/solving-the-multi-armed-bandit-problem-b72de40db97c)
+    gives a surface level overview. For a comprehensive overview, I recommend Sutton
+    and Barto [1] Chapter 2 as a Reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introducing the Grid
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As alluded to above, in the batched bandit problem, we do not receive instantaneous
+    rewards. Therefore we need to be strategic about how we select actions and update
+    our agent’s *policy.* This introduces the concept of the *grid*, how many users
+    to sample on each batch such that the agent is able to learn optimally. Perchet
+    et al [2] introduced the Batched Bandit Problem in their paper and also introduced
+    the grid. To formalize the grid, I use the notation from Gao et al [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first grid provided is the arithmetic grid, which is quite trivial. This
+    grid evenly divides the time horizon T into M equal batches. When M=T, this is
+    equivalent to the traditional bandit problem with instant rewards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second grid we use is the minimax grid, which aims to minimize the maximum
+    regret. The equation for the ith term is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The third grid provided is the geometric grid, which optimizes the regret with
+    respect to a maximum regret bound. The equation for the ith terms is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more information about the intuition behind the grid origins, I recommend
+    the discussion in [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extending Traditional Bandit Problems to Batched Bandit Problems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The epsilon-greedy algorithm is the usual introduction to the explore-exploit
+    tradeoff fundamental to reinforcement learning. For this reason, I’m opting to
+    start with converting the epsilon-greedy algorithm to the batched framework, and
+    then show how this can be extended to any bandit algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The difference between the batched bandit problem and the regular bandit problem
+    is simply when the agent is allowed to update the policy. A typical bandit algorithm
+    might look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'However in the batched bandit, we do not get rewards in real time and must
+    wait until the end of the batch to update the agent’s policy. One key point is
+    on the last batch the experiment is over. Exploring on the last batch provides
+    no utility, since there are no future batches, so we opt to go fully greedy on
+    the last batch. Here’s an example of what this might look like as an adaptation
+    to our code above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can trivially extend this to any class of bandit algorithm. By replacing
+    when the bandit is allowed to update, any algorithm can be used with any grid
+    in the batched bandit framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of an email campaign, we may decide to target 5000 users (T=5000).
+    Depending on the time frame available, we can pick a number of batches (M = num_days_available
+    / num_days_response). Let’s say we need to launch the campaign in 30 days and
+    it takes 5 days for a response, then the number of batches we can run is 6\. We
+    want to explore in the first 5 batches, but on the last batch our campaign is
+    over, so on this batch we commit to the best action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Batched Successive Elimination (BaSE)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As shown above, it’s easy to extend any bandit algorithm to the batched framework.
+    Gao et al [3] showed this with their adaptation of Successive Elimination to the
+    batched setting. Successive Elimination (SE) works by pruning less promising arms
+    out of the candidate set as early — yet responsibly — as possible. To do this
+    we sample each arm randomly during the batch. At the end of the batch we construct
+    a confidence threshold as follows
+  prefs: []
+  type: TYPE_NORMAL
+- en: Confidence threshold for pruning arms
+  prefs: []
+  type: TYPE_NORMAL
+- en: where gamma is a scaling factor, T is the time horizon, K is the number of arms,
+    and tau_m is the number of observations that have been sampled up to that point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To decide if an arm stays in the candidate set, we take the difference between
+    the cumulative rewards for the max arm and the cumulative rewards for each other
+    arm. If the difference between the average value and the current arm is greater
+    than our confidence threshold, then that arm is removed from the set of Arms being
+    explored. Below is the pseudo code for the algorithm provided by the authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f5acd84822ada21d073c8ba70eb5bd4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Algorithm For BaSE. Image taken from [Gao et al. [3]](https://arxiv.org/abs/1904.01763)
+  prefs: []
+  type: TYPE_NORMAL
+- en: An interesting note for the BaSE agent is how similar it is to a randomized
+    experiment. Noticing step (a), we randomly sample each arm in the set A and observe
+    the reward, exactly as we would in the randomized experiment. The difference is
+    in the pruning step (b), where we successively attempt to remove a candidate arm
+    from the current Arm set based on available information. As alluded to at the
+    beginning of the article, most practitioners do not run proper AB tests, but rather
+    opt to manually review and prune less promising arms manually. BaSE mimics this
+    process by introducing an automatic heuristic that could remove the need for human
+    intervention.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To understand the algorithms in the batched environment we’ll look at a couple
+    of experiments with number of batches and the number of arms. Each algorithm was
+    run for 100 trials with T=5000 for each grid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To test the effect of number of batches, an experiment was conducted using a
+    fixed set of arms with means 0.5, 0.51, and 0.6\. The number of batches was tested
+    at values of 2, 4, 6, and 8\. Each agent was run for each of the three grids presented
+    above. To keep the discussion simple, the best performing bandit and grid combination
+    was selected. Results are shown in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c64302727f0e78a3341b4ea928e08e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distributions for each M for each agent during batch experiment
+  prefs: []
+  type: TYPE_NORMAL
+- en: To test the effect of the number of arms, an experiment was conducted looking
+    at performance on different sets of arms. Each arm set contained an optimal arm
+    with mean 0.6 and for each point of the experiment an arm was added to the arm
+    set with mean around 0.5\. This was repeated to generate arm sets with cardinality
+    between 2 and 6\. The batch size for this experiment was fixed to M=6\. The results
+    of the experiment are below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/039755479ce8efd20f916abacde5061e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distributions for each K for each agent during arm experiment
+  prefs: []
+  type: TYPE_NORMAL
+- en: Full results from the experiments can be found in the repo in [this](https://github.com/sms1097/batched_bandits/blob/main/tutorial.ipynb)
+    notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Analysis of Experiments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As noticed from the experiments, all agents performed the best on the geometric
+    grid for almost all settings of the experiment. The intuition behind this comes
+    from the number of sampled individuals before the final batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The figure below shows the cumulative number of subjects treated during each
+    batch for each grid in a scenario where M=6 and T=5000\. The drastic difference
+    here is that the geometric grid treats substantially less subjects than the arithmetic
+    or the minimax grid before the final batch, where the agent opts for a full greedy
+    strategy. This means that the agents on the geometric grid are able to exploit
+    more subjects than those on the minimax or arithmetic grid, which leads to better
+    performance. These findings are supported by the ideas found in Bayati et al [4]
+    where the authors do a deep analysis as to why greedy algorithms achieve surprisingly
+    low regret compared with other algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43eafbbb1cbe12595e8a6176d0a4849d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cumulative number of subjects sampled per batch for each grid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This trend however does not generalize to grids with smaller batch numbers.
+    For the case where M=2 the number of samples in the first batch of the geometric
+    grid is quite small. In this scenario, the better alternative is to consider either
+    a minimax grid or in the case of sparse rewards (ie an extremely small mean for
+    the arm’s rewards) an arithmetic grid might be appropriate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: During both experiments the randomized agent (AB Agent) and BaSE agent display
+    very similar performance. This is true only for the geometric grid for the advantages
+    in exploration discussed above. While BaSE does introduce a confidence interval
+    for pruning arms early, this confidence interval isn’t always triggered before
+    the final batch and results in the similar performance to the randomized trial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This problem of triggering the confidence threshold highlights the problem of
+    hyperparameters in experimentation systems. BaSE and Epsilon-Greedy both suffer
+    from this problem. Looking at the Epsilon-Greedy agent we can see that this agent
+    has extreme variability between trials. This is due to the static hyperparameters
+    used between trials. When using an agent like BaSE or Epsilon-Greedy, it is important
+    to pick hyperparameters appropriate for you problem. These parameters can be determined
+    by a simulation before your experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A surprising note of the experiment comes from the Thompson Sampling Agent (TS
+    Agent) that had relatively stable performance between trials. The TS Agent does
+    not suffer from the hyperparameter problem previously discussed, but does require
+    some prior knowledge. To use the TS Agent, an implementation must know the prior
+    distribution and support a derivation of the posterior distribution to update
+    the agent. In the case of CTR, this is easy since we can sample results from a
+    Beta distribution and the posterior of the Beta distribution is the Beta distribution.
+    If the reward signal you are working with is continuous this becomes trickier
+    to make sure your prior is correct. If you’re curious about learning more about
+    Thompson Sampling, this [article](/thompson-sampling-fc28817eacb8) provides a
+    good surface level introduction and Russo et al. [5] provides a comprehensive
+    overview.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following seem to be some safe guidelines for general practice based on
+    the simulation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the experiment is going to be managed (human interaction between batches),
+    then the BaSE agent with human judgement on key KPIs is a good option to determine
+    when to enter the exploit phase
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the underlying distribution is known and the experiment will be fully automated,
+    then Thompson Sampling is a good option
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the underlying distribution is not known or has a complicated posterior and
+    the experiment is fully automated, then carefully considered parameters for an
+    epsilon greedy agent or a BaSE agent are good options
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It’s important to note these takeaways apply generally to these arm distributions.
+    Depending on your scenario these agents could respond differently. For this reason,
+    it’s advised to run your own simulations to gauge how your experiment should be
+    constructed, based on loose expectations of the rewards from your Arms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This was a brief introduction to some ideas on how to convert bandit algorithms
+    to batched bandit algorithms. All of these algorithms have been implemented and
+    are available for you to access in the repo. For further study I would suggest
+    looking at the algorithms proposed in [2] and [3], which provide deep intuition
+    into the batched bandit problem and some of the underlying proofs for regret bounds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can access the Repo [Here](https://github.com/sms1097/batched_bandits.git)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Sutton, R. S., & Barto, A. G. (2018). *Reinforcement learning: An introduction*.
+    MIT press.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Vianney Perchet, Philippe Rigollet, Sylvain Chassang, & Erik Snowberg (2016).
+    Batched bandit problems*. The Annals of Statistics, 44(2).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Gao, Z., Han, Y., Ren, Z., & Zhou, Z.. (2019). Batched Multi-armed Bandits
+    Problem.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Bayati, M., Hamidi, N., Johari, R., & Khosravi, K.. (2020). The Unreasonable
+    Effectiveness of Greedy Algorithms in Multi-Armed Bandit with Many Arms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Russo, D., Van Roy, B., Kazerouni, A., Osband, I., & Wen, Z. (2017). A
+    Tutorial on Thompson Sampling*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thanks for reading the article! My area of focus is in personalization and
+    experimentation. If you’re interested in keeping up to date on my work, please
+    follow me on* [*Medium*](https://medium.com/@smsmith714)*! I also post more frequent
+    updates on* [*LinkedIn*](https://www.linkedin.com/in/sms714/)*, if you’re interested
+    in those feel free to follow me there as well.*'
+  prefs: []
+  type: TYPE_NORMAL

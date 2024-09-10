@@ -1,0 +1,300 @@
+- en: Thoughts on Stateful ML, Online Learning, and Intelligent ML Model Retraining
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/thoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1?source=collection_archive---------14-----------------------#2023-04-05](https://towardsdatascience.com/thoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1?source=collection_archive---------14-----------------------#2023-04-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Designing scalable architecture for online and offline continuous learning systems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)[![Kyle
+    Gallatin](../Images/ee2796ba575412e9caf6034a65d741e5.png)](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------)
+    [Kyle Gallatin](https://medium.com/@kylegallatin?source=post_page-----4e583728e8a1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F51ff4b76ebf4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=post_page-51ff4b76ebf4----4e583728e8a1---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4e583728e8a1--------------------------------)
+    ·6 min read·Apr 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4e583728e8a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&user=Kyle+Gallatin&userId=51ff4b76ebf4&source=-----4e583728e8a1---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4e583728e8a1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthoughts-on-stateful-ml-online-learning-and-intelligent-ml-model-retraining-4e583728e8a1&source=-----4e583728e8a1---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ever since I read Chip Huyen’s [*Real-time machine learning: challenges and
+    solutions*](https://huyenchip.com/2022/01/02/real-time-machine-learning-challenges-and-solutions.html),
+    I’ve been thinking about the future of machine learning in production. Short feedback
+    loops, real-time features, and stateful ML model deployments capable of learning
+    online merit a very different sort of systems architecture that many of the stateless
+    ML model deployments I work with today.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb765555b528f3298223d7073c4cf1b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Me thinking ‘bout stateful ML in Cozumel, MX — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the past few months, I’ve been conducting informal user research, white-boarding,
+    and doing ad-hoc development to get to the core of what a real stateful ML system
+    might look like. For the most part, this post outlines the story of my thought
+    process and I continue to dive into this space and uncover interesting and unique
+    architectural challenges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Definitions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Stateful (or continuous) learning** involves *updating* model parameters
+    instead of retraining from scratch in order to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Decrease training time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Save cost
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Update models more frequently
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/32dadd54d68b8ab84e7e751df71e43a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Stateless versus stateful retraining — from [Chip Huyen](https://huyenchip.com/2022/01/02/real-time-machine-learning-challenges-and-solutions.html)
+    with permission
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Online learning** involves learning from ground truth examples in real-time
+    in order to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increase model performance and reactivity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mitigate performance issues that would result from drift/staleness
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Right now, most learning in the industry is done *offline* in batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Intelligent model retraining** typically refers to automatically retraining
+    models using some performance metric as opposed to on a set schedule in order
+    to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reduce cost without sacrificing performance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Right now, most models across industries are retrained on a schedule using DAGs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5da4771588b8116ac934298acf5fe48e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Intelligent retraining architecture from [A Guide To Automated Model Retraining](https://arize.com/resource/a-guide-to-optimizing-automated-model-retraining/?utm_campaign=Newsletter+-+DRIFT&utm_medium=email&_hsmi=252645972&_hsenc=p2ANqtz-_--qVbD_z1d-GRI1rSslPJDb1J6jevmfkOcQTOkQ3IwCJME58-WrfDPvra_rpfXHrDv_BIXyJmcTrtSiIRQvVn4DKr7Q&utm_content=252645972&utm_source=hs_email)
+    — by Arize AI with permission
+  prefs: []
+  type: TYPE_NORMAL
+- en: Designing an MVP for online learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In a [previous article](/building-a-lil-stateful-ml-application-for-online-learning-66624d62afae?sk=cd01b0115ea189cf7abdc295c35f4d43),
+    I’d tried to use foundational engineering principles in order to create a dead
+    simple online learning architecture. My first thought — to model stateful, online
+    learning architecture after stateful web applications. by treating the “model”
+    as the DB (where predictions are reads and incremental training sessions are writes),
+    I thought I might simplify the design process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b4f9d6bf80e4313dad2071275aa7c3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: To a degree, I actually did! By using the online learning library [River](https://riverml.xyz/0.15.0/),
+    I [built a small, stateful online learning application](https://github.com/kylegallatin/stateful-ml-app)
+    that allowed me to update a model *and* serve predictions in real-time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8aa2c88281674d66b569ccfba1569df2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Flask app that shares a model in memory across multiple workers — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This approach was cool and fun to code — but has some fundamental issues at
+    scale:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Doesn’t scale horizontally:** We can easily share a model in the memory of
+    a single application — but this approach doesn’t scale approach multiple pods
+    in orchestration engines like Kubernetes'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Mixes application responsibilities:** I don’t know (and don’t want to be
+    the one to find out) about the caveats of trying to support a deployment that
+    mixes training and serving'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Preemptively introduces complexity:** Online learning is the most proactive
+    type of machine learning possible, but we haven’t even validated we need it in
+    the first place. There has to be a better place to start…'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Designing something that scales
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start from an existing standard — distributed model training. It’s fairly
+    common practice to use something like a parameter server as a centralized store
+    while multiple workers calculate a partial/distributed gradient…or something…and
+    reconcile the parameters after the fact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So — I thought I’d try to this about this in the context of real-time model
+    serving deployments, and came up with the dumbest architecture possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d812ed7402ef09badbf527beb4e9bba6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An architecture that makes no sense — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distributed model training is mean to speed up the training process. However,
+    in this instance there’s no real need to be both training *and* serving in a distributed
+    fashion — keeping the training decentralized introduces complexity and serves
+    no purpose in an online training system. It makes way more sense to separate training
+    entirely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5970ff10b7470e23e06e1428d352d154.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An architecture that makes slightly more sense — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Great! Sort of. At this point I had to take a step back, as I was making quite
+    a few assumptions and probably getting a bit ahead of myself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We may not be able to get ground truth in near-real time
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Continuous *online* training may not provide a net benefit over continuous training
+    *offline* and is a premature optimization
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Offline/online learning may also not be binary — and there are scenarios where
+    we’d want/need both!
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Some sensible architectures for intelligent retraining, continuous learning,
+    and online learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start from a simpler offline scenario — I want to use some sort of ML
+    observability system to automatically retrain a model based on performance metric
+    degradation. In a scenario where I’m doing continuous training (and model weights
+    don’t take long to update) this is feasible to do without significant business
+    impact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69c2c535406ca8e5372514fe2decfad2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Intelligent retraining and continuous o*nline* learning — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amazing — the first reasonable thing I’ve drawn all day! This system likely
+    has a lower cost overhead than a *stateless* training architecture, and is reactive
+    to changes in the model/data. We save lots of $ by only retraining as needed,
+    and overall it’s pretty simple!
+  prefs: []
+  type: TYPE_NORMAL
+- en: This architecture has a big problem though….it’s not nearly as fun! What might
+    a system look like that has all the reactivity of online learning with the cost
+    savings of continuous learning and the resilience of online learning?! Hopefully,
+    something like this…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/559693798798de7e56dc5406c2beef80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Continuous, online learning — Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though there are details I still haven’t flushed out, there are a lot of benefits
+    to this architecture. It allows for mixed online and offline learning (just as
+    feature stores allow access to both streaming features and features computed offline),
+    is highly robust to changes in data distribution or even individual user preferences
+    for personalized systems (recsys), and still allows us to integrate ML observability
+    (O11y) tooling to constantly measure data distributions and performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, though this *might* be the most sensible thing diagram I’ve created
+    yet, it still leaves a lot of open questions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How/when do we evaluate the model and with what data in an online system? If
+    the data distribution is subject large shifts, we’ll need to to create new data-driven
+    methodologies and best practices for designing a held-out evaluation set that
+    includes both old data and the most recent data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How do we reconcile an ML model that splits training processes into batch/offline
+    and online? We’ll need to experiment with new techniques and system architectures
+    to allow for complex, computational operations that involve large ML models in
+    a system like this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How do we pull/push the model weights? On a cadence? During some event or subject
+    to some change in metric? Each of this architectural decisions could have a significant
+    impact on the performance of our system — and without online A/B testing or other
+    research, it’ll be difficult to validate these choices.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Of course, one of my next steps is simply to start building some of this stuff
+    and see what happens. However, I would appreciate insight, ideas and engagement
+    from any and all folks in the industry to think about what some paths forward
+    might be!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please reach out on [twitter](https://twitter.com/kylegallatin), [LinkedIn](https://www.linkedin.com/in/kylegallatin/),
+    or sign-up for the next sessions of my course on [Designing Production ML Systems
+    this May](https://nycdatascience.com/courses/designing-and-implementing-production-machine-learning-systems-mlops/)!
+  prefs: []
+  type: TYPE_NORMAL

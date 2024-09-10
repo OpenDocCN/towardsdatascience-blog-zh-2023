@@ -1,0 +1,623 @@
+- en: 'Chess Recognition Problem: A Deep Dive Solution'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/chess-recognition-problem-a-deep-dive-solution-e4d8a439dc37?source=collection_archive---------10-----------------------#2023-02-27](https://towardsdatascience.com/chess-recognition-problem-a-deep-dive-solution-e4d8a439dc37?source=collection_archive---------10-----------------------#2023-02-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)[![Mohammed
+    Saifuddin](../Images/b12b54250328aefe69f8043d580d2178.png)](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------)
+    [Mohammed Saifuddin](https://acesaif.medium.com/?source=post_page-----e4d8a439dc37--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd08aa760ba07&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&user=Mohammed+Saifuddin&userId=d08aa760ba07&source=post_page-d08aa760ba07----e4d8a439dc37---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e4d8a439dc37--------------------------------)
+    ·18 min read·Feb 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe4d8a439dc37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&user=Mohammed+Saifuddin&userId=d08aa760ba07&source=-----e4d8a439dc37---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe4d8a439dc37&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchess-recognition-problem-a-deep-dive-solution-e4d8a439dc37&source=-----e4d8a439dc37---------------------bookmark_footer-----------)![](../Images/029918096614d634d2f1a44643a51863.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Randy Fath](https://unsplash.com/de/@randyfath?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The problem of identifying the configuration of chess pieces from an image of
+    a physical chessboard is often referred to as **chess recognition**. The ability
+    of a computer to recognize the chess pieces on a chessboard is the first step
+    to developing an intelligent system that can play chess, can solve chess problems/puzzles,
+    and can perform chess analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of my project is to recognize the chess pieces and their respective
+    position on the chessboard which can be described in a structured format such
+    as **Forsyth–Edwards Notation (FEN)** which is compatible with various chess engines.
+    I also added an extra layer of interpretation which takes the generated FEN as
+    input and outputs if there are any potential attacks (checks) and also spots illegal
+    chess positions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Dataset Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The dataset has *100000* images of randomly generated chess positions of *5–15*
+    pieces (*2* kings and *3–13* pawns/pieces). All images are *400* by *400* pixels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pieces were generated with the following probability distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*30%* for Pawn.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*20%* for Bishop.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*20%* for Knight.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*20%* for Rook.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*10%* for Queen.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*2* Kings are guaranteed to be on the board.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Labels are in a filename in FEN format, but with dashes instead of slashes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset is in the public domain. Please check the citations for the source
+    of the dataset [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.1\. **Forsyth–Edwards Notation (FEN)**
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Forsyth–Edwards Notation (FEN) is a standard notation for describing a particular
+    board position of a chess game. The purpose of FEN is to provide all the necessary
+    information to restart a game from a particular position.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A FEN record defines a particular game position, all in one text line and using
+    only the ASCII character set [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'FEN represents *6* fields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Piece placement data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Active color
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Castling
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: En passant
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Halfmove clock
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fullmove clock
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Note**: Since the dataset has static images, I can generate a FEN which has
+    only piece placement data.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. Exploratory Data Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is a critical stage to understand and investigate the patterns within the
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code by Author — Importing libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the above code snippet, I have imported the **chess_positions** module. I
+    developed, and perfected this module for two main reasons —
+  prefs: []
+  type: TYPE_NORMAL
+- en: EDA
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Interpretation of the FEN.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Code by Author — Train and test datasets
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.1\. Schema of the dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The training dataset has *80000* images and the test dataset has *20000* images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code by Author — Schema of the datasets
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.2\. Checking for duplicates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The below code snippet shows that all the labels (also images) are unique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code by Author — Checking for duplicates
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.3\. Chess piece distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In chess, there are 6 different pieces (by color — there are *12* different
+    pieces).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**K** — White King, **k** — Black King.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Q** — White Queen, **q** — Black Queen.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**B** — White Bishop, **b** — Black Bishop.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**N** — White Knight, **n** — Black Knight.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**R** — White Rook, **r** — Black Rook.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**P** — White Pawn, **p** — Black Pawn.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**3.3.1\. Chess piece distribution of the training dataset**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/16c21fcdddab44153892b9b364df2d29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Total pieces (by type) in the training dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.3.2\. Chess piece distribution of the test dataset**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a064f8883a6e33ca8ad95184901b0e63.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Total pieces (by type) in the test dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion of the above chess piece distribution plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neither the train set nor the test set has a total of *8* pawns (white and black)
+    in the boards.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: There is one and only one king (white and black) on each board, which is legit.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Queens are the least used pieces in both train and test sets.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 3.4\. Density plots
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The density plot is a visual representation of the PDF for a set of points.
+    The PDF mainly shows the distribution of the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.4.1\. PDF of the training dataset**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/995d8eb00feb0355596aba5e92a964c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — PDF plot of chess pieces in the training dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.4.2\. PDF of the test dataset**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80cd1331bba82065f8b2561656187dfd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — PDF plot of chess pieces in the test dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion of the above density plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is only *1* Black king and *1* White King on all the boards.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The distribution of all pieces is almost similar. There are more boards with
+    *0* pawns or *0* rooks or *0* knights or *0* bishops or *0* queens.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 3.5\. Total pieces vs No. of boards
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As already mentioned, the training dataset has *80000* chessboards and the test
+    data set has *20000* chessboards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2562947662a3a8f76f2dfb822ab9f827.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Histogram of total pieces vs no. of boards
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion of the above board-wise pieces distribution plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The maximum number of chess pieces is *15*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The minimum number of chess pieces is *5*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The majority of boards are filled with *15* chess pieces.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 3.6\. Finding checks and illegal positioning of chess pieces
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I developed and perfected the **chess_positions** module to detect the checks
+    and illegal positioning of chess pieces in the images. Below are the code snippets
+    of *3* classes in the module which help detect checks and illegal chess images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.6.1\. Defining the chessboard**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**3.6.2\. Checks in the chessboard**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**3.6.2.1\. Check distribution (only on legal images)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is the check distribution of the training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b0ada5c236810ec9b7b1fbbcdb004d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Check distribution of the training dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is the check distribution of the test dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dfc545d25e14d934bbc1f613dd9b5e80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Check distribution of the test dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion of the above check distribution plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rooks attack the opponent king more often compared to other chess pieces.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Pawns attack the opponent king less often compared to other chess pieces.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**3.6.3\. Illegal positionings in the chessboard**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**3.6.3.1\. Legal and Illegal positionings in the chessboard**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After filtering the training and test dataset using the above class, I obtained
+    the below results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training dataset (*80000* chess images).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The legal training chess image count is *67813 (84.8%)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The illegal training chess image count is *12187 (15.2%)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Test dataset (*20000* chess images).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The legal testing chess image count is *17019 (85.1%)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The illegal testing chess image count is *2981 (14.9%)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**3.6.3.2\. Sample plot of legal chess images**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a29395b3109b5ea8ccf637efaa4a1029.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Sample of legal chess images
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3.6.3.3\. Sample plot of illegal chess images**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a864dea8d16e9639eda90fe40e28927.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Sample of illegal chess images
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3.7\. Ratio, height, and width of all images
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/e0898fac29ef1c3e8f09e4b5b3d28a23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Ratio, height, and width
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion of the above image sizes plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ratio = Height / Width → *1*. All images have the same ratio i.e., *1*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: All images have the same width i.e., *400* pixels.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: All images have the same height i.e., *400* pixels.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 4\. Data Pipeline
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I created a data pipeline class to feed the data to the model (learner).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before that, I would like to show the preprocessing step. In preprocessing,
+    I resized the chess image by *50%* and divided it into *64* blocks (squares).
+    The major advantage of resizing the dataset is less space complexity. The RAM
+    will not be overburdened.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chess image before preprocessing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23520ce1b398976eabd127466de14884.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Before resizing and preprocessing
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Chess image after preprocessing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/555122ddcce0a32ce475604e8a1ff64c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — After resizing and preprocessing
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used Pavel Koryakin’s (author of the dataset) one-hot encoding logic to encode
+    the labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is the data pipeline class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the above class, I created the training, the validation, and the test dataset
+    generators that can be used for modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Modeling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I created a modeling class, that will first tune the model and then fits the
+    model with the dataset. Tuning was done using KerasTuner. It took 20 hours to
+    tune the model with the best hyperparameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5.1\. Base model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Below is the modeling class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 5.2\. Model architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 5.3\. Model performance — loss and accuracy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After fitting the model for *10* epochs, I obtained the performance of the model
+    — loss, and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1872c98f20ad28860325de9559e39b80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Accuracy and loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below is the confusion matrix of *25* test images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a10ad079966963d16cec5b1dd1c6a458.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author — Confusion matrix of 25 test images
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Productionization of Data Product
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Productionization is the process to expose the local model to the outside world
+    from the Jupyter Notebook environment. Here, I exported the model as a file that
+    was trained in the modeling stage. This model file has the learned parameters
+    which can be readily used for test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6.1\. Data product pipeline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 6.2\. Demo of the data product
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Data product link: [https://huggingface.co/spaces/mohd-saifuddin/Chess-Recognition-2D](https://huggingface.co/spaces/mohd-saifuddin/Chess-Recognition-2D)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Please note, you will need test images to use this data product. So, I recommend
+    you download the test images from the dataset source.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Learning Outcomes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: My learning outcomes working on this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I learned to perform detailed EDA on chess images and FEN labels.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I learned data preprocessing and working with the TensorFlow Data module.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I learned to perform hyperparameter tuning using KerasTuner (still there are
+    so many concepts to learn).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finally, I learned to develop a data product and published it on the Streamlit
+    platform.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 8\. References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Pavel Koryakin, Chess Positions. In *Kaggle*. [here](https://www.kaggle.com/datasets/koryakinp/chess-positions).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Forsyth–Edwards Notation. In *Wikipedia*. [here](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 9\. End
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thank you for reading. If you have any suggestions, please let me know.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Deep learning code: [here](https://github.com/mohd-saifuddin/Chess-Recognition-Problem).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Streamlit application code: [here](https://github.com/mohd-saifuddin/Chess-Recognition-Application).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'You can connect with me on LinkedIn: [here](https://www.linkedin.com/in/mohammed-saifuddin-850a6b133/).'
+  prefs: []
+  type: TYPE_NORMAL

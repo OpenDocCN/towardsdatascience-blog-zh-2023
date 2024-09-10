@@ -1,0 +1,528 @@
+- en: Data Science Better Practices, Part 1 — Test Your Queries
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/data-science-better-practices-part-1-test-your-queries-629ad5209f28?source=collection_archive---------5-----------------------#2023-09-07](https://towardsdatascience.com/data-science-better-practices-part-1-test-your-queries-629ad5209f28?source=collection_archive---------5-----------------------#2023-09-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to make sure our queries do what we expect them to — and other future boons.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)[![Shachaf
+    Poran](../Images/ac1ac57b8777c3441ad69358af1d649b.png)](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------)
+    [Shachaf Poran](https://medium.com/@scf1984?source=post_page-----629ad5209f28--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F33e74b6a3393&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&user=Shachaf+Poran&userId=33e74b6a3393&source=post_page-33e74b6a3393----629ad5209f28---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----629ad5209f28--------------------------------)
+    ·11 min read·Sep 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F629ad5209f28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&user=Shachaf+Poran&userId=33e74b6a3393&source=-----629ad5209f28---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F629ad5209f28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-science-better-practices-part-1-test-your-queries-629ad5209f28&source=-----629ad5209f28---------------------bookmark_footer-----------)![](../Images/639f0db4a613a31f29c317358dc28752.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generated with Midjourney
+  prefs: []
+  type: TYPE_NORMAL
+- en: The field of Data Science has its roots in Mathematics and Statistics as well
+    as Computer Science. While it has developed considerably in the past few decades,
+    it is only in the past 10–15 years that it rose to prominence as a well-established
+    role in the organization and as a stand-alone field in the tech industry.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Being a relatively young profession, best practices in Data Science haven’t
+    had sufficient time to coalesce and are not well-documented. This is in contrast
+    to the tangential field of Software Engineering, which is much more mature and
+    is rich in know-how guides, structures, and methodologies that have proven beneficial
+    over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It would be logical to expect that Data Scientists would benefit from the overlap
+    and close collaboration with Software Engineers, especially as it relates to practice.
+    Unfortunately, it is often not the case as many Data Scientists are either unaware
+    of these methodologies or are [unwilling to learn them](https://digma.ai/blog/coding-horrors-refactoring-and-feature-creep/),
+    claiming that they are either not relevant or do not lie within their field of
+    responsibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog series, I would like to share tips, tricks, and systematic approaches
+    that may be used in the Data Scientist’s work, with the aim of increasing the
+    correctness and stability of our code, better managing our models, and improving
+    teamwork.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The premise
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We start with a scenario anyone working with big data faces at some point,
+    and some of us may even face it on a daily basis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You are using `PySpark` and would like to extract some bits of information from
+    a big table. You can never hold the enormous amounts of relevant data in memory
+    so you’re forced to do all the transformations, aggregations, joins and whatnots
+    within the query language.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You start writing the query and you’re happy about it since `PySpark` makes
+    it easy to use a Pythonic and elegant api even when the query is too complicated
+    to explain to other humans. Even if you decide to use the SQL interface — you’re
+    still typing joyfully.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, you realize that you forgot a key column in a `groupBy` call and go back
+    to fix it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, you realize that one of the window functions is missing an `orderBy` clause.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, you decide that this magic number you used in the fourth line should be
+    1.25 rather than 1.2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You end up going over these 20–50 lines of the query back and forth repeatedly
+    for 20–30 minutes, changing it ever so slightly while building towards the final
+    query structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then… You run the query and it **fails**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You once again traverse the rows and rows of code you just manifested, struggling
+    to find what logical necessities you’ve missed and spot-fix them one-by-one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eventually, the query runs and returns some results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Who’s to promise you that these results indeed reflect what you’ve been trying
+    to get all this time, and that it matches the process you’re currently holding
+    in your head?
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where testing comes to our aid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Yes. What we do is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hand-craft a small dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calculate by hand the results we wish to get with the query.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply the query we wrote on that small dataset.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Match the query results with our own calculations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If we get a mismatch, we have to fix something — either our manual calculations
+    were wrong or the query does not perform what we expect it to. On the other hand,
+    if the results match — we have a go to continue to the next step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will now take you step-by-step into the structure I use when writing these
+    tests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up the environment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start with creating the environment (a.k.a. a fixture) we need to work
+    with `PySpark`. We may run numerous test cases each run, so we set the `PySpark`
+    session up at the module level. Otherwise, we may resort to starting and stopping
+    a session for each test, and this has a non-negligible overhead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I use Python’s built-in `*unittest*`, however if you or other members of your
+    team are using `*pytest*` or `*nose*` or any other testing framework I trust you
+    will find a way to perform these actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`*unittest*` has the two hooks `*setUpModule*` and `*tearDownModule*` that
+    run before and after the tests, respectively. We’ll use those to start and to
+    stop our `PySpark` session.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: test_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I like my session-creating function to be reusable, so here it is (I’ll fill
+    the non-local option when it’s due):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: query_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If the project becomes bigger I’d put this function in a `PySpark`-specific
+    utils file, but at the moment let’s keep the project flat and small.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our very first test
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The very first thing I’m going to test now is that I actually get a session
+    when running this test. Here’s the test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: test_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And what do you know, I run the test (PyCharm lets you do that directly from
+    the code, you should see a green “play” button next to each test) and I get an
+    OK message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/deb15d316a4af5979cf0cdac24eb8429.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating *and* testing our data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point we can start talking about data. What you should have at hand
+    is a small dataset that covers different cases you might encounter, and you can
+    still handle by hand. In terms of actual size I’d usually vote for 20–50 rows
+    depending on the domain and complexity of the query. If there’s grouping involved,
+    go for 5–10 different groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instructional purposes I created a dataset of names and birth dates. I
+    will assume for the sake of simplicity that all individuals with the same last
+    name are siblings. I also introduced randomness to the order of the rows, to prevent
+    order-sensitive queries from getting the right answer without addressing the order
+    directly. The data looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bba6b4af9486e541502ebcee25aeed16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now it’s time to load the data into our `PySpark` session. But first, let’s
+    create a sanity test for it. By the way, creating a test and only afterwards writing
+    the code that makes the test pass is part of the Test-Driven Development (TDD)
+    methodology, however I don’t preach it for Data Scientists, just the testing part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a sanity test we may test for column names, we may test for dataset size,
+    we may go for both or we may come up with deeper tests. Heck, we may even write
+    a test that matches the CSV file with the `DataFrame` row-by-row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The stricter we are when writing the tests the more sure we’ll be later that
+    the code is correct, but it will also make changes more difficult in the future,
+    *e.g.* what if we want to add/change a line in the dataset to test for a specific
+    edge case?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Balancing these speed and correctness factors is part of the art rather than
+    the science in our line of work, and will come more naturally with time and practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: test_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, let’s write the function to load the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: query_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And when I run the test… It fails? But how can it be?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ab75221a73cfd8a023056f0e562cbc2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'After counting the number of rows again and making sure it’s 25 I end up adding
+    `*header=True*` to the code, and the tests pass (don’t worry, I’ll spare you the
+    fake drama in the next examples):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: query_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Testing our query(ies)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now it’s time for the query-specific test. Let’s say I’d like to get the eldest
+    child from each family. I go over the dataset by eye (or use a sorted spreadsheet)
+    to find the exact set of name I expect to get, and hard-code it into my test:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: test_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the code that makes the test pass:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: query_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Despite sparing you the drama, I’ll share that I had to fix the query several
+    times before getting the test to pass. For example, I grouped by `*first_name*`,
+    I aggregated the values of `*last_name*`, and I forgot to make the sort descending.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my jobs, **testing saved me from losing face numerous times**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Are we done? Definitely not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should think of edge cases like what if we have twins? Are there families
+    with no kids? What about null values if our data is not unreliable?
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each of these options we’ll go to our dataset, change it to produce such
+    a case, then update our test and our code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we encounter these special cases through bugs that surface later (even if
+    we did not come up with them by ourselves), we’ll do the same — change the dataset
+    to reflect these cases and continue from there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should also write tests for the other queries, and we’ll meet different kinds
+    of tests. In the test above we cared for the **set of results**, but what if we
+    want to test a simple 1:1 transformation, *i.e.* `f(row) = y`. We need to factor
+    in the non-determinism of Spark in terms of row order.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, let’s say we want to get the initials of the names in our dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One option would be to sort the `*DataFrame*`and trust this order when we assert
+    equalities with our hand-made list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: query_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: test_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Another option would be to write a **native** function that does the same work
+    and test it well. Then we can apply it to the inputs after we load the results
+    to memory, and write a test to assert equality on each row. Here’s an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: query_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: test_pyspark.py
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Of the two options I would definitely prefer the latter, as it’s more **flexible**
+    since it does not rely on the data directly, but by the proxy of the support function
+    — which is tested without any coupling to the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, if the function is not too heavy for your query you may prefer to
+    use it as a UDF, keeping the code complexity low.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wait, there’s more?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Of course. There are plenty of different cases, such as results of joins and
+    window functions, but I trust the examples above suffice in making the point that
+    testing is an important tool and a valid choice of methodology when writing queries,
+    even for Data Scientists like me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, I chose to show how this might work while working with `PySpark` since
+    it is a common big-data tool, however this pattern is not restricted to just `PySpark`
+    nor to just big-data databases. In fact, it should work with any database. You
+    can also use this methodology with in-memory database-ish tools, like `*pandas*`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As long as you can:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connect to the data source.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Load/mock the data in the data source.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Execute the query.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Retrieve and process the query result.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You’re good to go. If the tool you’re using does not let you perform one of
+    these steps, you might want to reconsider using this tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And what do you know, there is a hidden benefit to testing your code. Let’s
+    say you find that one of your functions is underperforming in terms of runtime
+    or memory consumption, and decide to try and optimize or refactor it. You can
+    now use your existing tests as assurance that your **new code gives the same output**
+    as the previous one. Without these tests I would personally be afraid to change
+    even a single line of code, terrified from breaking some dependency downstream.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Testing is a powerful and important way to assert the correctness of code and
+    make any refactoring easy to manage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In future posts, I will give other examples of what I find to be good practices
+    when it comes to Data Science. We will touch subjects such as how to work together
+    on the same model without stepping on each other’s toes, how to manage dataset
+    versions, [how to observe our code’s](https://digma.ai/blog/ci-cd-cf-the-devops-toolchains-missing-link-continuous-feedback/)
+    performance in production environments, and much more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stay tuned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: FAQ
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Q: Wait, what?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: Feel free to start a conversation here or elsewhere about the notions brought
+    in this blog series.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: What if in my query I need thousands of rows to test?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: Write a parametric version of the query, e.g. `*def get_n_smalles_children(family_df,
+    n): …*`and make the parameter small enough. Another option is to simulate the
+    data programmatically, however this also presents new questions and challenges
+    in turn.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: What if I keep changing the query? Does that mean I need to change the tests
+    as well?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: Ideally you won’t change the query over time, but I am aware of the exploratory
+    nature of our field. So the answer is Yes. This is one of the reasons you may
+    feel that your velocity is reduced when writing tests. However, velocity is weighted
+    against accuracy/correctness. You may resort to writing tests later in the process,
+    when the query structure is more solidified.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: How do I run the tests if I don’t use PyCharm?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: Add the magic lines below to the end of your tests file and run it with
+    `*python test_pyspark.py*`. Don’t forget to make sure the code root is included
+    in `PYTHONPATH` for the imports to work (PyCharm does that automatically).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Q: What if I don’t want to (or otherwise can’t) keep my data in a .csv?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: Any way of storing and loading the data that works for you is fine, just
+    try to keep it tidy. For very small datasets I’ve used dict-to-DataFrame (or if
+    you’d like json-to-DataFrame), for larger datasets I used tables permanently stored
+    on Hadoop.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: Aren’t the example functions you gave above, like, super simple?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: Well, yes. That’s how I approach teaching — by giving simple examples and
+    making them gradually more complex. Unfortunately the margins of this post are
+    too small to contain the latter part.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: Do you have the code above in some repository so I can use it as a reference?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: [Yes, yes I do.](https://github.com/scf1984/clean-data-science/tree/main/pyspark_tests)'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,464 @@
+- en: 'Transforming text into vectors: TSDAE’s unsupervised approach to enhanced embeddings'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/transforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701?source=collection_archive---------1-----------------------#2023-10-16](https://towardsdatascience.com/transforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701?source=collection_archive---------1-----------------------#2023-10-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)[![Silvia
+    Onofrei](../Images/198b04b2063b4269eaff52402dc5f8d5.png)](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)[](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------)
+    [Silvia Onofrei](https://medium.com/@silviaonofrei?source=post_page-----728eb28ea701--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fab562e798558&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&user=Silvia+Onofrei&userId=ab562e798558&source=post_page-ab562e798558----728eb28ea701---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----728eb28ea701--------------------------------)
+    ·11 min read·Oct 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F728eb28ea701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&user=Silvia+Onofrei&userId=ab562e798558&source=-----728eb28ea701---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F728eb28ea701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftransforming-text-into-vectors-tsdaes-unsupervised-approach-to-enhanced-embeddings-728eb28ea701&source=-----728eb28ea701---------------------bookmark_footer-----------)![](../Images/ce4e9809888d34f2f0ee66fa4f5a7089.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Designed by Freepik](http://www.freepik.com)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Combine TSDAE pre-training on a target domain with supervised fine-tuning
+    on a general-purpose corpus to enhance the quality of the embeddings for a specialized
+    domain.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Embeddings encode text into high dimensional vector spaces, using dense vectors
+    to represent words and to capture their semantic relationships. Recent developments
+    in generative AI and LLM, such as context search and RAG rely heavily on the quality
+    of their underlying embeddings. While the similarity searches use basic mathematical
+    concepts such as cosine similarity, the methods used to build the embedding vectors
+    significantly influence the subsequent outcomes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In most cases, a pre-trained sentence transformer, will work out of the box
+    and will provide reasonable results. There are many choices of BERT based pretrained
+    contextual embeddings, some domain specialized, that can be used in these cases,
+    and they are available for download from platforms such as HuggingFace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The issues arise when we are dealing with cases where the corpus contains many
+    technical terms specific to a narrow domain or originates from low resource languages.
+    In these cases, we need to address the *unknown words* that were not seen during
+    pre-training or fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example a model pre-trained on general text will have hard time to properly
+    allocate vectors to titles from a corpus of mathematical research papers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In these cases, since the model was not exposed to the domain specific words,
+    it struggles to determine their meaning and to place them accurately in the vector
+    space relative to other words from the corpus. The higher the number of unknown
+    words the bigger the impact, and the lower the performance of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hence an out of the box pre-trained model will underperform in such scenarios,
+    while attempting to pre-train a custom model faces challenges due to the lack
+    of labelled data and the need of significant computational resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This work was incited by a recent research [[aviation_article](https://arxiv.org/abs/2305.09556)]
+    that is focusing on the aviation domain whose data has unique characteristics
+    such as technical jargon, abbreviations, and unconventional grammar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address the lack of labelled data, the authors employed one of the most effective
+    unsupervised techniques that allow for pre-training embeddings (TSDAE) followed
+    by a fine-tuning stage that used labelled data from a general purpose corpus.
+    The adapted sentence transformers outperform the general transformers, demonstrating
+    the effectiveness of the approach in capturing the characteristics of the aviation
+    domain data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outline
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Domain adaptation](https://www.sbert.net/examples/domain_adaptation/README.html)
+    is about tailoring text embeddings to a specific domain without the need for labeled
+    training data. In this experiment, I am using a two-step approach which, according
+    to the [[tsdae_article](https://arxiv.org/abs/2104.06979)], works better than
+    just training on the target domain.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bb26c7aa0c2ff05cfbd30aa19fcf5c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Firstly, I start with pre-training focused on the target domain, often termed
+    as adaptive pre-training. This phase demands a collection of sentences from our
+    dataset. I employ TSDAE for this stage, a method that excels in domain adaptation
+    as a pre-training task, significantly surpassing other methods, including the
+    masked language model, as emphasized in [[tsdae_article](https://arxiv.org/abs/2104.06979)].
+    I am closely following the script: t[rain_tsdae_from_file.py](https://github.com/UKPLab/sentence-transformers/blob/master/examples/unsupervised_learning/TSDAE/train_tsdae_from_file.py).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subsequently, I fine-tune the model on the generic labeled AllNLI dataset, employing
+    a multiple negative ranking loss strategy. For this stage I am using the script
+    from [training_nli_v2.py](https://github.com/UKPLab/sentence-transformers/blob/master/examples/training/nli/training_nli_v2.py).
+    As documented in [[tsdae_article](https://arxiv.org/abs/2104.06979)], this additional
+    step not only counters over-fitting but also significantly improves the model’s
+    performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TSDAE — Pre-Training on the Target Domain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: TSDAE (*transformer-based sequential denoising auto-encoder)* is an unsupervised
+    sentence embedding method, that was first introduced by K. Wang, N. Reimers and
+    I. Gurevych in [[tsdae_article](https://arxiv.org/abs/2104.06979)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: TSDAE uses a modified encoder-decoder transformer design where the key and the
+    value of the cross-attention are confined to the sentence embedding. I’ll outline
+    the details in the context of the optimal architecture choices highlighted in
+    the original paper [[tsdae_article](https://arxiv.org/abs/2104.06979)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/696638076de7ed5792bc391838896cd4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset consists of unlabeled sentences, which during pre-processing are
+    corrupted by deleting 60% of their content to introduce input noise.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Encoder transforms the corrupted sentences into fixed-sized vectors by pooling
+    their word embeddings. According to [[tsdae_article](https://arxiv.org/abs/2104.06979)],
+    using the CLS pooling method is recommended for extracting the sentence vector.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Decoder is required to reconstruct the original input sentence from the
+    damaged sentence embedding. The authors advise tying the Encoder and Decoder parameters
+    during training to reduce the number of parameters in the model, making it easier
+    to train and less prone to over-fitting while not affecting the performance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For good reconstruction quality, the sentence embedding from the Encoder must
+    optimally capture the semantics. A pretrained transformer such as `bert-base-uncased`
+    is used for the Encoder, while the Decoder’s weights are copied from it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Decoder’s attention mechanism is restricted to the sentence representation
+    produced by the Encoder. This modification from the original transformer encoder-decoder
+    architecture, limits the information the Decoder retrieves from the Encoder, and
+    introduces a bottleneck that forces the Encoder to produce meaningful sentence
+    representations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At inference, only the Encoder is used to create sentence embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model is trained to reconstruct the clean sentence from the corrupted sentence
+    and this is accomplished by maximizing the objective:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/680c448c34b890f8685787af0730455e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: AllNLI — Natural Language Inference Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Natural Language Inference (NLI) determines the relationship between two sentences.
+    It categorizes the truth of the hypothesis (second sentence) as entailment (true
+    based on the premise), contradiction (false based on the premise), or neutral
+    (neither guaranteed nor contradicted by the premise). NLI datasets are large labeled
+    datasets where pairs of sentences are annotated with their relationship class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this experiment, I use the AllNLI dataset that contains a collection of
+    more than 900K records, from combined Stanford Natural Language Inference (SNLI)
+    and MultiNLI datasets. This dataset can be downloaded from: [AllNLI download site](http://sbert.net/datasets).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load and Prepare the Pre-training Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To build our domain specific data, we are using the [Kaggle arXiv dataset](https://www.kaggle.com/datasets/Cornell-University/arxiv)
+    comprised roughly of about 1.7M scholarly STEM papers sourced from the established
+    electronic preprint platform, [arXiv](https://arxiv.org/). Besides title, abstract
+    and authors, there is a significant amount of metadata associated with each article.
+    However, here we are concerned only with the titles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After download, I’ll select the mathematics preprints. Given the hefty size
+    of the Kaggle file, I’ve added a reduced version of the mathematics papers file
+    to Github for easier access. However, if you’re inclined towards a different subject,
+    download the dataset, and replace `math` with your desired topic in the code below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: I’ve loaded our dataset into a Pandas dataframe `df`. A quick inspection shows
+    that the reduced dataset contains 55,497 preprints—a more practical size for our
+    experiment. While the [[tsdae_article](https://arxiv.org/abs/2104.06979)] suggests
+    around 10K entries are adequate, I'll keep the entire reduced dataset. Mathematics
+    titles might have LaTeX code, which I'll swap for ISO code to optimize processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I’ll use the `parsed_title` entries for training, so let’s extract them as
+    a list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, let’s form the corrupted sentences by removing approximately 60% of tokens
+    from each entry. If you’re interested in exploring further or trying different
+    deletion ratios, check out the [denoising script](https://github.com/UKPLab/sentence-transformers/blob/master/sentence_transformers/datasets/DenoisingAutoEncoderDataset.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s take a look at what happened to one entry after processing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you notice, `Bethe equations` and `model` were removed from the initial text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The last step in our data processing is to load the dataset in batches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: TSDAE Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While I’ll be following the approach from the t[rain_tsdae_from_file.py](https://github.com/UKPLab/sentence-transformers/blob/master/examples/unsupervised_learning/TSDAE/train_tsdae_from_file.py),
+    I’ll construct it step by step for better understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Start with selecting a pre-trained transformer checkpoint, and stick with the
+    default option:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Choose `CLS` as the pooling method and specify the dimension of the vectors
+    to be constructed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next build the sentence transformer by combining the two layers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lastly, specify the loss function and tie the encoder-decoder parameters for
+    the training phase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we’re set to invoke the fit method and train the model. I’ll also store
+    it for the subsequent steps. You’re welcome to tweak the hyperparameters to optimize
+    your experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*The pre-training stage took about 15 min on a Google Colab Pro instance with
+    A100 GPU set on High-RAM.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-Tuning on AllNLI Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s start by downloading the AllNLI dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, unzip the file and parse the data for training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The training dataset has about 563K training samples. Finally, use a special
+    loader that loads the data in batches, and avoids duplicates within a batch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The batch size I use here is smaller than the default size of `128` from the
+    script. Although a larger batch would give better results, it would require more
+    GPU memory, and since I am limited by my computational resources, I choose a smaller
+    batch size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, fine-tune the pre-trained model on the AllNLI dataset using MultipleRankingLoss.
+    Entailment pairs are positive and the contradiction pairs are hard negatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*I fine-tuned the model on the entire 500K dataset, and this took about 40
+    min on the Google Colab Pro, for 1 epoch with batch size of 32.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluate TSDAE Pre-Trained Model and the Fine-Tuned Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I will conduct some preliminary evaluation on the STS (semantic textual similarity)
+    dataset from HuggingFace, using the `EmbeddingSimilarityEvaluator`, which returns
+    the Spearman rank correlation. However, these evaluations don't employ the specific
+    domain I am focusing on, potentially not showcasing the model's true performance.
+    For details see Section 4 in [[tsdae_article](https://arxiv.org/abs/2104.06979)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I start with downloading the dataset from HuggingFace and specifying the `validation`
+    subset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is a Dataset object of the form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: To better understand it, let’s take a look at one specific entry
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we can see from this example, each entry has 4 features, one is the index,
+    two sentences and a label (which was created by a human annotator). The label
+    can take values between `0` and `5` and measures the similarity level of the two
+    sentences (with `5` being most similar). In this example the two sentences are
+    on completely different topics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To evaluate the model, sentence embeddings for the pairs of sentences are created,
+    and the cosine similarity score for each pair is computed. The Spearman rank correlation
+    between the labels and the similarity scores is computed as the evaluation score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since I’ll be using cosine similarity which takes values between 0 and 1, I
+    have to normalize the labels:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Wrap the data in the `InputExample` class from HuggingFace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create the evaluator based on `EmbeddingSimilarityEvaluator` class in `sentence-transformers`
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We compute the scores for TSDAE model, for the fine-tuned model and for a couple
+    of pre-trained sentence transformers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4b1c1e0ea3727afee930f65f6b50c6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus on a general scope dataset, some pre-trained models, such as `all-mpnet-base-v2`
+    outperforms the TSDAE fine-tuned model. However, by pre-training, the performance
+    of the initial model `bert-base-uncased` more than doubled. It is conceivable
+    that better results could be attained by further tweaking the hyperparameters
+    for fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For low resources domains, TSDAE in conjunction with fine-tuning is a rather
+    efficient strategy for building embeddings. The results obtained here are noteworthy,
+    given the amount of data and the computational means. However, for datasets that
+    are not particularly unusual or domain specific, taking efficiency and cost into
+    account, it might be preferable to choose a pretrained embedding that could provide
+    comparable performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Gihub Link**](https://github.com/SolanaO/Blogs_Content/tree/master/tsdae)
+    **to Colab Notebook and sample dataset**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*And so, my friends, we should always embrace the good, the bad, and the messy
+    on our learning journey!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[tsdae_article]. K. Wang, et al., [TSDAE*:* Using Transformer-based Sequential
+    Denoising Auto-Encoder for Unsupervised Sentence Embedding Learning](https://arxiv.org/abs/2104.06979)
+    (2021) arXiv:2104.06979'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[aviation_article]. L. Wang, et al., [Adapting Sentence Transformers for the
+    Aviation Domain](https://arxiv.org/pdf/2305.09556.pdf) (2023) arXiv:2305.09556'
+  prefs: []
+  type: TYPE_NORMAL

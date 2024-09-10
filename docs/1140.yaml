@@ -1,0 +1,678 @@
+- en: 'Behind the Millions: Estimating the Scale of Large Language Models'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/behind-the-millions-estimating-the-scale-of-large-language-models-97bd7287fb6b?source=collection_archive---------0-----------------------#2023-03-31](https://towardsdatascience.com/behind-the-millions-estimating-the-scale-of-large-language-models-97bd7287fb6b?source=collection_archive---------0-----------------------#2023-03-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Discussing LLMs like ChatGPT, the underlying costs, and inference optimization
+    approaches
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@andimid?source=post_page-----97bd7287fb6b--------------------------------)[![Dmytro
+    Nikolaiev (Dimid)](../Images/4121156b9c08ed20e7aa620712a391d9.png)](https://medium.com/@andimid?source=post_page-----97bd7287fb6b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----97bd7287fb6b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----97bd7287fb6b--------------------------------)
+    [Dmytro Nikolaiev (Dimid)](https://medium.com/@andimid?source=post_page-----97bd7287fb6b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F97b5279dad26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbehind-the-millions-estimating-the-scale-of-large-language-models-97bd7287fb6b&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=post_page-97b5279dad26----97bd7287fb6b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----97bd7287fb6b--------------------------------)
+    ·13 min read·Mar 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F97bd7287fb6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbehind-the-millions-estimating-the-scale-of-large-language-models-97bd7287fb6b&user=Dmytro+Nikolaiev+%28Dimid%29&userId=97b5279dad26&source=-----97bd7287fb6b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F97bd7287fb6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbehind-the-millions-estimating-the-scale-of-large-language-models-97bd7287fb6b&source=-----97bd7287fb6b---------------------bookmark_footer-----------)![](../Images/216ddba9f024c656c8b7a89b5e2e8a50.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Pixabay](https://www.pexels.com/photo/hard-cash-on-a-briefcase-259027/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to [Regan Yue](https://medium.com/u/84ea27feb7de?source=post_page-----97bd7287fb6b--------------------------------),
+    you can read the Chinese version of this article at [mp.weixin.qq.com](https://mp.weixin.qq.com/s/ek9Z9E-T04BBP7g7rl2Eqw),
+    [juejin.cn](https://juejin.cn/post/7225058326575693884), [segmentfault.com](https://segmentfault.com/a/1190000043715456)
+    and [xie.infoq.cn](https://xie.infoq.cn/article/e6d832cc0db3203e661647960)!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the recent past, machine learning was considered a complex, niche technology
+    that only a select few could comprehend. However, as ML applications become more
+    powerful, the public’s interest has surged, leading to a vast amount of content
+    surrounding Artificial Intelligence. The culmination of this happened in [November
+    2022, when we saw ChatGPT](https://openai.com/blog/chatgpt), and continued in
+    [March 2023 with the release of GPT-4](https://openai.com/research/gpt-4), when
+    even the most skeptical person was surprised at what modern neural networks can
+    do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c89106d2f2cccd701ed6952812eb5b11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Asking ChatGPT about its capabilities. Image by Author created using [ChatGPT](https://chat.openai.com/chat)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While some of this content is undoubtedly valuable, a significant portion of
+    it perpetuates **fear** and **misinformation**, such as the *spread of the idea
+    that robots will replace all human jobs* or *discovering secret ways to make huge
+    sums of money on neural networks*. As a result, it has become increasingly important
+    to dispel misconceptions about machine learning and **large language models**
+    and provide informative content to help people understand these technologies better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article aims to discuss the crucial aspect of modern machine learning that
+    is often overlooked or misunderstood — the cost of training large language models.
+    At the same time, we will briefly take a look at what LLM is and some possible
+    techniques to optimize its inference. By providing comprehensive examples, I hope
+    to convince you that these technologies *do not come out of the air.* By getting
+    an idea about the **scale of the data and the underlying calculations** you will
+    better understand these powerful tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mostly, I will rely on the recent [LLaMA paper by Meta AI](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/)
+    because of its clarity in the sense of the amount of data and compute the team
+    used to train these models. The post will be divided into the following sections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we’ll briefly look at **what modern LLMs are**;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then, we discuss **how much it costs to train such models**;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the end, we briefly consider some **popular techniques to optimize language
+    models for inference**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Stay tuned as we delve deeper into the world of large language models and you
+    will see that everything is *very simple* and *very complicated* at the same time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to Large Language Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we explore the costs associated with training Large Language Models (LLMs),
+    let’s first briefly define what a language model is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30e42d2c00e8ab3c7dd6aade7470950b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Parameter counts of several language models released in 2018–2019\. Modern LLMs
+    usually have tens to hundreds of billions of parameters. Figure 1 from [DistilBERT
+    paper](https://arxiv.org/pdf/1910.01108.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In simple terms, a language model is a type of machine learning algorithm designed
+    to understand or generate human language. Recently, exactly **generative models**
+    have become more and more popular — the **GPT model family**developed by OpenAI:
+    ChatGPT, GPT-4, etc (stands for *Generative Pre-trained Transformer*, honoring
+    the [*Transformer* architecture](https://huggingface.co/course/chapter1/4) on
+    which it is based).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Less popular, but still important examples include [GPT-3 (175B)](https://en.wikipedia.org/wiki/GPT-3),
+    [BLOOM (176B)](https://bigscience.huggingface.co/blog/bloom), [Gopher (280B)](https://www.deepmind.com/blog/language-modelling-at-scale-gopher-ethical-considerations-and-retrieval),
+    [Chinchilla (70B)](https://arxiv.org/abs/2203.15556), and [LLaMA (65B)](https://ai.facebook.com/blog/large-language-model-llama-meta-ai/),
+    where *B* refers to *billions* of parameters, although many of these models also
+    have smaller versions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nothing is known about the number of ChatGPT and especially GPT-4 parameters,
+    but it looks like these are about the same numbers.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/a2016210338f77ae9153992dbf03dd4d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Some of the popular LLMs architectures. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These models are “trained” using vast amounts of text data, enabling them to
+    learn the complex patterns and structures of natural language. However, the task
+    they solve during training is very simple: they just predict the next word (or
+    *token)* in a sequence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may have heard such a model called **autoregressive,** which means it *uses
+    its past outputs as input for future predictions* and *generate output step by
+    step*. This can be seen, among other things, in the example of ChatGPT:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66aef20a3c0122577e3ba5851f4df307.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GhatGPT generates a response. Gif by Author created using [ChatGPT](https://chat.openai.com/chat)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can notice that the model generates the answer *gradually* and *in chunks*
+    that are sometimes less than one word. These chunks are called *tokens* and [they
+    are very useful in NLP](https://neptune.ai/blog/tokenization-in-nlp), although
+    not so important for us now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At each time step, the model concatenates the previous output to the current
+    input and keeps generating. It does so until it reaches the special *End of Sequence
+    (EOS)* token. Omitting the prompt task and taking words as tokens for simplicity,
+    the process can be illustrated as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/daabb0414aba3ccf9732c3402f6831b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustrating text generation for autoregressive models. Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This simple mechanism together with a **hugeamount** of data (*more than any
+    person could read in several lifetimes*) allows the model to generate coherent
+    and contextually appropriate text, mimicking human-like writing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, that here we are talking about generative models only. Why if there are
+    other model families?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The reason is quite simple — the text generation task is one of the most **difficult**
+    to solve and at the same time one of the most **impressive**. [ChatGPT gained
+    1 million users in just 5 days](https://twitter.com/gdb/status/1599683104142430208)
+    — faster than any other application before, and [continues in the same spirit](https://www.reuters.com/technology/chatgpt-sets-record-fastest-growing-user-base-analyst-note-2023-02-01/).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So-called [**encoders**](https://huggingface.co/course/chapter1/5)(**BERT**
+    model family) can be much less exciting, but they can also solve various problems
+    with human-level performance and help you with tasks like [text classification](https://paperswithcode.com/task/text-classification)
+    or [Named Entity Recognition (NER)](https://paperswithcode.com/task/named-entity-recognition-ner).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'I will not provide particular examples of what LLMs can do — the Internet is
+    already full of them. The best way to get an idea is to [try ChatGPT yourself](https://chat.openai.com/chat),
+    but you can also find plenty of exciting resources like the [Awesome ChatGPT prompts
+    repo](https://github.com/f/awesome-chatgpt-prompts). Despite their impressive
+    capabilities, current large language models have some limitations. The most popular
+    and significant of them include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bias and staticity**: Since LLMs are trained on data from various sources,
+    they inadvertently learn and reproduce biases present in those sources. They are
+    also static in the sense that they cannot adapt to new data or update their knowledge
+    in real time without re-training.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Comprehension and disinformation**: Although LLMs can generate human-like
+    text, they may not always fully understand the context of the input. Also, the
+    autoregressive way of generating output text does not prohibit the model from
+    generating lies or nonsense.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Resource-intensive**: Training LLMs requires substantial computing resources,
+    which translates to high costs and energy consumption. This factor can limit the
+    accessibility of LLMs for smaller organizations or individual researchers.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These and other drawbacks are active topics for the research community. It is
+    worthwhile to note that the field is growing so fast that it is impossible to
+    predict what limitations will be overcome in just a few months — but without a
+    doubt, new ones will arise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One possible example is the fact that earlier models simply grew in the number
+    of parameters, but now it is considered that it is better to train smaller models
+    for a longer time and give them more data. This reduces the model size and the
+    cost of the model’s further use during inference.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In that way, the LLaMA release freed the hands of enthusiasts and these models
+    were already run locally on [computers](https://mobile.twitter.com/ggerganov/status/1640022482307502085),
+    [Raspberry Pi](https://twitter.com/miolini/status/1634982361757790209), and even
+    [phones](https://twitter.com/thiteanish/status/1635188333705043969)!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Having a big picture of what LLM is, let’s move on to the main section of this
+    article — estimating the cost of training large language models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Estimating the Cost of Machine Learning Models in General and LLMs in Particular
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To estimate the cost of training large language models, it is essential to
+    consider three key factors that any machine learning algorithm consists of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data**,'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Compute resources**, and'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Architecture** (or the algorithm itself).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s delve deeper into each of these aspects to better understand their impact
+    on training costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: LLMs require massive amounts of data to learn the patterns and structures of
+    natural language. Estimating the cost of data can be challenging since companies
+    often use data accumulated over time through their business operations together
+    with open-sourced datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, data needs to be *cleaned*, *labeled*, *organized*, and *stored*
+    efficiently, considering the scale of LLMs. Data management and processing costs
+    can add up quickly, especially when factoring in the infrastructure, tools, and
+    data engineers required for these tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make a particular example, it is known that LLaMA used a training dataset
+    containing **1.4 trillion tokens** with a total size of **4.6 terabytes**!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/76fbf5879560b4e3d2a8131bb616e1eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training dataset of LLaMA models. Table 1 from [LLaMA paper](https://arxiv.org/pdf/2302.13971.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Smaller models (7B and 13B) were trained on 1T tokens, while larger ones (33B
+    and 65B) used the full dataset of 1.4T tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/343af4446e0e34340c69378c96587c8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training loss over tokens for LLaMA models. Figure 1 from [LLaMA paper](https://arxiv.org/pdf/2302.13971.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think now you understand that no one is overstating when calling these datasets
+    **huge** and why it wasn’t technically possible ten years ago. But things are
+    even more interesting with computing resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The actual training process accounts for a significant portion of the LLM budget.
+    Training large language models is resource-intensive and is done on powerful Graphics
+    Processing Units (GPUs), due to significant parallel processing capabilities.
+    [NVIDIA releases new GPUs every year](https://www.crn.com/news/components-peripherals/8-big-announcements-at-nvidia-s-gtc-2023-from-generative-ai-services-to-new-gpus),
+    the cost of which hits hundreds of thousands of dollars.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cost of cloud computing services for training these models can be huge and
+    reach **several million dollars**, especially considering iterating through various
+    configurations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Returning to the LLaMA paper, the authors report that they train the biggest
+    65B model for **21 days on two thousand GPUs with 80 GB of RAM each**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9fc18370b8aa038ee24375c5a4ac1612.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Amount of computing resources for training the LLaMA model. Image from [LLaMA
+    paper](https://arxiv.org/pdf/2302.13971.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[NVIDIA A100 GPU](https://www.nvidia.com/en-us/data-center/a100/) authors used
+    is a popular choice for modern neural network training. [Google Could Platform
+    offers such GPUs](https://cloud.google.com/compute/gpus-pricing) for **$3.93 per
+    hour**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ff8ab50ec05b9fa428a6f46aad9f892.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Price of NVIDIA A100 GPU. Screenshot of a [public GCP pricing page](https://cloud.google.com/compute/gpus-pricing)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So let’s do some quick calculations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2048 GPUs x $3.93 GPU per hour x 24 hours x 21 days =
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4.05 million dollars
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Four million dollars is a budget that not every researcher can afford, huh?
+    And it is a single run! To give you another example, [this article estimates the
+    cost of training GPT-3](https://lambdalabs.com/blog/demystifying-gpt-3), and the
+    authors got **355 GPU-years and 4.6 million dollars**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may have heard that “neural networks train very quickly on GPU”, but no
+    one says relative to what.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: They’re really training fast taking into account the **enormous** amount of
+    calculations, and without these GPUs, they would have been training for decades.
+    So yeah, 21 days is pretty fast for LLMs.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Architecture (and Infrastructure)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The development of state-of-the-art LLMs also depends on the work of skilled
+    researchers and engineers to develop the architecture and configure the training
+    process properly. The architecture is the foundation of the model, dictating how
+    it learns and generates text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Expertise in various computer science areas is required for designing, implementing,
+    and controlling these architectures. Engineers and researchers responsible for
+    publishing and delivering cutting-edge results can command salaries reaching **hundreds
+    of thousands of dollars**. It is worth noting that the skill set required for
+    LLM development may differ significantly from the skill set of a “classic” machine
+    learning engineer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd4a832be476af47f2a09f4ac0602d69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Machine learning system infrastructure. Figure 1 from [Hidden Technical Debt
+    in Machine Learning Systems paper](https://proceedings.neurips.cc/paper_files/paper/2015/file/86df7dcfd896fcaf2674f757a2463eba-Paper.pdf)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think now you do not doubt that training LLMs is a *very hard* and *resource-intensive*
+    engineering problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s briefly discuss some methods for making the process of LLM inference
+    more efficient and cost-effective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimizing Language Models for Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Do we actually need optimization?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Inference refers to the process of using a trained language model to generate
+    predictions or responses, usually as an API or web service. Given the resource-intensive
+    nature of LLMs, it is essential to optimize them for efficient inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, GPT-3 model has 175 billion parameters, which is **700 GB** of
+    float32 numbers. Approximately the same amount of memory will be taken up by activations,
+    and remember that we are talking about RAM.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To serve predictions without any optimization technique, we will need 16 A100
+    GPUs with 80 GB of memory each!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Several popular techniques can help reduce memory requirements and model latency,
+    including *model parallelism*, *quantization*, and others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Parallelism
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Parallelism](https://colossalai.org/docs/concepts/paradigms_of_parallelism/)
+    is a technique that distributes the computation of a single model across multiple
+    GPUs and can be used both during training and inference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splitting the model’s layers or parameters across multiple devices can dramatically
+    improve the overall inference speed and is very often used in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Quantization](https://huggingface.co/docs/optimum/concept_guides/quantization)
+    involves reducing the precision of the model’s numerical values (such as weights).
+    By converting floating-point numbers to lower-precision integers, quantization
+    can result in significant memory savings and faster computation without a substantial
+    loss in model performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The simple idea that arises quite quickly is to use *float16* numbers instead
+    of *float32* and reduce the amount of memory by half*.* It turns out that it is
+    possible to convert model weights even to *int8* almost without accuracy loss
+    due to the fact that they are located close to each other on the number line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other Techniques
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Finding ways to optimize LLMs is an active area of research, and other techniques
+    include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Knowledge distillation](https://neptune.ai/blog/knowledge-distillation) —
+    training a smaller *student* model to mimic the behavior of a larger *teacher;*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Parameter pruning](https://analyticsindiamag.com/a-beginners-guide-to-neural-network-pruning/)
+    — removing redundant or less important parameters from the model to reduce its
+    size and computational requirements;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And using frameworks like [ORT (ONNX Runtime)](https://onnxruntime.ai/) to optimize
+    calculation graphs with techniques like *operator fusion* and *constant folding.*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Overall, optimizing large language models for inference is a critical aspect
+    of their deployment. By applying various optimization techniques, developers can
+    ensure that their LLMs are not only powerful and accurate but also cost-effective
+    and scalable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why did OpenAI Open Access to ChatGPT?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After all the above, one might wonder why OpenAI decided to open access to ChatGPT,
+    given the high costs associated with training and inference. While we cannot be
+    certain of the company’s exact motivations, we can analyze the benefits and potential
+    strategic reasons behind this decision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First and foremost, OpenAI has gained *significant popularity* by making state-of-the-art
+    LLMs more accessible to the broader public (see [AI revolution is more of a UX
+    revolution](https://medium.com/@kozyrkov/whats-different-about-today-s-ai-380569e3b0cd)).
+    By demonstrating the practical applications of large language models, the company
+    has captured the attention of investors, customers, and the tech community at
+    large. Moreover, this allowed OpenAI to **collect huge amounts of feedback and
+    data** to improve their models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Secondly, OpenAI’s mission revolves around the creation and advancement of AI.
+    By opening access to ChatGPT, the company is arguably moving closer to fulfilling
+    its mission and preparing society for unavoidable changes. Providing access to
+    powerful AI tools encourages innovation, driving the field of AI research forward.
+    This progress can lead to the development of more efficient models, more extensive
+    applications, and novel solutions to various challenges. It’s worth noting here
+    that the **architecture of ChatGPT and GPT-4 is closed**, but that’s another discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the costs associated with training and maintaining large language models
+    are undoubtedly significant, the benefits and strategic advantages that come with
+    opening access to these tools can outweigh the expenses for *some* organizations.
+    In the case of OpenAI, opening access to ChatGPT has not only increased their
+    popularity and proved to be a leader in the AI field, but also allowed them to
+    collect more data to train more powerful models. This strategy has allowed them
+    to advance their mission and contribute (*in some sense*) to the broader development
+    of AI and LLM technologies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80511d030bfdd16042515b6d604833f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Asking ChatGPT why OpenAI is giving free access to ChatGPT. Image by Author
+    created using [ChatGPT](https://chat.openai.com/chat)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we have seen, the cost of training large language models is influenced by
+    various factors, including *not only* expensive computing resources but also big
+    data management and the expertise required to develop cutting-edge architectures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modern LLMs have **billions** of parameters, are trained on **trillions** of
+    tokens, and cost **millions** of dollars.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I hope you now better understand the scale of training and inferencing large
+    language models, as well as their limitations and pitfalls.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The field of NLP has been experiencing its [ImageNet moment](https://thegradient.pub/nlp-imagenet/)
+    for several years, and now it’s the turn of **generative models**. The widespread
+    application and adoption of generative language models have the potential to *revolutionize
+    various industries and aspects of our lives*. While it is difficult to predict
+    exactly how these changes will unfold, we can be certain that LLMs will have some
+    impact on the world.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Personally, I like the recent tendency of training “smarter”, not just “larger”
+    models. By exploring more elegant ways to develop and deploy LLMs, we can push
+    the boundaries of AI and NLP, opening the door to innovative solutions and a brighter
+    future for the field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here are my other articles about LLMs that may be useful to you. I have already
+    covered:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Best Practices for Prompt Engineering](/summarising-best-practices-for-prompt-engineering-c5e86c483af4):
+    how to apply prompt engineering techniques to interact with LLMs effectively and
+    how to build local LLM-based applications with OpenAI API and Streamlit;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Using ChatGPT for Debugging](/using-chatgpt-for-efficient-debugging-fc9e065b7856#da94-27cac6b3f550):
+    how to use LLMs for debugging and code generation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If you become interested in LLMs and want to learn more about them, here are
+    some resources that can help you with that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)
+    is a great introduction to Transformer architecture which started the NLP big
+    bang by Jay Alammar;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[How GPT-3 Works — Visualizations and Animations](https://jalammar.github.io/how-gpt3-works-visualizations-animations/)
+    is a visualization of an autoregressive decoding process by the same author;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[GPT in 60 Lines of NumPy](https://jaykmody.com/blog/gpt-from-scratch/) is
+    a great article by Jay Mody where the author builds his own simple GPT;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Let’s build GPT: from scratch, in code, spelled out](https://www.youtube.com/watch?v=kCc8FmEb1nY)
+    is an awesome video by famous Andrej Karpathy, who worked on [Tesla Autopilot](https://www.tesla.com/autopilot)
+    as Sr. Director of AI at Tesla;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To get a more in-depth idea of the field, check out the [Awesome-LLM GitHub
+    repo](https://github.com/Hannibal046/Awesome-LLM) for a more detailed list of
+    resources. Take a look at [Chinchilla](https://arxiv.org/abs/2203.15556) and [LLaMA](https://arxiv.org/abs/2302.13971)
+    as one of the most influential papers of recent times.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thank you for reading!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope these materials were useful to you. [Follow me on Medium](https://medium.com/@andimid)
+    to get more articles like this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you have any questions or comments, I will be glad to get any feedback. Ask
+    me in the comments, or connect via [LinkedIn](https://www.linkedin.com/in/andimid/)
+    or [Twitter](https://twitter.com/dimid_ml).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To support me as a writer and to get access to thousands of other Medium articles,
+    get Medium membership using [my referral link](https://medium.com/@andimid/membership)
+    (no extra charge for you).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

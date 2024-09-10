@@ -1,0 +1,382 @@
+- en: Understanding and Mitigating LLM Hallucinations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/understanding-and-mitigating-llm-hallucinations-be88d31c4200?source=collection_archive---------1-----------------------#2023-10-23](https://towardsdatascience.com/understanding-and-mitigating-llm-hallucinations-be88d31c4200?source=collection_archive---------1-----------------------#2023-10-23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: LLM hallucination detection challenges and a possible solution presented in
+    a prominent research paper
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)[![Felipe
+    de Pontes Adachi](../Images/58c9544ae85f43548c5e5b56fda31bb4.png)](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be88d31c4200--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be88d31c4200--------------------------------)
+    [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----be88d31c4200--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa038269245d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-and-mitigating-llm-hallucinations-be88d31c4200&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=post_page-a038269245d5----be88d31c4200---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be88d31c4200--------------------------------)
+    ·8 min read·Oct 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbe88d31c4200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-and-mitigating-llm-hallucinations-be88d31c4200&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=-----be88d31c4200---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe88d31c4200&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-and-mitigating-llm-hallucinations-be88d31c4200&source=-----be88d31c4200---------------------bookmark_footer-----------)![](../Images/ada358f0bc7233d554233f71e47aa0b8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Image by Enrique from Pixabay](https://pixabay.com/photos/forest-person-surreal-poisoning-7772371/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently, large language models (LLMs) have shown impressive and increasing
+    capabilities, including generating highly fluent and convincing responses to user
+    prompts. However, LLMs are known for their ability to generate non-factual or
+    nonsensical statements, more commonly known as “hallucinations.” This characteristic
+    can undermine trust in many scenarios where factuality is required, such as summarization
+    tasks, generative question answering, and dialogue generations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detecting hallucinations has always been challenging among humans, which remains
+    true in the context of LLMs. This is especially challenging, considering we usually
+    don’t have access to ground truth context for consistency checks. Additional information
+    on the LLM’s generations, like the output probability distributions, can help
+    with this task. Still, it is often the case where this type of information is
+    unavailable, making the task even more difficult.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hallucination detection has yet to be solved and is an active area of research.
+    In this blog post, we’ll present the task in general and its challenges and one
+    possible approach published in the research paper [**SELFCHECKGPT: Zero-Resource
+    Black-Box Hallucination Detection for Generative Large Language Models**](https://arxiv.org/pdf/2303.08896.pdf?ref=content.whylabs.tds)[1].
+    We will illustrate some of the approaches presented in the paper with real examples,
+    pointing out some pros and cons of each method. You can review the examples yourself
+    by going to this [Google Colab Notebook](https://colab.research.google.com/drive/1ftgiASR3TeMaRTQ-cTd81iEoh2j0UP16?usp=sharing&ref=content.whylabs.ai).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*💡* ***Update****: Inspired by the research done in this blog post, we released
+    a new feature in* [***LangKit***](https://github.com/whylabs/langkit)*. The* ***response_hallucination***
+    *module will automatically calculate consistency scores to help you gain insights
+    on the presence of hallucinated responses in your LLM. You can check it out in*
+    [*this example notebook*](https://github.com/whylabs/langkit/blob/main/langkit/examples/Response_Consistency.ipynb)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'This blog will cover:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What Is LLM Hallucination
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The Approach: SelfCheckGPT'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consistency Check
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 1\. BERTScore
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 2\. Natural Language Inference
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 3\. LLM Prompt
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Experiments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: What Is LLM Hallucination
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In natural language generation, hallucination can be defined as “generated
+    content that is nonsensical or unfaithful to the provided source content”[2].
+    The source content can represent different functions for different tasks. For
+    example, for summarization tasks, the source is the input text being summarized,
+    while for generative question-answering tasks, the source is considered the world
+    knowledge[2]. Let’s focus on the question-answering task and take a look at one
+    example of a user question and the answer given by OpenAI’s GPT model (text-davinci-003):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'User Prompt: **Who was Philip Hayworth?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LLM Response: **Philip Hayworth was an English barrister and politician who
+    served as Member of Parliament for Thetford from 1859 to 1868.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At first sight, that looks like a coherent response, but after a while, we
+    might ask ourselves a very reasonable question: is it true?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t have much information to answer our new question, though. We don’t
+    have a context with proven facts we can use to verify the statement. LLMs are
+    typically trained under a massive corpora of texts, and it can be hard to verify
+    if the statement is grounded in a particular source of information. A quick Google
+    search does not show any hits for a person matching the response. What exactly
+    constitutes a hallucination is still not well established, but this example could
+    be understandably considered a hallucination because the subject with this name,
+    location, and employment may not have existed at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s try this again with another question:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'User Prompt: **Who is Bill Gates?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LLM Response: **Bill Gates is a technology entrepreneur, investor, and philanthropist.
+    He is the co-founder of Microsoft Corporation and is one of the wealthiest people
+    in the world.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok, these statements are much easier to verify and are supported by a quick
+    check on Wikipedia, so this is unlikely to be a hallucination. During training,
+    it is very likely that the LLM has seen a lot of statements about Bill Gates,
+    so the following tokens after “Bill Gates is _” will likely be generated with
+    high confidence. On the other hand, the LLM might not be sure about which words
+    to use after “Philip Hayworth is _”. This insight allows us to link uncertainty
+    with factuality, as factual sentences will likely contain tokens predicted with
+    a higher probability when compared to hallucinated sentences. However, we might
+    not have the output probability distribution at hand for a good number of cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example and content of the current session was based on the original paper
+    [1], and we will continue to explore the paper’s approach in the following sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Approach: SelfCheckGPT'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Throughout the last section, we considered two important considerations for
+    our approach: access to an external context and access to the LLM’s output probability
+    distribution. When a method does not require an external context or database to
+    perform the consistency check, we can call it a **zero-resource** method. Similarly,
+    when a method requires only the LLM’s generated text, it can be called a **black-box**
+    method.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The approach we want to talk about in this blog post is a zero-resource black-box
+    hallucination detection method and is based on the premise that **sampled responses
+    to the same prompt will likely diverge and contradict each other for hallucinated
+    facts, and will likely be similar and consistent with each other for factual statements**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s revisit the previous examples. To apply the detection method, we need
+    more samples, so let’s ask the LLM the same question three more times:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a353b00255ca73e9f5e6b8a22b0adbe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Indeed, the answers contradict each other — at times, Philip Hayworth is a British
+    politician, and in other samples, he is an Australian engineer or an American
+    lawyer, who all lived and acted in different periods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s compare with the Bill Gates example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c9d9bc9e5e6b6c8712ed29f0cf3eb18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can observe that the occupations, organizations, and traits assigned to Bill
+    Gates are consistent across samples, with equal or semantically similar terms
+    being used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consistency Check
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have multiple samples, the final step is to perform a consistency
+    check — a way to determine whether the answers agree with each other. This can
+    be done in a number of ways, so let’s explore some approaches presented in the
+    paper. Feel free to execute the code yourself by checking this [Google Colab Notebook](https://colab.research.google.com/drive/1ftgiASR3TeMaRTQ-cTd81iEoh2j0UP16?usp=sharing&ref=content.whylabs.tds).
+  prefs: []
+  type: TYPE_NORMAL
+- en: BERTScore
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An intuitive approach to perform this check is by measuring the semantic similarity
+    between the samples, and BERTScore[3] is one way to do that. BERTScore computes
+    a similarity score for each token in the candidate sentence with each token in
+    the reference sentence to calculate a similarity score between the sentences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of SelfCheckGPT, the score is calculated per sentence. Each sentence
+    of the original answer will be scored against each sentence of a given sample
+    to find the most similar sentence. These maximum similarity scores will be averaged
+    across all samples, resulting in a final hallucination score for each sentence
+    in the original answer. The final score needs to tend towards 1 for dissimilar
+    sentences and 0 for similar sentences, so we need to subtract the similarity score
+    from 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s show how this works with the first sentence of our original answer being
+    checked against the first sample:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00483d188ef30cfd8e58a5c812887998.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The maximum score for the first sample is 0.69\. Repeating the process for the
+    two remaining samples and assuming the other maximum scores were 0.72 and 0.72,
+    our final score for this sentence would be **1 — (0.69+0.72+0.72)/3 = 0.29**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using semantic similarity to verify consistency is an intuitive approach. Other
+    encoders can be used for embedding representations, so it’s also an approach that
+    can be further explored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Natural Language Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Natural language inference is the task of determining entailment, that is, whether
+    a hypothesis is true, false, or undetermined based on a premise[4]. In our case,
+    each sample is used as the premise and each sentence of the original answer is
+    used as our hypothesis. The scores across samples are averaged for each sentence
+    to obtain the final score. The entailment is performed with a Deberta model fine-tuned
+    to the Multi-NLI dataset[5]. We’ll use the normalized prediction probability instead
+    of the actual classes, such as “entailment” or “contradiction,” to compute the
+    scores.[6]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The entailment task is closer to our goal of consistency checking, so we can
+    expect that a model fine-tuned for that purpose will perform well. The author
+    also publicly shared [the model on HuggingFace](https://huggingface.co/potsawee/deberta-v3-large-mnli?ref=content.whylabs.tds),
+    and other NLI models are publicly available, making this approach very accessible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLM Prompt
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Considering we already use LLMs to generate the answers and samples, we might
+    as well use an LLM to perform the consistency check. We can query the LLM for
+    a consistency check for each original sentence and each sample as our context.
+    The image below, taken from the original paper’s repository, illustrates how this
+    is done:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d0c3428d1c9cb81ab76b5d1a1b75ec9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**SELFCHECKGPT WITH LLM PROMPT. FROM:** [**HTTPS://GITHUB.COM/POTSAWEE/SELFCHECKGPT/TREE/MAIN**](https://github.com/potsawee/selfcheckgpt/tree/main?ref=content.whylabs.ai)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final score can be computed by assigning 1 to “No”, 0 to “Yes”, 0.5 for
+    N/A, and averaging the values across samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike the other two approaches, this one incurs extra calls to the LLM of your
+    choice, meaning additional latency and, possibly, additional costs. On the other
+    hand, we can leverage the LLM’s capabilities to help us perform this check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experiments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s see what we get as results for the two examples we’ve been discussing
+    for each of the three approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbb277288b2562da66001aba60dd5e1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: These values are solely meant to illustrate the method. With only three sentences,
+    it’s not supposed to be a means to compare and determine which approach is best.
+    For that purpose, the original paper shares the experimental results on the paper’s
+    repository [here](https://github.com/potsawee/selfcheckgpt/tree/main?ref=content.whylabs.ai#experimental-results),
+    which includes additional versions that weren’t discussed in this blog post. I
+    won’t go into the details of the results, but by all three metrics (NonFact, Factual,
+    and Ranking), the LLM-Prompt is the best-performing version, closely followed
+    by the NLI version. The BERTScore version looks to be considerably worse than
+    the remaining two. Our simple examples seem to follow along the lines of the shared
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We hope this blog post helped explain the hallucination problem and provides
+    one possible solution for hallucination detection. This is a relatively new problem,
+    and it’s good to see that efforts are being made towards solving it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The discussed approach has the advantage of not requiring external context
+    (zero-resource) and also not requiring the LLM’s output probability distribution
+    (black-box). However, this comes with a cost: in addition to the original response,
+    we need to generate extra samples to perform the consistency check, increasing
+    latency and cost. The consistency check will also require additional computation
+    and language models for encoding the responses into embeddings, performing textual
+    entailment, or querying the LLM, depending on the chosen method.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] — Manakul, Potsawee, Adian Liusie, and Mark JF Gales. “Selfcheckgpt: Zero-resource
+    black-box hallucination detection for generative large language models.” arXiv
+    preprint arXiv:2303.08896 (2023).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] — JI, Ziwei et al. Survey of hallucination in natural language generation.
+    **ACM Computing Surveys**, v. 55, n. 12, p. 1–38, 2023.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] — ZHANG, Tianyi et al. Bertscore: Evaluating text generation with bert.
+    **arXiv preprint arXiv:1904.09675**, 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] — [https://nlpprogress.com/english/natural_language_inference.html](https://nlpprogress.com/english/natural_language_inference.html?ref=content.whylabs.ai)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] — Williams, A., Nangia, N., & Bowman, S. R. (2017). A broad-coverage challenge
+    corpus for sentence understanding through inference. arXiv preprint arXiv:1704.05426.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] — [https://github.com/potsawee/selfcheckgpt/tree/main#selfcheckgpt-usage-nli](https://github.com/potsawee/selfcheckgpt/tree/main#selfcheckgpt-usage-nli)'
+  prefs: []
+  type: TYPE_NORMAL

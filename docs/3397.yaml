@@ -1,0 +1,487 @@
+- en: Bayesian AB Testing with Pyro
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/bayesian-ab-testing-with-pyro-cd4daff686e1?source=collection_archive---------8-----------------------#2023-11-15](https://towardsdatascience.com/bayesian-ab-testing-with-pyro-cd4daff686e1?source=collection_archive---------8-----------------------#2023-11-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A primer in Bayesian thinking and AB testing using Pyro
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@fraserdbrown99?source=post_page-----cd4daff686e1--------------------------------)[![Fraser
+    Brown](../Images/d5f99897c571a61ed8832e5542751973.png)](https://medium.com/@fraserdbrown99?source=post_page-----cd4daff686e1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cd4daff686e1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cd4daff686e1--------------------------------)
+    [Fraser Brown](https://medium.com/@fraserdbrown99?source=post_page-----cd4daff686e1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1843b94382f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbayesian-ab-testing-with-pyro-cd4daff686e1&user=Fraser+Brown&userId=1843b94382f&source=post_page-1843b94382f----cd4daff686e1---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cd4daff686e1--------------------------------)
+    ·13 min read·Nov 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcd4daff686e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbayesian-ab-testing-with-pyro-cd4daff686e1&user=Fraser+Brown&userId=1843b94382f&source=-----cd4daff686e1---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcd4daff686e1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbayesian-ab-testing-with-pyro-cd4daff686e1&source=-----cd4daff686e1---------------------bookmark_footer-----------)![](../Images/b9404c0cdb80e4403e9849c9bfe08141.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Credit: [Free-Photos](https://pixabay.com/fr/users/free-photos-242387/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=1030852)
+    on [Pixabay](https://pixabay.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article is an introduction to AB testing using the Python probability programming
+    language (PPL) Pyro, an alternative to PyMC. The motivation for writing this article
+    was to further my understanding of Bayesian statistical inference using the Pyro
+    framework and to help others in the process. As such, feedback is welcomed and
+    encouraged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: My previous experience with Bayesian modelling in Python was with PyMC. However,
+    I have found it troublesome to work with some of the latest versions. My research
+    into other probabilistic programming languages led me to discover Pyro, a universal
+    PPL built by Uber and supported by PyTorch on the backend. The documentation for
+    both Pyro and PyTorch is linked below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://pyro.ai/?source=post_page-----cd4daff686e1--------------------------------)
+    [## Pyro'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deep Universal Probabilistic Programming
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pyro.ai](https://pyro.ai/?source=post_page-----cd4daff686e1--------------------------------)  [##
+    PyTorch documentation - PyTorch 2.1 documentation
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyTorch is an optimized tensor library for deep learning using GPUs and CPUs.
+    Features described in this documentation…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: pytorch.org](https://pytorch.org/docs/stable/index.html?source=post_page-----cd4daff686e1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whilst exploring Pyro, I found it difficult to find end-to-end tutorials for
+    AB testing using the package. This article aims to fill that gap.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article has five sections. In the first section, I will give a primer on
+    Bayesian thinking, a background in the philosophy that the methodology speaks
+    for. I will give a brief technical background on Pyro and the Bayesian methods
+    used to make our statistical inferences. Next, I will perform an AB test using
+    Pyro and discuss the results. I will then explain the case for Bayesian AB testing
+    in a business setting. The final section will summarise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Primer in Bayesian Thinking**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Bayesian process is relatively simple at a high level. First, you have a
+    variable that you are interested in. We state our current understanding of that
+    variable, which we express as a probability distribution (everything in Bayes’
+    world is a probability distribution). This is called a *prior*. Probability in
+    Bayesian inference is epistemic, meaning it arises through our degree of knowledge.
+    Thus, the probability distribution we state as our prior is as much of a statement
+    of *uncertainty*, as it is understanding. We then observe events from the real
+    world. These observations are then used to *update* our understanding of the variable
+    we are interested in. The new state of our understanding is called the *posterior*.
+    We also characterise the posterior with a probability distribution, the probability
+    of the variable we are interested in, given the data we have observed. This process
+    is illustrated in the flow diagram below, where theta is the variable we are interested
+    in and data is the outcome of the events we have observed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3225ead89cc91c8851582f819f38898f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayesian Process
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Bayesian process is actually cyclical, because we then repeat this process,
+    starting again but using our new-found knowledge after observing the world. Our
+    old posterior becomes our new prior, we observe new events and once again update
+    our understanding, becoming ‘less and less and less wrong’ as Nate Silver put
+    it in his book *The Signal and the Noise.* We continuouslyreduce our uncertainty
+    concerning the variable, converging towards a state of certainty (but we can never
+    be certain). Mathematically, this way of thinking is encapsulated by Bayes’ theorem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be8935f2bf3df8177a7ffb19dfe05953.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Bayes’ Theorem
+  prefs: []
+  type: TYPE_NORMAL
+- en: In practice, Bayes’ theorem quickly becomes computationally intractable for
+    large models across higher dimensions. There are numerous approaches to solve
+    this issue, but the method we will use today is called Markov Chain Monte Carlo,
+    or MCMC. MCMC is a class of algorithms (we will be using one called Hamiltonian
+    Monte Carlo), which draws samples from a probability distribution intelligently.
+    It is beyond the scope of this article to dive deep into this, but I will provide
+    some helpful references at the end for further reading. For now, it is sufficient
+    to know that Bayes’ theorem is too complex to be able to calculate, so we leverage
+    the power of advanced algorithms, such as MCMC to help. This article will focus
+    on MCMC using Pyro. However, Pyro does emphasise the use of Stochastic Variational
+    Inference (SVI), an approximation-based approach, which will not be covered here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**AB Testing Using Pyro**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider a company that has designed a new website landing page and wants to
+    understand the impact this will have on conversion, i.e. do visitors continue
+    their web session on the website after landing on the page? In test group A, website
+    visitors will be shown the current landing page. In test group B, website visitors
+    will be shown the new landing page. In the rest of the article, I will refer to
+    test group A as the control group, and group B as the treatment group. The business
+    is sceptical about the change and has opted for an 80/20 split in session traffic.
+    The total number of visitors and the total number of page conversions for each
+    test group are summarised below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a67d81d5f4a39335be11b2a99633af50.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Test Observations
+  prefs: []
+  type: TYPE_NORMAL
+- en: The null hypothesis of the AB test is that there will be no change in page conversion
+    for the two test groups. Under the frequentist framework, this would be expressed
+    as the following for a two-sided test, where r_c and r_t are the page conversion
+    rates in the control and treatment groups, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c854b401ebce5ba39d5ad28d56cd6c80.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Null and Alternative Hypotheses
+  prefs: []
+  type: TYPE_NORMAL
+- en: A significance test would then seek to either reject or fail to reject the null
+    hypothesis. Under the Bayesian framework, we express the null hypothesis slightly
+    differently by asserting the same *prior* for each of the test groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s pause and outline exactly what is happening during our test. The variable
+    we are interested in is the page conversion rate. This is simply calculated by
+    taking the number of distinct converted visitors over the total number of visitors.
+    The event that generates this rate is whether the visitor clicks through the page.
+    There are only two possible outcomes here for each visitor, either the visitor
+    clicks through the page and converts, or does not. Some of you might recognise
+    that for each distinct visitor, this is an example of a Bernoulli trial; there
+    is one trial and two possible outcomes. Now, when we collect a set of these Bernoulli
+    trials, we have a binomial distribution. When the random variable X has a binomial
+    distribution, we give it the following notation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1365c7af26417ec922f6c552cda0f2fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Binomial Distribution Notation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where n is the number of visitors (or the number of Bernoulli trials), and p
+    is the probability of the event on each trial. p is what we are interested in
+    here, we want to understand what the probability of a visitor converting on the
+    page is in each test group. We have observed some data, but as mentioned in the
+    previous section, we first need to define our prior. As always in Bayesian statistics,
+    we need to define this prior as a probability distribution. As mentioned before,
+    this probability distribution is a characterisation of our uncertainty. Beta distributions
+    are commonly used for modelling probabilities, as it is defined between the intervals
+    of [0,1]. Furthermore, using a beta distribution as our prior for a binomial likelihood
+    function gives us the helpful property of conjugacy, which means our posterior
+    will be generated from the same distribution as our prior. We say that the beta
+    distribution is a *conjugate* prior. A beta distribution is defined by two parameters,
+    alpha, and confusingly, beta.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2ff329a5c166acf1124b8dcf35c3a483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Beta Distribution Notation
+  prefs: []
+  type: TYPE_NORMAL
+- en: With access to historical data, we can assert an informed prior. We do not necessarily
+    need historical data, we could use our intuition to inform our understanding,
+    but for now let’s assume we have neither (later in this tutorial we will use informed
+    priors, but to demonstrate the impact, I will start with the uninformed). Let’s
+    assume we have no understanding of the conversion rate on the company’s site,
+    and therefore define our prior as Beta(1,1). This is called a flat prior. The
+    probability distribution of this function looks like the graph below, the same
+    as a uniform distribution defined between the intervals [0,1]. By asserting a
+    Beta(1,1) prior, we say that all possible values of the page conversion rate are
+    equally probable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b897406a4832fde19684cc17ed692af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Credit: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have all the information we need, the priors, and the data. Let’s jump
+    into the code. The code provided herein will provide a framework to get started
+    with AB testing using Pyro; it therefore neglects some features of the package.
+    To help optimise your code further and take full advantage of Pyro’s capabilities,
+    I recommend referring to the official documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we need to import our packages. The final line is good practice, particularly
+    when working in notebooks, clearing the store of parameters we have built up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Models in Pyro are defined as regular Python functions. This is helpful as it
+    makes it intuitive to follow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: A few things to break down and explain here. First, we have a function wrapped
+    inside an outer function, the outer function returns the partial function of the
+    inner function. This allows us to change our priors, without needing to change
+    the code. I have referred to the variables defined in the inner function as primitives,
+    think of primitives as variables in the model. We have two types of primitives
+    in the model, stochastic and observed stochastic. In Pyro, we do not have to explicitly
+    define the difference, we simply add the obs argument to the sample method when
+    it is an observed primitive and Pyro interprets it accordingly. Observed primitives
+    are contained within the context manager pyro.plate(), which is best practice
+    and makes our code look cleaner. Our stochastic primitives are our two priors,
+    characterised by Beta distributions, governed by the alpha and beta parameters
+    that we pass in from the outer function. As previously mentioned, we assert the
+    null hypothesis by defining these as equal. We then stack these two primitives
+    together using tensor.stack(), which performs an operation akin to concatenating
+    a Numpy array. This will return a tensor, the data structure required for inference
+    in Pyro. We have defined our model, now let’s move onto the inference stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As previously mentioned, this tutorial will use MCMC. The function below will
+    take the model that we have defined above and the number of samples we wish to
+    use to generate our posterior distribution as a parameter. We also pass our data
+    into the function, as we did for the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first line inside this function defines our kernel. We use the NUTS class
+    to define our kernel, which stands for No-U-Turn Sampler, an autotuning version
+    of Hamiltonian Monte Carlo. This tells Pyro how to sample from the posterior probability
+    space. Again, it is beyond the scope of this article to dive deeper into this
+    topic, but for now, it is sufficient to know that NUTS allows us to sample from
+    the probability space intelligently. The kernel is then used to initialise the
+    MCMC class on the second line, specifying it to use NUTS. We pass the number_of_samples
+    argument in the MCMC class which is the number of samples used to generate the
+    posterior distribution. We assign the initialised MCMC class to the mcmc variable
+    and call the run() method, passing our data as parameters. The function returns
+    the mcmc variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is all we need; the following code defines our data and calls the functions
+    we have just made using the Beta(1,1) prior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first element of the traffic and conversions tensors are the counts for
+    the control group, and the second element in each tensor is the counts for the
+    treatment group. We pass the model function, with the parameters to govern our
+    prior distribution, alongside the tensors we have defined. Running this code will
+    generate our posterior samples. We run the following code to extract the posterior
+    samples and pass them to a Pandas dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the column names of this dataframe are the strings we passed when we
+    defined our primitives in the model function. Each row in our dataframe contains
+    samples drawn from the posterior distribution, and each of these samples represents
+    an estimate of the page conversion rate, the probability value p that governs
+    our Binomial distribution. Now we have returned the samples, we can plot our posterior
+    distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Results**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An insightful way to visualise the results of the AB test with two test groups
+    is by a joint kernel density plot. It allows us to visualise the density of samples
+    in the probability space across both distributions. The graph below can be produced
+    from the dataframe we have just built.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2df9ebb9cab17eea7484b968bc80bf8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Credit: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The probability space contained in the graph above can be divided across its
+    diagonal, anything above the line would indicate regions where the estimation
+    of the conversion rate is higher in the treatment group than the control and vice
+    versa. As illustrated in the plot, the samples drawn from the posterior are densely
+    populated in the region which would indicate the conversion rate is higher in
+    the treatment group. It is important to highlight that the posterior distribution
+    for the treatment group is wider than the control group, reflecting a higher degree
+    of uncertainty. This is a result of observing less data in the treatment group.
+    Nevertheless, the plot strongly indicates that the treatment group has outperformed
+    the control group. By collecting an array of samples from the posterior and taking
+    the element-wise difference, we can say that the probability that the treatment
+    group outperforms the control group is 90.4%. This figure suggests that 90.4%
+    of the samples drawn from the posterior will be populated above the diagonal in
+    the joint density plot above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These results were achieved by using a flat (uninformed) prior. The use of an
+    informed prior may help improve the model, particularly when the availability
+    of observed data is limited. A helpful exercise is to explore the effects of using
+    different priors. The plot below shows the Beta(2,2) probability density function
+    and the joint plot it produces when we rerun the model. We can see that using
+    the Beta(2,2) prior produces a very similar posterior distribution for both test
+    groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/734d781ef99d44e895478e86c720d88c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Credit: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The samples drawn from the posterior suggest there is a 91.5% probability that
+    the treatment group performs better than the control. Therefore, we do believe
+    with a higher degree of certainty that the treatment group is better than the
+    control versus using a flat prior. However, in this example the difference is
+    negligible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is one other thing I would like to highlight about these results. When
+    we ran the inference, we told Pyro to generate 1000 samples from the posterior.
+    This is an arbitrary number, selecting a different number of samples can change
+    the results. To highlight the effect of increasing the number of samples, I ran
+    an AB test where the observations from the control and treatment groups were the
+    same, each with an overall conversion rate of 50%. Using a Beta(2,2) prior generates
+    the following posterior distributions as we incrementally increase the number
+    of samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09acb2be339d0b6ce5713d6a385e3eb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Credit: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we run our inference with just 10 samples, the posterior distribution for
+    the control and treatment groups are relatively wide and adopt different shapes.
+    As the number of samples that we draw increases, the distributions converge*,*
+    eventually generating nearly identical distributions. Furthermore, we observe
+    two properties of statistical distributions, the central limit theorem and the
+    law of large numbers. The central limit theorem states that the distribution of
+    sample means converges towards a normal distribution as the number of samples
+    increases, and we can see that in the plot above. Additionally, the law of large
+    numbers states that as the sample size grows, the sample mean converges towards
+    the population mean. We can see that the mean of the distributions in the bottom
+    right tile is approximately 0.5, the conversion rate observed in each of the test
+    samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Business Case for Bayesian AB Testing**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian AB testing can help elevate a business’s test and learn culture. Bayesian
+    statistical inference allows for small uplifts in the test to be detected quickly
+    as it is not reliant on long-run probabilities to draw conclusions. Test conclusions
+    can be reached faster and therefore the rate of learning increases. Bayesian AB
+    testing also allows for early stoppage of a test, if results gained through ‘peeking’
+    indicate test groups are performing significantly worse than the control then
+    the test can be stopped. Therefore, the opportunity cost of testing can be significantly
+    reduced. This is a major benefit of Bayesian AB testing; results can be constantly
+    monitored, and our posteriors constantly updated. Conversely, the early detection
+    of an uplift in the test subject can help businesses implement changes faster,
+    reducing the latency of implementing revenue-improving changes. Customer-facing
+    businesses must be able to quickly implement and analyse test results, which is
+    facilitated by the Bayesian AB testing framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article has given a brief background on Bayesian thinking and explored
+    the results of Bayesian AB testing using Pyro. I hope you have found this article
+    insightful. As mentioned in the introduction, feedback is welcomed and encouraged.
+    As promised, I have linked some further reading material below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Recommended Material**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following books provide good insight into Bayesian Inference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Signal and the Noise: The Art and Science of Prediction — Nate Silver'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*The Book of Why: The New Science of Cause and Effect* — Judea Pearl and Dana
+    Mackenzie. Although this book largely focuses on causality, chapter 3 is a worthwhile
+    read on Bayes’.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Bayesian Methods for Hackers: Probabilistic Programming and Bayesian Inference
+    —* Cameron Davidson-Pilon. This book is also available on Git, I have linked it
+    below.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](https://github.com/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers?source=post_page-----cd4daff686e1--------------------------------)
+    [## GitHub — CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers:
+    aka “Bayesian…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'aka “Bayesian Methods for Hackers”: An introduction to Bayesian methods + probabilistic
+    programming with a…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers?source=post_page-----cd4daff686e1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: These Medium articles provide detailed explanations of MCMC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/monte-carlo-markov-chain-mcmc-explained-94e3a6c8de11?source=post_page-----cd4daff686e1--------------------------------)
+    [## Monte Carlo Markov Chain (MCMC) explained'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MCMC methods are a family of algorithms that uses Markov Chains to perform Monte-Carlo
+    estimate.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/monte-carlo-markov-chain-mcmc-explained-94e3a6c8de11?source=post_page-----cd4daff686e1--------------------------------)
+    [](/bayesian-inference-problem-mcmc-and-variational-inference-25a8aa9bce29?source=post_page-----cd4daff686e1--------------------------------)
+    [## Bayesian inference problem, MCMC and variational inference
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview of the Bayesian inference problem in statistics.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/bayesian-inference-problem-mcmc-and-variational-inference-25a8aa9bce29?source=post_page-----cd4daff686e1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,451 @@
+- en: 'Leveraging qLoRA for Fine-Tuning of Task-Fine-Tuned Models Without Catastrophic
+    Forgetting: A Case Study with LLaMA2(-chat)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/leveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4?source=collection_archive---------1-----------------------#2023-09-07](https://towardsdatascience.com/leveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4?source=collection_archive---------1-----------------------#2023-09-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to infuse knowledge into purpose-fine-tuned models while keeping their
+    task-specific nature
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)[![Aris
+    Tsakpinis](../Images/2cc1101aed68e1f71a0026bfdec28f58.png)](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------)
+    [Aris Tsakpinis](https://medium.com/@aris.tsakpinis?source=post_page-----d9bcd594cff4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8ab3accce432&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&user=Aris+Tsakpinis&userId=8ab3accce432&source=post_page-8ab3accce432----d9bcd594cff4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d9bcd594cff4--------------------------------)
+    ·11 min read·Sep 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd9bcd594cff4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&user=Aris+Tsakpinis&userId=8ab3accce432&source=-----d9bcd594cff4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd9bcd594cff4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-qlora-for-fine-tuning-of-task-fine-tuned-models-without-catastrophic-forgetting-d9bcd594cff4&source=-----d9bcd594cff4---------------------bookmark_footer-----------)![](../Images/90b4a36383c72f5d33217ebfd35ebbd2.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by StableDiffusionXL on Amazon Web Services
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is this about and why is it important?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Large language models (LLMs) like Anthropic’s Claude or Meta’s LLaMA2 have demonstrated
+    impressive capabilities on a variety of natural language tasks. However, their
+    knowledge and task-specific skills remain relatively generic — if you want to
+    execute more specialized, domain-specific tasks that require explicit knowledge,
+    you need to find ways to infuse models with knowledge and teach them task-specific
+    behaviour. LLM-powered applications need to work properly in their target domain,
+    provide accurate answers instead of hallucinating, and ensure security, privacy,
+    and appropriate content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These challenges are commonly denoted as the “three Hs” of helpfulness, honesty,
+    and harmlessness. Overcoming these challenges have proved to be particularly important
+    when designing FM-powered applications of enterprise-grade quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are a few options for imparting domain knowledge into foundation models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e1ef8c600e84ed054e0de9a9eb0a3a0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Source knowledge:** You can provide knowledge dynamically through prompt
+    engineering and example-based or context-infused generation. This option comes
+    in relatively simple fashions like zero-shot or few-shot prompting. However, there
+    are also more sophisticated approaches of integrating external knowledge sources
+    evolving. Infusion of knowledge through dynamic prompt composition and hence the
+    source knowledge by sourcing information from various external “tools” (retrieval-augmented
+    generation, database retrievers, data lake retrievers, real-time systems via REST-ful
+    APIs, …) are gaining popularity.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Parametric knowledge:** You can update the model parameters directly through
+    fine-tuning. Thereby the pre-trained weights are adjusted to a smaller (compared
+    to pre-training), domain-specific dataset and hence towards a domain-specific
+    knowledge base or task.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As Heiko Hotz explains in his [blogpost](https://heiko-hotz.medium.com/rag-vs-finetuning-which-is-the-best-tool-to-boost-your-llm-application-94654b1eaba7),
+    picking the right approach (or a combination of both) comes with tradeoffs. In
+    this blog, we’ll focus on the parametric approach and demonstrate how to fine-tune
+    the LLaMA2 model using PEFT (parameter efficient fine-tuning) on Amazon SageMaker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our goal is to adapt LLaMA2 to a specific domain, picking up recent knowledge
+    to overcome the “knowledge cutoff” problem where models lack awareness of recent
+    information not being part of their training data. As opposed to task-specific
+    fine-tuning this is a much more achievable task for a lot of practitioners since
+    they can simply use text corpora containing domain-specific information as training
+    datasets as opposed to manually crafting or collecting task-specific datasets
+    like conversational or instruction datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since for a lot of relevant LLM-powered use cases task-specific models are beneficial,
+    we will also show that the proposed setup can be applied equally to models like
+    LLaMA2-chat which have already gone through a task-specific fine-tuning without
+    loosing their task-specific nature (e.g. instruction following, conversational
+    behaviour, …).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By walking through this end-to-end workflow of knowledge infusion, we provide
+    a practical guide for tuning foundation models to your specific needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The LLaMA2 models was released in July 2023 together with a [research publication](https://scontent.fham6-1.fna.fbcdn.net/v/t39.2365-6/10000000_662098952474184_2584067087619170692_n.pdf?_nc_cat=105&ccb=1-7&_nc_sid=3c67a6&_nc_ohc=Vldy0tYq-X8AX9NLDca&_nc_ht=scontent.fham6-1.fna&oh=00_AfAiZlF_VS1P3n26xqkC3133VVTndBLCZOGyrxkEryDsIw&oe=64F5C5FF).
+    In the paper Touvron et al. state that LLaMA2 is “a collection of pre-trained
+    and fine-tuned large language models (LLMs) ranging in scale from 7 billion to
+    70 billion parameters. Our fine-tuned LLMs, called Llama 2-Chat, are optimised
+    for dialogue use cases. Our models outperform open-source chat models on most
+    benchmarks we tested, and based on our human evaluations for helpfulness and safety,
+    may be a suitable substitute for closedsource models.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As stated, the LLaMA2 models come in three sizes: 7B, 13B and 70B. They are
+    available as pure completion models as well as optimised for dialog use cases.
+    Pre-trained with roughly 2 Trillion tokens, they support context lengths of up
+    to 4096 tokens. The fine-tuning for dialog use cases was carried out with over
+    100k examples and further optimised with over 1M training samples representing
+    human preference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Within AWS the LLaMA2 models can be deployed as easy as with one click through
+    [SageMaker JumpStart](https://aws.amazon.com/blogs/machine-learning/llama-2-foundation-models-from-meta-are-now-available-in-amazon-sagemaker-jumpstart/)
+    or sourced from the HuggingFace model hub via the [AWSxHuggingFace LLM DLC](https://www.philschmid.de/sagemaker-llama-llm).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Fine-tuning leverages transfer learning to efficiently inject niche expertise
+    into a foundation model like LLaMA2\. The process involves updating the model’s
+    weights through continued pre-training on domain-specific data, while keeping
+    the overall network architecture unchanged. Unlike full pre-training which requires
+    massive datasets and compute, fine-tuning is highly sample and compute efficient.
+    Parameter-efficient fine-tuning (PEFT) techniques, such as (q)LoRA approach, enable
+    light-weight infusion of specialty knowledge into a general language model like
+    LLaMA2 with minimal overhead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When speaking about fine-tuning, two different approaches are possible:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By fine-tuning LLaMA2’s decoder-only architecture on domain-specific corpora
+    using its native auto-regressive causal language modeling (CLM) approach, we can
+    inject niche expertise or specific language or vocabulary (e.g. medical research
+    terminology/speech) into the LLM while retaining its general linguistic capabilities.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: On the other hand, through using task-specific corpora a model can be fine-tuned
+    towards a specific task, e.g. instruction following or conversational behaviour.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The models utilise a self-supervised training approach optimizing towards a
+    language modelling (LM) specific loss function. Decoder-only models like LLaMA2
+    are tied towards a Causal Language Modelling (CLM) approach with a uni-directional
+    context. In simple words this means that they are trained towards predicting the
+    subsequent token in an auto-regressive manner based on the previous ones as semantic
+    context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned above, [PEFT](https://arxiv.org/abs/2205.05638) techniques enable
+    light-weight infusion of specialty knowledge into a an LLM with minimal overhead
+    since only a subset of the model parameters is updated. Approaches Low-Rank Adaptation
+    ([LoRA](https://arxiv.org/abs/2106.09685)) or Quantized Low-Rank Adaptation ([QLoRA](https://arxiv.org/abs/2305.14314))
+    freeze the pre-trained model weights and inject trainable rank decomposition matrices
+    into each layer of the Transformer architecture, greatly reducing the number of
+    trainable parameters for downstream tasks. If you want to dive deeper into LoRA
+    I recommend checking out Mariano Kamp’s [blogpost](https://medium.com/towards-data-science/dive-into-lora-adapters-38f4da488ede).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scenario
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'On July 26th, AWS announced various features around the field of generative
+    AI at AWS summit NYC. To share additional details several announcement blogposts
+    were published:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Agents for Amazon Bedrock](https://aws.amazon.com/blogs/aws/preview-enable-foundation-models-to-complete-tasks-with-agents-for-amazon-bedrock/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [AWS entity resolution match](https://aws.amazon.com/blogs/aws/aws-entity-resolution-match-and-link-related-records-from-multiple-applications-and-data-stores/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Role of vectorstores in generative AI applications](https://aws.amazon.com/blogs/database/the-role-of-vector-datastores-in-generative-ai-applications/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Vector engine for Amazon OpenSearch Serverless](https://aws.amazon.com/blogs/big-data/introducing-the-vector-engine-for-amazon-opensearch-serverless-now-in-preview/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [AWS Glue Studio notebook powered by Amazon CodeWhisperer](https://aws.amazon.com/blogs/big-data/build-data-integration-jobs-with-ai-companion-on-aws-glue-studio-notebook-powered-by-amazon-codewhisperer/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Amazon EC2 P5](https://aws.amazon.com/blogs/aws/new-amazon-ec2-p5-instances-powered-by-nvidia-h100-tensor-core-gpus-for-accelerating-generative-ai-and-hpc-applications/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering LLaMA2’s knowledge cutoff date unfortunately this model in its pure
+    form will not be able to provide any information on these announcements. We want
+    to change this through leveraging fine-tuning to infuse this knowledge into the
+    Foundation Model (FM) and elevate its knowledge to be able to do so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are not aiming to fine-tune the model towards a specific task but simply
+    want to ingest domain-specific knowledge, we can go with a classic CLM-based approach
+    (Option 1 in previous section). Philipp Schmid describes in his very comprehensive
+    [blog](https://www.philschmid.de/sagemaker-llama2-qlora) how to fine-tune LLaMA2
+    models with QLoRA, however focussing on task-specific (instruction) fine-tuning.
+    We will take his code samples shared with the blogpost as a starting point and
+    adjust the code accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be responsible with resource consumption we will conduct the fine-tuning
+    for the LLaMA2–13b and LLaMA2–13b-chat models. Fine-tuning the 7b as well as 70b
+    versions will work accordingly with adjusted training cluster configuration (see
+    in Philipp’s [blog](https://www.philschmid.de/sagemaker-llama2-qlora)). After
+    the fine-tuning itself we will deploy the base models alongside with the fine-tuned
+    models and do a high-level performance comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Subsequently we will do a step-by-step walkthrough through the single steps
+    of fine-tuning the models. If you want to access the full code repository you
+    can find it [here](https://github.com/aristsakpinis93/finetuning-llama2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data loading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For data loading we use LangChain’s WebBaseLoader to load an array of websites
+    identified by their URL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Licensing aggreement & HuggingFace login
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/4e728c608f6173d34d09c784adb7f15e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Accepting licensing agreement for LLaMA2 models
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we can start with data preparation and training, we need to accept the
+    license agreement of the LLaMA2 models. This includes a registration on the Meta
+    website with the email address matching your HuggingFace account one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we authenticate with the HuggingFace hub from our runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data preparation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, we do some preprocessing on the raw websites. In a real-world use case
+    more emphasis could be put into this stage. For demo purposes we stick to simply
+    striping all larger concatenations of spaces so we get a cohesive and fluent text
+    corpus. Then we load the list of docs into a HuggingFace Dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next step we are tokenising our text corpus to make it digestible for
+    the LLM. Therefor we use the LLaMA2 tokeniser loaded from the HuggingFace hub.
+    After being batched up according to the context window of the model (2048 tokens)
+    the loaded tokenizer can be used for tokenization of the created batches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we save the dataset on S3 for usage within a training job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we can trigger an Amazon SageMaker training job for executing a CLM-tied
+    QLoRA fine-tuning script based on the preprocessed data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The hyperparameters and training script is adapted from Philipp’s blogpost.
+    The only exception is the number of training epochs executed, where with 20 we
+    choose a relatively high amount of epochs. This is to account for the fact that
+    our training dataset is rather small (~32k tokens). In real world use cases fine-tuning
+    with larger datasets is advised. The training script itself can be found [here](https://github.com/aristsakpinis93/finetuning-llama2/blob/main/scripts/run_clm.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Please also note: Since the accepted model license agreement is tied to your
+    HuggingFace account, we need to specify a HuggingFace access token.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The training job configuration, e.g. training cluster configuration was adapted
+    from Philipp’s blogpost as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can then execute the training job, which will perform the fine-tuning and
+    save our model artefacts into S3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deployment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The two base models LLaMA2–13b and LLaMA2–13b-chat can be conveniently deployed
+    via SageMaker JumpStart. This [blogpost](https://aws.amazon.com/blogs/machine-learning/llama-2-foundation-models-from-meta-are-now-available-in-amazon-sagemaker-jumpstart/)
+    provides detailed instructions on this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two fine-tuned models can be deployed as by using the AWSxHuggingFace LLM
+    DLC. Therefor we point the model_data parameter of the HuggingFaceModel class
+    to the s3 path of the model artefacts. Then we can point the environment variable
+    HF_MODEL_ID set in the hosting container to the default model path within a DLC
+    (“/opt/ml/model”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'After having deployed all four models we want to test the performance on an
+    example question. The announcement [blogpost](https://aws.amazon.com/blogs/aws/new-amazon-ec2-p5-instances-powered-by-nvidia-h100-tensor-core-gpus-for-accelerating-generative-ai-and-hpc-applications/)
+    on Amazon EC2 P5 instances states: “P5 instances provide 8 x NVIDIA H100 Tensor
+    Core GPUs with 640 GB of high bandwidth GPU memory, 3rd Gen AMD EPYC processors,
+    2 TB of system memory, and 30 TB of local NVMe storage. P5 instances also provide
+    3200 Gbps of aggregate network bandwidth with support for GPUDirect RDMA, enabling
+    lower latency and efficient scale-out performance by bypassing the CPU on internode
+    communication.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We frame the following question: “What are Amazon EC2 P5 instances? Which kind
+    of GPUs are they equipped with?” The chat models answer as follows with an inference
+    configuration of max_new_tokens = 200, top_p = 0.9, temperature = 0.01:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LLaMA2–13b-chat: “*Amazon Elastic Compute Cloud (EC2) P5 instances are a type
+    of instance that provides high-performance computing resources for applications
+    that require intense computational power. These instances are equipped with NVIDIA
+    Tesla V100 GPUs, which are designed for machine learning, scientific simulations,
+    and other high-performance computing workloads.\n\nThe NVIDIA Tesla V100 GPUs
+    in P5 instances are based on the Volta architecture and offer a number of features
+    that make them well-suited for demanding workloads, including:\n\n* 5120 CUDA
+    cores for high-performance computing\n* 640 tensor cores for accelerating deep
+    learning and other matrix-based workloads\n* 16 GB of GDDR6 memory for fast data
+    transfer and processing\n* Support for NVIDIA’s GPU-accelerated libraries and
+    frameworks, such as CU…*”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'LLaMA2–13b-chat-nyc-finetuned: “*Amazon EC2 P5 instances are general-purpose
+    instances that provide extreme performance for applications that require heavy
+    graphics processing and complex machine learning (ML) models. They are powered
+    by NVIDIA H100 Tensor Core GPUs and third- generation AMD EPYC processors. The
+    H100 GPUs provide 640 GB of high bandwidth GPU memory, enabling you to run your
+    most demanding applications with massive datasets in real time. P5 instances also
+    provide 2000 GB of high-speed CPU memory, allowing you to process vast amounts
+    of data in memory without having to access disk storage. This reduces the processing
+    time and improves response time. You can use these instances for applications
+    such as computer vision, video encoding, genome analysis, and language model training.*”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can clearly see that while the base model hallucinates about the GPU type
+    (V100) the fine-tuned model provides us with the correct answer (H100). We also
+    see that through qLoRA we can preserve the chat-finetuned nature of the base model
+    and hence mitigate catastrophic forgetting. This means that we can infuse knowledge
+    into a LLM without having to do a fully fledged instruction/chat-fine-tuning afterwards
+    by just using a respectively task-fine-tuned model as base model. The reason why
+    this works is the nature of LoRA where large parts of every layer of the neural
+    network stay untouched while the layers are extended.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the pure completion version of the models we need to rephrase the question
+    since these models are not capable to understand instructions or behave in a conversational
+    manner. Instead they are simply completing token sequences through auto-regressive
+    next token prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We frame the following question: “Amazon EC2 P5 instances are equipped with
+    GPUs of the type” The completion models answer as follows with an inference configuration
+    of max_new_tokens = 200, top_p = 0.9, temperature = 0.01:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LLaMA2–13b: “*NVIDIA Tesla V100.\nThe NVIDIA Tesla V100 is a GPU that is designed
+    for high-performance computing. It is based on the NVIDIA Volta architecture and
+    is equipped with 32GB of HBM2 memory. The V100 is capable of delivering up to
+    100 teraflops of performance and is designed for use in data centers and supercomputers.\nThe
+    NVIDIA Tesla V100 is a powerful GPU that is designed for high-performance computing.
+    It is based on the NVIDIA Volta architecture and is equipped with 32GB of HBM2
+    memory. The V100 is capable of delivering up to 100 teraflops of performance and
+    is designed for use in data centers and supercomputers.\nThe NVIDIA Tesla V1…*”'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: LLaMA2–13b-nyc-finetuned:“*NVIDIA A100 for compute-intensive workloads, such
+    as generative AI, high performance computing (HPC), and data analytics. P5 instances
+    are ideal for training and running inference in models with trillions of parameters
+    and for performing data analysis on vast datasets. They provide 8 times the GPU
+    memory and 64 times the compute performance in floating point operations (FLOPs)
+    compared to P4 instances.\nYou can use P5 instances in Amazon Elastic Container
+    Service (ECS) with the most common container tools and frameworks, such as Docker,
+    PyTorch, TensorFlow, Jupyter Notebook, R Studio, and Venv, or you can use P5 instances
+    via Amazon Elastic MapReduce (EMR) or Amazon DeepSense with ML and AI frameworks
+    and tools provided by Amazon, or by other companies. To make it easier to build
+    generative AI applications on P5 instances,…*”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While fine-tuning the chat-finetuned model with this small amount of data has
+    led to elimination of the model’s halluzination with the base LLaMA2 model this
+    does not seem to work in our setup. This might be because of the limited size
+    of our fine-tuning dataset. Also, more sophisticated prompt engineering and optimising
+    the inference configuration parameter setup could be helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In conclusion, this blog post delves into the critical process of infusing domain-specific
+    knowledge into large language models (LLMs) like LLaMA2, emphasizing the importance
+    of addressing challenges related to helpfulness, honesty, and harmlessness when
+    designing LLM-powered applications for enterprise-grade quality. The primary focus
+    here is on the parametric approach to fine-tuning, which efficiently injects niche
+    expertise into foundation models without compromising their general linguistic
+    capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The blog highlights the steps involved in fine-tuning LLaMA2 using parameter-efficient
+    fine-tuning techniques, such as the qLoRA approach, and how this process can be
+    conducted on Amazon SageMaker. By adopting this approach, practitioners can adapt
+    LLaMA2 to specific domains, ensuring that the models remain up-to-date with recent
+    knowledge even beyond their original training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The article also underscores the versatility of this approach, showing that
+    it can be applied to models like LLaMA2-chat, which have already undergone task-specific
+    fine-tuning. This opens up opportunities to infuse knowledge into LLMs without
+    the need for extensive instruction or chat-based fine-tuning, preserving their
+    task-specific nature.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,221 @@
+- en: How to Optimize Your DL Data-Input Pipeline with a Custom PyTorch Operator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206?source=collection_archive---------5-----------------------#2023-08-31](https://towardsdatascience.com/how-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206?source=collection_archive---------5-----------------------#2023-08-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PyTorch Model Performance Analysis and Optimization — Part 5
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----7f8ea2da5206--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----7f8ea2da5206--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7f8ea2da5206--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7f8ea2da5206--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----7f8ea2da5206--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----7f8ea2da5206---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7f8ea2da5206--------------------------------)
+    ·6 min read·Aug 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7f8ea2da5206&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206&user=Chaim+Rand&userId=9440b37e27fe&source=-----7f8ea2da5206---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7f8ea2da5206&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206&source=-----7f8ea2da5206---------------------bookmark_footer-----------)![](../Images/d20cad6621d94c0422ef9d63e6038ade.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Alexander Grey](https://unsplash.com/@sharonmccutcheon?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post is the fifth in a series of posts on the topic of performance analysis
+    and optimization of GPU-based PyTorch workloads and a direct sequel to [part four](https://medium.com/towards-data-science/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9).
+    In part four, we demonstrated how [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    and [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    can be used to identify, analyze, and address performance bottlenecks in the data
+    pre-processing pipeline of a DL training workload. In this post we discuss PyTorch’s
+    support for [creating custom operators](https://pytorch.org/tutorials/advanced/cpp_extension.html)
+    and demonstrate how it enables us to solve performance bottlenecks on the data
+    input pipeline, accelerate DL workloads, and reduce the cost of training. Thanks
+    go to [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/) and
+    [Gilad Wasserman](https://www.linkedin.com/in/gilad-wasserman-992530268/?originalSubdomain=il)
+    for their contributions to this post. The code associated with this post can be
+    found in [this GitHub repository](https://github.com/czmrand/jpeg-decode-and-crop/tree/main).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building PyTorch Extensions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: PyTorch offers a number of ways for creating customized operations including
+    [extending torch.nn](https://pytorch.org/docs/master/notes/extending.html#extending-torch-nn)
+    with custom [Modules](https://pytorch.org/docs/master/generated/torch.nn.Module.html#torch.nn.Module)
+    and/or [Functions](https://pytorch.org/docs/master/autograd.html#function). In
+    this post we are interested in PyTorch’s support for integrating customized C++
+    code. This capability is important due to the fact that some operations can be
+    implemented (much) more efficiently and/or easily in C++ than in Python. Using
+    designated PyTorch utilities, such as [CppExtension](https://pytorch.org/docs/stable/cpp_extension.html),
+    these operations can be easily included as “extensions” to PyTorch without needing
+    to pull and recompile the entire PyTorch code base. For more on the motivation
+    behind this feature and details of how to use it, please see [the official PyTorch
+    tutorial on custom C++ and CUDA extensions](https://pytorch.org/tutorials/advanced/cpp_extension.html).
+    Since our interest in this post is to accelerate the CPU-based data pre-processing
+    pipeline, we will suffice with a C++ extension and not require CUDA code. In a
+    future post we hope to demonstrate how to use this functionality to implement
+    a custom CUDA extension in order to accelerate training code running on the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In our [previous post](/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9#7fbd-af822198c08)
+    we defined a data input pipeline that started with decoding a *533*x*800* JPEG
+    image and then extracting a random *256*x*256* crop which, following a few additional
+    transformations, is fed into the training loop. We used [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    and [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    to measure the time associated with loading the image from file and **acknowledged
+    the wastefulness of decoding.** For the sake of completeness, we copy in the code
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Recall from our previous post that the optimized average step time we reached
+    was **0.72 seconds**. Presumably, were we able to decode only the crop in which
+    we were interested, our pipeline would have run faster. Unfortunately, as of the
+    time of this writing PyTorch does not include a function that supported this.
+    However, using the tools for custom-op creation, we can define and implement our
+    own function!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Custom JPEG-Image-Decode-and-Crop Function
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The [libjpeg-turbo](https://libjpeg-turbo.org/) library is a JPEG image codec
+    that includes a number of enhancements and optimizations compared to [libjpeg](http://www.ijg.org/).
+    In particular, [libjpeg-turbo](https://libjpeg-turbo.org/) includes a number of
+    functions that enable us to decode only a predefined crop within an image such
+    as *jpeg_skip_scanlines* and *jpeg_crop_scanline*. If you are running in a conda
+    environment you can install with the following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that [libjpeg-turbo](https://libjpeg-turbo.org/) comes pre-installed in
+    the official [AWS PyTorch 2.0 Deep Learning Docker image](https://github.com/aws/deep-learning-containers)
+    that we will use in our experiments below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the code block below we modify the [*decode_jpeg*](https://github.com/pytorch/vision/blob/release/0.15/torchvision/csrc/io/image/cpu/decode_jpeg.cpp#L72)
+    function of [torchvision 0.15](https://pytorch.org/vision/stable/index.html) to
+    decode and return a requested crop from an input JPEG encoded image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The full C++ file can be found [here](https://github.com/czmrand/jpeg-decode-and-crop/blob/main/custom_op/decode_and_crop_jpeg.cpp).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section, we will follow the steps in the PyTorch tutorial in order
+    to convert this into a PyTorch operator that we can use in our pre-processing
+    pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying a PyTorch Extension
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As described in the [PyTorch tutorial](https://pytorch.org/tutorials/advanced/cpp_extension.html),
+    there are different ways of deploying a custom operator. There are a number of
+    considerations that might factor into your deployment design. Here are a few examples
+    of what we find important:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Just in time compilation**: In order to ensure that our C++ extension is
+    compiled against the same version of PyTorch that we train with, we program our
+    deployment script to compile the code right before training **within the training
+    environment**.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Multi-process support**: The deployment script must support the possibility
+    that our C++ extension will be loaded from multiple processes (e.g., multiple
+    DataLoader workers).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Managed-training support**: Since we often train in managed training environments
+    (such as [Amazon SageMaker](https://aws.amazon.com/sagemaker/)) we require that
+    the deployment script support this option. (See [here](/customizing-your-cloud-based-machine-learning-training-environment-part-1-2622e10ed65a)
+    for more on the topic of customizing a managed training environment.)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the code block below we define a simple *setup.py* script that compiles and
+    installs our custom function, as described [here](https://pytorch.org/tutorials/advanced/cpp_extension.html#building-with-setuptools).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We place our C++ file and the *setup.py* script in a folder named *custom_op*
+    and define an *__init__.py* that ensures that the setup script is run a single
+    time and by a single process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Last, we revise our data input pipeline to use our newly created customized
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Following the optimization we have described, our step time drops to 0.48 seconds
+    (from 0.72) for a 50% performance boost! Naturally, the impact of our optimization
+    is directly related to the size of the raw JPEG images and our choice of crop
+    size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Bottlenecks in the data pre-processing pipeline are common occurrences that
+    can cause GPU starvation and slow down training. Given the potential cost implications,
+    it is imperative that you have a variety of tools and techniques for analyzing
+    and solving them. In this post we have reviewed the option of optimizing the data
+    input pipeline by creating a custom C++ PyTorch extension, demonstrated its ease
+    of use, and shown its potential impact. Of course, the potential gains from this
+    kind of optimization mechanism will vary greatly based on the project and the
+    details of the performance bottleneck.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The optimization technique discussed here joins a wide range of input pipeline
+    optimization methods we have discussed in many of our blog posts. We encourage
+    you to check them out (e.g., starting [here](/cloud-ml-performance-checklist-caa51e798002)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What Next?** In [part 6](https://chaimrand.medium.com/pytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b)
+    of our series on performance analysis and optimization in PyTorch, we explore
+    one of the more complicated types of performance issues to analyze — a bottleneck
+    in the backward-propagation pass of a training step.'
+  prefs: []
+  type: TYPE_NORMAL

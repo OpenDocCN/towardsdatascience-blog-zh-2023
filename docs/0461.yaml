@@ -1,0 +1,337 @@
+- en: SHAP for Time Series Event Detection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/shap-for-time-series-event-detection-5b4d9d0f96f4?source=collection_archive---------2-----------------------#2023-02-01](https://towardsdatascience.com/shap-for-time-series-event-detection-5b4d9d0f96f4?source=collection_archive---------2-----------------------#2023-02-01)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/b724a3e58b563f104352ce857ee365b2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Luke Chesser](https://unsplash.com/@lukechesser?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a modified KernelSHAP for time-series event detection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)[![Nakul
+    Upadhya](../Images/336cb21272e9b1f098177adbde50e92e.png)](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------)
+    [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----5b4d9d0f96f4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-for-time-series-event-detection-5b4d9d0f96f4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----5b4d9d0f96f4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5b4d9d0f96f4--------------------------------)
+    ·8 min read·Feb 1, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5b4d9d0f96f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-for-time-series-event-detection-5b4d9d0f96f4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----5b4d9d0f96f4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5b4d9d0f96f4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fshap-for-time-series-event-detection-5b4d9d0f96f4&source=-----5b4d9d0f96f4---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature importance is a widespread technique used to explain how machine learning
+    models make their predictions. The technique assigns a score or weight to each
+    feature, indicating how much that feature contributes to the prediction. The scores
+    can be used to identify the most important features and to understand how the
+    model is making its predictions. One frequently used version of this is Shapley
+    values, a model-agnostic metric based on game theory that distributes the “payout”
+    (the prediction) fairly among the features [1]. One extension for Shapley values
+    is KernelSHAP which uses a kernel trick along with local-surrogate models to approximate
+    the value of the Shapley values, which allows it to compute feature importance
+    values for more complex models such as Neural Networks [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'KernelSHAP is often applied to explain time-series predictions, but it does
+    come with some significant constraints and drawbacks in this domain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series prediction often involves large windows of past data, and this can
+    cause computation numerical underflow errors when applying KernelSHAP, especially
+    in multivariate time-series prediction [3].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: KernelSHAP *assumes feature independence*. This can often work in tabular data
+    cases, but feature and time-step independence is an exception rather than the
+    norm in time series [3].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: KernelSHAP uses coefficients of a linear model that has been fit to perturbations
+    of data. In the time-series case, however, a [Vector AutoRegressive model](https://online.stat.psu.edu/stat510/lesson/11/11.2)
+    (VAR) is often more apt to model a process instead of just a linear model [3].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To fix these issues, researchers at J.P. Morgan’s AI Research division (Villani
+    et al.) proposed variations of KernelSHAP that are more suited to time series
+    data in [their October 2022 paper](https://arxiv.org/abs/2210.02176) [3]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The researchers first created VARSHAP, a KernelSHAP alteration that uses VAR
+    Models instead of a linear model. This modification makes it The researchers also
+    calculated a closed-form method to calculate SHAP values for AR, MA, ARMA, and
+    VARMAX models.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Along with VARSHAP as the basis, the researchers proposed **Time-Consistent
+    SHAP** which leverages the temporal component of the problem to reduce the computation
+    of SHAP values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using the Time Consistent SHAP measure, the researchers showcased a promising
+    method for event detection by capturing surges of feature importance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I will first explain how KernelSHAP is calculated and how to modify
+    it for VARSHAP. I will then also explain how to get Time-Consistent SHAP (TC-SHAP)
+    and how to use TC-SHAP to identify events in time-series analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KernelSHAP and VARMAX
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The formula of the SHAP value as provided by [2] is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f9ecd2f80d685b3f98f13e44edd99ff4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Equation 1: SHAP equation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where the *phi* in the equation above is the SHAP value of feature *i* given
+    the value function *v (*the value function is usually the model predictions)*.
+    C* is the set of all features and *N* is the size of *C*, or the number of features.
+    *P(C)* is the powerset of all features without feature *i. Delta(S, i)* is the
+    change in prediction feature *i* causes when added to the feature coalition *S*
+    (which is a set within the powerset C).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The equation summarizes down to “add the weighted marginal contribution of feature
+    *i* to each possible coalition of features that doesn’t include *i*”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The issue that KernelSHAP handles is that this computation can get incredibly
+    large as the powerset size scales exponentially with the number of features. The
+    KernelSHAP is calculated by solving the following problem:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17eb1f2a73502b7de52804ec1bb1f7db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Equation 2: KernelSHAP Equation [3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Where *h_x* is a masking function that is applied on *z*, a binary vector sampled
+    from a set *Z* which represents the collection of all possible coalitions of features.
+    This function maps the coalition represented by *z* to a masked data point which
+    is then put into our model (*f_theta*). The goal is to find the best Linear Model
+    (*g*) that estimates the model performance across all the masks. The weights in
+    the linear model are the KernelSHAP values. This is all possible due to a combinatorial
+    kernel defined by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c7457679f8cf49d01d1ebe3a1a20825.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Equation 3: Combinatorial Kernel [3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To instead calculate VARSHAP, simply replace the linear representation of g
+    with a VAR model. According to the authors, since both the coefficients of a linear
+    model and a VAR model are estimated through Ordinary Least Squares, all the math
+    for KernelSHAP holds, and becomes more representative for a time series [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time Consistent SHAP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As mentioned before, SHAP is a method that interprets the features of a model
+    as players in a game and uses Shapley values to find fair allocations of rewards.
+    However, for games that develop over time, these allocations may not provide enough
+    incentive for all parties to pursue the initial goal. To avoid this, game theorists
+    use imputation schedules and the concept of time consistency to manage incentives
+    across time [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: This idea of competing interests through time extends to features as well, as
+    the traditional SHAP methods consider the same feature at a different time step
+    as a different player in the game. According to the authors, we can potentially
+    bridge this gap by adding time consistency [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The time consistency of SHAP values can be presented as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17aa3efbd08190231e322409304921c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Equation 4: The time consistency of Shapley Values [3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this equation, *beta* represents an imputation schedule of payments made
+    to player (feature) *i* across *t* time steps and *phi(0,i)* is the total value
+    that the player contributes to the game (prediction). Think of this as similar
+    to a business partnership.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each individual (AKA the feature) pays an initial amount into the startup fund(which
+    is phi at time step 0). Then in future time steps, the individual is periodically
+    paid returns as they contribute more to the business outcomes (AKA the end prediction).
+    These payouts also disincentive any individual from acting against the business
+    interests. By framing the problem this way, TC-SHAP works much better in the context
+    of time series since now **the different time steps of a feature are modeled as
+    one entity instead of as separate players.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To use these in practice, the following steps can be taken:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute the total SHAP contribution of each feature (*phi* at time step 0) by
+    masking the feature by replacing the feature with either zeros or the feature
+    average. Repeat this for all features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then we need to compute the “subgame SHAPs” for each time step in our window
+    (*t-w*). This is done by changing the masking mechanism in Equation 2 so that
+    instead of only masking the time-step (*t-w*), we instead mask all the time steps
+    between *t-w* and *t (*again with either zeros or the mean).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then we simply calculate the imputation schedule using equations 4 and 5.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/78d5b69ac8c0bc2065ad6a962d6cb522.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Equation 5: Imputation schedule [3]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 1 calculates the “initial investment”. Step 2 then enforces the idea that
+    we have *N* features across multiple timesteps (*W*) instead of having *N*W* features.
+    Step 3 wraps it all together by providing the imputation schedule (or the periodic
+    returns of each “investor”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This procedure also has the benefit of reducing the number of computations from
+    2*^(N*W)* to *W**2^*N* where *W* is the number of timesteps used for predictions
+    and *N* is the number of features [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once calculated, we can interpret the TC SHAP values as “how, at a given time
+    step, the evolution of features will affect the coalition of other feature trajectories.”
+    In simpler terms, TC SHAP represents how a feature at a given time step changes
+    how other features contribute together in future time steps. The feature-timestep
+    points that heavily impact future collaboration will by definition heavily impact
+    the end predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Event Detection with TC SHAP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While getting the importance of a given time step for a single prediction is
+    useful, time series analysis often involves analyzing multiple predictions and
+    patterns and we may want to know what some influential time steps are overall
+    in the model’s prediction [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: According to the authors, we can find the influential time step by adding up
+    the TC SHAP values for a given set of predictions (or all predictions if we want
+    a global event detection mechanism). By plotting this out, we can then easily
+    see which time steps are important and where some important events may have happened
+    [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors demonstrate the effectiveness of this approach with the [Individual
+    Household Electricity dataset](https://archive.ics.uci.edu/ml/datasets/individual+household+electric+power+consumption).
+    The authors trained an LSTM network followed by a dense layer to predict power
+    consumption. They then calculated the TC-SHAP values and summed them up to get
+    the event detection convolutions. They then overlayed the convolutions onto the
+    target time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44b6f699d06a608a4d99267fc68f4a3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Event Detection Convolution (Blue) for Sub-Metering 2 and 3 compared
+    to the target (Figure from [3])'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in Figure 1, the large shifts in the target variables can be explained
+    by large spikes in the event convolutions. For example, there is a large spike
+    in the event convolution for sub_metering_2 right after time-step 25\. This was
+    then followed by a large drop in the target soon after. Similarly, a large drop
+    in the event convolution was followed by a large drop in the target around time
+    step 75 in sub_metering_3\. Most of the large shifts can be explained by some
+    sub-meter shifts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The modifications to KernelSHAP fill a large hole in the current work. Apart
+    from this, there is not a large amount of work in developing post-hoc interpretability
+    methods that specifically address time series feature importance. TC-SHAP helps
+    tackle this issue and is sorely needed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are some concerns and further work needed around this new method, however.
+    One such concern (that the author also addresses) is the significant difference
+    in the explanations between VARSHAP and TC-SHAP, indicating that more work is
+    needed to examine the exact interpretation of these values. Additionally, while
+    TC-SHAP in theory overcomes the independence issue, more experimentation is necessary
+    to fully confirm this claim.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, model-agnostic methods in general can be misleading as they can
+    only provide an estimation of importance, but not the true importance. However,
+    for most use cases this rough evaluation is enough, and having a method that addresses
+    temporal dependencies is incredibly useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources and References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'SHAP Package for Python: [https://shap.readthedocs.io/en/latest/index.html](https://shap.readthedocs.io/en/latest/index.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'A more in-depth explanation of Kernel SHAP: [https://christophm.github.io/interpretable-ml-book/shap.html#kernelshap](https://christophm.github.io/interpretable-ml-book/shap.html#kernelshap)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**References**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] L. Shapley. [A value for n-person games.](https://books.google.ca/books?hl=en&lr=&id=Pd3TCwAAQBAJ&oi=fnd&pg=PA307&dq=A+value+for+n-person+games.&ots=gtuWLb6iq-&sig=dm0WHMP9kzTY8kx6J75CLsf82wk#v=onepage&q=A%20value%20for%20n-person%20games.&f=false)
+    (1953). Contributions to the Theory of Games 2.28.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] S.M. Lundberg, S-I. Lee. [A Unified Approach to Interpreting Model Predictions.](https://arxiv.org/abs/1705.07874)
+    (2017). Advances in Neural Information Processing Systems, 30.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] M. Villani, J. Lockhart, D. Magazzeni. [Feature Importance for Time Series
+    Data: Improving KernelSHAP](https://arxiv.org/abs/2210.02176) (2022). ICAIF Workshop
+    on Explainable Artificial Intelligence in Finance'
+  prefs: []
+  type: TYPE_NORMAL

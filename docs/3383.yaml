@@ -1,0 +1,438 @@
+- en: Domain Adaptation of A Large Language Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/domain-adaptation-of-a-large-language-model-2692ed59f180?source=collection_archive---------5-----------------------#2023-11-14](https://towardsdatascience.com/domain-adaptation-of-a-large-language-model-2692ed59f180?source=collection_archive---------5-----------------------#2023-11-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Adapt a pre-trained model to a new domain using HuggingFace
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)[![Mina
+    Ghashami](../Images/745f53b94f5667a485299b49913c7a21.png)](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------)
+    [Mina Ghashami](https://medium.com/@mina.ghashami?source=post_page-----2692ed59f180--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc99ed9ed7b9a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=post_page-c99ed9ed7b9a----2692ed59f180---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2692ed59f180--------------------------------)
+    ·13 min read·Nov 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2692ed59f180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&user=Mina+Ghashami&userId=c99ed9ed7b9a&source=-----2692ed59f180---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2692ed59f180&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdomain-adaptation-of-a-large-language-model-2692ed59f180&source=-----2692ed59f180---------------------bookmark_footer-----------)![](../Images/dcd659ece26bd7d235dacf241d80c574.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image from [unsplash](https://unsplash.com/photos/a-pink-flower-in-the-middle-of-a-cactus-TyRP_UH7I_0)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language models (LLMs) like BERT are usually pre-trained on general domain
+    corpora like Wikipedia and BookCorpus. If we apply them to more specialized domains
+    like medical, there is often a drop in performance compared to models *adapted*
+    for those domains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will explore how to adapt a pre-trained LLM like Deberta
+    base to medical domain using the HuggingFace Transformers library. Specifically,
+    we will cover an effective technique called intermediate pre-training where we
+    do further pre-training of the LLM on data from our target domain. This adapts
+    the model to the new domain, and improves its performance.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This is a simple yet effective technique to tune LLMs to your domain and gain
+    significant improvements in downstream task performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: The Data'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First step in any project is to prepare the data. Since our dataset is in medical
+    domain, it contains the following fields and many more:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/153b7422d396eaf71d450853c1da8540.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Putting the full list of fields here is impossible, as there are many fields.
+    But even this glimpse into the existing fields help us to form the input sequence
+    for an LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First point to keep in mind is that, the input has to be a sequence because
+    LLMs read input as text sequences.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'To form this into a sequence, we can inject special tags to tell the LLM what
+    piece of information is coming next. Consider the following example: `<patient>name:John,
+    surname: Doer, patientID:1234, age:34</patient>` , the `<patient>` is a special
+    tag that tells LLM that what follows are information about a patient.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So we form the input sequence as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/15080a76be38bffaa30e1a17f24bd446.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you see, we have injected four tags:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`<patient> </patient>`: to contain information about the patient'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`<hospital> </hospital>`: to contain information regarding the hospital'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`<event> </event>` : to contain information regarding the individual events
+    the `patient` has done in the `hospital`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`<visits> </visits>`: this is to enclose all events a patient has had in a
+    hospital.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: And inside each tag block, we are containing attributes as a *key:value* pair.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, for a given patient and hospital, we are sorting events by timestamp and
+    concatenating them together. This forms a time-ordered sequence of visits the
+    patient has had in the hospital.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The advantage of the special tags is that after training the LLM if I want the
+    embedding for a patient, I can get it via retrieving the embedding for `<patient>`
+    tag. Similarly, if we want to have an embedding for a patient such that it acts
+    as a profile for the patient we can retrieve the embedding for `<visits>` tag,
+    as this tag contain all events the patient has had with a hospital.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s assume our data is stored in s3; where the data schema is only one column
+    called “text” and each record is a sequence of above format in “text” column.
+    We load the data from s3 using below code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and the `raw_datasets` looks as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/711fe4d19dac23adebfe6d751f30d809.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Coding'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'First, install the requirements via following command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The requirements.txt file looks as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: To write the code, we have to define model arguments, data arguments and training
+    arguments. We then need to define the model and put it in PEFT (parameter efficient)
+    setting if we want to train it via PEFT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we define the input arguments for data, for model and for training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Arguments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Model arguments are arguments that specify which model/tokenizer we are going
+    to train or fine tune. The class below, implements these as a `dataclass` . We
+    will get an instance from this later to pass our choices.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The most important field here is `model_name_or_path` but for completeness we
+    keep all arguments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: PEFT Arguments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Below we have the arguments pertaining the parameter efficient training. This
+    uses the lora package for low-rank adaptation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data Arguments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: These are arguments pertaining to what data we are going to input our model
+    for training and evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Initializing Arguments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Next, we pass our input arguments in above classes and initialize all arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you see, we are loading deberta-base model so we will domain adapt this model
+    to the medical domain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Tokenization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this part we tokenize, collate and group the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tokenization part loads a pre-trained tokenizer related to our model, and
+    adds the special tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We then load the model and update the embedding layer of the model with number
+    of tokens in the vocabulary of the tokenizer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We also update the context length of the model in the tokenizer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We then write the tokenize function and apply it on the dataset. Our data has
+    one column called “text”. We tokenize this column and remove it from the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `tokenized_datasets` looks as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8cd8e23fa2768b624a2d89b565840132.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we check the length of the `input_ids` for each record in segment `train`,
+    we see that records have `input_ids` of different length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and it prints the following long list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The point is every record has a different sequence length. We can pad them or
+    truncate them or group them into sequences of size context length to make sure
+    they are of the same size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'now if you repeat the exercise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: it only prints `{512}` , because all sequences are of length 512.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next we define the data collator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Training The Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If we are going to train in parameter efficient mode, we use the lora package
+    as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: and then we continue to write the `compute_metrics` function for computing the
+    metric of choice. Here we use *accuracy*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note `mask = labels != -100` is to ensure we compute the loss at masked entities.
+    For entities which are masked their corresponding label is a positive ID (which
+    is the input ID of the original token in that position). For entities which are
+    not masked and therefore we don’t want to compute model’s performance on them,
+    their corresponding label is set to `-100`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining `mask = labels != -100` produces `mask` as boolean vector and it is
+    True only where entities are masked.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Logit processing**: Then, we preprocess logits. The following function returns
+    the index at which maximum logit was occured. This will be the prediction of the
+    model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Trainer**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is where we initialize the `trainer` object. We kick off the training via
+    `trainer.train()` soon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s kick off training via `trainer.train()` and save artifacts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And it prints the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/627f970f24d0601cd081d26e49947868.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First of all, note the `trainer.train()` returns an object of type `TrainOutput`
+    called `train_result` . This object looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: and note with `metrics = train_result.metrics` we are accessing the *metrics*
+    dictionary inside it. We will pass this dictionary later to `trainer.log_metrics()`
+    and `trainer.save_metrics()`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `trainer.log_metrics()`prints out a report as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/037c6316aef7914599c45733639deb1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Second, note that we are saving few things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`trainer.save_model()`: This saves the model and its tokenizer. We can reload
+    it later using `from_pretrained()`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`trainer.save_state()`: This saves the trainer state since `trainer.save_model()`
+    does not save the state. This statement creates a *trainer_state.json* file that
+    looks as following:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/ef0ac5e2cbb59d6021982a0a3052215b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`trainer.save_metrics("train", metrics)` : This saves metrics into a json file
+    for that train split, e.g. `train_results.json`. This file looks as following:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/858a5c6fea6d1685699160197fcf196a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we reviewed how to take a pre-trained LLM and adapt it to a new
+    domain such as medical, financial etc. We took a pre-trained deberta base model
+    from huggingFace and continued pre-training it on medical data. We saved the trained
+    model in a directory for customized evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have any questions or suggestions, feel free to reach out to me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Email: mina.ghashami@gmail.com'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'LinkedIn: [https://www.linkedin.com/in/minaghashami/](https://www.linkedin.com/in/minaghashami/)'
+  prefs: []
+  type: TYPE_NORMAL

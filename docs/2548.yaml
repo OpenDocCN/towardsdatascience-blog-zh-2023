@@ -1,0 +1,344 @@
+- en: 'Deep Dive into pandas Copy-on-Write Mode: Part I'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6?source=collection_archive---------5-----------------------#2023-08-09](https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6?source=collection_archive---------5-----------------------#2023-08-09)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Explaining how Copy-on-Write works internally*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)[![Patrick
+    Hoefler](../Images/35ca9ef1100d8c93dbadd374f0569fe1.png)](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------)
+    [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----26982e7408c6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----26982e7408c6---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----26982e7408c6--------------------------------)
+    ·8 min read·Aug 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F26982e7408c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----26982e7408c6---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F26982e7408c6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6&source=-----26982e7408c6---------------------bookmark_footer-----------)![](../Images/76145cd8462a1cce9b082b46b634ac76.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Clint Adair](https://unsplash.com/@clintadair?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/BW0vK-FA3eg?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[pandas 2.0](https://medium.com/gitconnected/welcoming-pandas-2-0-194094e4275b)
+    was released in early April and brought many improvements to the new Copy-on-Write
+    (CoW) mode. The feature is expected to become the default in pandas 3.0, which
+    is scheduled for April 2024 at the moment. There are no plans for a legacy or
+    non-CoW mode.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This series of posts will explain how Copy-on-Write works internally to help
+    users understand what’s going on, show how to use it effectively and illustrate
+    how to adapt your code. This will include examples on how to leverage the mechanism
+    to get the most efficient performance and also show a couple of anti-patterns
+    that will result in unnecessary bottlenecks. I wrote a [short introduction](https://medium.com/towards-data-science/a-solution-for-inconsistencies-in-indexing-operations-in-pandas-b76e10719744)
+    to Copy-on-Write a couple of months ago.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wrote [a short post](https://medium.com/better-programming/pandas-internals-explained-545f14a941c1)
+    that explains the data structure of pandas which will help you understand some
+    terminology that is necessary for CoW.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am part of the pandas core team and was heavily involved in implementing and
+    improving CoW so far. I am an open source engineer for [Coiled](https://www.coiled.io)
+    where I work on Dask, including improving the pandas integration and ensuring
+    that Dask is compliant with CoW.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Copy-on-Write changes pandas behavior
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Many of you are probably familiar with the following caveats in pandas:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s select the grade-column and overwrite the first row with `"E"`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Unfortunately, this also updated `df` and not only `grades`, which has the potential
+    to introduce hard to find bugs. CoW will disallow this behavior and ensures that
+    only `grades` is updated. We also see a false-positive `SettingWithCopyWarning`
+    that doesn't help us here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s look at a `ChainedIndexing` example that is not doing anything:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We again get a `SettingWithCopyWarning` but nothing happens to `df` in this
+    example. All these gotchas come down to copy and view rules in NumPy, which is
+    what pandas uses under the hood. pandas users have to be aware of these rules
+    and how they apply to pandas DataFrames to understand why similar code patterns
+    produce different results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**CoW cleans up all these inconsistencies**. Users can only update one object
+    at a time when CoW is enabled, e.g. `df` would be unchanged in our first example
+    since only `grades` is updated at that time and the second example raises a `ChainedAssignmentError`
+    instead of doing nothing. Generally, it won''t be possible to update two objects
+    at once, e.g., every object behaves as it is a copy of the previous object.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many more of these cases, but going through all of them is not in
+    scope here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How it works
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s look into Copy-on-Write in more detail and highlight some facts that are
+    good to know. This is the main part of this post and is fairly technical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Copy-on-Write promises that **any DataFrame or Series derived from another in**
+    **any way always behaves as a copy**. This means that it is not possible to modify
+    more than one object with a single operation, e.g. our first example above would
+    only modify `grades`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A very defensive approach to guarantee this would be to copy the DataFrame and
+    its data in every operation, which would avoid views in pandas altogether. This
+    would guarantee CoW semantics but also incur a huge performance penalty, so this
+    wasn’t a viable option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will now dive into the mechanism that ensures that no two objects are updated
+    with a single operation **and** that our data isn’t unnecessarily copied. The
+    second part is what makes the implementation interesting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have to know exactly when to trigger a copy to avoid copies that aren’t absolutely
+    necessary. Potential copies are only necessary if we try to mutate the values
+    of one pandas object without copying its data. We have to trigger a copy, if the
+    data of this object is shared with another pandas object. This means that we have
+    to keep track of whether one NumPy array is referenced by two DataFrames (generally,
+    we have to be aware if one NumPy array is referenced by two pandas objects, but
+    I will use the term DataFrame for simplicity).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This statement creates a DataFrame `df` and a view of this DataFrame `df2`.
+    View means that both DataFrames are backed by the same underlying NumPy array.
+    When we look at this with CoW, `df` has to be aware that `df2` references its
+    NumPy array too. This is not sufficient though. `df2` also has to be aware that
+    `df` references its NumPy array. If both objects are aware that there is another
+    DataFrame referencing the same NumPy array, we can trigger a copy in case one
+    of them is modified, e.g.:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`df` is modified inplace here. `df` knows that there is another object that
+    references the same data, e.g. it triggers a copy. It is not aware which object
+    references the same data, just that there is another object out there.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take a look at how we can achieve this. We created an internal class `BlockValuesRefs`
+    that is used to store this information, it points to all DataFrames that reference
+    a given NumPy array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are three different types of operation that can create a DataFrame:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A DataFrame is created from external data, e.g. through `pd.DataFrame(...)`
+    or through any I/O method.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A new DataFrame is created through a pandas operation that triggers a copy of
+    the original data, e.g. `dropna` creates a copy in almost all cases.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A new DataFrames is created through a pandas operation that **does not** trigger
+    a copy of the original data, e.g. `df2 = df.reset_index()`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The first two cases are simple. When the DataFrame is created, the NumPy arrays
+    that back it are connected to a fresh `BlockValuesRefs` object. These arrays are
+    only referenced by the new object, so we don't have to keep track of any other
+    objects. The object creates a `weakref` that points to the `Block` that wraps
+    the NumPy array and stores this reference internally. The concept of Blocks is
+    explained [here](https://medium.com/better-programming/pandas-internals-explained-545f14a941c1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A [weakref](https://docs.python.org/3/library/weakref.html) creates a reference
+    to any Python object. It does not keep this object alive when it would normally
+    go out of scope.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This example creates a Dummy object and a weak reference to this object. Afterward,
+    we assign another object to the same variable, e.g. the initial object goes out
+    of scope and is garbage collected. The weak reference does not interfere with
+    this process. If you resolve the weak reference, it will point to `None` instead
+    of the original object.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This ensures that we don’t keep any arrays alive that would otherwise be garbage
+    collected.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at how these objects are organized:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af723ab6a06f1f56cd2e5ba5dea4bf68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our example has two columns `"a"` and `"b"` which both have dtype `"int64"`.
+    They are backed by one Block that holds the data for both columns. The Block holds
+    a hard reference to the reference tracking object, ensuring that it stays alive
+    as long as the Block is not garbage collected. The reference tracking object holds
+    a weak reference to the Block. This enables the object to track the lifecycle
+    of this block but does not prevent garbage collection. The reference tracking
+    object does not hold a weak reference to any other Block yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are the easy scenarios. We know that no other pandas object shares the
+    same NumPy array, so we can simply instantiate a new reference tracking object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The third case is more complicated. The new object views the same data as the
+    original object. This means that both objects point to the same memory. Our operation
+    will create a new Block that references the same NumPy array, this is called a
+    shallow copy. We now have to register this new `Block` in our reference tracking
+    mechanism. We will register our new `Block` with the reference tracking object
+    that is connected to the old object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a2c2fc52065f845d3ec6093ce639265d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our `BlockValuesRefs` now points to the Block that backs the initial `df` and
+    the newly created Block that backs `df2`. This ensures that we are always aware
+    about all DataFrames that point to the same memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now ask the reference tracking object how many Blocks pointing to the
+    same NumPy array are alive. The reference tracking object evaluates the weak references
+    and tells us that more than one object references the same data. This enables
+    us to trigger a copy internally if one of them is modified in place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Block in `df2` is copied through a deep copy, creating a new Block that
+    has its own data and reference tracking object. The original block that was backing
+    `df2` can now be garbage collected, which ensures that the arrays backing `df`
+    and `df2` don't share any memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e06fd9daf47e7ebe973af0728c0f407c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at a different scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`df` is invalidated before we modify `df2`. Consequently, the weakref of our
+    reference tracking object, that points to the Block that backed `df`, evaluates
+    to `None`. This enables us to modify `df2` without triggering a copy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7174f506834adb8fbf5c54b4d1adbd88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our reference tracking object points to only one DataFrame which enables us
+    to do the operation inplace without triggering a copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`reset_index` above creates a view. The mechanism is a bit simpler if we have
+    an operation that triggers a copy internally.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: This immediately instantiates a new reference tracking object for our DataFrame
+    `df2`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00760204bbc4c441baab8b73b4b858e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have investigated how the Copy-on-Write tracking mechanism works and when
+    we trigger a copy. The mechanism defers copies in pandas as much as possible,
+    which is quite different from the non-CoW behavior. The reference tracking mechanism
+    keeps track of all DataFrames that share memory, enabling more consistent behavior
+    in pandas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next part in this series will explain techniques that are used to make this
+    mechanism more efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading. Feel free to reach out to share your thoughts and feedback
+    about Copy-on-Write.
+  prefs: []
+  type: TYPE_NORMAL

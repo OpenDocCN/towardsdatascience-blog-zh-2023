@@ -1,0 +1,396 @@
+- en: Deploy a Custom ML Model as a SageMaker Endpoint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428?source=collection_archive---------0-----------------------#2023-12-08](https://towardsdatascience.com/deploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428?source=collection_archive---------0-----------------------#2023-12-08)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/4c0d654b542867fe832bc898ebb49a1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Ricardo Gomez Angel](https://unsplash.com/@rgaleriacom?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: SageMaker Endpoint Deployment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A quick and easy guide for creating an AWS SageMaker endpoint for your model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)[![Hai
+    Rozencwajg](../Images/8812d8935fe505ef26b58a8ec739a06f.png)](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------)
+    [Hai Rozencwajg](https://hai-rozen.medium.com/?source=post_page-----6d2540226428--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5921283ee0f1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428&user=Hai+Rozencwajg&userId=5921283ee0f1&source=post_page-5921283ee0f1----6d2540226428---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6d2540226428--------------------------------)
+    ·10 min read·Dec 8, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6d2540226428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428&user=Hai+Rozencwajg&userId=5921283ee0f1&source=-----6d2540226428---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6d2540226428&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-a-custom-ml-model-as-a-sagemaker-endpoint-6d2540226428&source=-----6d2540226428---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Developing a machine learning (ML) model involves key steps, from data collection
+    to model deployment. After refining algorithms and ensuring performance through
+    testing, the final crucial step is deployment. This phase transforms innovation
+    into utility, allowing others to benefit from the model’s predictive capabilities.
+    The deployed ML model bridges the gap between development and real-world impact,
+    providing tangible benefits to users and stakeholders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This guide covers the basic steps required to develop a custom ML as a SageMaker
+    endpoint. At this point, I assume that you already have a working model and wish
+    to expose it to the rest of the world via an endpoint. The guide will work you
+    through deploying a PyTorch-based model that aims to predict anomalies in video
+    clips. The model, aka **AI VAD**, is based on the paper [“Attribute-based Representations
+    for Accurate and Interpretable Video Anomaly Detection”](https://arxiv.org/pdf/2212.00789.pdf),
+    and its implementation of it can be found in the [anomalib](https://github.com/openvinotoolkit/anomalib/tree/main/src/anomalib/models/ai_vad)
+    GitHub repository by [OpenVINO](https://docs.openvino.ai/). To read more about
+    this interesting approach, please scroll down to the end of this blog to the Appendix
+    section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, I want to emphasize that in this case, we can’t use the [PyTorchModel](https://sagemaker.readthedocs.io/en/stable/frameworks/pytorch/sagemaker.pytorch.html#pytorch-model)
+    abstraction specifically built for deploying PyTorch models for two reasons. The
+    first reason is that we have the [anomalib](https://github.com/openvinotoolkit/anomalib/tree/main/src/anomalib/models/ai_vad)
+    package as an additional dependency that is not included in the pre-built PyTorch
+    Sagemaker image. The second reason is that the model requires additional information
+    that was learned during the training step which is not part of the PyTorch model’s
+    weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below are the steps to achieve this goal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Write the Sagemaker model serving script
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Upload the Model to S3
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Upload a custom Docker image to AWS ECR
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a Model in SageMaker
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create an Endpoint Configuration
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create an Endpoint
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Invoke the Endpoint
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Write the Sagemaker model serving script
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Sagemaker model serving script (`inference.py`) is an important component
+    when creating a Sagemaker model. It bridges between machine learning models and
+    real-world data. Essentially, it processes incoming requests, runs the model predictions,
+    and returns the results. Thus, influencing an application’s decision-making process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `inference.py` script is composed of several key methods, each serving a
+    unique purpose, collectively facilitating the model serving process. Below I listed
+    the four main ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `model_fn` method is tasked with loading the trained model. It reads the
+    model artifacts that have been saved and returns a model object that can be used
+    for predictions. This method is called only once when the SageMaker model server
+    is started.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The `input_fn` method method takes request data and formats it into a form suitable
+    for making predictions. For example, in the code below this function formats the
+    data differently based on the source of the data (image bytes or list of S3 URIs)
+    and whether the list of frames should be considered as one video clip.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The `predict_fn` method takes the formatted request data and performs inference
+    against the loaded model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finally, the `output_fn` method is used. It takes the prediction result and
+    formats it into a response message. For example, pack it as a JSON object.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The code for the Sagemaker model serving script can be found below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: P.S. It is strongly recommended to test the model serving script before moving
+    forward to the next step. This can be done easily by simulating the invocation
+    pipeline as shown in the code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Upload the Model to S3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To create a SageMaker endpoint that loads the AI VAD PyTorch model in the exact
+    same state, we need the following files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: AI VAD PyTorch model’s weights (aka state_dict)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Density estimator memory banks (which are not part of the model’s weights)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A config file with the hyperparameters of the PyTorch model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A Sagemaker model serving script (`inference.py`)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The code below demonstrates how to organize all the required files in one directory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: P.S., I overrode the built-in PyTorch ModelCheckpoint callback to ensure those
+    memory banks are being saved as part of the checkpoint saving (implementation
+    can be found [here](https://github.com/hairozen/anomalib/blob/ai-vad-inference-improvements/src/anomalib/utils/callbacks/ai_vad/ai_vad_model_checkpoint.py)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, the four files were zipped together to create the `tar.gz` using the command
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lastly, the file was uploaded to S3 using boto3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Upload a custom Docker image to AWS ECR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As mentioned above, since we have an additional dependency that is not included
+    in the pre-built PyTorch Sagemaker image (i.e., [anomalib](https://github.com/openvinotoolkit/anomalib/tree/main/src/anomalib/models/ai_vad)
+    package), we created a new Docker image for that purpose. Before building the
+    custom Docker image, authentication to the Amazon ECR repository is required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The Dockerfile can be found below and the different Docker registry paths can
+    be found [here](https://docs.aws.amazon.com/sagemaker/latest/dg-ecr-paths/sagemaker-algo-docker-registry-paths.html).
+    Make sure to select the right registry path based on the model’s needs (CPU/GPU,
+    Python version, etc.) and your AWS region. For example, if the region is `us-east-1`
+    the full Docker registry path should look similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-inference:2.0.0-gpu-py310`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can run the classic Docker build command to build this custom image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The next step is to create the AWS ECR repository for the new image we built,
+    tag it, and push the image to the AWS ECR repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create a Model in SageMaker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This step is pretty straightforward. Code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create an Endpoint Configuration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next step is to create an endpoint configuration. Below you can find a basic
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create an Endpoint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now we are ready to create the endpoint itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Please note that it might take a few minutes till the status of the endpoint
+    changes from “Creating” to “InService”. The current status can be checked as shown
+    below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Invoke the Endpoint
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The money time has come. Now it’s time to invoke the endpoint to test everything
+    works as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, this is a nice check but you should take into account that the `predictor.predict`
+    function does not run the full invocation pipeline from the SageMaker serving
+    script that includes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`output_fn(predict_fn(input_fn(input_data, model_fn(model_dir)),accept)`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To test it as well, let’s invoke the model using an API call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the great visualization [anomalib](https://github.com/openvinotoolkit/anomalib/tree/main/src/anomalib/models/ai_vad)
+    provides, we can draw the boxes and their labels for a given frame from the UCSDped2
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d149445b2ddcf4c8112e7bede44c60a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by the author. The image was generated using the [anomalib](https://github.com/openvinotoolkit/anomalib/tree/main/src/anomalib/models/ai_vad)
+    package based on the [UCSD Anomaly Detection Dataset](http://www.svcl.ucsd.edu/projects/anomaly/dataset.htm).The
+    green boxes indicate there is no anomaly with how those pedestrians walk whereas
+    the red box, for the biker, indicates an anomaly probably due to the velocity
+    and pose features of the AI VAD model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: OK, let’s quickly wrap up what we covered here. Deploying a SageMaker model
+    for serving requires a series of steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the Sagemaker model serving script must be written to define the functionality
+    and behavior of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model is then uploaded to Amazon S3 for storage and retrieval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, a custom Docker image is uploaded to the AWS Elastic Container
+    Registry (ECR) to containerize the model and its dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step involves creating a model in SageMaker, which associates the model
+    artifacts stored in S3 with the Docker image stored in ECR.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An endpoint configuration is then created, defining the number and type of instances
+    to use for hosting the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, an endpoint is created to establish a live connection between the deployed
+    model and client applications, allowing them to invoke the endpoint and make real-time
+    predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Through these steps, deploying a SageMaker model becomes a streamlined process
+    that ensures efficient and reliable model serving.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The [Attribute-based Representations for Accurate and Interpretable Video Anomaly
+    Detection](https://arxiv.org/pdf/2212.00789.pdf) paper published in 2023 by Reiss
+    et al. that proposes a simple but highly effective method for video anomaly detection
+    (VAD) using attribute-based representations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The paper argues that traditional VAD methods, which often rely on deep learning,
+    are often difficult to interpret, making it difficult for users to understand
+    why the system is flagging certain frames or objects as anomalous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address this issue, the authors propose a method that represents each object
+    in a video by its velocity, pose, and depth. These attributes are easy to understand
+    and interpret, and they can be used to compute anomaly scores using a density-based
+    approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The paper shows that this simple representation is sufficient to achieve state-of-the-art
+    performance on several challenging VAD datasets, including ShanghaiTech, the largest
+    and most complex VAD dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to being accurate, the authors also show that their method is interpretable.
+    For example, they can provide users with a list of the objects in a video that
+    are contributing most to its anomaly score, along with their velocity, pose, and
+    deep information. This can help users to understand why the system is flagging
+    the video as anomalous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, this paper is a significant contribution to the field of VAD. It proposes
+    a simple, accurate, and interpretable method for VAD that can be used in a variety
+    of applications.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,385 @@
+- en: Dynamic MIG Partitioning in Kubernetes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/dynamic-mig-partitioning-in-kubernetes-89db6cdde7a3?source=collection_archive---------4-----------------------#2023-01-26](https://towardsdatascience.com/dynamic-mig-partitioning-in-kubernetes-89db6cdde7a3?source=collection_archive---------4-----------------------#2023-01-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Maximize GPU utilization and reduce infrastructure costs.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)[![Michele
+    Zanotti](../Images/6350ad98e5f057991b2e6f1a86a5c350.png)](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------)
+    [Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----89db6cdde7a3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b7af839d7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&user=Michele+Zanotti&userId=9b7af839d7e&source=post_page-9b7af839d7e----89db6cdde7a3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----89db6cdde7a3--------------------------------)
+    ·9 min read·Jan 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F89db6cdde7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&user=Michele+Zanotti&userId=9b7af839d7e&source=-----89db6cdde7a3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F89db6cdde7a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-mig-partitioning-in-kubernetes-89db6cdde7a3&source=-----89db6cdde7a3---------------------bookmark_footer-----------)![](../Images/faced2bd5b9da0f06d26dcaf220db464.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Growtika](https://unsplash.com/@growtika?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To minimize infrastructure expenses, it’s crucial to use GPU accelerators in
+    the most efficient way. One method to achieve this is by dividing the GPU into
+    smaller partitions, called slices, so that containers can request only the strictly
+    necessary resources. Some workloads may only require a minimal amount of the GPU’s
+    compute and memory, so having the ability in Kubernetes to divide a single GPU
+    into multiple slices, which can be requested by individual containers, is essential.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is particularly relevant for large Kubernetes clusters used for running
+    Artificial Intelligence (AI) and High-Performance Computing (HPC) workloads, where
+    inefficiencies in GPU utilization can have a significant impact on infrastructure
+    expenses. These inefficiencies are generally due to lightweight tasks that do
+    not fully utilize a GPU, such as inference servers and [Jupyter Notebooks](https://jupyter.org/)
+    used for preliminary data and model exploration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, researchers from the [European Organization for Nuclear Research
+    (CERN)](https://home.cern/) published a [blog post](https://kubernetes.web.cern.ch/blog/2023/01/09/efficient-access-to-shared-gpu-resources-part-1/?utm_id=FAUN_Kaptain356_Link_title)
+    about how they used MIG GPU partitioning for addressing low GPU utilization problems
+    caused by spiky workloads running High Energy Physics (HEP) simulations and code
+    inefficiencies locking whole GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The NVIDIA GPU Operator enables using MIG in Kubernetes, but it alone is insufficient
+    to ensure efficient GPU partitioning. In this article, we examine the reasons
+    for this and offer a more effective solution for using MIG in Kubernetes: **Dynamic
+    MIG Partitioning**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MIG support in Kubernetes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: MIG support in Kubernetes is provided by the [NVIDIA device plugin](https://github.com/NVIDIA/k8s-device-plugin),
+    which allows to expose MIG devices, i.e. isolated GPU partitions, either as generic
+    `nvidia.com/gpu` resources or as specific resource kinds such as, for instance,
+    `nvidia.com/mig-1g.10gb`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Manually managing MIG devices through `nvidia-smi` is impractical, so NVIDIA
+    provides a tool called [nvidia-mig-parted](https://github.com/NVIDIA/mig-parted).
+    This allows cluster admins to declaratively define the set of MIG devices they
+    need on all GPUs on a node. The tool automatically manages the GPU partitioning
+    state to match the desired configuration. For instance, below is an example of
+    configurations taken from the nvidia-mig-parted GitHub repository:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In Kubernetes, cluster admins generally would not use nvidia-mig-parted directly,
+    but they would use it through the [NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/gpu-operator-mig.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This operator further simplifies the application of MIG configurations. After
+    creating a ConfigMap defining a set of allowed MIG configurations, the NVIDIA
+    GPU Operator only requires you to label the nodes with `nvidia.com/mig.config`
+    and specify as value the name of the specific configuration you want to apply
+    on that node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instance, referring to the configuration defined above, we could apply
+    the config `all-3g.20gb` to the node `node-1` as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Static MIG configurations cause poor usability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The NVIDIA GPU Operator has a significant limitation: MIG devices are created
+    through static configurations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that the cluster admin has to first define all the possible MIG configurations
+    they think might be required in the cluster, and then manually apply them to each
+    node according to their needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way of managing MIG devices can easily lead to inefficiencies in GPU utilization
+    and time spent by the cluster admin to change MIG configurations. In fact, GPU
+    memory and compute requirements vary from Pod to Pod and change over time. To
+    achieve optimal GPU utilization as new Pods with different MIG resources requests
+    are created, the cluster admin would have to spend his/her time constantly finding
+    and applying the most proper configuration for each node of the cluster, which
+    is very impractical.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a trivial example, consider that we need to schedule multiple Pods that require
+    20gb of GPU memory. We would therefore create and apply a configuration that provides
+    only `nvidia.com/mig-3.20gb` profiles on all the GPUs in our cluster, since it
+    allows to perfectly use all GPU resources. In a second moment however, the server
+    receives a request to create some Pods that require less resources, say 10GB of
+    GPU memory, corresponding to the MIG profile `nvidia.com/mig-2g.10gb`. These Pods
+    will not be scheduled until the cluster admin changes the label of at least one
+    node applying a MIG configuration that provides the requested profiles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Complications do not end here. While a certain configuration might provide the
+    required MIG resources, at the same it might also remove some of the devices that
+    are currently in use by some containers. In such cases it is up to the cluster
+    admins to find or create the most proper configuration, and to ensure it does
+    not delete any of the used devices, introducing significant operational costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This approach simply does not scale. With the NVIDIA GPU Operator alone, it
+    is impractical to constantly adjust the MIG configurations based on workloads
+    demand, resulting in both unused MIG devices and pending Pods.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s see how we can solve this issue with Dynamic MIG Partitioning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamic MIG Partitioning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dynamic MIG Partitioning automates the creation and deletion of MIG profiles
+    based on real-time requirements of the workloads in the cluster, ensuring that
+    the optimal MIG configuration is always applied to the available GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To apply dynamic partitioning, we need to use `[nos](https://github.com/nebuly-ai/nos)`,
+    an open-source module that runs alongside the NVIDIA GPU Operator and makes MIG
+    partitioning dynamic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can think of `nos` as a [Cluster Autoscaler](https://github.com/kubernetes/autoscaler)
+    for GPUs: instead of scaling up the number of nodes and GPUs, it dynamically partitions
+    them to maximize their utilization, leading to spare GPU capacity. Then, you can
+    schedule more Pods or reduce the number of GPU nodes needed, reducing infrastructure
+    costs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*With* `*nos*`*, there is no need to manually create and manage MIG configurations.
+    Simply submit your Pods to the cluster and the requested MIG devices are automatically
+    provisioned.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s explore how `nos` and Dynamic MIG Partitioning work in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prerequisites
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As already mentioned, `nos` does not replace the NVIDIA GPU Operator, but it
+    works alongside it. Hence, you need to install it first by meeting two requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`mig.strategy` must be set to `mixed`, so that every different MIG profile
+    is exposed to Kubernetes as a specific resource type'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`migManager` must be disabled'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'If not already done, you can install the NVIDIA GPU Operator with Helm as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By default, MIG mode is not activated on NVIDIA GPUs. So, first you need to
+    enable MIG on all the GPUs you want to be partitioned. You can do this by SSHing
+    into the node and running the following command for each GPU, where `<index>`
+    corresponds to their respective index:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Depending on the type of machine you are using, it may be necessary to reboot
+    the node after this operation. For more information and troubleshooting, you can
+    refer to the [NVIDIA MIG User Guide](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/index.html#enable-mig-mode).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Once you have installed the NVIDIA GPU Operator and enabled MIG mode on your
+    GPUs, you can simply install `nos` as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s it! Now you are ready to activate Dynamic MIG Partitioning on your nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamic partitioning in action
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, you need to specify to `nos` for which nodes it should manage GPU partitioning.
+    Label those nodes as follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This label marks a node as a “MIG node”, delegating the management of MIG devices
+    of all the node’s GPUs to `nos`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After that, you can submit workloads requesting MIG resources. `nos` will automatically
+    find and apply the best MIG configuration on the GPUs of the nodes you previously
+    marked as “MIG nodes”, creating the missing MIG devices requested by Pods and
+    deleting the unnecessary unused ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take a look at a simple example of `nos` in action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assume we are operating a simple cluster with two nodes, one of which has a
+    single NVIDIA A100 80GB. We have already enabled MIG mode on that GPU, so we can
+    enable automatic partitioning for that node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of `kubectl describe node aks-gpua100–24975740-vmss000000` shows
+    that the node does not have any available MIG resources, since no MIG device has
+    been requested or created yet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s create some Pods requesting MIG resources. In this case, we create a deployment
+    with 5 replicas of a Pod with a container requesting a GPU slice of 10 GB of memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are now 5 pending Pods in the namespace `demo`, requesting a total of
+    five `nvidia.com/mig-1g.10gb` resources which are not yet available in the cluster:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In a few seconds, `nos` will detect these pending Pods. It will try to create
+    the requested resources selecting the most suitable MIG configuration. In this
+    example, `nos` applies a configuration that provides five 1g.10gb and one 2g.20gb
+    devices:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we check once again the state of the Pods, we can see that this time they
+    are now in Running state:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that, besides the 1g.10gb devices, `nos` also created an additional 2g.20gb
+    device. This is because each MIG GPU model only supports a [specific set of configurations](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/#supported-profiles),
+    and, in this scenario, the best configuration that met the required devices also
+    included the 2g.20gb device. Keep in mind that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`nos` selects the configuration that allows to schedule the highest number
+    of pending pods, which is computed leveraging a scheduling simulation done by
+    the `nos` the internal scheduler'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: MIG devices that are already in use are never deleted. Any MIG configuration
+    that would require the deletion of these devices is rejected.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The possibility of requesting GPU slices is crucial for improving GPU utilization
+    and cutting down infrastructure costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NVIDIA MIG allows to create fully-isolated GPU instances with dedicated memory
+    and compute resources, but the support in Kubernetes provided by the NVIDIA GPU
+    Operator is not enough if we want to achieve operational excellence. Static configurations
+    do not automatically adjust to the changing demands of workloads and thus are
+    inadequate to provide each Pod with the GPU slices it requires, especially in
+    scenarios with workloads demanding a variety of slices in terms of memory and
+    computing that change over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`*nos*` *overcomes NVIDIA GPU Operator static configurations limitations through
+    Dynamic GPU Partitioning, which increases GPU utilization and reduces the operation
+    burden of manually defining and applying MIG configurations on the cluster nodes.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It is worth noting that NVIDIA MIG has its limitations and is not the only partitioning
+    technology, nor the only way to increase the utilization in a Kubernetes cluster.
+    Specifically, MIG is only supported on newer architectures (Ampere and Hopper)
+    and does not offer fine-grained GPU partitioning, meaning it is not possible to
+    create GPU slices with arbitrary memory and compute resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To overcome these limitations, `nos` also offers [Dynamic GPU Partitioning through
+    NVIDIA Multi-Process Service (MPS)](https://docs.nebuly.com/nos/overview/), a
+    partitioning technology that is supported by almost all NVIDIA GPUs and allows
+    to create slices of any desired amount of memory. You can find more information
+    on Dynamic MPS partitioning [here](https://docs.nebuly.com/nos/dynamic-gpu-partitioning/getting-started-mps/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Dynamic GPU Partitioning documentation](https://docs.nebuly.com/nos/dynamic-gpu-partitioning/overview/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Nos source code](https://github.com/nebuly-ai/nos)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[NVIDIA GPU Operator documentation](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[NVIDIA MIG User guide](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Credits
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Special thanks to [Emile Courthoud](https://medium.com/u/2c53981c8a83?source=post_page-----89db6cdde7a3--------------------------------)
+    for their review and contributions to this article.
+  prefs: []
+  type: TYPE_NORMAL

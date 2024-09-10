@@ -1,0 +1,408 @@
+- en: How to Train Time Series Forecasting Faster using Ray, part 3 of 3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/faster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774?source=collection_archive---------10-----------------------#2023-01-24](https://towardsdatascience.com/faster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774?source=collection_archive---------10-----------------------#2023-01-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Train many models faster using distributed computing with Ray and Ray AIR
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)[![Christy
+    Bergman](../Images/b8431b925cfe7bd0d3a035761fd1e7f8.png)](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)[](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------)
+    [Christy Bergman](https://medium.com/@christybergman?source=post_page-----632c96974774--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff18ab4254b46&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&user=Christy+Bergman&userId=f18ab4254b46&source=post_page-f18ab4254b46----632c96974774---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----632c96974774--------------------------------)
+    ·11 min read·Jan 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F632c96974774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&user=Christy+Bergman&userId=f18ab4254b46&source=-----632c96974774---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F632c96974774&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffaster-time-series-forecasting-with-ray-air-distributed-computing-part-3-of-3-632c96974774&source=-----632c96974774---------------------bookmark_footer-----------)![](../Images/0b4cdf6bfa4d1843765d0442ef94d0b7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by [StableDiffusion](https://stablediffusionweb.com/#demo), drawn on Jan
+    5, 2022, with the query “draw an image representing many different deep neural
+    network time series models training at once cy twombly style”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction / Motivation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Even in the current age of Generative AI (Stable Diffusion, ChatGPT) and LLM
+    (large language models), **Time Series Forecasting is still a fundamental part
+    of running any business that depends on a supply chain or resources.** For example
+    it can be used in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Fulfillment prediction](https://www.youtube.com/watch?v=3t26ucTy0Rs) for inventory
+    management by geography.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Demand forecasting](https://www.anyscale.com/blog/how-anastasia-implements-ray-and-anyscale-to-speed-up-ml-processes-9x)
+    different products by product category.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Utilization prediction](https://medium.com/kocdigital/using-ray-for-time-series-forecasting-at-scale-3355c9e4e28c)
+    for datacenter provisioning by resource.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**One thing all these use cases have in common is** [**training many models
+    on different segments of data**](https://www.anyscale.com/blog/training-one-million-machine-learning-models-in-record-time-with-ray)**.**
+    Training, tuning, and deploying thousands of machine learning models in parallel
+    using distributed computing can be a challenging task! Typical time series modeling
+    software is not distributed by itself.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This blog will show my tips to get started converting your forecasting workloads
+    to distributed computing.** I’ll use the newest [Ray v2 APIs](https://docs.ray.io/en/latest/)
+    with ARIMA using [statsforecast](https://github.com/Nixtla/statsforecast), [Prophet](https://facebook.github.io/prophet/),
+    and [PyTorch Forecasting](https://pytorch-forecasting.readthedocs.io/en/stable/index.html)
+    libraries. For the data, I will use the popular [NYC Taxi dataset](https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page),
+    which contains historical taxi pickups by timestamp and location in NYC.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ray is an open-source framework for scaling AI workloads using distributed computing.
+    For an overview of Ray, check out the [Ray documentation](https://docs.ray.io/en/latest/)
+    or this [introductory blog post](/modern-parallel-and-distributed-python-a-quick-tutorial-on-ray-99f8d70369b8).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/936ddd06d94b1c8950dcf87f360c7154.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[Ray “AIR](https://docs.ray.io/en/latest/ray-air/getting-started.html)” (AI
+    Runtime), available since Ray 2.0, includes [Ray Data](https://docs.ray.io/en/latest/data/dataset.html),
+    [Ray Train](https://docs.ray.io/en/latest/train/train.html), [Ray Tune](https://docs.ray.io/en/latest/tune/index.html),
+    [RLlib](https://docs.ray.io/en/latest/rllib/index.html), and [Ray Serve](https://docs.ray.io/en/latest/serve/index.html).
+    Image by Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This blog is organized in 4 sections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-model distributed training using Ray Core Multiprocessing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multi-model distributed tuning using Ray AIR.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multi-model distributed tuning fewer, larger models using Ray AIR.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multi-model distributed deployment using Ray AIR and Ray Serve.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Section 1: Multi-Model Distributed Training using Ray Core Multiprocessing'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Back in November 2021, I wrote a [blog article](https://medium.com/towards-data-science/scaling-time-series-forecasting-with-ray-arima-and-prophet-e6c856e605ee)
+    demonstrating how to train many forecast models (either ARIMA or Prophet) in parallel
+    using Ray Core on AWS cloud. **Since then,** [**Ray Multiprocessing**](https://docs.ray.io/en/latest/ray-more-libs/multiprocessing.html)
+    **is a big improvement that makes things easier than Ray Core APIs.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below is the code outline. The full, updated code is on [my github](https://github.com/christy/AnyscaleDemos/blob/main/forecasting_demos/Ray_v2/train_prophet_blog.ipynb).
+    First, let’s start with a couple imports:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, let’s define Python functions to preprocess data, train and evaluate a
+    model. To get to the distributed computing concepts quicker, we are going to pretend
+    the time series data is already prepared and split into separate files per desired
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We could parallelize this directly using Ray core API calls`[ray.remote](https://docs.ray.io/en/latest/ray-core/walkthrough.html)`,
+    but Ray’s [multiprocessing library](https://docs.ray.io/en/latest/ray-more-libs/multiprocessing.html),
+    one of Ray’s distributed libraries, makes this easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below, wrapping the call to `pool` with `tqdm` gives a nice progress bar to
+    monitor progress. Internally, Ray dispatches tasks to workers in the Ray cluster,
+    which automatically handles issues such as fault tolerance and batching optimizations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/fdca6909d17c7ae9f3020f481ada53d7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot while running the above example on my MacBook pro laptop with 8 CPU.
+    Time to run Ray Multiprocessing was about a half-minute, which was *3.5x, or 300.0%
+    speedup over serial Python. More speedup would be possible with a bigger cluster
+    and/or bigger data. Image by Author.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Above, we can see the Ray job took less than 1 minute to train 12 models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Section 2: Multi-Model Distributed Tuning using Ray AIR'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The astute reader may have noticed, in the above section, Ray Multiprocessing
+    required the data to already be organized into one file per model you want to
+    train. **But what if your data isn’t already organized by model?** With Ray AIR,
+    you can preprocess data in the same pipeline while training different models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another problem, **what if you want to mix-and-match algorithms from more than
+    one library at a time?** Ray Tune, which is part of Ray AIR, lets you run parallel
+    trials to find the best choice of algorithm from any Python AI/ML libraries and
+    hyperparameters, per segment of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below are the steps to preprocess data and automatically tune models. Although
+    specific to [Ray AIR](https://docs.ray.io/en/latest/ray-air/getting-started.html)
+    and its [APIs](https://docs.ray.io/en/latest/ray-air/package-ref.html), these
+    steps apply in general to converting serial Python to distributed Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define Python functions to `**preprocess**` a segment of data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define Python functions to `**train**` and `**evaluate**` a model on a segment
+    of data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define a calling function `**train_models**`, which calls all the above functions,
+    and will be called in parallel for every permutation in the Tune search space!
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Inside this [**train_models**](https://docs.ray.io/en/latest/tune/api_docs/trainable.html#trainable-docs)
+    function:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 📖 The input parameters must include a config dictionary argument.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 📈 The tuning metric (a model’s loss or error) must be calculated and reported
+    using `session.report()`.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: ✔️ `Checkpoint` (save) the model is recommended for fault tolerance and easy
+    deployment later.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Configure distributed compute scaling**.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Define a Tune search space** of all training parameters.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: (Optional) Specify a hyperparameter search strategy.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Run the experiment**.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Below is the additional code we would add; full code is on [my github](https://github.com/christy/AnyscaleDemos/blob/6b1cea50a8c3b75bf9b680e77216f6927bdd2f85/forecasting_demos/Ray_v2/train_prophet_blog.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `preprocess_data` and `train_model` functions below are exactly the same
+    as before, except they take in a list of files instead of a single file.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `train_models` function is exactly the same as `train_and_evaluate` except
+    it takes in a list of files instead of a single file. It also trains an algorithm
+    passed in the config instead of a fixed algorithm, and does checkpointing.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0256c490f5411ce2ac7c0261144e0f9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Top**: Screenshot Ray Tune Trial Status showing the error of 768 candidate
+    models (3 algorithm choices per 256 NYC taxi pickup locations). Trained in under
+    45 minutes. **Bottom left**: Prophet model inference+prediction plot (actuals
+    as black dots, forecast with confidence interval in blue) for NYC taxi pickup
+    location=165\. **Bottom right**: ARIMA model inference+prediction plot (actuals
+    in blue, forecast in orange) for NYC taxi pickup location=237\. All models trained
+    using Anyscale on 10-node AWS cluster of [m5.4xlarges](https://aws.amazon.com/ec2/instance-types/m5/)
+    worker nodes and one m5.2xlarge head node.Image by Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the above screen shots, data since January 2018 was grouped and aggregated
+    to daily-level. I have tried in the past to do this on SageMaker and just the
+    data processing alone took too long, let alone Tuning that many models at once.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Section 3: Multi-model Distributed Tuning (larger PyTorch models)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Often the goal is to create a few, larger models, such as one model by geographic
+    zone, where you only have a handful of such zones. One year ago, in December 2021,
+    I wrote a [blog article](https://medium.com/towards-data-science/how-to-train-time-series-forecasting-faster-using-ray-part-2-of-2-aacba89ca49a)
+    demonstrating how to use Ray Lightning to train larger PyTorch Forecasting models.
+    **Since then, a big improvement is the code development switch between laptop
+    and cloud is more seamless, thanks to** [**Anyscale Workspaces**](https://docs.anyscale.com/user-guide/develop-and-debug/workspaces)**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: These larger models are sometimes called “global models”, because only 1 deep
+    neural network model is trained across many different time series at once. Instead
+    of 1 model per time series (Prophet or ARIMA).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'See [my github](https://github.com/christy/AnyscaleDemos/blob/main/forecasting_demos/Ray_v2/ray_air/pytorch_forecasting.ipynb)
+    for the full [PyTorch Forecasting](https://pytorch-forecasting.readthedocs.io/en/stable/index.html)
+    code showing the latest Ray AIR APIs with [Ray Lightning](https://docs.ray.io/en/latest/tune/examples/tune-pytorch-lightning.html).
+    You need to add a cluster ID to your data, then the steps for Tuning are the same
+    as we saw in Section 2:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/dc844e0d7e1c866b57556638403bbad8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Top**. Screenshot Ray Tune Trial Status while tuning six PyTorch Forecasting
+    TemporalFusionTransformer models. (3 learning rates, 2 clusters of NYC taxi locations).
+    Runtime less than 2 minutes total. Ran on a 2-node AWS cluster of m5.4xlarge worker
+    nodes and one m5.2xlarge head node, within 2 minutes. **Bottom**: Inference forecast
+    plots for several taxi pickup locations using a single model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that unlike the ARIMA and Prophet models, which were a single model per
+    unique_id, each one of these larger models contains inferences for many unique_ids
+    at once in a single model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Section 4: Multi-model Distributed Deploying using Ray AIR with Ray Serve'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before you deploy, you have to decide if your deployment needs to be an online,
+    always running http service or offline (Python service called on demand). Below,
+    I demonstrate offline deployment using the new [Ray AIR Predictors](https://docs.ray.io/en/latest/ray-air/predictors.html)
+    with [Ray Serve](https://docs.ray.io/en/latest/serve/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The steps for offline deployment are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1**. Instantiate a batch predictor using Ray AIR checkpoints.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2**. Create some test data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3**. Run `batch_predictor.predict(test_data)`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Replace Step 3 above with these steps for a custom predictor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3**. Define a Ray Serve deployment class by using a Ray decorator `@serve.deployment`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 4**. Deploy the predictor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 5**. Query the deployment and get the result.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Steps 3–5 above are only required if you are using a custom predictor (such
+    as ARIMA, Prophet, or PyTorch Forecasting).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Otherwise for Ray AIR-integrated ML Libraries (HuggingFace transformers, PyTorch,
+    TensorFlow, Scikit-learn, XGBoost, or LightGBM), all you have to do is call `batch_predictor.predict(test_data)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Continuing the example for PyTorch Forecasting from the previous section, below
+    is the deployment code. Full code is on [my github](https://github.com/christy/AnyscaleDemos/blob/main/forecasting_demos/Ray_v2/ray_air/pytorch_forecasting.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/352284bfab1b2d33c66eb92fe5f433e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Left**: Screenshot from Ray dashboard (accessible by default at `localhost:8265
+    on the head node`) while serving. **Right**: A screenshot from the Ray dashboard
+    while running the above example. You can see 5 spikes in autoscaling while I made
+    5 different iterations on the training code before deploying the final trained
+    model. Ran Anyscale on 3-node AWS cluster of [m5.4xlarges](https://aws.amazon.com/ec2/instance-types/m5/)
+    worker nodes and 1-m5.2xlarge head node.Image by Author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The screenshot above right shows Ray cluster observability while training and
+    serving. If you need to do post-processing on the predictor results, I have an
+    example of that [at the end of this other notebook here](https://github.com/christy/AnyscaleDemos/blob/main/forecasting_demos/Ray_v2/train_prophet_blog.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In conclusion, this blog showed steps how to train and tune many models in parallel
+    using distributed computing with open-source Ray. The models did not have to be
+    all the same type, they could be mixed-and-matched from any AI/ML Python libraries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ray AIR APIs were clear, intuitive, and hid a lot of distributed computing complexity
+    so it was easy to do a lot of complicated things, such as early stopping, ASHA
+    scheduling, checkpointing, and deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To take your learning further:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Read the [Ray docs](https://docs.ray.io/en/latest/), for detailed explanations
+    and examples.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ask questions on [Slack](https://docs.google.com/forms/d/e/1FAIpQLSfAcoiLCHOguOm8e7Jnn-JJdZaCxPGjgVCvFijHB5PLaQLeig/viewform)
+    and [Discuss](https://discuss.ray.io/).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use [Anyscale](https://docs.anyscale.com/user-guide/develop-and-debug/workspaces#workspaces-tutorial),
+    which makes it easy to spin up a cluster and run your code on a Cloud (get the
+    invite code [here](https://www.anyscale.com/signup)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

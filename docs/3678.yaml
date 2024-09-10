@@ -1,0 +1,247 @@
+- en: Benchmarking Rust Compiler Settings with Criterion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb?source=collection_archive---------12-----------------------#2023-12-15](https://towardsdatascience.com/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb?source=collection_archive---------12-----------------------#2023-12-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Controlling Criterion with Scripts and Environment Variables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----62db50cd62fb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----62db50cd62fb---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----62db50cd62fb--------------------------------)
+    ·6 min read·Dec 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F62db50cd62fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----62db50cd62fb---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F62db50cd62fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbenchmarking-rust-compiler-settings-with-criterion-62db50cd62fb&source=-----62db50cd62fb---------------------bookmark_footer-----------)![](../Images/d23babfcffe8bcef29dff4ca4666ab4c.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Timing a crab race — Source: [https://openai.com/dall-e-2/](https://openai.com/dall-e-2/).
+    All other figures from the author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article explains, first, how to benchmark using the popular [criterion](https://docs.rs/criterion/latest/criterion/)
+    crate. It, then, gives additional information showing how to benchmark across
+    compiler settings. Although each combination of compiler settings requires re-compilation
+    and a separate run, we can still tabulate and analyze results. The article is
+    a companion to the article [Nine Rules for SIMD Acceleration of Your Rust Code](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21)
+    in *Towards Data Science.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll applied this technique to the `[range-set-blaze](https://github.com/CarlKCarlK/range-set-blaze)`
+    crate. Our goal is to measure the performance effects of various SIMD (Single
+    Instruction, Multiple Data) settings. We also want to compare performance across
+    different CPUs. This approach is also useful for understanding the benefit of
+    different optimization levels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the context of `range-set-blaze`, we evaluate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3 SIMD extension levels — `sse2` (128 bit), `avx2` (256 bit), `avx512f` (512
+    bit)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 10 element types — `i8`, `u8`, `i16`, `u16`, `i32`, `u32`, `i64`, `u64`, `isize`,
+    `usize`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 5 lane numbers — 4, 8, 16, 32, 64
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2 CPUs — AMD 7950X with `avx512f`, Intel i5–8250U with `avx2`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 5 algorithms — Regular, Splat0, Splat1, Splat2, Rotate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4 input lengths — 1024; 10,240; 102,400; 1,024,000
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Of these, we externally adjust the first four variables (SIMD extension level,
+    element type, lane number, CPU). We controlled the final two variables (algorithm
+    and input length) with loops inside regular Rust benchmark code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Started with Criterion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To add benchmarking to your project, add this dev dependency and create a subfolder:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In `Cargo.toml` add:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Create a `benches/bench.rs`. Here is sample one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you want to run this example, the [code is on GitHub](https://github.com/CarlKCarlK/range-set-blaze/tree/nov23/examples/simd/is_consecutive1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run the benchmark with the command `cargo bench`. A report will appear in `target/criterion/simple/report/index.html`
+    and includes plots like this one showing Splat1 running many times faster than
+    Regular.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0baad5a4a40ae23d4c2e6973b4acc72f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thinking Outside the Criterion Box
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have a problem. We want to benchmark `sse2` vs. `avx2` vs. `avx512f` which
+    requires ([generally](https://doc.rust-lang.org/reference/attributes/codegen.html#the-target_feature-attribute))
+    multiple compilations and `criterion` runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s our approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use a Bash script to set environment variables and call benchmarking.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For example, `bench.sh`:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Aside: You can [easily use Bash on Windows](https://code.visualstudio.com/docs/sourcecontrol/intro-to-git#_git-bash-on-windows)
+    if you have Git and/or VS Code.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Use a `[build.rs](https://doc.rust-lang.org/cargo/reference/build-scripts.html)`
+    to turn these environment variables into Rust configurations:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In `[benches/build.rs](https://github.com/CarlKCarlK/range-set-blaze/blob/nov23/examples/simd/is_consecutive2/benches/bench.rs)`
+    turn these configurations into Rust constants and types:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In `benches.rs`, create a benchmark id that records the combination of variables
+    you are testing, separated by commas. This can either be a string or a criterion
+    `BenchmarkId`. I created a `BenchmarkId` with this call: `create_benchmark_id::<Integer>("regular",
+    LANES, *parameter)` to this function:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For tabulation and analysis, I like benchmark results as comma-separated values
+    (CSVs). [Criterion has moved away from](https://bheisler.github.io/criterion.rs/book/user_guide/csv_output.html)
+    `[*.csv](https://bheisler.github.io/criterion.rs/book/user_guide/csv_output.html)`
+    [files](https://bheisler.github.io/criterion.rs/book/user_guide/csv_output.html)
+    and toward `*.json` files. To extract `*.csv` from `*.json`, I created a new a
+    cargo command that you can use: `[criterion-means](https://github.com/CarlKCarlK/cargo-criterion-means)`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Install:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output Example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A CSV file is suitable for analysis via [spreadsheet pivot tables](https://support.microsoft.com/en-us/office/create-a-pivotchart-c1b1e057-6990-4c38-b52b-8255538e7b1c)
+    or data frame tools such as [Polars](https://pola-rs.github.io/polars/user-guide/transformations/pivot/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, here is the top of my 5000-line long Excel data file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95f1e30fa085dc0341b141331e6b2999.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Columns A to J came from the benchmark. Columns K to N are calculated by Excel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is a pivot table (and chart) based on the data. It shows the effect of
+    varying the number of SIMD lanes on throughput. The chart averages across element
+    type and input length. The chart suggests that for the best algorithms, either
+    32 or 64 lanes is best.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d01656abaf5c1374a97aa21d3cfee7c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: With this analysis, we can now choose our algorithm and decide how we want to
+    set the LANES parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thank you for joining me for this journey into Criterion benchmarking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’ve not used Criterion before, I hope this encourages you to try it. If
+    you’ve used Criterion but couldn’t get it to measure everything you cared about,
+    I hope this gives you a path forward. Embracing Criterion in this expanded manner
+    can unlock deeper insights into the performance characteristics of your Rust projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please* [*follow Carl on Medium*](https://medium.com/@carlmkadie)*. I write
+    on scientific programming in Rust and Python, machine learning, and statistics.
+    I tend to write about one article per month.*'
+  prefs: []
+  type: TYPE_NORMAL

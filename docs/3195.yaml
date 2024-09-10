@@ -1,0 +1,459 @@
+- en: Black-Box Chemical Process Optimization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/black-box-chemical-process-optimization-5d7cbb9be0cf?source=collection_archive---------8-----------------------#2023-10-24](https://towardsdatascience.com/black-box-chemical-process-optimization-5d7cbb9be0cf?source=collection_archive---------8-----------------------#2023-10-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Smart Chemical Systems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Relying on decision support for which experiment to perform next.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gtancev.medium.com/?source=post_page-----5d7cbb9be0cf--------------------------------)[![Georgi
+    Tancev](../Images/4529168ec26d51265185189298c81677.png)](https://gtancev.medium.com/?source=post_page-----5d7cbb9be0cf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5d7cbb9be0cf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5d7cbb9be0cf--------------------------------)
+    [Georgi Tancev](https://gtancev.medium.com/?source=post_page-----5d7cbb9be0cf--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F54224776d918&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-box-chemical-process-optimization-5d7cbb9be0cf&user=Georgi+Tancev&userId=54224776d918&source=post_page-54224776d918----5d7cbb9be0cf---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5d7cbb9be0cf--------------------------------)
+    ·12 min read·Oct 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5d7cbb9be0cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-box-chemical-process-optimization-5d7cbb9be0cf&user=Georgi+Tancev&userId=54224776d918&source=-----5d7cbb9be0cf---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5d7cbb9be0cf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fblack-box-chemical-process-optimization-5d7cbb9be0cf&source=-----5d7cbb9be0cf---------------------bookmark_footer-----------)![](../Images/83e86152aab2f66efa8ec7fba3c819f6.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [National Cancer Institute](https://unsplash.com/@nci?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Designing and optimizing chemical processes is one of the main tasks in process
+    engineering. When setting up a chemicalsystem (e.g., a unit operation) with a
+    large number of **design parameters**, the question of how to quickly arrive at
+    the optimal design(s) arises frequently. If one had a model of the system, one
+    could solve the problem numerically, i.e., by optimizing with respect to a specified
+    metric (e.g., yield, material properties, cost, and so on). Often, however, this
+    is not possible because the relationships (e.g., kinetics, physical phenomena)
+    are not fully understood — or perhaps even not known at all. Therefore, formulating
+    equations is not possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In such cases, the only option left is to find an optimal design by means of
+    empirical **models** fed with **data** from **experiments**. Traditionally, for
+    instance, one can refer to [**response surfaces**](https://en.wikipedia.org/wiki/Response_surface_methodology)and[**central
+    composite designs**](https://en.wikipedia.org/wiki/Central_composite_design)to
+    [identify optimal operating conditions](https://www.sciencedirect.com/science/article/abs/pii/S0960852416317515?via%3Dihub=).
+    [These make use of local second-order approximations and gradient ascent/descent
+    to locate the best configuration](https://n.ethz.ch/~kahans/doe2020/ch-rsm.html#sequential-experiments).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article, however, is devoted to an alternative strategy, namely [**Bayesian
+    optimization**](https://arxiv.org/abs/1807.02811), whichis related to reinforcement
+    learning andhas been successfully applied to the design of [materials](https://link.springer.com/chapter/10.1007/978-3-319-23871-5_3),
+    [chemical reactions](https://www.nature.com/articles/s43586-023-00266-3), and
+    [drugs](https://pubs.rsc.org/en/content/articlehtml/2019/sc/c9sc04026a). It offers
+    advantages like **higher flexibility** of models and processing of **multi-fidelity**
+    information. The latter refers to the fact that mixed-quality data from different
+    sources can be used for optimization, for example when physical models are at
+    least rudimentarily available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem Definition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Multi-Armed Bandits
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You may ask, why do we need yet another optimization method? Let me answer this
+    question by setting up the following scenario for you. You find yourself in front
+    of a **slot machine** with *k* arms, that is, you have *k* arms to pull, and each
+    arm *i* has a probability *pᵢ* to give you a reward *rᵢ*. Evidently, your goal
+    will be to maximize your total reward *R*, but you only have a finite number of
+    attempts (or budget) *T*. This is the so-called [**multi-armed bandit**](https://en.wikipedia.org/wiki/Multi-armed_bandit)
+    **problem**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This problem is difficult because we do not initially know the probabilities
+    or the rewards. With our *T* attempts, we have to simultaneously **explore** in
+    order to “learn” the *pᵢ*’s and *rᵢ*’s but also to **exploit** rewarding arms
+    (i.e., pull arms with a high expected reward *pᵢrᵢ* as frequently as possible)
+    in order to accumulate them. [This is the exploration-exploitation dilemma](https://en.wikipedia.org/wiki/Exploration-exploitation_dilemma).
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the one side, we need to experiment and try out different arms, on the other
+    side we have to stick to the same, promising arm(s) — and we have to balance both
+    objectives carefully due to the limited budget. Similarly, we have to find optimal
+    design settings. We need to learn as much as possible about our objective function
+    through experiments, but also remain in the proximity of promising maximizers.
+    We transition into the realm of Bayesian optimization when we move from the **discrete**
+    setting with *k* arms to the **continuous** setting with infinite arms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian Optimization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Roughly speaking, the idea is to sequentially learn the function *f*(x) that
+    we want to optimize over a domain of interest 𝒳 and to move towards its maximum
+    xᵒᵖᵗ,
+  prefs: []
+  type: TYPE_NORMAL
+- en: xᵒᵖᵗ = arg max *f*(x), s.t. x ∈ 𝒳.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Typically, Bayesian optimization works well for optimization over continuous
+    domains of less than 20 dimensions, and it tolerates stochastic noise in function
+    evaluations. The method has two main “ingredients”: [**Gaussian processes**](http://gaussianprocess.org)
+    and **acquisition functions**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gaussian Processes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first ingredient in Bayesian optimization is the Gaussian process, which
+    is best understood by deriving it from [**Bayesian linear regression**](https://en.wikipedia.org/wiki/Bayesian_linear_regression).
+    [**Bayesian statistics**](http://www.stat.columbia.edu/~gelman/book/) is an alternative
+    theory in the field of statistics based on the Bayesian interpretation of probability
+    in which probability expresses a degree of **belief** or **information** (i.e.,
+    knowledge) about an event. This differs from the frequentist interpretation that
+    views probability as the limit of the relative frequency of an event after many
+    trials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us assume that the function *f*(x) that we want to maximize follows a model
+  prefs: []
+  type: TYPE_NORMAL
+- en: y= *f*(x) + *ϵ* = *β*ᵀx *+ ϵ*, with x ∈ ℝ*ᵈ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although this model is linear in parameters, the basis vectors in **X** can
+    also represent non-linearity through **basis expansion**. Furthermore, we stack
+    the *n* data points/samples in a matrix **X** =[x₁ᵀ, …, xₙᵀ] and **y** = [y₁,
+    …, yₙ].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bayesian statistics revolves around the [**Bayes’ theorem**](https://en.wikipedia.org/wiki/Bayes%27_theorem),
+    which states that
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2d6ce4aaf594bff3eaff02d81cbafc25.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Although not explicitly stated, some of the distributions are also conditionally
+    dependent on the data realization **X**. In particular, we are interested in the
+    **posterior distribution** p(*β*|*y*), given our **prior knowledge** p(*β*) and
+    the **data distribution** p(*y*|*β*). The prior expresses our knowledge before
+    and the posterior after seeing the data. In the Bayesian interpretation of statistics,
+    a parameter realization of the posterior distribution is essentially one possible
+    model among many. If one interprets a model as a theory, then the prior is “all
+    possible theories”, but data support some theories more than others, resulting
+    in higher posterior probabilities for certain theories — or parameter combinations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we assume a normal (i.e., Gaussian) prior p(*β*) = 𝒩(0, **I**) for the parameters,
+    and a normal likelihood p(*y*|*β*) = 𝒩(**X***β,* σₙ²) of our data, the analytical
+    solution will be normal as well and the multi-variate posterior distribution p(*β*|*y*)
+    = 𝒩(μ*ᵦ,* Σ*ᵦ*) becomes
+  prefs: []
+  type: TYPE_NORMAL
+- en: μ*ᵦ* = (**X**ᵀ**X +** σₙ²**I**)⁻¹**X**ᵀ**y**,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Σ*ᵦ* = (σₙ⁻²**X**ᵀ**X + I**)⁻¹.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we take the samples in **X**, we get a **posterior predictive distribution**
+    for the output vector
+  prefs: []
+  type: TYPE_NORMAL
+- en: p(**y**|**X**) = 𝒩(**X**μ*ᵦ*, **X**Σ*ᵦ***X**ᵀ + σₙ²**I**).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fig. 1 illustrates one simple example (a polynomial function of degree four)
+    in the one-dimensional case. Note how the ground truth is contained in the predicted
+    interval.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e6953fe678b9046fc01252e32d1806c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 1:** Predictive posterior distribution (μ ± 2σ). © Georgi Tancev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The plot shows how the **uncertainty** increases with increasing distance from
+    the data. The overall uncertainty consists of an **epistemic** part (**X**Σ*ᵦ***X**ᵀ)
+    that decreases as the amount of data increases (the elements in the term **X**ᵀ**X**
+    increases with more data, its inverse decreases, and so does Σ*ᵦ*), and an **aleatoric**
+    part (σₙ²**I**) that remains constant no matter what. Moreover, this uncertainty
+    is key because it suggests where knowledge is missing but also where the maximum
+    might be, so we could make a new measurement at those locations in the domain
+    𝒳.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observe that p(**y**|**X**) is a joint distribution over the **output** values,
+    and it captures their covariance (or similarity) with each other. In general,
+    points that are closer to each other will have more similar *y*-values than points
+    that are further away. The key insight is that we can directly operate on the
+    function values (instead of the parameter values) through a [**kernel**](https://en.wikipedia.org/wiki/Kernel_method#Mathematics:_the_kernel_trick)(or
+    covariance) function*k*(x₁, x₂)that measures the similarity between samples (i.e.,
+    data points), e.g., a **linear** kernel (with a scale parameter σₛ)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*k*(x₁, x₂) = σₛ⋅ x₁ᵀx₂.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, there are more expressive/flexible kernels such as the **exponential**
+    kernel
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*k*(x₁, x₂) = σₛ⋅ exp(-*γ* ⋅ ‖x₁ *-* x₂‖²).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A kernel has to be **symmetric** and **positive semidefinite** — just like the
+    covariance matrix. Furthermore, more sophisticated kernels are obtained through
+    **kernel engineering**. For instance, for two kernels *k*₁(x₁, x₂) and *k*₂(x₁,
+    x₂), their sums and products are also kernels. With such kernels, a kernel matrix
+    **K** with pair-wise similarities can then be constructed. This is how the Gaussian
+    process arises.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Gaussian process *y* ∼ 𝒢𝒫(*μ*, *k*) is defined as a **stochastic** process
+    in which every **finite** collection of **random variables** has a multi-variate
+    normal distribution. Simply put, the kernel matrix “captures” how the individual
+    points correlate with each other, and how this projects to (new) function values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af17f90e534bfd2cd2923f2df89b9e44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It is usually assumed that the (prior) mean function is zero. This can be easily
+    ensured by standardizing the output values (i.e., subtracting the empirical average).
+    To obtain the value for a new test point x*, we simply condition on the known
+    data 𝒟 = {**X**, **y**}.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56f3dd8dc32d9fc8a2abf56d36f11794.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An important observation is that this method makes inferences based on memorized
+    data. In other methods, loss functions must first be optimized. Nonetheless, kernel
+    hyperparameters (e.g., σₛ, *γ,* σₙ) need to be fixed, which can be done through
+    maximization of the **marginal likelihood** p(*y*), which itself is also an optimization
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Acquisition Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the same data as before, we can now fit a Gaussian process with an exponential
+    kernel including diagonal noise term (Fig. 2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08ce328645799be99fefc3af49cd0cab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 2:** Predictive posterior distribution (μ ± 2σ) with a Gaussian process.
+    © Georgi Tancev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The uncertainty or confidence band suggests plausible function values at different
+    locations in our domain. Observe that the uncertainty is larger than in Fig. 1,
+    as the exponential kernel offers more flexibility by [including more basis functions](https://en.wikipedia.org/wiki/Radial_basis_function_kernel),
+    making a larger set of function values plausible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What we are asking is where in the domain do we think the maximum is. In particular,
+    the maximum of the **upper confidence bound** provides information about where
+    in the domain the highest function values can be expected. Using this upper confidence
+    bound
+  prefs: []
+  type: TYPE_NORMAL
+- en: x′ = arg max μ*(x) + *θₜ* √k*(x, x), s.t. x ∈ 𝒳,
+  prefs: []
+  type: TYPE_NORMAL
+- en: as an acquisition function, we can acquire a plausible maximizer of *f*(x),
+    i.e., a point x′ at which we believe (or expect) the optimum of *f*(x) to be —
+    with our current knowledge about *f*(x). The factor *θₜ* balances exploration
+    and exploitation. On the one hand, we get stuck in local optima, i.e., in the
+    proximity of previously discovered maxima if we are too exploitative (low *θₜ*).
+    On the other hand, we will use less information from previously identified optima
+    if we are too explorative (high *θₜ*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Theoretical results suggest schedulers such as *θₜ* ∝ √log t for optimal performance,
+    although leading to excessive exploration](https://arxiv.org/abs/2302.01511).
+    Alternatively, *θₜ* can be kept constant; to avoid falling into a local optimum,
+    a random experiment can occasionally be run instead of the experiment suggested
+    by the acquisition function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: An example is illustrated in the code block below; “GP” refers to the Gaussian
+    process model instance, be it from [*scikit-learn*](https://scikit-learn.org/stable/modules/generated/sklearn.gaussian_process.GaussianProcessRegressor.html#sklearn.gaussian_process.GaussianProcessRegressor),
+    [*GPy*](https://gpy.readthedocs.io/en/deploy/GPy.models.html#module-GPy.models.gp_regression),
+    or [*GPflow*](https://gpflow.org).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since this is not a convex problem, it is strongly recommended to run the optimization
+    several times and to pick the best solution. In a second step, we then conduct
+    an experiment under conditions x′, add the freshly collected data {x′, y′} to
+    our dataset, 𝒟 ← 𝒟 ∪ {x′, y′}, and refit our model (Fig. 3). We can see that after
+    one such iteration, we have not quite reached the optimum yet, but we have learned
+    more about *f*(x). If we repeated the same process and asked for a new experimental
+    condition, we may already be done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bebf65811ddd12b6367772c20be8e336.png)![](../Images/a7d2da11a36296221dbcd0ec470a4cd7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 3:** Predictive posterior distribution (μ ± 2σ) and updated predictive
+    posterior distribution (μ ± 2σ) with a Gaussian process. © Georgi Tancev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us look at another dataset, i.e., realization from the same distribution,
+    before and after acquiring a new data point (Fig. 4).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e33609f08a2ee328f9f08c0f6fcca729.png)![](../Images/bbcb86cd731174db0e35a23ba28e3bf9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 4:** Predictive posterior distribution (μ ± 2σ) and updated predictive
+    posterior distribution (μ ± 2σ) with a Gaussian process. © Georgi Tancev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, the acquisition function suggests that the maximum of *f*(x)
+    is at the border of the domain. After performing this experiment, we realize that
+    this seems not to be the case. However, we have learned with this experiment,
+    and in the following experiment we will then identify the maximizer of *f*(x).
+    We can show this with a final dataset (Fig. 5).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/baedfbc2521fb97fce7791a0d7cfff62.png)![](../Images/cecf4a90fcf0d9ed6e62bf9edaa816c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 5:** Predictive posterior distribution (μ ± 2σ) and updated predictive
+    posterior distribution (μ ± 2σ) with a Gaussian process. © Georgi Tancev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The upper confidence bound is not the only acquisition function available](https://proceedings.neurips.cc/paper_files/paper/2018/hash/498f2c21688f6451d9f5fd09d53edda7-Abstract.html).
+    Other popular choices are **Thompson sampling**, **probability of improvement**,
+    or **expected improvement**. They differ, for example, in how they balance exploration
+    and exploitation. Whether and how fast we actually end up identifying (i.e., converging
+    to) the maximizer also depends on the sequence of *θₜ*’s and on a correct model
+    specification (i.e., kernel choice).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just a very short summary of the things we need to know about Gaussian
+    processes, acquisition functions, and Bayesian optimization. Evidently, many details
+    had to be left out. For other topics (kernel engineering, optimization of kernel
+    parameters, and so on) it is worth taking a look at the relevant literature. Let
+    us now move on to a short case study on multi-fidelity information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-Fidelity Information
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In practice, we may have partial knowledge about our system, i.e., data of lower
+    fidelity from a simple model. For instance, we may have a numerical simulations,
+    or mathematical model with a subset of potential effects or within a subset of
+    our domain. It would be sensible to include that somehow in our experimental designs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us assume that a data point can come either from a model or from an experiment,
+    resulting in multi-fidelity data. Furthermore, we have to correct our model for
+    data points that come from experiments. [Thus, we introduce a new variable *w*
+    that tracks the origin of a data point; it will be the case that *w* = 1 if the
+    sample comes from an experiment, and *w* = 0 otherwise](https://arxiv.org/abs/1703.01250).
+    Then, we can decompose our function as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*f* = *fₘ* + *w* ⋅ *fᵣ*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*fₘ* refers to the contribution from our simple model and *fᵣ* is a correction
+    term, which is only present for laboratory experiments (*w* = 1). By requesting
+    **independence** (i.e., orthogonality) between *fₘ* and *fᵣ*, [the resulting kernel
+    will be](https://www.cs.toronto.edu/~duvenaud/cookbook/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*k*(x₁, x₂) = *kₘ*(x₁, x₂) + *w*₁*w*₂ ⋅ *kᵣ*(x₁, x₂).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In *GPy*, we can define this as follows (assume *w* is in the last dimension
+    of an array of length 2):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The noise is handled by the *GPRegression* class; we don’t need to specify it
+    unless we expect different noise terms for experiments and models. Fig. 6 illustrates
+    an example with the resulting Gaussian process, trained only on some model data.
+    Evidently, our knowledge fails at the borders of our domain, as the ground truth
+    deviates from our simple model and the resulting low-fidelity data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e667d693e8e55f350f2670e317407717.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 6:** Multi-fidelity data. © Georgi Tancev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are now ready to perform our experiments. We query the acquisition function
+    for proposals. This is shown in the simulations below (Fig. 7) with two different
+    *θₜ*’s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/34912729791d2de269aeb7582b6a9d83.png)![](../Images/710456abf9260156c750a600659b802e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 7**: Bayesian optimization with multi-fidelity data; **left**: *θₜ=0.75,*
+    ***right****:* *θₜ=0.95*. © Georgi Tancev.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The acquisition starts directly at the borders of the domain, as this is where
+    we expect the maximizer to be according to the behavior of our low-fidelity data
+    (Fig. 6). In both cases, we find the maximum relatively quickly. If we notice
+    that successive experiments are relatively close to each other, we can assume
+    that we are done and can stop — even before we have used up our budget.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having reached the end of the article, I am confident that I have been able
+    to convince you about the merits of Bayesian optimization, which is currently
+    a large research field. I personally believe that such tools will have a wide
+    application in decision support in the future, especially in experimental science
+    and engineering due to their ability to process knowledge from different sources.
+    In this way, time and money can be saved, and new ideas can be generated, for
+    example experiments that no one has ever thought of before.
+  prefs: []
+  type: TYPE_NORMAL

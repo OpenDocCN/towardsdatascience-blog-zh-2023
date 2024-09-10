@@ -1,0 +1,280 @@
+- en: Selecting the Right XGBoost Loss Function in SageMaker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/selecting-the-right-xgboost-loss-function-in-sagemaker-60e545a75c47?source=collection_archive---------4-----------------------#2023-02-18](https://towardsdatascience.com/selecting-the-right-xgboost-loss-function-in-sagemaker-60e545a75c47?source=collection_archive---------4-----------------------#2023-02-18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: When and why you should use absolute or squared error
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@andrewcharabin?source=post_page-----60e545a75c47--------------------------------)[![Andrew
+    Charabin](../Images/8cfe2657a9cd16c3ce30b98e3c9e9945.png)](https://medium.com/@andrewcharabin?source=post_page-----60e545a75c47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----60e545a75c47--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----60e545a75c47--------------------------------)
+    [Andrew Charabin](https://medium.com/@andrewcharabin?source=post_page-----60e545a75c47--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff282e085f18e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fselecting-the-right-xgboost-loss-function-in-sagemaker-60e545a75c47&user=Andrew+Charabin&userId=f282e085f18e&source=post_page-f282e085f18e----60e545a75c47---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----60e545a75c47--------------------------------)
+    ·7 min read·Feb 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F60e545a75c47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fselecting-the-right-xgboost-loss-function-in-sagemaker-60e545a75c47&user=Andrew+Charabin&userId=f282e085f18e&source=-----60e545a75c47---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F60e545a75c47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fselecting-the-right-xgboost-loss-function-in-sagemaker-60e545a75c47&source=-----60e545a75c47---------------------bookmark_footer-----------)![](../Images/2cec24a6f11dc5dcb108a41c490780fc.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Image via VectorStock under license to Andrew Charabin*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[XGBoost](https://xgboost.readthedocs.io/en/stable/) is an open source software
+    library to apply the gradient boosting framework to supervised learning (SL) tasks.
+    Because of its effectiveness, speed, and robustness in solving a wide variety
+    of SL problems, a current saying is that the best type of model for your SL problem
+    is either a deep learning algorithm or XGBoost. As a result of its well-deserved
+    popularity, XGBoost is available as a built-in model in Amazon SageMaker, a cloud
+    machine learning platform.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With minimal knowledge of the XGBoost framework, any data scientist can easily
+    plug in their dataset and produce an XGBoost model in SageMaker. Since SageMaker
+    offers baysian hyperparameter tuning, which will retrain and select the best model
+    across different hyperparameters, users can get away without fully understanding
+    key inputs like max_depth and eta. However, there is often little consideration
+    of the loss function (objective) to use when training XGBoost, even though it
+    may be the most important human decision in the process. This article aims to
+    provide more insight into how to select the right loss function when training
+    XGBoost or other SL models for regression tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by explaining gradient boosting. A helpful start is to understand
+    what isn’t gradient boosting —one example being the ensemble decision tree algorithm,
+    random forest. Ensemble decision tree algorithms are those that aim to produce
+    several ‘weak-learner’ trees that when used in a network produce a ‘strong learner’.
+    Let’s say we have an ensemble of 100 trees, random forest conceptually produces
+    each of these trees in parallel, using ‘bagging’ to select a subset of observations
+    and dimensions to use to produce each tree, then takes a weighted average of the
+    predictions of all 100 trees to get the final prediction for a regression problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key difference with XGBoost is that individual trees can’t be produced in
+    parallel, they must be produced in sequence. Specifically, each subsequent tree
+    in an XGBoost model is used to predict the error of the preceding tree. By using
+    an ensemble approach with both ‘bagging’ (pulling different observations and dimensions
+    out of a bag for each tree), and ‘boosting’ (building trees in sequence), XGBoost
+    framework is able to reduce model bias without overfitting. Furthermore, XGBoost
+    and other tree-based models are robust to high-variance datasets with low-importance
+    dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we understand how XGBoost works from a high-level, let’s return the
+    loss function. Loss functions take in model predictions for a set of observations
+    and tell you how far they were from actual outcomes. For regression problems,
+    the focus of this discussion, the simplest loss function that comes to the human
+    mind is mean absolute error — we subtract the predictions from the actual values
+    (or vice versa), take the absolute value, then take an average across all observations.
+    In other words, missing by 200 is twice as bad as missing by 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But the standard loss function used for most XGBoost use cases is ‘reg:squarederror’,
+    formerly called ‘reg:linear’ in SageMaker. The only difference with squared error
+    and absolute error, as the name indicates, is that errors for each observation
+    are squared before being averaged. Because squaring has a compounding effect as
+    the size of errors increases, mean squared error penalizes large misses proportionally
+    more than mean absolute error does. Missing by 200 is now 4X as bad as missing
+    by 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But why would mean squared error be the standard, unquestioned, loss function
+    used to train XGBoost and other SL models when it’s just not as simple or intuitively
+    sound as mean absolute error?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first distinction to understand is that of prediction and estimation loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/64404893c2b3adf07abbc891ed349f22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Chart by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prediction loss is the loss incurred by the business, while estimation loss
+    is how far the model is from the ‘ground truth’ model. The right estimation loss
+    function isn’t always the one that minimizes prediction loss. As I’ll show later,
+    you can reduce prediction loss by choosing a different estimation loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given mean average error does well at quantifying the penalty of missing in
+    many real world cases, why does mean squared error often win when estimating the
+    best model parameters?
+  prefs: []
+  type: TYPE_NORMAL
+- en: It all comes down to the practical assumption of model errors being normally
+    distributed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75335081e3c89dbcd0d1b61439bf8be4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Chart by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume that there are two components required to perfectly explain an
+    outcome, Y. First, the signal that can be derived from model dimensions. In this
+    case, let’s assume a linear model with a single dimension and a bias term is sufficient
+    (mX + b below). And second, a random variable, Z, that follows a normal distribution
+    with independent variance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best estimation loss function in a sense is the one that when applied to
+    a model maximizes the likelihood of having produced the observed data. In this
+    case, it turns out to be MSE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c43ad8d247cbd12720835461b0714a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The appearance of the squaring can be traced back to the probability density
+    function of the the normal distribution, which is essential to producing the bell
+    shape.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what if errors and specifically the random component, Z, are not distributed
+    normally? Another common prediction error distribution observed in regression
+    problems is the Laplace distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc9524beda462e22fd481dc6662f7a35.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Chart by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: When observing the probability density function of the Laplace distribution,
+    the absolute error formula immediately sticks out. The lack of squaring results
+    in an spike in the distribution about 0 on the X axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/20bd1165b7a2da2efed3419f0a8faf74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Furthermore, it turns out that mean absolute error is the loss function that
+    maximizes likelihood of observing data when model errors follow the Laplace distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Normal and Laplace distributions are only a couple of the error distributions
+    that can be observed in regression tasks, however. For problems with count-based
+    data, errors may follow a Poisson distribution. So in other cases, additional
+    research be needed to find the matching error distribution and associated loss
+    function that will lead to the best parameter estimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without going any further, we already have an improved algorithm to select the
+    the right loss function for an XGBoost model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Produce an arbitrary model.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Observe errors and whether they closely resemble a normal or Laplace distribution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If they do, select a loss function of mean squared or mean absolute error, respectively.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If not, research and test alternative distributions that match observed errors
+    and are common for similar problems. Then, find the loss function that will lead
+    to the most likely parameter estimates.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As a business case for the application of this simple algorithm, I will share
+    a real SL regression case I encountered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An XGBoost model with a mean squared error loss was trained leading to the following
+    prediction error distribution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/26c35b44e2cc2a0119115c216a783196.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Chart by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Prediction errors closely resembled the Laplace distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Mean average error should be used as the loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only issue is that XGBoost and deep learning algorithms, our go-tos to solve
+    the laundry list of SL problems, require a smooth loss function to perform gradient
+    descent (or comparable optimization algorithm). So we need to find a smooth loss
+    function that closely resembles mean absolute error. The best option available
+    in SageMaker is pseudo-huber; the huber distribution is shown below which closely
+    resembles absolute error at a delta of 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/225d55ea111430b701f4191380c0829c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Chart by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: So for my use case, what were the impacts of switching from a squared error
+    loss function to pseudo-huber and mean absolute error for model training and hyperparameter
+    tuning?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d04a2d929ca02a4916b55c6cf7af3b8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Chart by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the chart, you can see the mean absolute error (MAE) dropped by 30% when
+    pseudo-huber loss was paired with MAE hyperparameter tuning. More interestingly,
+    even if the most important objective to the business was root mean squared error
+    (RMSE), using an estimation loss function of mean absolute error resulted in improved
+    business outcomes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing remarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While XGBoost and comparable ensemble decision tree models are making it easy
+    for data scientists to plug and play with their different datasets and achieve
+    good model performance with minimal effort, there is a price to pay for surface
+    level understanding. Selecting the right loss function is one simple example which
+    I showed can lead to a 30%+ model improvement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a deeper level, data science is all about asking why, pursuing the important
+    details to illuminate the answer, and discarding the ones that are accessory.
+    It requires intuition, pursuing your curiosity, digging in further when surprised,
+    and breaking down a problem from the big picture to the fine print. This article
+    outlines my journey to understand why mean squared error is considered the standard
+    loss function for XGBoost regression tasks. The result is a simple system to prescribe
+    the best loss function for a variety of cases. I hope this article was of use
+    to you as you progress on your own pursuit to understand why and use what you
+    uncover to help tackle important business challenges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thanks for reading! If you liked this article, follow me to get notified of
+    my new posts. Also, feel free to share any comments/suggestions.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

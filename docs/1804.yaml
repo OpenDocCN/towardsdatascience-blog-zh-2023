@@ -1,0 +1,361 @@
+- en: How to Improve The Code Quality of your Dbt Models with Unit Tests and TDD
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/improving-the-code-quality-of-your-dbt-models-with-unit-tests-and-tdd-203ed0be791e?source=collection_archive---------4-----------------------#2023-05-31](https://towardsdatascience.com/improving-the-code-quality-of-your-dbt-models-with-unit-tests-and-tdd-203ed0be791e?source=collection_archive---------4-----------------------#2023-05-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: All you need to know to start unit testing your dbt SQL models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@pablo.porto?source=post_page-----203ed0be791e--------------------------------)[![Pablo
+    Porto](../Images/acfca713c40ae7f2b86756fb39402c60.png)](https://medium.com/@pablo.porto?source=post_page-----203ed0be791e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----203ed0be791e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----203ed0be791e--------------------------------)
+    [Pablo Porto](https://medium.com/@pablo.porto?source=post_page-----203ed0be791e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6f9bc7e34a6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-the-code-quality-of-your-dbt-models-with-unit-tests-and-tdd-203ed0be791e&user=Pablo+Porto&userId=a6f9bc7e34a6&source=post_page-a6f9bc7e34a6----203ed0be791e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----203ed0be791e--------------------------------)
+    ·7 min read·May 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F203ed0be791e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-the-code-quality-of-your-dbt-models-with-unit-tests-and-tdd-203ed0be791e&user=Pablo+Porto&userId=a6f9bc7e34a6&source=-----203ed0be791e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F203ed0be791e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-the-code-quality-of-your-dbt-models-with-unit-tests-and-tdd-203ed0be791e&source=-----203ed0be791e---------------------bookmark_footer-----------)![](../Images/58bc10ba96ec1c58648c3caeba83b27c.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Christin Hume](https://unsplash.com/@christinhumephoto?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/Hcfwew744z4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are a data or analytics engineer, you are probably comfortable writing
+    SQL models and testing for data quality with dbt tests. You are proud of the modularisation
+    and the neat SQL models you have created. Everything is fine for a while. But
+    at some point, the transformation logic in your models starts growing and becoming
+    more complex. You start looking at it and wondering, wouldn’t be great if I could
+    isolate my models and create unit tests to verify and document this logic? This
+    will definitely increase the code quality of your dbt code base, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Your first thought is to look at how you could do this type of test with the
+    built-in dbt data tests functionality. After a few searches on Google, you realize
+    that one of the ways is to [create a custom-built unit testing framework leveraging
+    the dbt seed functionality](https://medium.com/@TianchenW/unit-test-sql-using-dbt-1b8aa214365e).
+    Or you need to [introduce Python into your codebase to create unit tests with
+    Pytest](https://godatadriven.com/blog/dbts-missing-software-engineering-piece-unit-tests/).
+    That looks quite tedious, so you start wondering, wouldn’t be great to be able
+    to mock the model inputs and make assertions on the transformed data using SQL?
+  prefs: []
+  type: TYPE_NORMAL
+- en: If this resonates with you, you are not alone. This is the journey the data
+    engineering team I am part of went through until we found the dbt-unit-testing
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mocking dbt sources and refs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With [dbt-unit-testing](https://github.com/EqualExperts/dbt-unit-testing) you
+    can test dbt models independently by mocking their dependencies. As per their
+    documentation, it gives you:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ability to mock dependencies**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Ability to run each test independently**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**A fast feedback loop**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Good test feedback** (well, there are some gotchas as we will see)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This dbt library allowed us to mock our model dependencies and start implementing
+    unit tests straight away. As I will share with you at the end, it even allowed
+    us to start practicing test-driven development to develop our models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we introduced the library, let’s look at the bare minimum you need
+    to know to start implementing real unit tests for your dbt SQL models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why should you unit test your models?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Some data teams focus on increasing the data quality of the data processed by
+    their data applications but they often forget about the code quality of the software
+    they are building.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unit tests can help with this by providing a way to isolate the SQL models and
+    verify complex business logic in isolation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“A unit test exercises the smallest piece of testable software in the application
+    to determine whether it behaves as expected” —* [*Toby Clemson*](https://martinfowler.com/articles/microservice-testing/#testing-unit-introduction)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In our case, the smallest piece of testable software is a dbt model. Being able
+    to test a model in isolation ensures new changes don’t break the existing business
+    logic and helps us document the expected behavior of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A typical dbt application follows [a layered architecture style](https://docs.getdbt.com/guides/best-practices/how-we-structure/1-guide-overview)
+    with at least three layers: staging, intermediate mart. Each layer will contain
+    one or more models. These are the models we can test in isolation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating our first unit test
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s look at a simple example. We have a dbt app called health-insights that
+    takes weight and height data from upstream sources and calculates the metric body
+    mass index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0edbb85d35fe210159bef95ffdd277e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The layered architecture of a typical dbt data app
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following model enriches a weight measurement with the latest height measurement
+    recorded prior to the weight one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example of a dbt intermediate model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now create a dbt unit test to prove the transformation logic is correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example of a dbt unit test for the an intermediate model
+  prefs: []
+  type: TYPE_NORMAL
+- en: The building blocks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Looking at the previous test, we can see several of the dbt-unit-testing macros
+    in use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**dbt_unit_testing.test:**This macro allows us define the model under test
+    and the name of the test. In our example we reference to *int_weight_measurements_with_latest_height*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**dbt_unit_testing.mock_ref:**This macro allows us to mock references to other
+    dbt models. In our example, we are mocking the weight (stg_gym_app__weight) and
+    the height (stg_gym_app__height) staging data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**dbt_unit_testing.expect:** And this macro allows us to assert on the result
+    of the transformation. In the example, we assert that the weight measurement gets
+    enriched with the latest height.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Running the tests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let''s now run our model’s unit test. We can call the usual dbt test command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Opps, that commands runs the whole test suite including other dbt data quality
+    checks. But we want to only run our unit tests. No problem, we can leverage dbt
+    tags functionality to isolate our unit tests. In the example, we tagged our test
+    with two tags:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first one is a boilerplate tag required by the dbt-unit-testing library.
+    The second one is the one we will use to execute our unit test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Exploring other types of tests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So far we have seen how we can write a unit test to verify the logic of a single
+    model. After creating a few of these, our team started discussing the possibility
+    of implementing new types of tests like we usually do for operational software
+    like microservices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“A component test limits the scope of the exercised software to a portion
+    of the system under test, manipulating the system through internal code interfaces
+    and using test doubles to isolate the code under test from other components.”
+    —* [*Toby Clemson*](https://martinfowler.com/articles/microservice-testing/#testing-component-introduction)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In a microservices context, a component is a service that exposes certain functionalities.
+    If we apply the same concept to the data context, component tests for dbt apps
+    can be implemented as tests that validate whether the dbt app provides the functionality
+    that it promises to by mocking the data sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ab15cf4b82289f9688db950dbc43d88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The usual test pyramid for an operational app
+  prefs: []
+  type: TYPE_NORMAL
+- en: When implementing the component test, the scope of the test increases. We test
+    our dbt app as a whole mocking only its sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14753c64f03937d7493898c66d960153.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The component test scope
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This type of test ensures that the different models integrate correctly and
+    the expected data transformation outcome is created. Let’s look at an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the component test above, we are testing our output model *body_mass_indexes*.
+    The model uses the enriched weight measurements to calculate the body mass of
+    the user. We mock the sources directly (raw_weight and raw_height) with the dbt_unit_testing.mock_source
+    macro. Finally, we assert the final transformation of the output model verifying
+    that the body mass index (BMI) is calculated correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also run this type of tests in isolation using the tag name we specified
+    in the test configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Test-driven development (TDD) in SQL, why not?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have the ability to test our models in isolation, what if we start
+    by writing the tests before we write any transformation logic?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Test-driven development or TDD is a software engineering practice that helps
+    improve the design of the code by forcing the developers to write a test first
+    and then write the minimum amount of code to make that test pass.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our data team had experience in applying TDD in operational systems so we decided
+    to give it a try.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Starting by defining the outcomes of a given transformation in a test felt quite
+    natural. Oh, what is the BMI I would expect if I have this weight and this height
+    as an input? Let’s write a test for that. After practicing TDD for a while, the
+    team still continue to use this technique when adding new business logic into
+    the transformations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gotchas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I just pictured a perfect scenario where you can just add the unit testing
+    dbt package and start creating tests straight away. The truth is that the library
+    is still under development and we found some gotchas that you should also probably
+    be aware of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dbt-unit-testing macros break the principle of not allowing testing code
+    to pollute production code. There is an easy hack to fix this. You can create
+    a macro to patch the original ref() and source() and call the testing macros.
+    You can see an [example here](https://github.com/portovep/dbt-unit-testing-examples/blob/main/macros/testing_macros.sql).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We found that sometimes seems like changes in a test are not picked up. There
+    is an option to disable caching but we haven’t try it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When mocking sources you need to define the source in the dbt .yml file if not
+    it doesn’t compile.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sometimes the test error messages are quite cryptic. In this situation, we found
+    ourselves looking at the compiled SQL code in the build folder.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Be also aware of other limitations [listed in the library docs](https://github.com/EqualExperts/dbt-unit-testing#known-limitations).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have seen how we can add unit and component tests to our dbt projects to
+    increase the code quality and therefore the maintainability of our transformation
+    logic. We also saw how we can tag the different types of tests so that we can
+    run them in isolation both locally and in the CI/CD pipeline. Finally, we also
+    look at how we could also practice TDD
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hope this article helps you and your team start adopting unit tests and creating
+    more maintainable and scalable dbt apps as your codebase scale to fulfill new
+    data use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are curious, you can check a fully functional example in [this Github
+    repo](https://github.com/portovep/dbt-testing-examples). I also prepared [some
+    katas](https://github.com/portovep/dbt-unit-testing-examples/tree/main/exercises)
+    in case you want to practice TDD and unit testing with a simple example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Are you ready to give it a try?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article is part of series of articles I am writing on* [*testing data
+    pipelines and data products.*](https://medium.com/@pablo.porto/list/testing-data-products-and-data-pipelines-with-dbt-52eaff0e92dd)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*I am always looking forward to meeting new people. If you want to connect,
+    you can find me on* [*Linkedin*](https://www.linkedin.com/in/pabloportoveloso/)*,*
+    [*Github*](https://github.com/portovep)*,* [*Instagram*](https://www.instagram.com/porto.vga/),
+    [*Substack*](https://pabsgarage.substack.com/), *or on* [*my personal website.*](https://pabloporto.me)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thanks to my Thoughtworks colleagues Manisha and David for taking the time
+    to review early versions of this article. Thanks to the maintainers of the* [*dbt-unit-testing
+    package*](https://github.com/EqualExperts/dbt-unit-testing) *for their great work.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

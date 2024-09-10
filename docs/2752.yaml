@@ -1,0 +1,225 @@
+- en: 'Geospatial Data Engineering: Spatial Indexing'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/geospatial-data-engineering-spatial-indexing-18200ef9160b?source=collection_archive---------0-----------------------#2023-08-31](https://towardsdatascience.com/geospatial-data-engineering-spatial-indexing-18200ef9160b?source=collection_archive---------0-----------------------#2023-08-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Optimizing queries, improving runtimes, and geospatial data science applications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://deabardhoshi.medium.com/?source=post_page-----18200ef9160b--------------------------------)[![Dea
+    Bardhoshi](../Images/14ce0986fc2a4a192797a52ed9908d1e.png)](https://deabardhoshi.medium.com/?source=post_page-----18200ef9160b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18200ef9160b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----18200ef9160b--------------------------------)
+    [Dea Bardhoshi](https://deabardhoshi.medium.com/?source=post_page-----18200ef9160b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd61c58ba988e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeospatial-data-engineering-spatial-indexing-18200ef9160b&user=Dea+Bardhoshi&userId=d61c58ba988e&source=post_page-d61c58ba988e----18200ef9160b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18200ef9160b--------------------------------)
+    ·6 min read·Aug 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18200ef9160b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeospatial-data-engineering-spatial-indexing-18200ef9160b&user=Dea+Bardhoshi&userId=d61c58ba988e&source=-----18200ef9160b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F18200ef9160b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeospatial-data-engineering-spatial-indexing-18200ef9160b&source=-----18200ef9160b---------------------bookmark_footer-----------)![](../Images/29fefc0d1aca68839035e1184d404196.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Tamas Tuzes-Katai](https://unsplash.com/@tamas_tuzeskatai?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Intro: why is a spatial index useful?**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In doing geospatial data science work, it is very important to think about optimizing
+    the code you are writing. How can you make datasets with hundreds of millions
+    of rows aggregate or join faster? This is where concepts such as spatial indices
+    come in. In this post, I will talk about how a spatial index gets implemented,
+    what its benefits and limitations are, and take a look at Uber’s open source H3
+    indexing library for some cool spatial data science applications. Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 🗺 What’s a spatial index?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A regular index is the kind of thing you might find at the end of a book: a
+    list of words and where they have shown up in the text. This helps you quickly
+    look up any reference to a word you’re interested in within a certain text. Without
+    this handy tool, you would need to manually look through every page of your book,
+    searching for that one mention you wanted to read about.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In modern databases, this issue of querying and searching is also very pertinent.
+    Indexing often makes looking up data faster than filtering, and you can create
+    indices based on a column of interest. For geospatial data in particular, engineers
+    often need to look at operations like “intersection” or “is nearby to”. How can
+    we make a spatial index so that these operations are as fast as possible? First,
+    let’s take a look at some of this geospatial data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c982cddb36a9445d0b96d1be3fa1e2a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Two non-intersecting features (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s say that we want to run a query to determine if these two shapes are
+    intersecting. By construction, spatial databases create their index out of a bounding
+    box that contains the geometry:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44bf89146e3a9b186681beea21640257.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Making a large bounding box (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For answering whether these two features intersect, the database will compare
+    whether the two bounding boxes have any area in common. As you can see, this can
+    quickly lead to false positives. To fix this issue, spatial databases like PostGIS
+    typically partition these large bounding boxes into smaller and smaller ones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ef73239cf2fb2f4667a8165ed474620.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Going smaller: making child bounding boxes (image by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These partitions are stored in R-trees. R-trees are a hierarchical data structure:
+    they keep track of the large “parent” bounding box, its children, its children’s
+    children and so on. Every parent’s bounding box contains its children’s bounding
+    boxes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1d9e21d516843ed561c8c5e9e0b2245.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: R-tree visualized (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The operation “intersect” is one of the key operations that benefits from this
+    structure. While querying an interesection, the database looks down this tree
+    asking “does the current bounding box intersect the feature of interest?”. If
+    yes, it looks at that bounding box’s children and asks the same question. As it
+    does so, it is able to quickly traverse the tree, skipping the branches that do
+    not have an intersection and thus improve the query’s performance. In the end,
+    it returns the intersecting geometry as desired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '🧰 In Practice: trying out a spatial index with GeoPandas'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s now take a concrete look at what using a regular row-wise procedure vs
+    a spatial index looks like. I’ll be using 2 datasets representing NYC’s Census
+    Tracts as well as City Facilities (both licensed through Open Data, and available
+    [here](https://data.cityofnewyork.us/City-Government/2010-Census-Tracts/fxpq-c8ku)
+    and [here](https://data.cityofnewyork.us/City-Government/Facilities-Database-Shapefile/2fpa-bnsx)).
+    First, let’s try out the “intersection” operation in GeoPandas on one of the Census
+    Tract geometries. ‘Intersection’ in GeoPandas is a row-wise function checking
+    each row of the column of interest against our geometry and looking at whether
+    they intersect or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GeoPandas also offers a spatial index operation that uses R-trees and allows
+    us to perform intersections as well. Here is a runtime comparison of the two methods
+    over 100 runs of the intersection operation (note: because the default intersection
+    function is slow, I only selected around 100 geometries from the original dataset):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0569dd39053e6799e0c77a2d9b3c0b72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 💨 How much faster is a spatial index? (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see, the spatial index approach offered much improved performance
+    over the vanilla intersection method. In fact, here are the 95% confidence intervals
+    for the runtimes of each:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2db49b0dc45f54338391bf7ce0cb757.png)![](../Images/5376d53925f26a635b891b3d8d775adb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Great! Then, why would we ever not want to use a spatial indexing? Are there
+    cases when it offers no benefits? Well, yes. Some of these limitations are due
+    to the way spatial indexing stores the leaves in the data. It turns out that the
+    way the raw data is distributed affects how bounding boxes are placed into the
+    R-tree. Specifically, if a large chunk of the data is concentrated in the same
+    geographic space, they will tend to share the same parents and thus be grouped
+    together in the same branches. This can lead to skewed trees that don’t offer
+    much optimization when querying.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 💻 What do other spatial indices look like?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Other companies have also adapted their own spatial indices. Uber uses H3, a
+    hexagonal hierarchical indexing system that partitions the world into equal-area
+    hexagons. Hexagons have many benefits when modeling people’s movement around a
+    city or for problems like calculating a radius. Geospatial data is bucketed into
+    these hexagons, which serve as the company’s main unit of analysis. The grid is
+    constructed by overlaying 122 hexagonal cells onto an icosahedron-map projection,
+    and it supports a wide range of functions including aggregation, joining and machine
+    learning applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This system as well as a lot of its functionality is open-source and available
+    on GitHub for analysis. One of the functions of the H3 API is converting latitude
+    and longitude points into strings representing a unique Hexagon, according to
+    the specified resolution. Let’s do this operation over the entire Facilities Database
+    and also convert the hexagon strings into polygons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One question that often comes up in these spatial data analysis projects is
+    how many projects in the hexagons are categorized by some column, say “agency”.
+    Luckily, this is very easy to calculate and visualize now that we have the data
+    bucketed into H3 hexagons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a45b3cfe9d8f6df4a64ed5e9983db703.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Which agencies have the most facilities? (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, you can see the DCAS (Department of Citywide Administrative Services)
+    and PARKS (Department of Parks and Recreation) are the two agencies with the most
+    facilities per each hexagon. This likely makes sense as these two agencies would
+    have more physical facilities (think admin buildings or recreational areas like
+    parks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Spatial indices, as you saw, are very useful optimization tools for geospatial
+    data science and analysis. In the case of a simple intersection query, using a
+    spatial index dramatically improved the performance of the query compared to the
+    standard GeoPandas intersection function. There were many nuances to how this
+    index is implemented, as well as its implications, like having huge branches of
+    clustered data. As we saw, companies have developed their own solutions: one example
+    is Uber’s H3 open-source index, which allows us to answer various spatial analysis
+    questions. While I demonstrated an agency-based facilities count operation, H3
+    provides a baseline for other more complex machine learning applications.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you like this kind of content but want to learn about urban planning tech
+    more broadly, I also write a newsletter called [“The Zoned Out Chronicles”](https://deabardhoshi.substack.com).
+    I encourage you to check it out!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL

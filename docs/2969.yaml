@@ -1,0 +1,504 @@
+- en: ‘Talk’ to Your SQL Database Using LangChain and Azure OpenAI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/talk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2?source=collection_archive---------0-----------------------#2023-09-28](https://towardsdatascience.com/talk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2?source=collection_archive---------0-----------------------#2023-09-28)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Explore the power of natural language processing using LLMs for your database
+    queries
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)[![Satwiki
+    De](../Images/868c965bef6bae0c451744bc325eed10.png)](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------)
+    [Satwiki De](https://medium.com/@cleancoder?source=post_page-----bb79ad22c5e2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fd4bbc4d61092&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftalk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2&user=Satwiki+De&userId=d4bbc4d61092&source=post_page-d4bbc4d61092----bb79ad22c5e2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----bb79ad22c5e2--------------------------------)
+    ·10 min read·Sep 28, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbb79ad22c5e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftalk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2&user=Satwiki+De&userId=d4bbc4d61092&source=-----bb79ad22c5e2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbb79ad22c5e2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftalk-to-your-sql-database-using-langchain-and-azure-openai-bb79ad22c5e2&source=-----bb79ad22c5e2---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Langchain is an open source framework for developing applications which can
+    process natural language using LLMs (Large Language Models).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ***Agent*** component of LangChain is a wrapper around LLM, which decides
+    the best steps or actions to take to solve a problem. The Agent typically has
+    access to a set of functions called ***Tools*** (or Toolkit) and it can decide
+    which Tool to use based on the user input. Each agent can perform various NLP
+    tasks, such as parsing, calculations, translation etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An ***Agent Executor*** is a runnable interface of the Agent and its set of
+    Tools. The agent executor is responsible for calling the agent, getting the action
+    and action input, calling the tool that the action references with the corresponding
+    input, getting the output of the tool, and then passing all that information back
+    into the Agent to get the next action it should take. Usually it is an iterative
+    process until the Agent reaches the Final Answer or output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will show you how we can use ***LangChain Agent*** and ***Azure
+    OpenAI gpt-35-turbo model*** to query your SQL database using natural language
+    (without writing any SQL at all!) and get useful data insights. We will use [SQL
+    Database Toolkit and Agent](https://python.langchain.com/docs/integrations/toolkits/sql_database)
+    which can convert user input into appropriate SQL query and run it in Database
+    to get an answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is an exploratory article. It aims to provide an overview of the currently
+    available tools and identify any challenge during the process.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/58a5e9d9807e7f7a8770e0f7fe6397fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author (created using Bing Image creator)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scope of Requirement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this exploration, we will only read data from the DB and avoid any insert,
+    update or delete operations. This is to preserve the data integrity in the DB.
+    We will focus on how we can answer questions using the data available in the DB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*However the SQL Agent does not guarantee that it will not perform any DML
+    operations on your database based on specific questions. One way to ensure that
+    any accidental DML operation does not happen is to create a database user with
+    only* `*read*` *access and use it in following code.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take an e-retail company’s order and inventory system database for example.
+    The inventory keeps track of products across multiple categories e.g. kitchen,
+    gardening, stationary, bath etc. The order system records purchase history including
+    order status, delivery date etc. for each product.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Following can be some of the questions from the end users of this application:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantity of kitchen products were sold last month.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How many orders have not been shipped yet?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How many orders were delivered late last month?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What are the top 3 products sold last month?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Set up
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Python>=3.8** and an IDE for our exploration. I use VS Code.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I use [Azure OpenAI gpt-35-turbo](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models#gpt-35)
+    as LLM here. This model is part of GPT-3.5 family, which can understand and generate
+    natural language and code. To follow along, you need an Azure subscription with
+    OpenAI service enabled. Know more [here](https://azure.microsoft.com/en-in/products/cognitive-services/openai-service).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I use an Azure SQL database here. However you can use an on-prem SQL DB too.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Database
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I created a database named as `retailshopdb` with following Tables and relationships:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Category
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Product
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Orders
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/0a01abef276c66b45260e815e1eea53a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Along with ‘Id’ columns being the primary keys for each table, the tables have
+    foreign key relationships with each other e.g. CategoryId is a foreign key in
+    Product table, and ProductId is a foreign key in Orders table. These relationships
+    are crucial for the LangChain agent to construct the SQL query as per end user’s
+    question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Azure OpenAI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you have an Azure OpenAI resource created in your subscription, navigate
+    to Azure OpenAI studio. Create a `deployment` for `gpt-35-turbo` model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/996e8596678ca87575eeff03859929cd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code & Output Analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start with some base code to access the LLM from in VS code python notebook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize the notebook by installing required libraries and setting required
+    environment variables.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Connect to the DB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Initialize LangChain `chat_model` instance which provides an interface to
+    invoke a LLM provider using chat API. The reason to select chat model is the `gpt-35-turbo`
+    model is optimized for chat, hence we use `AzureChatOpenAI` class here to initialize
+    the instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that `temperature` is set as 0\. Temperature is a parameter that controls
+    the “creativity” or randomness of the text generated. A lower temperature (0 being
+    the lowest) makes the output more “focused” or deterministic. Since we’re dealing
+    with Database here, it’s important that LLM generates factual response.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 4\. Create a Prompt Template.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Prompt*** is the input that we send to the LLM to generate an output. ***Prompt
+    can also be designed to contain instructions, context, examples (one shot or few
+    shot)*** which can be crucial for generating accurate output, as well as setting
+    the tone and formatting your output data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using Prompt Template is a good way to structure these properties including
+    the end user’s input to be provided to the LLM. We use LangChain’s `ChatPromptTemplate`
+    module here, which is based on ChatML (Chat Markup Language).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a base prompt template to start with. Over time, we will update this
+    template as needed —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now initialize the `create_sql_agent` which is designed to interact with SQL
+    Database as below. The agent is equipped with toolkit to connect to your SQL database
+    and read both the metadata and content of the tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that we use `ZERO_SHOT_REACT_DESCRIPTION` here as the value of `agent_type`
+    parameter, which instructs that the agent *does not use memory.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: All set to run our testing —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice in the following cell output how the LangChain Agent Executor is using
+    the flow of `Action` , `Observation` and `Thought` in an iterative manner, until
+    it reaches a `Final Answer`.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/dc80bc8bb758a01f49c71be0e5e9e208.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Output: 10*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a correct answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s have some fun, shall we? Replace ‘Quantity’ with ‘how many’ in the same
+    question, which should produce the same answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: But this is what we get —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6df046e7da8416c6f52e628bf429474d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Output: ‘2 kitchen products were sold in the current month.’*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***This output is not correct!***The Agent makes a mistake in the SQL query
+    creation. Instead of doing `SUM(ProductOrderedQuantity)` to get the output, it
+    does a `COUNT(*)` on the JOIN result which gives the wrong output.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why changing the prompt input slightly produces different outputs?**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: OpenAI models are non-deterministic, meaning that identical inputs can yield
+    different outputs. Setting temperature to 0 will make the outputs mostly deterministic,
+    but a small amount of variability may remain due to GPU floating point math.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Running another test with a different input—
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b17c40ba6c5169f621273cd1cb3666e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Output: ‘There are 15 orders that have not been shipped yet.’*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***This is again incorrect result.*** *The agent takes into account ‘Completed’
+    orders as well, when our question implies only the orders which have not been
+    shipped.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see what modifications we can make to produce accurate outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Play with Prompt Engineering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The LangChain agent can read table metadata from SQL Database using its Toolkit,
+    and to some extent it can interpret the column names as well. But there are still
+    some gap in reasoning, which we can try to mitigate using Prompt Engineering technique.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We started with a base prompt template having a single line of instruction.
+    Let’s include some additional information to provide more context about our use
+    case to the LLM in order to form better SQL query. Here are the information I
+    added in the System message on a high-level:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Information about Table columns
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: ‘Meaning’ of Order Status values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Most specific information at the end
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now run the first input again—
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/df0a705e4289d08e6deddb162df978fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Output: 10*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reasoning has improved! By providing additional context to the LLM, we were
+    able to get an accurate output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now test all user inputs —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80a87b16e47fddd1f271be3bfc8b9171.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After-thoughts . . .
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All this looks good for play, but what if we want to actually build a solution
+    and release it for end users consumption? This is a great idea for use cases like
+    chatbot on your own database, however any like any typical software development,
+    we also need to think and decide about some crucial design aspects before building
+    LLM-based systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scalability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this example, I have used 3 tables with total ~30 rows. The avg. latency
+    to produce an output which involves joining all 3 tables is ~5 secs. As of today,
+    I didn’t find any information in official docs on the maximum size of database
+    we can use with this Agent. However there are few parameters we can think of to
+    determine our requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the Latency required by your application? If you’re building a chatbot,
+    then your expected latency might not go beyond a certain number.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: What is your Database size? Also take into account the size of individual tables
+    which you want to use for query.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note that you don’t need to pass entire Database to the Agent Toolkit. There
+    is option to select specific tables to work with the Toolkit. A good option is
+    to identify subsets of tables for separate use cases, and create multiple Agents
+    pointing to different subset of tables.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. Rate and quota limit of your Azure OpenAI resource. If you’re using another
+    LLM provider, then look for limitations/restrictions there too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reliability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: How can we ensure that we get accurate response consistently? How do we make
+    sure the system does not hallucinate or produce completely unexpected content?
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is ongoing research on improving reliability and robustness of LLMs. Using
+    use case specific prompts we can help improve the reasoning for our use case,
+    which is also sometimes termed as ‘temporary or in-context learning’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember that we are not training LLMs here. From a perspective of building
+    products using the pre-trained LLMs, we can only tweak our code, model parameters
+    and prompts that are built on top of these LLMs, but tweak them in a targeted
+    way.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Development in an iterative manner and also evaluation along the way can take
+    us to the right direction to develop an overall working system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Logging and Monitoring
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Like any other typical software development, enabling logging and continuous
+    monitoring of the LLM-based applications is a good practice. Monitoring can not
+    only capture system-related metrics like performance, latency, request-response
+    rates, but also the inputs and outputs from our system, which can help us determining
+    the consistency of the system. Some useful information we can gather from Monitoring
+    and use to improve our system:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Frequent, similar questions from end user, and outputs generated for these questions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Hallucination rate of LLM
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Software Engineering world is changing rapidly with LLMs’ immense generative
+    capability, and there are many solutions coming up in this space. We have an opportunity
+    to adopt this technology, and harness its power to create products while also
+    keeping a check on reliability of LLM-backed systems. It is always a good idea
+    to start small, build a proof-of-concept app and see if it fits your requirement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://community.openai.com/t/run-same-query-many-times-different-results/140588](https://community.openai.com/t/run-same-query-many-times-different-results/140588)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-openai-api](https://help.openai.com/en/articles/6654000-best-practices-for-prompt-engineering-with-openai-api)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://mlops.community/concepts-for-reliability-of-llms-in-production/](https://mlops.community/concepts-for-reliability-of-llms-in-production/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please follow me if you want to read more such content about new and exciting
+    technology. Please leave your feedback in the comment section.*'
+  prefs: []
+  type: TYPE_NORMAL

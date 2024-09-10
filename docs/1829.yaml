@@ -1,0 +1,679 @@
+- en: 'Beyond the Basics: Reinforcement Learning with Jax — Part II: Developing an
+    Exploitative Alternative to A/B Testing'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/beyond-the-basics-reinforcement-learning-with-jax-part-ii-developing-an-exploitative-9423cb6b2fa5?source=collection_archive---------4-----------------------#2023-06-02](https://towardsdatascience.com/beyond-the-basics-reinforcement-learning-with-jax-part-ii-developing-an-exploitative-9423cb6b2fa5?source=collection_archive---------4-----------------------#2023-06-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A practical introduction to multi-arm bandits and the exploration-exploitation
+    dilemma
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@Lando-L?source=post_page-----9423cb6b2fa5--------------------------------)[![Lando
+    L](../Images/9675667c061daf1d9ac527b49b7a8a9f.png)](https://medium.com/@Lando-L?source=post_page-----9423cb6b2fa5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9423cb6b2fa5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9423cb6b2fa5--------------------------------)
+    [Lando L](https://medium.com/@Lando-L?source=post_page-----9423cb6b2fa5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F395c5e41bd1e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-basics-reinforcement-learning-with-jax-part-ii-developing-an-exploitative-9423cb6b2fa5&user=Lando+L&userId=395c5e41bd1e&source=post_page-395c5e41bd1e----9423cb6b2fa5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9423cb6b2fa5--------------------------------)
+    ·19 min read·Jun 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9423cb6b2fa5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-basics-reinforcement-learning-with-jax-part-ii-developing-an-exploitative-9423cb6b2fa5&user=Lando+L&userId=395c5e41bd1e&source=-----9423cb6b2fa5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9423cb6b2fa5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeyond-the-basics-reinforcement-learning-with-jax-part-ii-developing-an-exploitative-9423cb6b2fa5&source=-----9423cb6b2fa5---------------------bookmark_footer-----------)![](../Images/696f574091a931a758adfa8f5a628807.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Carl Raw](https://unsplash.com/@carltraw?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our last blog post, we explored the Reinforcement Learning paradigm, delving
+    into its core concepts of finite Markov Decision Processes, Policies, and Value
+    Functions. Now, we are ready to apply our newfound knowledge and discover an alternative
+    approach to traditional A/B testing via multi-arm bandits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Course links
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Part I: Introduction and Core Concepts](https://medium.com/@Lando-L/beyond-the-basics-reinforcement-learning-with-jax-part-i-introduction-and-core-concepts-4f85f3478f5)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Part II: Developing an exploitative alternative to A/B testing**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Is A/B testing significantly overrated?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Think back to the last time you scrolled through your video streaming service
+    looking for a new movie to watch. If you did not already know what to look for,
+    you may have been affected by *the paradox of choice*¹. Having such an array of
+    potentially good movies can make it difficult to make informed decisions. Instead,
+    we often rely on simpler decisions that can be made almost instantly. As a result,
+    we tend to compare videos based on their thumbnails and titles. Knowing of this
+    effect, video production and streaming companies strive to optimise thumbnails
+    and titles in order to increase their movies’ click rates. Without prior knowledge
+    of the audience’s preferences, the process of creating engaging thumbnails and
+    titles becomes one of *trial-and-error*. (I hope this rings a bell by now!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The traditional approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let us imagine ourselves in the shoes of the decision-maker tasked with choosing
+    the right thumbnail and title for a newly-published movie on the streaming website.
+    In addition to the original movie thumbnail and title, we are given a set of proposals
+    consisting of two thumbnails and two titles. The traditional data-driven approach
+    in this scenario would be to run an A/B test and compare the click rates of the
+    original version with that of the proposed versions. Although the advantage of
+    A/B tests is that, when given enough samples, it can identify whether or not the
+    measured difference in click rate is statistically significant, it limits us to
+    compare only two variants simultaneously and often requires extensive amounts
+    of samples to determine its result. Furthermore, in the case one of the variants
+    is performing drastically better than the other, we are still forced to serve
+    the worse performing variant to half our customers until the end of the experiment,
+    potentially leading to money losses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Reinforcement Learning approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Alternatively, we can set up a *multi-arm bandit* (MAB) experiment. MABs are
+    a simplification of Reinforcement Learning (RL) problems, as they can be defined
+    entirely by a set of actions and a reward function. This makes them effectively
+    like finite *Markov-Decision-Processes* (MDPs) with only one state. Unlike MDPs,
+    the actions in MABs are independent of each other, meaning that at each time step,
+    the same set of actions will provide the same reward distribution. Therefore,
+    if we know the exact reward distribution of the available actions, we can simply
+    use a greedy approach to choose the action with the highest payout. In contrast,
+    MDPs require us to sometimes take ‘suboptimal’ actions to reach a highly rewarding
+    state. However, the problems that can be modelled with MABs are fewer than those
+    that can be modelled with MDPs. For example, in the music practice environment
+    from the [last post](https://medium.com/@Lando-L/beyond-the-basics-reinforcement-learning-with-jax-part-i-introduction-and-core-concepts-4f85f3478f5),
+    it was necessary to introduce states to model our friend’s mood, something which
+    cannot be done with MABs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can model the challenge from our video streaming platform example by defining
+    the actions and reward function as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every time a user visits the website, we must choose which version to display.
+    Our options consist of showing the original movie version, or one of the four
+    variations created by combining the two thumbnails and two titles.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once we selected the variant to display, the user has the option to watch or
+    not watch our film. Consequently, our reward function is binary, yielding a reward
+    of zero if the user choses not to view the movie and a reward of one if they decide
+    to watch the movie.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The advantages of the MAB approach compared with traditional A/B testing are
+    numerous; it allows for an unlimited number of variants to be tested simultaneously,
+    dynamically lowers the frequency of poorer performing variants, and converges
+    with fewer samples — all of which lead to cost savings. The downside is that it
+    does not provide the statistical significance of a traditional A/B test; however,
+    when the implications of the experiment are not affecting people’s wellbeing (as
+    is the case in most instances), statistical significance is not strictly necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let me see some code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Finally, we will start writing code. For the code examples of this course, we
+    will be using Python as our programming language, and will largely use [Jax](https://jax.readthedocs.io/en/latest/index.html)
+    as our Machine Learning (ML) framework. Developed by Google, Jax is a Python library
+    that is specifically designed for ML research. Unlike Tensorflow and PyTorch,
+    it is built with the functional programming (FP) paradigm, making it highly composable
+    and promoting the concept of pure functions that have no side effects. This means
+    that all state changes, such as parameter updates or splitting of random generators,
+    must be done explicitly. Although this may require more lines of code than their
+    object-oriented programming (OOP) equivalent, it gives developers full control
+    over state changes, leading to increased understanding of the code and fewer surprises.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (The full code is available as a Jupyter notebook on [GitHub](https://github.com/Lando-L/reinforcement-learning-with-jax/blob/91404625fd22fe62cb3e644c0ee8d51dd6bf2f24/2-developing-an-exploitative-alternative-to-a-b-testing.ipynb)
+    and [Kaggle](https://www.kaggle.com/code/landol/exploitative-alternative-to-a-b-testing).)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing the environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As the first step, we implement the environment for our video streaming platform
+    challenge. At a high-level, whenever someone visits the platform to scroll through
+    the available movie options, the environment needs to ask the agent which thumbnails
+    and titles to display, and then communicate to the agent which movie the visitor
+    chose. The complexity of this task will depend on the maturity of the platform’s
+    architecture, which could range from simply changing a few lines of code to developing
+    an entirely new service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the purpose of this course, we will keep the environment simple by implementing
+    it as a three-step process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Asking the agent which of the five variants it wishes to display.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Simulating the visitor’s choice.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Communicating the agent its reward for the decision.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Since we are using Jax as our main ML framework, we need to import Jax and
+    the three modules *numpy,* *lax* and *random*²:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we set the constants of our environment, consisting of a random seed to
+    ensure replicability, the number of visitors we want to simulate, and the expected
+    click rates. It is important to note that, in the real world, the click rates
+    are considered unknown. Since we are not running an actual experiment, we must
+    simulate the visitors’ click behaviour. To do this, we define different click
+    rates for the five variants to imitate the visitors’ preference, with the original
+    variant having a click rate of 4.2%, and the four variants having click rates
+    of 3%, 3.5%, 3.8%, and 4.5%, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we define a generic function that simulates a user visit, or a single
+    step in our environment. This function comprises three steps and is close to the
+    high-level implementation we set out earlier:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Executing the agent’s policy to determine which variant to display to the user.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Randomly simulating whether the user clicked on the movie or not.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Updating the agent’s parameters based on the variant shown and the associated
+    reward.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Before we continue, let us discuss the function signature. If we fix the parameters
+    *click_rates*, *policy_fn*, and *update_fn*, the *visit* function takes the environment
+    state and the current timestep as its parameters and returns a tuple containing
+    the next environment state and a boolean value that encodes the binary reward.
+    In Haskell notation the function signature would looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hence, to simulate the *n-th* step in our environment we pass the function the
+    *n-th* state and *n-th* timestep*,* and we receive the *(n+1)-th* state and the
+    *n-th* reward. For the *(n+1)-th* step, we use the same function, by passing it
+    the *(n+1)-th* state returned by the last function call and the time step *n+1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Having to pass a state and timestep parameter to every call of the *visit* function
+    may seem cumbersome to people accustomed to OOP. However, in this example, using
+    a pure function implementation for the environment has several advantages over
+    an object-oriented approach. Firstly, it explicitly states which parameters the
+    environment depends on, thus eliminating any hidden global variables that may
+    influence the outcome. Secondly, it makes it easier to test the environment with
+    various states and timesteps without having to set and read the environment’s
+    internal state. Lastly, we will discover a useful function from the Jax library,
+    which offers state management, thus drastically reducing the code needed at the
+    call-side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing the policies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With the environment in place, we can now implement our decision-making process
+    or policies. We have already identified an optimal policy for MABs. Given the
+    action-value distribution, the best action to take is the one with the highest
+    expected payout, which is referred to as *exploitation*. However, since the actual
+    action-value distribution is unknown to us, we must try out all available options
+    at least once in order to estimate the distribution, a process often referred
+    to as *exploration*. The delicate balance between exploration and exploitation
+    is a recurrent theme in RL and will be discussed in more detail throughout the
+    course.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The three policies we will cover in this blog post are the *epsilon-greedy*
+    policy, the *Boltzmann* policy, and the *upper-confidence-bound* policy. All of
+    which are *action-value methods*, meaning they explicitly estimate the values
+    of all actions and base their decision making on these estimates. At the end we
+    will cover a bonus policy, which is based on the *Thompson sampling* heuristic
+    and is considered a *bayesian method*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Action-value methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The simplest way for an agent to estimate action-values is to average the rewards
+    it has received for each variant so far. Here, *Q* denotes the agent’s action-value
+    estimate of variant *a* at timestep *t.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/408d5f320d66872fc42a31e65dd673e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Rather than re-calculating the average every round, we can implement action-value
+    estimation in an incremental fashion. Where *Q* stores the current action-value
+    estimate of each variant *a, N* counts how often *a* was shown, and *R* denotes
+    the reward received at timestep *t*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d129c762cd14f25aa335c1c61ac7dfc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let us implement two functions to work with action-value estimates. The first
+    function initialises the lookup tables *Q* and *N* for each variant *a*, setting
+    the estimates of all variants to an optimistic initial value of 1 (or a click
+    rate of 100%). The second function updates *Q* and *N* according to the incremental
+    update definition described above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We chose to implement the estimate action-value initialisation and update using
+    a functional approach, similar to the environment function implementation. Jax
+    arrays, unlike numpy arrays, are immutable and therefore cannot be updated in-place;
+    instead, each update returns a new copy with the applied changes, while the original
+    array remains unchanged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Epsilon-greedy policy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The epsilon-greedy policy defines a stochastic approach to balancing the exploration
+    and exploitation trade-off. Guided by the hyperparameter *ε*, it randomly decided
+    between selecting the variant *a* with the highest action-value *Q* or selecting
+    a uniformly random variant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ba8de89e9dd50665f3b42e008be29b3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In Jax we can define conditional policies using the *cond* function. It takes
+    a predicate, two functions, and a variable amount of arguments. Depending on the
+    result of the predicate *cond* employs one of the two functions passing it the
+    given arguments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Boltzmann policy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The Boltzmann or softmax policy is similar to the epsilon-greedy policy in
+    that it is a stochastic policy based on action-value estimates. This approach
+    randomly samples a variant *a* from the probability distribution that results
+    from applying the softmax function to the action-value estimates *Q*. The exploration-exploitation
+    trade-off can be controlled through the temperature hyperparameter *τ*, where
+    lower temperatures favour exploitation and higher temperatures promote exploration.
+    The probability *P* of each variant to be selected is defined by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f61eeaa02bfa7055380975cc6a880f67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In Jax, this can be easily implemented by utilizing the *choice* function from
+    the random module, parameterised by the softmax function applied to the action-value
+    estimates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Upper-Confidence-Bound policy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We will now discuss a policy with a deterministic approach to balancing exploration
+    and exploitation. Like the formerly discussed policies, it encourages exploitation
+    by prioritising variants with high action-value estimates. However, instead of
+    relying on stochasticity for exploration, it leverages a heuristic that encourages
+    the selection of variants with low selection counts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The heuristic accomplishes this by *remaining optimistic in the face of uncertainty*.
+    Meaning, every variant is given the benefit of the doubt of being better than
+    our current action-value estimate. During the experiment, each time a variant
+    is selected and a real reward is observed, we get more confident in our action-value
+    estimate and decrease the benefit of the doubt for that variant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formally, we define this optimistic guess as the variants’ *upper-confidence-bound*
+    (UCB) which is scaled by the confidence hyperparameter *c* and added it to the
+    current action-value estimate. Finally, we select the variant with the highest
+    sum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c3220146cde79e66ec374fcf4aadc4e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The UCB policy is the first we discovered that rewards exploration as well
+    as exploitation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given two variants with the same action-value estimate *Q*, we will select the
+    variant with a lower selection count *N*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given two variants with the same selection count *N*, we will select the variant
+    with a higher action-value estimate *Q*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To ensure a consistent function definition for all policies, the UCB policy
+    takes a random number generator parameter, even though it is a deterministic algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Bayesian methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The discussed action-value methods make point estimates for the unknown click
+    rates of our five variants. However, we now adopt a more Bayesian approach and
+    treat the variants’ click rates as a set of independent random variables. Specifically,
+    we define our current belief of a variants click rate *C* by modelling it as a
+    random variable following a *beta* distribution².
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5bdde6a5e07ca711a8a6786940822d5e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The beta distribution is characterized by two parameters, *a* and *b*, which
+    can be interpreted as the number of times variant *i* was clicked versus the number
+    of times it was not clicked when shown. When comparing bayesian methods with action-value
+    methods, we can use the expected value *E* of the random variable *C* to define
+    our best guess, which can be determined by dividing the number of times a variant
+    was clicked by the number of times it was shown:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4fe83c7070c7a2e2397fd35be18f8c5b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We define two functions to work with beta distributions, analogous to the action-value
+    methods. The first initialises a uniform beta prior for each variant, while the
+    second function calculates the posterior beta distribution by incrementing either
+    the *a* or the *b* parameter by one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Thompson sampling policy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The TS policy is based on a two-step heuristic, which works by drawing random
+    click rate samples from our beta distribution, and then selecting the variant
+    with the highest sample click rate. The feedback we receive is then instantaneously
+    incorporated into the beta distribution of that variant, narrowing the distribution
+    closer to the actual click rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Like the UCB policy, this approach rewards both exploration and exploitation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given two variants with the same mean, the variant with a higher variance has
+    a higher chance of being selected, since it has a broader distribution and will
+    lead more often to higher action-values when sampled.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given two variants with the same variance, the variant with the higher mean
+    is selected more often, as it is more likely to sample a greater action-value.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the implementation of the TS policy we use Jax’s *random* module to sample
+    random click rates based on the variants’ beta distribution and then select the
+    variant with the highest sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Implementing the evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With the environment and policies in place, we can finally conduct our experiment
+    and compare the results. Before we continue, I want to highlight that this experiment
+    is intended to demonstrate how the algorithms work, not to empirically evaluate
+    their performance. In order to execute the following implementations, we need
+    to import the *partial* function from Python’s *functools* library and *pyplot*
+    from *matplotlib*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *evaluate* function is responsible for executing the *visit* function, as
+    guided by the set of constants, the parameter initialisation and update functions,
+    and the policy. The output of the evaluation is the final environment state, which
+    includes the policy’s final parameters and final random number generator state,
+    as well as the click history. We leverage Jax’s *scan* function to ensure that
+    the experiment state is carried over and user clicks are accumulated. Moreover,
+    *just-in-time* (JIT) compilation is employed to optimise performance, while *partial*
+    is utilised to fix the *click_rate*, *policy_fn*, and *update_fn* parameters of
+    the *visit* function so it matches the expected signature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *regret* function is the last component of our evaluation. In RL lingo,
+    regret is defined as the amount of reward we miss out on by taking a suboptimal
+    action, and can only be calculated when the optimal action is known. Given the
+    click history, our *regret* function calculates the regret of the action taken
+    for every step of the environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we run the evaluation for all four policies and visualise the regret. Note
+    that the hyperparameters for the policies have not been fine-tuned, instead they
+    are set to generic default values that are suitable for a wide variety of MAB
+    problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The resulting graph is shown below, plotting the regret of our policies over
+    the number of visits. We can clearly see that all policies outperform a hypothetical
+    A/B testing scenario in terms of regret. The epsilon-greedy and TS policies appear
+    to perform slightly better than the boltzmann and UCB policies in this particular
+    scenario.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b991caf84e166570ab27028e50317295.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualisation created by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beyond the regret
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When conducting machine learning experiments, it is generally advised to define
+    a set of metrics that measure qualitative performance aside from the objective
+    function. For RL experiments, however, it is often not so straightforward to identify
+    suitable metrics. In our case, I chose we dig deeper into the final parameters
+    of our policies and compare the action-value estimation to the actual click rates
+    and how often each variant was selected under the different policies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Action-value estimates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We compare the accuracy of the policies’ action-value estimates by calculating
+    the *root mean squared error* (RMSE) against the ground truth click rates, as
+    seen in the table below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Surprisingly, despite performing well overall, it turns out that the epsilon-greedy
+    policy has prematurely honed in on exploiting the second-best variant, while the
+    other policies have correctly identified the last variant as the optimal one.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Boltzmann policy performed the best in terms of predicting the variants’
+    click rates.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The UCB policy and TS policy performed comparably well. While UCB appears to
+    overestimate the value of V4 and underestimate V2, TS seems to overestimate V1
+    and underestimate the original version.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Variant counter
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The second characteristic I want to discuss is how often each variant was selected
+    under the different policies. Here, we simply compare the absolute variant counts
+    of our experiment with 10,000 visitors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: The epsilon greedy algorithm was found to exploit too early, as it selected
+    the original version over 83% of the time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Boltzmann policy was remarkably accurate at predicting the variants’ click
+    rates, likely due to its uniform exploration of all variants.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The TS policy was found to have a lower regret value than the UCB policy, likely
+    due to its more extensive exploitation of the optimal variant.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Upon further examination of our observations, we have identified several areas
+    for improvement in our current experiment setup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The epsilon-greedy policy appears to be overly exploiting; as a result, we should
+    increase the epsilon hyperparameter to encourage a more comprehensive exploration.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Boltzmann policy appears to have explored much more than it has exploited,
+    resulting in accurate predictions of the click rates, albeit missing out on rewards.
+    This may be an indication that its temperature hyperparameter should be increased.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The UCB and TS policies performed well, but there is still room for improvement.
+    We can fine-tune the confidence hyperparameter and the initial beta prior respectively
+    to further optimize their performance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In addition to the suggested hyperparameter changes, I encourage the interested
+    reader to explore more sophisticated improvements as an exercise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Utilizing a variety of random seeds and averaging the outcomes to reduce bias
+    in the experiment results.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementing a dynamic scheduler to gradually reduce exploration over time,
+    such as decreasing the epsilon or confidence parameter in epsilon-greedy and UCB
+    policies, and increasing the temperature parameter in the Boltzmann policy.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**What’s next?**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: MAB are an incredibly versatile tool for solving a wide range of problems. In
+    this post, we discussed four MAB policies that could be used to solve the challenge
+    of the video streaming platform scenario. Other MAB use cases include ad selection
+    for online advertisement, prioritisation of query results for search engines,
+    and allocation of resources for different projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, MABs can be further extended to incorporate additional information.
+    In our example, the decision-making process could be improved if we had access
+    to more contextual data, such as individual user preferences and feature vectors
+    for each variant. Such problems are referred to as contextual bandit problems,
+    which we will explore further in later posts focusing on approximate solution
+    methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Schwartz, Barry, and Barry Schwartz. “The paradox of choice: Why more is
+    less.” New York: Ecco, 2004.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] We chose the Beta distribution to model the click rates, as it is the conjugate
+    prior of the Bernoulli distribution which is our likelihood function of the visitor
+    clicking or not clicking the shown variant. For a better understanding of probability
+    distributions and Bayesian inference, I recommend consulting Christopher M. Bishop
+    and Nasser M. Nasrabadi’s book “Pattern Recognition and Machine Learning”.'
+  prefs: []
+  type: TYPE_NORMAL

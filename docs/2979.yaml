@@ -1,0 +1,365 @@
+- en: Run Llama 2 70B on Your GPU with ExLlamaV2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/run-llama-2-70b-on-your-gpu-with-exllamav2-588141a88598?source=collection_archive---------0-----------------------#2023-09-29](https://towardsdatascience.com/run-llama-2-70b-on-your-gpu-with-exllamav2-588141a88598?source=collection_archive---------0-----------------------#2023-09-29)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Finding the optimal mixed-precision quantization for your hardware
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----588141a88598--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----588141a88598--------------------------------)[](https://towardsdatascience.com/?source=post_page-----588141a88598--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----588141a88598--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----588141a88598--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-llama-2-70b-on-your-gpu-with-exllamav2-588141a88598&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----588141a88598---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----588141a88598--------------------------------)
+    ·7 min read·Sep 29, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F588141a88598&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-llama-2-70b-on-your-gpu-with-exllamav2-588141a88598&user=Benjamin+Marie&userId=ad2a414578b3&source=-----588141a88598---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F588141a88598&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frun-llama-2-70b-on-your-gpu-with-exllamav2-588141a88598&source=-----588141a88598---------------------bookmark_footer-----------)![](../Images/53f04c131fbf146ebbb153e73ad4d27a.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by the author — Made with an illustration from [Pixabay](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The largest and best model of the Llama 2 family has 70 billion parameters.
+    One fp16 parameter weighs 2 bytes. Loading Llama 2 70B requires 140 GB of memory
+    (70 billion * 2 bytes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a previous article, I showed how you can run a 180-billion-parameter model,
+    Falcon 180B, on 100 GB of CPU RAM thanks to quantization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://newsletter.kaitchup.com/p/falcon-180b-can-it-run-on-your-computer?source=post_page-----588141a88598--------------------------------)
+    [## Falcon 180B: Can It Run on Your Computer?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Yes, if you have enough CPU RAM
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: newsletter.kaitchup.com](https://newsletter.kaitchup.com/p/falcon-180b-can-it-run-on-your-computer?source=post_page-----588141a88598--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Llama 2 70B is substantially smaller than Falcon 180B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Can it entirely fit into a single consumer GPU?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is challenging. A high-end consumer GPU, such as the NVIDIA RTX 3090 or
+    4090, has 24 GB of VRAM. If we quantize Llama 2 70B to 4-bit precision, we still
+    need 35 GB of memory (70 billion * 0.5 bytes). The model could fit into 2 consumer
+    GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With GPTQ quantization, we can further reduce the precision to 3-bit without
+    losing much in the performance of the model. A 3-bit parameter weighs 0.375 bytes
+    in memory. Llama 2 70B quantized to 3-bit would still weigh 26.25 GB. It doesn’t
+    fit into one consumer GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://newsletter.kaitchup.com/p/the-best-quantization-methods-to?source=post_page-----588141a88598--------------------------------)
+    [## The Best Quantization Methods to Run Llama 3.1 on Your GPU'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmarking inference throughput, accuracy, and memory consumption of AQLM,
+    bitsandbytes, AWQ, GPTQ, and AutoRound
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: newsletter.kaitchup.com](https://newsletter.kaitchup.com/p/the-best-quantization-methods-to?source=post_page-----588141a88598--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could reduce the precision to 2-bit. It would fit into 24 GB of VRAM but
+    then the performance of the model would also significantly drop according to [previous
+    studies on 2-bit quantization](https://arxiv.org/abs/2210.17323).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To avoid losing too much in the performance of the model, we could quantize
+    important layers, or parts, of the model to a higher precision and the less important
+    parts to a lower precision. The model would be quantized with mixed precision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[ExLlamaV2](https://github.com/turboderp/exllamav2) (MIT license) implements
+    mixed-precision quantization.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I show how to use ExLlamaV2 to quantize models with mixed precision.
+    More particularly, we will see how to quantize Llama 2 70B to an **average precision**
+    lower than 3-bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I implemented a notebook demonstrating and benchmarking mixed-precision quantization
+    of Llama 2 with ExLlamaV2\. It is available here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Get the notebook (#18)](https://newsletter.kaitchup.com/p/notebooks)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quantization of Llama 2 with Mixed Precision
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Requirements
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To quantize models with mixed precision and run them, we need to install ExLlamaV2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Install it from source:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We aim to run models on consumer GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Llama 2 70B: We target 24 GB of VRAM. NVIDIA RTX3090/4090 GPUs would work.
+    If you use Google Colab, you cannot run it on the free Google Colab. Only the
+    A100 of Google Colab PRO has enough VRAM.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Llama 2 13B: We target 12 GB of VRAM. Many GPUs with at least 12 GB of VRAM
+    are available. RTX3060/3080/4060/4080 are some of them. It can run on the free
+    Google Colab with the T4 GPU.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to quantize with mixed precision using ExLlamaV2
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The quantization algorithm used by ExLlamaV2 is similar to GPTQ. But instead
+    of choosing one precision type, ExLlamaV2 tries different precision types for
+    each layer while measuring quantization errors. All the tries and associated error
+    rates are saved. Then, given a target precision provided by the user, the ExLlamaV2
+    algorithm will quantize the model by choosing for each layer’s module the quantization
+    precision that leads, **on average,** to the target precision with the lowest
+    error rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'During quantization, ExLlamaV2 outputs all the tries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Quantization tries for the 10th layer’s up_proj module of Llama 2 13B*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see that the error rate decreases as the quantization precision (bpw,
+    i.e., bits per weight) increases, as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Quantization with ExLlamaV2 is as simple as running the convert.py script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: convert.py is in the root directory of ExLlamaV2*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: ExLlamaV2 doesn’t support Hugging Face libraries. It expects the model and the
+    calibration dataset to be stored locally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The script’s main arguments are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*input model (-i)*: A local directory that contains the model in the “safetensors”
+    format.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*dataset used for calibration (-c)*: We need a dataset for calibrating the
+    quantization. It must be stored locally in the “parquet” format.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*output directory (-cf)*: The local directory in which the quantized model
+    will be saved.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Target precision of the quantization (-b)*: The model will be quantized with
+    a mixed precision which will be on average the targeted precision. Here, I chose
+    to target a 3-bit precision.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This quantization took 2 hours and 5 minutes. I used Google Colab PRO with the
+    T4 GPU and high CPU RAM. It didn’t consume more than 5 GB of VRAM during the entire
+    process, but there was a peak consumption of 20 GB of CPU RAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The T4 is quite slow. The quantization time could be reduced with Google Colab
+    V100 or an RTX GPU. *Note: It’s unclear to me how much the GPU is used during
+    quantization. It might be that the CPU speed has more impact on the quantization
+    time than the GPU.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To quantize Llama 2 70B, you can do the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*What precision should we target so that the quantized Llama 2 70B would fit
+    into 24 GB of VRAM?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the method you can apply to decide on the precision of a model given
+    your hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say we have 24 GB of VRAM. We should also always expect some memory overhead
+    for inference. So let’s target a quantized model size of 22 GB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we need to convert 22 GB into bits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 22 GB = 2.2e+10 bytes = 1.76e+11 bits (since 1 byte = 8 bits)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We have 1.76e+11 bits (*b*) available. Llama 2 70B has 7e+10 parameters (*p*)
+    to be quantized. We target a precision that I denote *bpw*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: bpw = b/p
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: bpw = 176 000 000 000 / 70 000 000 000 = 2.51
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So we can afford an average precision of 2.51 bits per parameter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I round it to 2.5 bits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To quantize Llama 2 70B to an average precision of 2.5 bits, we run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: This quantization is also feasible on consumer hardware with a 24 GB GPU. It
+    can take up to 15 hours. If you want to use Google Colab for this one, note that
+    you will have to store the original model outside of Google Colab's hard drive
+    since it is too small when using the A100 GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running Llama 2 70B on Your GPU with ExLlamaV2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ExLlamaV2 provides all you need to run models quantized with mixed precision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a chat.py script that will run the model as a chatbot for interactive
+    use. You can also simply test the model with test_inference.py. This is what we
+    will do to check the model speed and memory consumption.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For testing Llama 2 70B quantized with 2.5 bpw, we run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: “-p” is the testing prompt.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It should take several minutes (8 minutes on an A100 GPU). ExLlamaV2 uses “[torch.compile](https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html)”.
+    According to PyTorch documentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*torch.compile makes PyTorch code run faster by JIT-compiling PyTorch code
+    into optimized kernels, all while requiring minimal code changes.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This compilation is time-consuming but cached.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you run test_inference.py, again it should take only 30 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model itself weighs exactly 22.15 GB. During my inference experiments, it
+    occupied exactly 24 GB. It barely fits on our consumer GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Why it doesn’t only consume 22.15 GB?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model in memory actually occupies 22.15 GB but the inference itself also
+    consumes additional memory. For instance, we have to encode the prompt and store
+    it in memory. Also, if you set a higher max sequence length or do batch decoding,
+    inference will consume more memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used the A100 of Google Colab for this experiment. If you use a GPU with 24
+    GB, you will likely get a CUDA out-of-memory error during inference, especially
+    if you also use the GPU to run your OS graphical user interface (e.g., Ubuntu
+    Desktop consumes around 1.5 GB of VRAM).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To give you some margin, targeting a lower bpw. 2.4 or even 2.3 would leave
+    several GB of VRAM available for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ExLlamaV2 models are also extremely fast. I observed a generation speed between
+    15 and 30 tokens/second. To give you a point of comparison, when I benchmarked
+    Llama 2 7B quantized to 4-bit with GPTQ, a model 10 times smaller, I obtained
+    a speed of around 28 tokens/sec using Hugging Face transformers for generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://newsletter.kaitchup.com/p/gptq-or-bitsandbytes-which-quantization?source=post_page-----588141a88598--------------------------------)
+    [## GPTQ or bitsandbytes: Which Quantization Method to Use for LLMs - Examples
+    with Llama 2'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language model quantization for affordable fine-tuning and inference on
+    your computer
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: newsletter.kaitchup.com](https://newsletter.kaitchup.com/p/gptq-or-bitsandbytes-which-quantization?source=post_page-----588141a88598--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Quantization to mixed-precision is intuitive. We aggressively lower the precision
+    of the model where it has less impact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running huge models such as Llama 2 70B is possible on a single consumer GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be sure to evaluate your models quantized with different target precisions.
+    While larger models are easier to quantize without much performance loss, there
+    is always a precision under which the quantized model will become worse than models,
+    not quantized, but with fewer parameters, e.g., Llama 2 70B 2-bit could be significantly
+    worse than Llama 2 7B 4-bit while still being bigger.
+  prefs: []
+  type: TYPE_NORMAL

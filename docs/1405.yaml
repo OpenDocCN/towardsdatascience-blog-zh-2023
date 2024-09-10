@@ -1,0 +1,328 @@
+- en: Fine-tuning an LLM model with H2O LLM Studio to generate Cypher statements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/fine-tuning-an-llm-model-with-h2o-llm-studio-to-generate-cypher-statements-3f34822ad5?source=collection_archive---------1-----------------------#2023-04-24](https://towardsdatascience.com/fine-tuning-an-llm-model-with-h2o-llm-studio-to-generate-cypher-statements-3f34822ad5?source=collection_archive---------1-----------------------#2023-04-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Avoid depending on external and ever changing APIs for your knowledge graph
+    based chatbot
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://bratanic-tomaz.medium.com/?source=post_page-----3f34822ad5--------------------------------)[![Tomaz
+    Bratanic](../Images/d5821aa70918fcb3fc1ff0013497b3d5.png)](https://bratanic-tomaz.medium.com/?source=post_page-----3f34822ad5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3f34822ad5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3f34822ad5--------------------------------)
+    [Tomaz Bratanic](https://bratanic-tomaz.medium.com/?source=post_page-----3f34822ad5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F57f13c0ea39a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tuning-an-llm-model-with-h2o-llm-studio-to-generate-cypher-statements-3f34822ad5&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=post_page-57f13c0ea39a----3f34822ad5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3f34822ad5--------------------------------)
+    ·8 min read·Apr 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3f34822ad5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tuning-an-llm-model-with-h2o-llm-studio-to-generate-cypher-statements-3f34822ad5&user=Tomaz+Bratanic&userId=57f13c0ea39a&source=-----3f34822ad5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3f34822ad5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffine-tuning-an-llm-model-with-h2o-llm-studio-to-generate-cypher-statements-3f34822ad5&source=-----3f34822ad5---------------------bookmark_footer-----------)![](../Images/edfa946a7b182f6f657c887e009d825f.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Mike Hindle](https://unsplash.com/@mikehindle?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language models like ChatGPT have a knowledge cutoff date beyond which
+    they are not aware of any events that happened later. Instead of fine-tuning models
+    with later information, the trend is to provide additional external context to
+    LLM at query time. I have written a couple of blog posts on implementing a [context-aware
+    knowledge graph-based bot](https://medium.com/neo4j/context-aware-knowledge-graph-chatbot-with-gpt-4-and-neo4j-d3a99e8ae21e)
+    to a [bot that can read through the company’s resources to answer questions](/implementing-a-sales-support-agent-with-langchain-63c4761193e7).
+    However, I have used OpenAI’s large language models in all of the examples so
+    far
+  prefs: []
+  type: TYPE_NORMAL
+- en: While OpenAI’s official position is that they don’t use users’ data to improve
+    their models, there are stories like how [Samsung employees leaked top secret
+    data by inputting it into ChatGPT](https://mashable.com/article/samsung-chatgpt-leak-details).
+    If I were dealing with top-secret, proprietary information, I would stay on the
+    safe side and not share that information with OpenAI. Luckily, new open-source
+    LLM models are popping up every day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have tested many open-source LLM models on their ability to generate Cypher
+    statements. Some of them have a basic understanding of Cypher syntax. However,
+    I haven’t found any models reliably generating Cypher statements based on provided
+    examples or graph schema. So, the only solution was to fine-tune an open-sourced
+    LLM model to generate Cypher statements reliably.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have never fine-tuned any NLP model, let alone an LLM. Therefore, I had to
+    find a simple way to get started without first obtaining a Ph.D. in machine learning.
+    Luckily, I stumbled upon H2O’s LLM Studio tool, released just a couple of days
+    ago, which provides a graphical interface for fine-tuning LLM models. I was delighted
+    to discover that fine-tuning an LLM no longer required me to write any code or
+    long bash commands. With just a few mouse clicks, I would be able to complete
+    the task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/h2oai/h2o-llmstudio?source=post_page-----3f34822ad5--------------------------------)
+    [## GitHub - h2oai/h2o-llmstudio: H2O LLM Studio - a framework and no-code GUI
+    for fine-tuning LLMs'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to H2O LLM Studio, a framework and no-code GUI designed for fine-tuning
+    state-of-the-art large language models…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/h2oai/h2o-llmstudio?source=post_page-----3f34822ad5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the code of this blog post is [available on GitHub](https://github.com/tomasonjo/blogs/tree/master/h20_llm).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing a training dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, I had to learn how the training dataset should be structured. I examined
+    their [tutorial notebook](https://colab.research.google.com/drive/1-OYccyTvmfa3r7cAquw8sioFFPJcn4R9?usp=sharing)
+    and discovered that the tool could handle training data provided as a CSV file,
+    where the first column includes user prompts, and the second column contains desired
+    LLM responses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ok, that’s easy enough. Now I just had to produce the training examples. I
+    decided that 200 is a good number of training examples. However, I am way too
+    lazy to write 200 Cypher statements manually. Therefore, I employed GPT-4 to do
+    the job for me. The code can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/tomasonjo/blogs/blob/master/h20_llm/LLM_train_dataset.ipynb?source=post_page-----3f34822ad5--------------------------------)
+    [## blogs/LLM_train_dataset.ipynb at master · tomasonjo/blogs'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can't perform that action at this time. You signed in with another tab or
+    window. You signed out in another tab or…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/tomasonjo/blogs/blob/master/h20_llm/LLM_train_dataset.ipynb?source=post_page-----3f34822ad5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The movie recommendation dataset is baked into GPT-4, so it can generate good
+    enough examples. However, some examples are slightly off and don’t fit the graph
+    schema. So, if I were fine-tuning an LLM for commercial use, I would use GPT-4
+    to generate Cypher statements and then walk through manually to validate them.
+    Additionally, I would want to ensure that the validation set contains no examples
+    from the training set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have also tested if a prefix “Create a Cypher statement for the following
+    question” is needed for instructions. It seems that some models like **EleutherAI/pythia-12b-deduped**
+    need the prefix, otherwise they fail miserably. On the other hand, **facebook/opt-13b**
+    did a solid job even without the prefix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/210ed6317452a1b90552f269ebb58efd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Models trained without or with a prefix in instructions. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be able to compare all models with the same dataset, I used a dataset that
+    adds a prefix “Create a Cypher statement for the following question:” to the instructions
+    section of the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: H2O LLM Studio installation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: H2O LLM Studio can be installed in two simple steps. In the first step, we have
+    to install Python 3.10 environment if it is missing. The steps to install Python
+    3.10 are described in their GitHub repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/h2oai/h2o-llmstudio?source=post_page-----3f34822ad5--------------------------------)
+    [## GitHub - h2oai/h2o-llmstudio: H2O LLM Studio - a framework and no-code GUI
+    for fine-tuning LLMs'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Welcome to H2O LLM Studio, a framework and no-code GUI designed for fine-tuning
+    state-of-the-art large language models…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/h2oai/h2o-llmstudio?source=post_page-----3f34822ad5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: After we ensure a Python 3.10 environment, we simply clone the repository and
+    install dependencies with the `make install` command. After the installation,
+    we can run the LLM studio with the `make wave` command. Now we can open the graphical
+    interface in your favourite browser by opening the `localhost:10101` website.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10c03010733405249c9df00bf2234c6d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: H2O LLM Studio home page. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Import dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First, we have to import the dataset to be used to fine-tune an LLM. You can
+    [download the one I used](https://github.com/tomasonjo/blog-datasets/tree/main/llm)
+    if you don’t want to create your dataset. Note that it is not curated, and some
+    examples do not fit the movie recommendation graph schema. However, it is a great
+    start to getting to know the tool. We can import CSV files using the drag&drop
+    interface.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/148360e49f058b89064dc1a24c9b77b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Upload CSV interface. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is a bit counter-intuitive, but we have to upload the training and validation
+    sets separately. Let’s say we first upload the training set. Then, when we upload
+    the validation set, we have to use the merge datasets option so that we have both
+    the training and validation sets in the same dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/095a31992411b7a048574ee11da90542.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Imported dataset with both train and validation dataframes. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final dataset should have both training and validation dataframes present.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*I’ve learned you can also upload a ZIP file with both training and validation
+    sets to avoid having to separately upload files.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create experiment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that everything is ready, we can go ahead and fine-tune an LLM model. If
+    we click on the **Create Experiment** tab, we will be presented with fine-tuning
+    options. The most important setting to choose are the **dataset** used for training,
+    the **LLM backbone**, and I have also increased the **epochs** count in my experiments.
+    I have left the other parameters default as I have no idea what they do. We can
+    choose from 13 LLM models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4e919257ce68a365da6ca6d7f5702b22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Available LLM models. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the higher the parameter count, the more GPU RAM we require for finetuning
+    and inference. For example, I ran out of memory using a 40GB GPU when trying to
+    finetune an LLM model with 20B parameters. On the other hand, we expect that the
+    higher the parameter count of an LLM, the better the results. I would say that
+    we require about 5GB of GPU RAM for smaller LLMs like pythia-1b and up to 40GB
+    GPU for opt-13b models. Once we set the desired parameters, we can run the experiment
+    with a single click. For the most part, the finetuning process was relatively
+    fast using an Nvidia A100 40GB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7391b335e14c3f77a12fa4b650506023.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Experiments page. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most models were trained in less than 30 minutes using 15 epochs. The nice thing
+    about the LLM Studio is that it produces a dashboard to inspect the training results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7bbcf06db55e7fb64c93fa6370c0772.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LLM finetuning metrics. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not only that, but we can also chat with the model in the graphical interface.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31caa0c1c969de4e725d602f38655f90.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Chat interface in the LLM Studio. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Export models to HuggingFace repository
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s as if the H2O LLM Studio wasn’t cool enough, it also allows to export finetuned
+    models to HuggingFace with a single click.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/34697e1772359ac572b2e68d402ceaa9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Export models to HuggingFace. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ability to export a model to the HuggingFace repository with a single click
+    allows us to use the model anywhere in our workflows as easily as possible. I
+    have exported a small finetuned pythia-1b model that can run in Google Colab to
+    demonstrate how to use it with the transformers library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The LLM Studio uses a special `<|endoftext|>`character that must be added to
+    the end of the user prompt in order for the model to work correctly. Therefore,
+    we must do the same when using the finetuned model with the transformers library.
+    Other than that, there is nothing really that needs to be done. We can now use
+    the model to generate Cypher statements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: I deliberately showed one valid and one invalid Cypher statement generated to
+    show that the smaller models might be good enough for demos, where the prompts
+    can be predefined. On the other hand, you probably wouldn’t want to use them in
+    production. However, using bigger models comes with a price. For example, to run
+    models with 12B parameters, we need at least 24 GB GPU, while the 20B parameter
+    models require GPUs with 48 GB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finetuning open-source LLMs allows us to break free of the OpenAI dependency.
+    Although GPT-4 works better, especially in a conversational setting where follow-up
+    questions could be asked, we can still keep our top-secret data to ourselves.
+    I tested multiple models while writing this blog post, except for 20B models,
+    due to GPU memory issues. I can confidently say that you could finetune a model
+    to generate Cypher statements good enough for a production setting. One thing
+    to note is that follow-up questions, where the model has to rely on previous dialogue
+    to understand the context of the question, don’t seem to be functioning at the
+    moment. Therefore, we are limited to single-step queries, where we need to provide
+    the whole context in a single prompt. However, since the development of open-source
+    LLMs is exploding, I am excited about what’s to come next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Till then, try out the [H2O LLM Studio](https://github.com/h2oai/h2o-llmstudio)
+    if you want to finetune an LLM to fit your personal or company’s needs with only
+    a few mouse clicks.
+  prefs: []
+  type: TYPE_NORMAL

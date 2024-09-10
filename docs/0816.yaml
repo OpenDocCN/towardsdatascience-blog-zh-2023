@@ -1,0 +1,230 @@
+- en: 'Anomaly Detection using Sigma Rules (Part 4): Flux Capacitor Design'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72?source=collection_archive---------12-----------------------#2023-03-02](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72?source=collection_archive---------12-----------------------#2023-03-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We implement a Spark structured streaming stateful mapping function to handle
+    temporal proximity correlations in cyber security logs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jean-claude.cote?source=post_page-----70cb5c2cfb72--------------------------------)[![Jean-Claude
+    Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----70cb5c2cfb72--------------------------------)[](https://towardsdatascience.com/?source=post_page-----70cb5c2cfb72--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----70cb5c2cfb72--------------------------------)
+    [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----70cb5c2cfb72--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----70cb5c2cfb72---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----70cb5c2cfb72--------------------------------)
+    ·6 min read·Mar 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F70cb5c2cfb72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72&user=Jean-Claude+Cote&userId=444ed0089012&source=-----70cb5c2cfb72---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F70cb5c2cfb72&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-4-flux-capacitor-design-70cb5c2cfb72&source=-----70cb5c2cfb72---------------------bookmark_footer-----------)![](../Images/40a85d33f19a0342f755fd98ac14df78.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by Robert Wilson from [Pixabay](https://pixabay.com/photos/large-vintage-variable-capacitor-2307278/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the 4th article of our series. Refer to [part 1](/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457)
+    , [part 2](/anomaly-detection-using-sigma-rules-part-2-spark-stream-stream-join-6bb4734e912f)
+    and [part 3](https://medium.com/towards-data-science/anomaly-detection-using-sigma-rules-part-3-temporal-correlation-using-bloom-filters-a45ffd5e9069)
+    for some context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will detail the design of a custom Spark flatMapWithGroupState
+    function. We chose to write this function in Scala since Spark is itself written
+    in Scala. We named this function Flux Capacitor. Electric capacitors accumulate
+    electric charges and later release them. Similarly, our flatMapWithGroupState
+    will accumulate tags (evaluated true/false Sigma expressions) and later release
+    them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our Flux Capacitor function is easy to configure and let’s the user specify
+    how and when each individual tag is stored and retrieved. In our implementation,
+    we encapsulated the tag while updating and retrieving behavior in a tag evaluator
+    class hierarchy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Tag Evaluators
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/84cc8f4d80932f84b4b0e86482e92afd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unless otherwise specified, all tags will be evaluated by the transitory evaluator.
+    This evaluator is a no-op, it simply passes the current tag value through. The
+    cacheable evaluator is a base class capable of storing and retrieving tags in
+    the bloom filter. This base class has two template methods, `makeBloomPutKey`
+    and `makeBloomGetKey`, letting sub-classes dictate how tags are stored and retrieved.
+    The default tag uses the same key to get and put values in the bloom. The key
+    is simply the concatenation of the rule and tag name. When a user passes the following
+    specification to the Flux Capacitor, default tag evaluator objects are create
+    to handle storing and retrieval of the tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We designed our Flux Capacitor specification to resemble Sigma rules. However,
+    this specification only describe how tags are handled in the Flux Capacitor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The ordered evaluator specializes the default evaluator by introducing a “dependent
+    tag”. The dependent tag has to be evaluated first, and only when the dependent
+    tag is true will the ordered tag be in turn evaluated. This evaluator is used
+    when the user specifies `ordered: true`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other side of the hierarchy handles parent/child relationships. Contrary
+    to the default tag, the parent evaluator’s put key is made of `rule name + tag
+    name + parent id` and the get key is made of `rule name + tag name + current id`.
+    The specification for parent/child let the user specify which column name holds
+    the parent ID and which column name holds the current message ID. In this example
+    `parent_id` and `id` are the columns representing a parent/child relationship.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As explained in our previous article, the ancestor evaluator specializes the
+    parent evaluator by storing itself in the bloom thus propagating itself down the
+    parent/child hierarchy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rule Evaluators
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far we’ve only applied one Sigma rule at a time. We did this intentionally
+    to keep things simple. However, in reality we want to apply multiple Sigma rules
+    simultaneously. When we process a log source and parse it’s contents, we want
+    to apply all Sigma rules that apply it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To keep things organized, we represent each rule and it’s associated tags in
+    a column of type [MapType](https://spark.apache.org/docs/2.0.2/api/java/index.html?org%2Fapache%2Fspark%2Fsql%2Ftypes%2FMapType.html=).
+    The keys in this map are the rule names and the values are maps of tag name to
+    tag value (true/false).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: By using maps, we can keep the schema of the input and output rows constant.
+    Any new Sigma rule that is later introduce will simply be added to this map and
+    will not affect the overall input and output row schemas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our Flux Capacitor specification reflects this. The specification applies to
+    a list of rule names. Each of those rule specification state how to update the
+    tags for that rule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our implementation, each rule specification is handled by a class `Rule.`
+    The `Rules` class valuates each `Rule` in turn.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Mapping Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The Spark Dataframe `flatMapGroupsWithState` invokes a user-provided function
+    on each group while maintaining a user-defined per-group state between invocations.
+    The signature of the function takes a key, an input row iterator (per group) and
+    a state, and returns an output row iterator. Our Flux Capacitor function is as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first time the function is called, we will have no state. In that case,
+    we create a Guava bloom filter with a false positive probably of 1%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then load the specification from a YAML string. We will see later how the
+    user passes this specification to the function. The specification is parsed and
+    provided to the `Rules`class. The `Rules`class creates the corresponding tag evaluators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we apply the `evaluateRow` to every input row of this group of rows resulting
+    in a list of output rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Invoking `evaluateRow` modifies the bloom filter (some of the tags will have
+    been stored in the bloom). Thus, we persist the bloom using `state.update(bloom)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we return an iterator to the output rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applying the Flux Capacitor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: From a users perspective, using the Flux Capacitor to perform anomaly detection
+    is quite simple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s suppose the user has already created a dataframe `taggedEventsDF`. In
+    later articles, we will show how the sigma compiler can be leveraged to create
+    this dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the FluxCapacitorMapFunction is created, it needs to be passed to the Spark
+    `flatMapGroupsWithState`. The user also needs to specify which of the columns
+    holds the host ID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We associate a bloom per host, so our grouping key `groupByKey`is the `host_id`column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark needs to know how to serialize and deserialize the state. We create Spark
+    encoders for the output rows and for the bloom filter (state).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We specify a mode of Append, rather than Update or Complete. In Append mode,
+    every row we output is added to the result table which is desired in anomaly detections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we pass our `flux.processBatch` to the `flatMapGroupsWithState` function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this article we showed how we implemented a configurable and re-usable stateful
+    mapping function capable of handling multiple use cases: temporal proximity correlation
+    (ordered and un-ordered) and parent/child relationships (including ancestors).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Currently, our state never times out, we are always using the same bloom filter,
+    thus the bloom filter will eventually fill up. In our next article, we will address
+    this issue with a forgetful bloom filer and optimize the performance of the Flux
+    Capacitor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images unless otherwise noted are by the author
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

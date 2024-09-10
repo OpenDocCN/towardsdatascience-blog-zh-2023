@@ -1,0 +1,501 @@
+- en: Programming Apple GPUs through Go and Metal Shading Language
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04](https://towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Investigating Go, Cgo, Metal Shading Language, Metal Performance Shaders, and
+    benchmarking different approaches to matrix multiplication
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)[![Mike
+    Cvet](../Images/93545a0c873515a599ba094ad51ee915.png)](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)
+    [Mike Cvet](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbc23035f3073&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=post_page-bc23035f3073----a0e7a60a3dba---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)
+    ·12 min read·Dec 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=-----a0e7a60a3dba---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&source=-----a0e7a60a3dba---------------------bookmark_footer-----------)![](../Images/859d70c23112109e0b37aa4562897206.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Etienne Martin](https://unsplash.com/@etiennemartin?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+    on [Unsplash](https://unsplash.com/photos/a-close-up-of-a-metal-diamond-plate-v6uiP2MD6vs?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below I’ll describe the process of using [cgo](https://pkg.go.dev/cmd/cgo) to
+    interface between Go and native C, how this can be used to interface with Objective-C
+    bindings for Apple’s [Metal Performance Shaders](https://developer.apple.com/documentation/metalperformanceshaders)
+    framework, how to interface with *custom* GPU code (shaders) written in the [Metal
+    Shading Language](https://developer.apple.com/documentation/metal), and finally
+    benchmarking all of that against hand-written and [OpenBLAS](https://www.openblas.net)
+    Go-based matrix multiplication operations. This was written to run on my M2 MacBook.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The layout of the source, [available here on GitHub](https://github.com/mikecvet/go-mm),
+    looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fce8e5410b9c2d3d5dd57587c6a14875.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: High-level source code, library and device layout
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s a lot, so I’ll break it down here into these sections, or feel free to
+    just jump [right to the benchmarks](#4aba).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[GPUs and Floating-Point Parallelism](#cad4)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Metal GPU Basics](#e19f)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Metal Shading Language](#1a7c)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Objective-C Bindings](#eb32)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Metal Performance Shaders Framework](#890a)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Go and cgo](#7de2)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Go Implementation Baselines and OpenBLAS](#8aa1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Results](#4aba)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: GPUs and Floating-Point Parallelism
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I assume most people at this point are intuitively familiar with the concept
+    that GPUs are incredibly powerful at certain kinds of computational tasks; especially
+    some which support machine learning. It wasn’t until I started playing around
+    with Metal that I understood first-hand how *much* more powerful they can be than
+    CPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPUs by design are extremely efficient at massively parallel floating-point
+    operations which demand high memory bandwidth. My MacBook M2 has 8 CPU cores and
+    8 GPU cores, but for comparison, the [Nvidia RTX 4090](https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/)
+    contains *16384 cores* and the [H100](https://www.forbes.com/sites/janakirammsv/2022/03/27/10-interesting-facts-about-nvidia-hopper-h100-gpu/)
+    contains *16896* CUDA cores with hundreds of additional specialized tensor cores.
+    GPUs usually support [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)
+    processing, allowing them to execute the same instruction simultaneously across
+    multiple data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outside of graphics, matrix multiplication and linear algebraic tasks in general
+    benefit from this concurrency thanks to their highly parallelizable algorithms.
+    This in turns supports core machine learning workloads like training and inference
+    [[1](https://betterprogramming.pub/word2vec-embeddings-from-the-ground-up-for-the-ml-adjacent-8d8c484e7cb5)]
+    [[2](https://betterprogramming.pub/convolutional-neural-networks-from-the-ground-up-for-the-ml-adjacent-35d530ab26f3)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[CUDA](https://developer.nvidia.com/about-cuda#:~:text=Since%20its%20introduction%20in%202006,workstations%2C%20compute%20clusters%20and%20supercomputers)
+    is probably the most well-known GPU programming platform, which specific to Nvidia
+    hardware. There are also mathematical frameworks available for [OpenGL](https://glm.g-truc.net/0.9.8/index.html).
+    Frameworks like TensorFlow and PyTorch can [integrate easily](https://www.tensorflow.org/guide/gpu)
+    and reasonably transparently with GPU hardware. [This](https://explosion.ai/blog/metal-performance-shaders)
+    was an interesting writeup about the performance improvements of supporting Metal-based
+    GPU frameworks into the [spaCy NLP library](https://spacy.io).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metal GPU Basics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Programming direct GPU computation is not as simple as writing code for on-device
+    CPUs. When working with Apple’s Metal framework, a rough series of operations
+    for executing code on the GPU looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find an appropriate GPU device
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create a queue for executing commands (ie the [MTLCommandQueue](https://developer.apple.com/documentation/metal/mtlcommandqueue))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Wrap pointers to data arrays in a structured buffer; if data is executable code,
+    then a [pipeline state](https://developer.apple.com/documentation/metal/mtlcomputepipelinestate),
+    otherwise a [regular buffer](https://developer.apple.com/documentation/metal/mtlbuffer).
+    Apple GPUs use a [unified memory space](https://developer.apple.com/documentation/metal/resource_fundamentals/choosing_a_resource_storage_mode_for_apple_gpus#),
+    meaning we don’t need to actually *copy* any data into GPU-specific physical memory
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Commit](https://github.com/mikecvet/go-mm/blob/main/metal.m#L224) the command
+    buffer for execution, and either wait for results or set an event handler on completion'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Extract bytes out of a response buffer and format locally with CPU program code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Raw GPU programming uses an async model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metal Shading Language
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Metal Shading Language](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
+    is a derivative of [C++14](https://en.cppreference.com/w/cpp/14) which can be
+    used to compose custom logic (called “shaders”) to run on Metal-compatible GPUs.
+    In general, and if possible, you’d probably be better off using the [MPS framework](https://developer.apple.com/documentation/metalperformanceshaders)
+    ([discussed later](#890a)) for equivalent functionality when possible — it tends
+    to be highly-optimized for common classes of GPU-aligned use cases (like matrix
+    multiplication or [neural networks](https://developer.apple.com/documentation/metalperformanceshadersgraph/training_a_neural_network_using_mps_graph)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debugging of MSL code is pretty difficult. You can use the [Shader Debugger](https://developer.apple.com/documentation/xcode/debugging-the-shaders-within-a-draw-command-or-compute-dispatch/)
+    through Xcode, but if you want to inspect or print intermediate values without
+    Xcode, you need to write data to a response debug buffer, and parse the primitives
+    in your C++ or Objective-C wrapper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MSL functions are exposed as public interfaces through the `kernel` designation.
+    The Metal framework passes IDs for the current calling thread context, or thread
+    group, which can be used to ensure non-overlapping writes. Threads can be represented
+    by a three-dimensional ID system; the dimensions of this thread space are configured
+    in the wrapper code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following is an [implementation of the naive matrix multiplication](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L9)
+    algorithm, combined with some loop unrolling which surprisingly improved its performance
+    significantly. This is just for comparison purposes; normally the `MPSMatrixMultiplication`
+    functionality from MPS would be more suitable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I implemented a [naive-transpose function as well](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L42)
+    in MSL for comparison. Given a transposed matrix, this is a trivial adjustment
+    to the logic above, whose inner loop runs over B’s rows rather than down its columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: I [discussed this approach in an earlier blog post](https://betterprogramming.pub/better-than-cubic-complexity-for-matrix-multiplication-in-rust-cf8dfb6299f6#740c)
+    as a pretty easy way to improve the scalar performance of the naive algorithm,
+    at least, on CPUs. More on that later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Objective-C Bindings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Metal framework provides the ability to [compile a library from Metal source
+    code](https://developer.apple.com/documentation/metal/mtldevice/1433431-newlibrarywithsource).
+    Once the file contents are loaded, the binding code looks for the kernel functions
+    [by name](https://github.com/mikecvet/go-mm/blob/main/metal.m#L51), and initializes
+    a new `MTLComputePipelineState` representing the compiled function code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: To actually call the native Metal code, the thread configuration [needs to be
+    set](https://github.com/mikecvet/go-mm/blob/main/metal.m#L200), and the GPU buffers
+    initialized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is a lot, so I’ll illustrate the relationships here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b233737dc027f8a96e6a7e61a0e7d67b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: High-level layout of concepts, types and hardware within the Objective-C wrapper
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metal Performance Shaders Framework
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The [MPS Framework](https://developer.apple.com/documentation/metalperformanceshaders)
+    is a high-performance library provided by Apple for use with its [Metal family
+    of GPUs](https://support.apple.com/en-us/102894). It offers functionality from
+    image tasks to [neural network support](https://developer.apple.com/documentation/metalperformanceshaders/training_a_neural_network_with_metal_performance_shaders).
+  prefs: []
+  type: TYPE_NORMAL
+- en: APIs are primarily available through Swift or Objective-C, though there is also
+    a [Metal-cpp](https://developer.apple.com/metal/cpp/) library available for use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [MPSMatrixMultiplication API](https://developer.apple.com/documentation/metalperformanceshaders/mpsmatrixmultiplication)
+    is [reasonably easy to use](https://github.com/mikecvet/go-mm/blob/main/metal.m#L128).
+    As with the MSL code above, the MPS commands still need to be encoded into the
+    `MTLCommandBuffer` and asynchronously committed for execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Go and cgo
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I don’t particularly like working with Objective-C, and the point of this program
+    is to run code on the GPU originating from a Go program.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Cgo](https://pkg.go.dev/cmd/cgo) is a Go language feature which allows the
+    Go compiler to understand compiler directives contained within comments related
+    to native C code. It supports a version of [foreign function interface](https://en.wikipedia.org/wiki/Foreign_function_interface).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Directive configuration is a little *brittle*, but any comments immediately
+    preceding the line `import “C”` (called “the preamble”) will be interpreted as
+    header imports or compilation arguments when compiling referenced C code. For
+    example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Passes linking flags to the linker via command-line `LDFLAGS`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compiles C code with the standard header `stdlib.h`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Compiles C code with the local project header `metal.h`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It took some trial-and-error to get the right set of linker flags to work on
+    MacOS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Foundation`: base libraries'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`CoreGraphics`: necessary on MacOS to interface with the GPU'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Metal`: libraries and language support for Metal, including MSL'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`MetalPerformanceShaders`: libraries for MPS discussed above'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'It turns out that Apple bundles a BLAS implementation in its `Accelerate` framework,
+    so in addition to installing OpenBLAS through `brew`, the location of the library
+    needs to be provided when linking as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`-L/opt/homebrew/opt/openblas/lib -lopenblas`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `go:embed` directive allows Go programs to include files at compile time,
+    which is [useful in this case](https://github.com/mikecvet/go-mm/blob/main/main.go#L18)
+    when we want to pass the contents of the MSL source file (`mm.metal`) to the Metal
+    framework, as discussed above, for compilation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The references to `C` above are interfacing with C APIs through cgo, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that this means that `C` is a reserved keyword and cannot be used as a
+    variable name.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Go Implementation Baselines and OpenBLAS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I wanted to compare the performance of GPU-based matrix multiplication to both
+    higher-level implementations, such as the [Gonum library](https://www.gonum.org),
+    as well as intuitive, hand-written (and comparatively inefficient) implementations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I implemented a couple different algorithms in Go, including this parallel
+    transpose naive algorithm, which naively divides the multiplication work across
+    N goroutines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Gonum BLAS` is a pure Go library which [implements BLAS interfaces](https://pkg.go.dev/gonum.org/v1/gonum/blas).
+    However, it can also be configured to divert algebraic operations to a native-code
+    BLAS implementation like [OpenBLAS](https://www.openblas.net) through [netlib](https://github.com/gonum/netlib).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I showed above how `cgo` can be configured to properly link to an OpenBLAS
+    installation on MacOS. Within the application code, the preferred BLAS implementation
+    can be set directly. From the benchmark code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'My [benchmarking code](https://github.com/mikecvet/go-mm/blob/main/benchmark.go)
+    runs a few trials each of the following matrix multiplication implementations,
+    and reports the average time each took to multiply two square matrices of gradually
+    increasing dimensionality:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Benchmarking output looks like this (floats are ms):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Some quick plotting](https://github.com/mikecvet/go-mm/blob/main/plot.py)
+    through `matplotlib`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b8774a41fe0cc0304901089327c9e37c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance plot of all approaches
+  prefs: []
+  type: TYPE_NORMAL
+- en: As one might expect, my hand-written Go implementations are comparatively out
+    of control. In fact, the other approaches are so fast, you can’t even tell them
+    apart in the graph. Here’s the sliding histogram of GPU usage during this run
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/106a8c798394b1afc407f5e27746208c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Activity Monitor GPU history visualization — all approaches (Y-axis is usage
+    percentage)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can see the GPU isn’t particularly busy, because time is mostly being spent
+    on CPU operations. Here’s another run, excluding the slowest three multiplication
+    techniques:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e3a2d0a1e5df20c4f6d9843234287ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance plot of approaches excluding my hand-written Go variants
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Around 16M elements (4k x 4k), `Gonum` begins to degrade. You can see clearly
+    here that the GPU-based and `OpenBLAS` operations outperform the pure Go implementations.
+    Looking just at the GPU-based approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/37744ae5c88393237a3dc3ecf77fec1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance plot of matrix multiplication operations which just run on the GPU
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A couple interesting notes here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Metal Performance Shaders library is amazingly fast
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There’s no real performance difference between the naive and transposed naive
+    approaches
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For the second point: this is unlike the performance characteristics of the
+    Go-based pair of implementations above. It turns out that favorable cache access
+    patterns for CPUs do not work the same way for GPUs and the way their SIMD groups
+    ([or warps](https://developer.apple.com/documentation/metal/compute_passes/creating_threads_and_threadgroups))
+    access memory. See GPU utilization here for comparison:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b1b8a86d76081114882d01182891873.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Activity Monitor GPU history visualization — GPU operations only
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now looking at just `OpenBLAS` and `MPS` alone — the two fastest approaches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ea4490d60e353f04df49b3a5fd25d06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance plot of OpenBLAS versus Apple’s Metal Performance Shaders MPSMatrixMultiplication
+    API
+  prefs: []
+  type: TYPE_NORMAL
+- en: Around 35M elements, the `OpenBLAS` implementation begins to degrade, while
+    `MPS` is holding steady. The difference here is pretty remarkable, with the latter
+    completing the same 35M-element matrix multiplication operations in < 15% of the
+    time. It’s reasonable to assume that difference would continue to grow with matrix
+    cardinality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now of course, there are probably algorithmic differences between these two
+    approaches, so this is not a fair CPU-to-GPU comparison. If I plot the performance
+    differences between my two hand-coded implementations, it looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea1d29dc0e64b1077fd68ad3517ceba8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance ratio plot of my MSL-written matrix multiplication code against
+    my Go-written code
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which is saying that the naive MSL-based implementation completes the multiplication
+    of 5M *elements in just 1% of the time* of my Go implementation, and that ratio
+    seems to be improving in the GPU’s favor over time.
+  prefs: []
+  type: TYPE_NORMAL

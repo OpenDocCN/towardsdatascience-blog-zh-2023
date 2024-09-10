@@ -1,0 +1,304 @@
+- en: TorchServe & Flask for Image Style Transfer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/torchserve-flask-for-image-style-transfer-113f73bd1d70?source=collection_archive---------7-----------------------#2023-04-20](https://towardsdatascience.com/torchserve-flask-for-image-style-transfer-113f73bd1d70?source=collection_archive---------7-----------------------#2023-04-20)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An example of web app backed by TorchServe model server
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)[![Andrey
+    Golovin](../Images/3afbee89a80374b346e57c8f317c9b3a.png)](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------)
+    [Andrey Golovin](https://medium.com/@summit.mnr?source=post_page-----113f73bd1d70--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc18c39659707&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&user=Andrey+Golovin&userId=c18c39659707&source=post_page-c18c39659707----113f73bd1d70---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----113f73bd1d70--------------------------------)
+    ·6 min read·Apr 20, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F113f73bd1d70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&user=Andrey+Golovin&userId=c18c39659707&source=-----113f73bd1d70---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F113f73bd1d70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftorchserve-flask-for-image-style-transfer-113f73bd1d70&source=-----113f73bd1d70---------------------bookmark_footer-----------)![](../Images/31d5f10b49cf379849d5f0002f5cd65d.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author*. Exposing an ML model as decoupled model server is way more
+    scalable, extensible and maintainable pattern.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [previous post](https://medium.com/p/1578eca5aa20) I showed an example
+    of serving an image classification model with the TorchServe framework. Now let’s
+    extend the example and make it a bit closer to the real world scenarios.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say I want to develop a web app to let users apply the filters to their
+    images. As you know there’s a lot of such applications. One of the feature could
+    be neural style transfer — users can upload an image with content and an image
+    with style (or select a filter in the app) and get the new image of the content
+    in desired style. Let’s build this example from end to end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The focus of the post will be, of course, not how to send a request from Flask
+    app to another url 😁 I’ll try to make it a bit more useful. First of all, I’ll
+    show an **example of a complex handler** with additional dependencies. Then the
+    **model server will return an image** instead of simply the labels or probabilities.
+    Finally the code could be helpful as a **working example of how to pass images
+    in appropriate format between the browser, Flask app and model server.** And just
+    for fun let’s deploy the whole solution in Kubernetes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GitHub repo with code is [here](https://github.com/quasi-researcher/style_transfer).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(btw, if you want to see a very simple example of web app + TorchServe for
+    image classification then checkout to the feature/classify branch in git)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post I assume you’re already familiar with basics of TorchServe (handler,
+    model files etc.). If not refer to the previous post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Neural style transfer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In case you don’t remember how the style transfer works here is a short description.
+    It’s important to get the high-level overview in order to understand what will
+    be going on in the handler for TorchServe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Inference” in style transfer is not just one pass of the input tensor through
+    the net. Instead a tensor (which is going to be the output picture at the end)
+    is passed many times and the tensor itself is modified so that to minimize the
+    content and style loss functions. At each iteration the image is changed. And
+    the “inference” is a sequence of the iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the solution it means the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the inference function in handler will be pretty complex. It’d be messy to put
+    everything in *handler.py*. So, I’ll put it in additional module and show how
+    to include it into TorchServe artifacts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'a side effect: “inference” will take some time. To not ask a user for waiting
+    a minute while Flask will reload the entire page I’ll use ajax request from browser
+    to the app. So, the page in browser won’t be frozen'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Model file
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The VGG19 pretrained model is used in the solution. Generally speaking I just
+    followed the style transfer official example from PyTorch: [https://pytorch.org/tutorials/advanced/neural_style_tutorial.html](https://pytorch.org/tutorials/advanced/neural_style_tutorial.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I had to slightly modify the state dict of the model to get rid of classifier
+    layers (80M vs. 500M of full vgg19 model). You can check how the .pth file was
+    produced in the notebook *model_saving.ipynb* in the repo. It generates the *vgg19.pth*
+    artifact. The *model_nst.py* contains the definition of the model architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Handler
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Preprocess function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is almost the same as you saw in the first post. The difference is that there
+    are two images as input and the function must return only one tensor. So, the
+    two will be just stacked in one to be split back later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Postprocess function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The function is pretty straightforward. The only thing here is how to pass the
+    image to the Flask app so that it can be correctly read from json. Passing it
+    as bytes buffer worked for me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Inference function**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for “inference” is noticeable long. So, I didn’t place it directly
+    in the handler module. Instead, it’s located in the *utils.py*. As I mentioned
+    the code is from the official PyTorch example of style transfer, I won’t go into
+    details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see how to include additional modules into TorchServe artifacts. For
+    model archiver you need to specify the extra files you want to include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we’re good to go from the TorchServe side. Let me briefly walk you through
+    the web app.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Flask app
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The app has only two endpoints — to check the status of the model server and
+    to generate the image with desired style. When the generation endpoint is called
+    the app just forwards the content and style images to the TorchServe model server.
+    Then it decodes the received generated image and return it back as json object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As I mentioned to not waiting long time for reloading the whole page the generation
+    request is sent as ajax. So, there is also a simple JQuery script for that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run the application
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you don’t want to run the whole solution in Kubernetes you can stop here
+    and just start the model server from its directory as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And application server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now everything shall be functional. Go to localhost:5000 in browser, upload
+    the content and style images, click “*transfer style*” and in a while you will
+    get the generated image with desired style in your browser.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Run with Kubernetes in a single-node cluster
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For the Kubernetes run on your local machine create two Docker images with
+    the names *flask_server* and *model_server* from the Dockerfiles in the repo.
+    There is also yaml file for Kubernetes. So, just apply it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Don’t forget about port forwarding (e.g. bind 8700 port of your machine to
+    the pod’s 5000 port):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And here we are. Go to your browser and open *localhost:8700*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fce46f319881ff3988c067a71dd4a120.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forgive me the design and UI, I’m just a DS/ML engineer. I know it’s ugly. 😅
+  prefs: []
+  type: TYPE_NORMAL
+- en: Live demo
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For the screen recording below I’ll use my own pictures I have at my fingertips
+    to avoid any author rights violation. Let me check if I can do a crazy thing:
+    draw my cat with the symbols of International Specification for Orienteering Maps
+    ([ISOM](https://orienteering.sport/iof/mapping/)). They are the symbols that are
+    used to draw maps for sport orienteering competitions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d7d7ddf62446fd5808ff4b858d9e390.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Images by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/489f717964f935a6a13a73f9ce1d0fb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, looks interesting 🤪
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/072ad99dc33defcc757c92c26ed33b61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This post together with the previous one shows how to serve your ML models with
+    a dedicated serving framework and how to use an approach of model server detached
+    from application server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s shown that TorchServe allows flexible customisation of pre-, postprocessing
+    and inference functions. Thus , you can incorporate any complex logic of your
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also the GitHub repo with the end-to-end example can be used as a starting point
+    for your own experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a conclusion let me mention just few benefits that an approach with a model
+    server offers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: more efficient use of hardware (e.g. model server can be deployed on a machine
+    with GPUs while the application server may not need it)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: dedicated serving frameworks offer features to serve models at scale (e.g. threads
+    and workers in TorchServe)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'serving frameworks also provide the features to speed up the development (and
+    to not reinvent the wheel): model versioning, logs, metrics etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: message queuing service can be easily added to scale the solution
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: dev and ML/DS teams can work more independently
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It’s not the complete list but just few reasons to think about serving ML models
+    with dedicated frameworks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hope you could find some helpful and practical stuff in this post.
+  prefs: []
+  type: TYPE_NORMAL

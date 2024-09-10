@@ -1,0 +1,252 @@
+- en: Optimising Output File Size in Apache Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/optimizing-output-file-size-in-apache-spark-5ce28784934c?source=collection_archive---------0-----------------------#2023-08-11](https://towardsdatascience.com/optimizing-output-file-size-in-apache-spark-5ce28784934c?source=collection_archive---------0-----------------------#2023-08-11)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A Comprehensive Guide on Managing Partitions, Repartition, and Coalesce Operations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)[![Gianpi
+    Colonna](../Images/253921adb9c6f4a7e65cc5f954164b10.png)](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------)
+    [Gianpi Colonna](https://medium.com/@gianpiero.colonna?source=post_page-----5ce28784934c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5767480ab9f9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&user=Gianpi+Colonna&userId=5767480ab9f9&source=post_page-5767480ab9f9----5ce28784934c---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ce28784934c--------------------------------)
+    ·6 min read·Aug 11, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ce28784934c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&user=Gianpi+Colonna&userId=5767480ab9f9&source=-----5ce28784934c---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ce28784934c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Foptimizing-output-file-size-in-apache-spark-5ce28784934c&source=-----5ce28784934c---------------------bookmark_footer-----------)![](../Images/802577c4c3cea67e8213d120ffea945d.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [zhao chen](https://unsplash.com/@zhaochen1975?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Picture yourself at the helm of a large Spark data processing operation. One
+    often-mentioned rule of thumb in Spark optimisation discourse is that for the
+    best I/O performance and enhanced parallelism, each data file should hover around
+    the size of 128Mb, which is the default partition size when reading a file [[1]](https://aws.amazon.com/blogs/big-data/top-10-performance-tuning-tips-for-amazon-athena/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine your files as vessels navigating the sea of data processing. If the
+    vessels are too small, they waste a lot of time docking and setting sail again,
+    a metaphor for the execution engine spending extra time opening files, listing
+    directories, getting object metadata, setting up data transfer, and reading files.
+    Conversely, if your vessels are too large and you don’t use the many docks of
+    the port, they have to wait for a single lengthy loading and unloading process,
+    a metaphor for the query processing waiting until a single reader has finished
+    reading the entire file, which reduces parallelism [fig. 1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1af1a6222430de899b305f06746b67b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fig. 1 — Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: To vividly illustrate the significance of file size optimisation, refer to the
+    following figure. In this specific example, every table holds 8 GB of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44c0668315da3fa6112bf60702d1a6da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, navigating this delicate balance is no easy task, especially when dealing
+    with large batch jobs. You may feel like you’ve lost control over the number of
+    output files. This guide will help you regain it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Key to Understanding: Partitions'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**The number of output files saved to the disk is equal to the number of partitions
+    in the Spark executors when the write operation is performed.** However, gauging
+    the number of partitions before performing the write operation can be tricky.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When reading a table, Spark defaults to read blocks with a maximum size of 128Mb
+    (though you can change this with `sql.files.maxPartitionBytes`). Thus, the number
+    of partitions relies on the size of the input. Yet in reality, the number of partitions
+    will most likely equal the `sql.shuffle.partitions` parameter. This number defaults
+    to 200, but for larger workloads, it rarely is enough. Check out [this](https://youtu.be/daXEp4HmS-E?t=1200)
+    video to learn how to set the ideal number of shuffle partitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number of partitions in Spark executors equals `sql.shuffle.partitions`
+    if there is at least one wide transformation in the ETL. If only narrow transformations
+    are applied, the number of partitions would match the number created when reading
+    the file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting the number of shuffle partitions gives us high-level control of the
+    total partitions only when dealing with non-partitioned tables. Once we enter
+    the territory of partitioned tables, changing the `sql.shuffle.partitions` parameter
+    won’t easily steer the size of each data file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Steering Wheel: Repartition and Coalesce'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We have two main ways to manage the number of partitions at runtime: `repartition()`
+    and `coalesce()`. Here''s a quick breakdown:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`**Repartition**`: `repartition(partitionCols, n_partitions)` is a lazy transformation
+    with two parameters - the number of partitions and the partitioning column(s).
+    When performed, Spark shuffles the partitions across the cluster according to
+    the partitioning column. However, **once the table is saved, information about
+    the repartitioning is lost.** Therefore, this useful piece of information won’t
+    be used when reading the file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`**Coalesce**`: `coalesce(num_partitions)` is also a lazy transformation, but
+    it only takes one argument - the number of partitions. **Importantly, the coalesce
+    operation doesn’t shuffle data across the cluster — therefore it’s faster than**
+    `**repartition**`**.** Also, coalesce can only reduce the number of partitions,
+    it won’t work if trying to increase the number of partitions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**The primary insight to take away here is that using the coalesce method is
+    generally more beneficial.** That’s not to say that repartitioning isn’t useful;
+    it certainly is, particularly when we need to adjust the number of partitions
+    in a dataframe at runtime.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my experience with ETL processes, where I deal with multiple tables of varying
+    sizes and carry out complex transformations and joins, I’ve found that `sql.shuffle.partitions`
+    doesn’t offer the precise control I need. For instance, using the same number
+    of shuffle partitions for joining two small tables and two large tables in the
+    same ETL would be inefficient — leading to an overabundance of small partitions
+    for the small tables or insufficient partitions for the large tables. Repartitioning
+    also has the added benefit of helping me sidestep issues with skewed joins and
+    skewed data [[2](/the-art-of-joining-in-spark-dcbd33d693c)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That being said, repartitioning is less suitable prior to writing the table
+    to disk, and in most cases, it can be replaced with coalesce. Coalesce takes the
+    upper hand over repartition before writing to disk for a couple of reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It prevents an unnecessary reshuffling of data across the cluster.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It allows data ordering according to a logical heuristic. When using the repartition
+    method before writing, data is reshuffled across the cluster, causing a loss in
+    its order. On the other hand, using coalesce retains the order as data is gathered
+    together rather than being redistributed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s see why ordering the data is crucial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Order on the Horizon: Importance of Ordering Data'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We mentioned above how when we apply the `repartition`method, Spark won’t save
+    the partitioning information in the metadata of the table. However, when dealing
+    with big data, this is a crucial piece of information for two reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It allows scanning through the table much more quickly at query time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It allows better compression — if dealing with a compressible format (such as
+    parquet, CSV, Json, etc). [This](https://medium.com/datadenys/how-to-improve-clickhouse-table-compression-697ef8f4ccb3)
+    is a great article to understand why.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The key takeaway is to **order the data before saving**. The information will
+    be retained in the metadata, and it will be used at query time, making the query
+    much faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s now explore the differences between saving to a non-partitioned table
+    and a partitioned table and why saving to a partitioned table requires some extra
+    adjustments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Managing File Size in Partitioned Tables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When it comes to non-partitioned tables, managing the number of files during
+    the save operation is a direct process. Utilising the `coalesce`method before
+    saving will accomplish the task, regardless of whether the data is sorted or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: However, this method isn’t effective when handling partitioned tables, unless
+    the data is arranged prior to coalescing. To grasp why this happens, we need to
+    delve into the actions taking place within Spark executors when the data is ordered
+    versus when it isn’t [fig.2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbbfacc17e298d16bd96f20d3db05f1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fig. 2 — Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Therefore, the standard process to save data to a partition table should be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Other Navigational Aids
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Beyond `repartition` and `coalesce`, you might find `maxnumberofrecords` helpful.
+    It's a handy method to prevent files from getting too large and can be used alongside
+    the methods above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Final Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Mastering file size in a Spark job often involves trial and error. It’s easy
+    to overlook optimisation in an era where storage space is cheap and processing
+    power is just a click away. But as tera and petabytes of data processing become
+    the norm, forgetting these simple optimisation techniques can have significant
+    costs in monetary, time, and environmental terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this article empowers you to make efficient adjustments to your ETL processes.
+    Like a seasoned sea captain, may you navigate the waters of Spark with confidence
+    and clarity.
+  prefs: []
+  type: TYPE_NORMAL

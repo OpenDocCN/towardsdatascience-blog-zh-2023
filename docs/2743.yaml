@@ -1,0 +1,589 @@
+- en: 'Large Language Models: BERT — Bidirectional Encoder Representations from Transformer'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/bert-3d1bf880386a?source=collection_archive---------0-----------------------#2023-08-30](https://towardsdatascience.com/bert-3d1bf880386a?source=collection_archive---------0-----------------------#2023-08-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Understand how BERT constructs state-of-the-art embeddings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----3d1bf880386a--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----3d1bf880386a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d1bf880386a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d1bf880386a--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----3d1bf880386a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbert-3d1bf880386a&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----3d1bf880386a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d1bf880386a--------------------------------)
+    ·11 min read·Aug 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d1bf880386a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbert-3d1bf880386a&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----3d1bf880386a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d1bf880386a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbert-3d1bf880386a&source=-----3d1bf880386a---------------------bookmark_footer-----------)![](../Images/450d6ac933335232d6ae951d5b7a4e0b.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 2017 was a historical year in machine learning when the **Transformer** model
+    made its first appearance on the scene. It has been performing amazingly on many
+    benchmarks and has become suitable for lots of problems in Data Science. Thanks
+    to its efficient architecture, many other Transformer-based models have been developed
+    later which specialise more on particular tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of such models is BERT. It is primarily known for being able to construct
+    embeddings which can very accurately represent text information and store semantic
+    meanings of long text sequences. As a result, BERT embeddings became widely used
+    in machine learning. Understanding how BERT builds text representations is crucial
+    because it opens the door for tackling a large range of tasks in NLP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will refer to the [original BERT paper](https://arxiv.org/pdf/1810.04805.pdf)
+    and have a look at BERT architecture and understand the core mechanisms behind
+    it. In the first sections, we will give a high-level overview of BERT. After that,
+    we will gradually dive into its internal workflow and how information is passed
+    throughout the model. Finally, we will learn how BERT can be fine-tuned for solving
+    particular problems in NLP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: High level overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Transformer**’s architecture consists of two primary parts: encoders and
+    decoders. The goal of stacked encoders is to construct a meaningful embedding
+    for an input which would preserve its main context. The output of the last encoder
+    is passed to inputs of all decoders trying to generate new information.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**BERT** is a Transformer successor which inherits its stacked bidirectional
+    encoders. Most of the architectural principles in BERT are the same as in the
+    original Transformer.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/1de7776be934f0ebf7ede8d9a5864184.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: BERT versions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There exist two main versions of BERT: base and large. Their architecture is
+    absolutely identical except for the fact that they use different numbers of parameters.
+    Overall, BERT large has 3.09 times more parameters to tune, compared to BERT base.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1037ce1121042a532a1aff8403e9307.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of BERT base and BERT large
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bidirectional representations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: From the letter “B” in the BERT’s name, it is important to remember that BERT
+    is a **bidirectional** model meaning that it can better capture word connections
+    due to the fact that the information is passed in both directions (left-to-right
+    and right-to-left). Obviously, this results in more training resources, compared
+    to unidirectional models, but at the same time leads to a better prediction accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a better understanding, we can visualise BERT architecture in comparison
+    with other popular NLP models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51e3b04c18a481f9f7a95887afc9a581.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of BERT, OpenAI GPT and ElMo architectures from the [ogirinal paper](https://arxiv.org/pdf/1810.04805.pdf).
+    Adopted by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input tokenisation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Note. In the official paper, authors use the term “**sentence**” to indicate
+    text that is passed to the input. To designate the same term, throughout this
+    article series we will be using the term “**sequence**”. It is done to avoid confusion
+    as “sentence” usually means a single phrase separated by a point and due to the
+    fact that in many other NLP research papers the term “sequence” is utilised in
+    similar circumstances.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Before diving into how BERT is trained, it is necessary to understand in what
+    format it accepts data. For the input, BERT takes a single sequence or a pair
+    of sequences. Each sequence is split into tokens. Additionally, two special tokens
+    are passed to the input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note. The official paper uses the term “**sentence**” which designates an input
+    **sequence** passed to BERT which can actually consist of several sentences. For
+    simplicity, we are going to follow the notation and use the same term throughout
+    this article.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '***[CLS]*** — passed before the first sequence indicating its beginning. At
+    the same time, *[CLS]* is also used for a classification objective during training
+    (discussed in the sections below).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***[SEP]*** — passed between sequences to indicate the end of the first sequence
+    and the beginning of the second.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Passing two sequences makes it possible for BERT to handle a large variety of
+    tasks where an input contains a pair of sequences (e.g. question and answer, hypothesis
+    and premise, etc.).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input embedding
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'After tokenisation, an embedding is built for each token. To make input embeddings
+    more representative, BERT constructs three types of embeddings for each token:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Token embeddings** capture the semantic meaning of tokens.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Segment embeddings** have one of two possible values and indicate to which
+    sequence a token belongs.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Position embeddings** contain information about a relative position of a
+    token in a sequence.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/436c75c0a4550006be88a01948fc4e1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Input processing
+  prefs: []
+  type: TYPE_NORMAL
+- en: These embeddings are summed up and the result is passed to the first encoder
+    of the BERT model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Output
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Each encoder takes *n* embeddings as input and then outputs the same number
+    of processed embeddings of the same dimensionality. Ultimately, the whole BERT
+    output also contains *n* embeddings each of which corresponds to its initial token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/349ec9a449ceb70406ce5910691d12fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'BERT training consists of two stages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pre-training**. BERT is trained on unlabeled pair of sequences over two prediction
+    tasks: **masked language modeling (MLM)** and **natural language inference (NLI)**.
+    For each pair of sequences, the model makes predictions for these two tasks and
+    based on the loss values, it performs backpropagation to update weights.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Fine-tuning**. BERT is initialised with pre-trained weights which are then
+    optimised for a particular problem on labeled data.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Pre-training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Compared to fine-tuning, pre-training usually takes a significant proportion
+    of time because the model is trained on a large corpus of data. That is why there
+    exist a lot of online repositories of pre-trained models which can be then fine-tined
+    relatively fast to solve a particular task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are going to look in detail at both problems solved by BERT during pre-training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Masked Language Modeling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Authors propose training BERT by masking a certain amount of tokens in the
+    initial text and predicting them. *This gives BERT the ability to construct resilient
+    embeddings that can use the surrounding context to guess a certain word which
+    also leads to building an appropriate embedding for the missed word as well*.
+    This process works in the following way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After tokenization, 15% of tokens are randomly chosen to be masked. The chosen
+    tokens will be then predicted at the end of the iteration.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The chosen tokens are replaced in one of three ways:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*-* 80% of the tokens are replaced by the *[MASK]* token.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Example*: I bought a book → I bought a [MASK]*'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- 10% of the tokens are replaced by a random token.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Example: *He is eating a fruit → He is drawing a fruit*'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- 10% of the tokens remain unchanged.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Example: *A house is near me → A house is near me*'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: All tokens are passed to the BERT model which outputs an embedding for each
+    token it received as input.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 4\. Output embeddings corresponding to the tokens processed at step 2 are independently
+    used to predict the masked tokens. The result of each prediction is a probability
+    distribution across all the tokens in the vocabulary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. The cross-entropy loss is calculated by comparing probability distributions
+    with the true masked tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. The model weights are updated by using backpropagation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Natural Language Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this classification task, BERT tries to predict whether the second sequence
+    follows the first. The whole prediction is made by using only the embedding from
+    the final hidden state of the *[CLS]* token which is supposed to contain aggregated
+    information from both sequences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly to MLM, a constructed probability distribution (binary in this case)
+    is used to calculate the model’s loss and update the weights of the model through
+    backpropagation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For NLI, authors recommend choosing 50% of pairs of sequences which follow each
+    other in the corpus (*positive pairs*) and 50% of pairs where sequences are taken
+    randomly from the corpus (*negative pairs*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/49b97c621037edf7eeb72626ce174ad9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: BERT pre-training
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training details
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: According to the paper, BERT is pre-trained on BooksCorpus (800M words) and
+    English Wikipedia (2,500M words). For extracting longer continuous texts, authors
+    took from Wikipedia only reading passages ignoring tables, headers and lists.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BERT is trained on a million batches of size equal to 256 sequences which is
+    equivalent to 40 epochs on 3.3 billion words. Each sequence contains up to 128
+    (90% of the time) or 512 (10% of the time) tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'According to the original paper, the training parameters are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimisator: Adam (learning rate *l* = 1e-4, weight decay L₂ = 0.01, β₁ = 0.9,
+    β₂ = 0.999, ε = 1e-6).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Learning rate warmup is performed over the first 10 000 steps and then reduced
+    linearly.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dropout (α = 0.1) layer is used on all layers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Activation function: GELU.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Training loss is the sum of mean MLM and mean next sentence prediction likelihoods.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fine-tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once pre-training is completed, BERT can literally understand the semantic meanings
+    of words and construct embeddings which can almost fully represent their meanings.
+    The goal of fine-tuning is to gradually modify BERT weights for solving a particular
+    downstream task.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data format
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Thanks to the robustness of the self-attention mechanism, BERT can be easily
+    fine-tuned for a particular downstream task. Another advantage of BERT is the
+    ability to build *bidirectional* text representations. This gives a higher chance
+    of discovering correct relations between two sequences when working with pairs.
+    Previous approaches consisted of independently encoding both sequences and then
+    applying bidirectional cross-attention to them. BERT unifies these two stages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Depending on a certain problem, BERT accepts several input formats. The framework
+    for solving all downstream tasks with BERT is the same: by taking as an input
+    a sequence of text, BERT outputs a set of token embeddings which are then fed
+    to the model. Most of the time, not all of the output embeddings are used.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let us have a look at common problems and the ways they are solved by fine-tuning
+    BERT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sentence pair classification**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The goal of sentence pair classification is to understand the relationship
+    between a given pair of sequences. Most of common types of tasks are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Natural language inference*: determining whether the second sequence follows
+    the first.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Similarity analysis*: finding a degree of similarity between sequences.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/1a1aeb6fad79249756ebcb7b571f565a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sentence pair classification
+  prefs: []
+  type: TYPE_NORMAL
+- en: For fine-tuning, both sequences are passed to BERT. As a rule of thumb, the
+    output embedding of the *[CLS]* token is then used for the classification task.
+    According to the researchers, the *[CLS]* token is supposed to contain the main
+    information about sentence relationships.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, other output embeddings can also be used but they are usually omitted
+    in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Question answering task**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The objective of *question answering* is to find an answer in a text paragraph
+    corresponding to a particular question. Most of the time, the answer is given
+    in the form of two numbers: the start and end token positions of the passage.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f78ff21a106291ce5a36445a3a251b6f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Question answering task
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the input, BERT takes the question and the paragraph and outputs a set of
+    embeddings for them. Since the answer is contained within the paragraph, we are
+    only interested in output embeddings corresponding to paragraph tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For finding a position of the start answer token in the paragraph, the scalar
+    product between every output embedding and a special trainable vector Tₛₜₐᵣₜ is
+    calculated. For most cases when the model and the vector Tₛₜₐᵣₜ are trained accordingly,
+    the scalar product should be proportional to the likelihood that a corresponding
+    token is in reality the start answer token. To normalise scalar products, they
+    are then passed to the softmax function and can be thought as probabilities. The
+    token embedding corresponding to the highest probability is predicted as the start
+    answer token. Based on the true probability distribution, the loss value is calculated
+    and the backpropagation is performed. The analogous process is performed with
+    the vector Tₑₙ𝒹 for predicting the end token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Single sentence classification**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The difference, compared to previous downstream tasks, is that here only a
+    single sentence is passed BERT. Typical problems solved by this configuration
+    are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Sentiment analysis*: understanding whether a sentence has a positive or negative
+    attitude.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Topic classification*: classifying a sentence into one of several categories
+    based on its contents.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/114d1219106d34b8c716f7d7e22f50f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Single sentence classification
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The prediction workflow is the same as for sentence pair classification: the
+    output embedding for the *[CLS]* token is used as the input for the classification
+    model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Single sentence tagging**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Named entity recognition (NER)* is a machine learning problem which aims to
+    map every token of a sequence to one of respective entities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8191bce69a8570d357c72ff10b20896e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Single sentence tagging
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this objective, embeddings are computed for tokens of an input sentence,
+    as usual. Then every embedding (except for *[CLS]* and *[SEP]*) is passed independently
+    to a model which maps each of them to a given NER class (or not, if it cannot).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature extraction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Taking the last BERT layer and using it as embeddings is not the only way to
+    extract features from the input text. In fact, the researchers completed several
+    experiments of aggregating embeddings in different manners for solving a NER task
+    on the CoNLL-2003 dataset. To conduct the experiment, they used the extracted
+    embeddings as input for a randomly initialized two-layer 768-dimensional BiLSTM
+    before applying the classification layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ways the embeddings were extracted (from the BERT base) are demonstrated
+    in the figure below. As shown, the most performant way was to concatenate the
+    four last BERT hidden layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on the conducted experiments, it is important to keep in mind that aggregation
+    of hidden layers is a potential way of improving embeddings’ representation for
+    achieving better results on a variety of NLP tasks.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/b3d9a0b4565828c42c75f85f18c9f5bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The diagram on the left shows the expanded BERT structure with hidden layers.
+    The table on the right illustrates the ways the embeddings were constructed and
+    the corresponding scores that were achieved by applying respective strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combining BERT with other features
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Sometimes we deal not only with text but with numerical features, for example,
+    as well. It is naturally desirable to build embeddings that can incorporate information
+    from both text and other non-text features. Here are the recommended strategies
+    to apply:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Concatenation of text with non-text features**. For instance, if we work
+    with profile descriptions about people in the form of text and there are other
+    separate features like their name or age, then a new text description can be obtained
+    in the form: “My name is <*name*>. <*profile description*>. I am <*age*> years
+    old”. Finally, such a text description can be fed into the BERT model.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Concatenation of embeddings with features**. It is possible to build BERT
+    embeddings, as discussed above, and then concatenate them with other features.
+    The only thing that changes in the configuration is the fact a classification
+    model for a downstream task has to accept now input vectors of higher dimensionality.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have dived into the processes of BERT training and fine-tuning.
+    As a matter of fact, this knowledge is enough to solve the majority of tasks in
+    NLP thankfully to the fact that BERT allows to almost fully incorporate text data
+    into embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In recent times, other BERT-like models have appeared (SBERT, RoBERTa, etc.).
+    There even exists a special sphere of study called “*BERTology*” which analyses
+    BERT capabilities in depth for deriving new high-performant models. These facts
+    reinforce the fact that BERT designated a revolution in machine learning and made
+    it possible to significantly advance in NLP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/pdf/1810.04805.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author*'
+  prefs: []
+  type: TYPE_NORMAL

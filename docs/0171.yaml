@@ -1,0 +1,278 @@
+- en: Leveraging Azure Event Grid to Create a Java Iceberg Table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/leveraging-azure-event-grid-to-create-a-java-iceberg-table-d419da06dbc6?source=collection_archive---------29-----------------------#2023-01-10](https://towardsdatascience.com/leveraging-azure-event-grid-to-create-a-java-iceberg-table-d419da06dbc6?source=collection_archive---------29-----------------------#2023-01-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will use Azure Event Grid to implement an event-driven architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jean-claude.cote?source=post_page-----d419da06dbc6--------------------------------)[![Jean-Claude
+    Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----d419da06dbc6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d419da06dbc6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d419da06dbc6--------------------------------)
+    [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----d419da06dbc6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-azure-event-grid-to-create-a-java-iceberg-table-d419da06dbc6&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----d419da06dbc6---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d419da06dbc6--------------------------------)
+    ·6 min read·Jan 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd419da06dbc6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-azure-event-grid-to-create-a-java-iceberg-table-d419da06dbc6&user=Jean-Claude+Cote&userId=444ed0089012&source=-----d419da06dbc6---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd419da06dbc6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fleveraging-azure-event-grid-to-create-a-java-iceberg-table-d419da06dbc6&source=-----d419da06dbc6---------------------bookmark_footer-----------)![](../Images/c4e53807053d374896c74f3522697b71.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by Jackson Case on Unsplash
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [our previous article](https://medium.com/towards-data-science/streaming-iceberg-table-an-alternative-to-kafka-be54a1624917),
+    we demonstrated how an Iceberg table can act as a Kafka topic. We showed that
+    independent Java Writers can produce parquet files in parallel, while a single
+    Bookkeeper attaches these data files to an [Iceberg](https://iceberg.apache.org/)
+    table. The Bookkeeper did this by creating an Iceberg commit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Bookkeeper needs to identify what the newly created data files are. It then
+    registers these files with the Iceberg table. In our previous article we kept
+    things simple and chose to implement a file-based messaging channel. For every
+    data file created, the Writers create a Moniker in a well-known folder. The Bookkeeper
+    monitors this well-known folder and periodically reads the Monikers. The Bookkeeper
+    uses the information in these Monikers to append the new data files to the Iceberg
+    table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The previous solution is entirely file-based. It does not rely on any external
+    service. However, the file-based solution requires a lot of additional create/delete
+    file operations and necessitates costly data lake list-files operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a high level diagram of our previous file-based solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/44376c3ecf621c7a345a28dcc851d3cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All images unless otherwise noted are by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article we will attempt to improve on this solution by leveraging the
+    [Azure Event Grid](https://learn.microsoft.com/en-us/azure/event-grid/overview)
+    service. The Event Grid is an event broker that you can use to implement an event-driven
+    architecture. In an event-driven architecture, events are used to transmit state
+    changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The state changes we are interested in transmitting are the file creation events
+    when new files are added to the data lake by the Java Writers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The consumer of these events is the Bookkeeper, which attaches the new data
+    files to an Iceberg table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s a high level diagram of the queue-based solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/65d221b1569b5ca0a31e73b8d4d23938.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All images unless otherwise noted are by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Configuration
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'An Azure storage account consists of four services: Containers, File shares,
+    Queues, and Tables. The two data storage services we are interested in are the
+    Containers and the [Queues](https://learn.microsoft.com/en-us/azure/storage/queues/storage-queues-introduction).
+    Containers are where the blob files are stored. Queues are where we will send
+    file creation events.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14e2c989baa48ce027ad6483d8a00701.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thus, we configure Event Grid to emit events every time a file is created inside
+    a particular storage container. We configure Event Grid to publish these file
+    creation events to a storage Queue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are only interested in file creation events, we configure Event Grid
+    to send only the “Blob Created” events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ccb4340b6bd1b03ec391ebc9314ed384.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Also, we are only interested in files created under a certain path and with
+    a certain file extension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/567005f9ff1ac2b3ad016e44ebfc0405.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finally, we can further narrow the events we will be processing by specifying
+    advanced filters. When a Java Writer is done writing into a file, it invokes the
+    REST call `FlushWithClose`. In the advanced filters, we specify `data.api` equals
+    `FlushWithClose.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can target a particular Iceberg table or all Iceberg tables by specifying
+    a `subject` which contains a substring. In our case we used `/data/` which is
+    the data folder used by all Iceberg tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87d00eac98fee6766dc8ce0f5cc8e1e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When Java Writers create parquet files inside the `/data/` folder, events are
+    published to the storage Queue. We can use the Azure portal to monitor activity
+    in the Event Grid. In particular, we can see that the delivered events are a subset
+    of all the published events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1f9b567ea15b1fdbb43e5591829fd7f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Writers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The implementation of the Writers is essentially the same as in our previous
+    file-based solution. In fact, the Writers are even a little simpler since they
+    no longer need to publish notifications themselves. The Azure Event Grid takes
+    care of publishing notifications. The Writers only write parquet files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Bookkeeper
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The bookkeeper is still responsible for registering newly created data files
+    to the Iceberg table. However, it now determines which files need to be appended
+    by reading a queue of `FlushWithClose` events. We create a Java storage queue
+    client like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice the use of our `DataLakeTokenCredential` class. Since the storage queue
+    and the data lake (containers) reside within the same storage account, we leverage
+    the same authentication mechanism for both.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieving the events is as simple as calling `receiveMessages`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Each of these messages will be a `FlushWithClose`with the file path and file
+    size. The messages are JSON that looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In our previous file-based solution, the Monikers (the messages) were written
+    by the Java Writers and contained serialized Iceberg `DataFile` objects. Thus,
+    the Bookkeeper could read these objects and directly do the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we are using Azure Event Grid, we do not control the content of the
+    messages. The Bookkeeper thus needs to create Iceberg `DataFile` objects using
+    the file path and file size information provided by Event Grid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are missing the parquet metrics; fortunately, Iceberg has the necessary API
+    to retrieve metrics from a parquet file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Thanks to Samrose Ahmed for showing me this trick. Here’s his blog [Serverless
+    asynchronous Iceberg data ingestion](https://www.matano.dev/blog/2022/09/13/ingesting-data-iceberg),
+    which uses the AWS SQS (the AWS equivalent to Azure Event Grid).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now have all the information necessary to create an Iceberg `DataFile` object
+    and commit it to an Iceberg table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When we profile this implementation, we quickly realize that most of the time
+    is spent retrieving metrics from parquet files. Retrieving parquet file metrics
+    is very efficient and only consists of reading the parquet file footer information.
+    However, a REST call per file needs to be executed. The latencies of these REST
+    calls can quickly add up. Fortunately, this can easily be remedied by parallelizing
+    these requests using a Java executor service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: By leveraging an executor service for operations that are latent, we can greatly
+    improve performance. Even when appending a large number of data files (hundreds),
+    processing messages takes less than a second. Reading parquet metrics takes one
+    to three seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The only operation that cannot be optimized with an executor service is the
+    Iceberg commit operation. Although, this operation is rather quick, taking between
+    a second or two. On occasion, this operation can take up to 20 seconds when Iceberg
+    reorganizes the manifests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we measure the delta between the time a data file is flushed and the time
+    a data file is committed to the Iceberg table, we observe overall latencies as
+    low as 3 seconds and up to 20 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using Azure Event Grid yields results similar to our previous file-based solution.
+    However, the Event Grid solution yields more consistent results. We are not at
+    the mercy of the file-listing data lake operation which can sometimes take a long
+    time to execute, especially when the data lake is heavily used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also estimate the cost of “messaging” using Event Grid to be about 1/10th
+    of “messaging” via a file-based solution. The storage cost of actual data files
+    is the same in both solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Leveraging Azure Event Grid is a great way to notify the Bookkeeper of newly
+    created data files. However, if your storage appliance does not support a notification
+    mechanism, using a file-based solution can also be viable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are interested in evaluating these experiments for yourself, you can
+    find the code used in these articles [here](https://github.com/cccs-jc/java-iceberg-table).
+  prefs: []
+  type: TYPE_NORMAL

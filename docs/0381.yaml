@@ -1,0 +1,460 @@
+- en: Streaming Big Data Files from Cloud Storage
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/streaming-big-data-files-from-cloud-storage-634e54818e75?source=collection_archive---------9-----------------------#2023-01-25](https://towardsdatascience.com/streaming-big-data-files-from-cloud-storage-634e54818e75?source=collection_archive---------9-----------------------#2023-01-25)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Methods for efficient consumption of large files
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----634e54818e75--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----634e54818e75--------------------------------)[](https://towardsdatascience.com/?source=post_page-----634e54818e75--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----634e54818e75--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----634e54818e75--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreaming-big-data-files-from-cloud-storage-634e54818e75&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----634e54818e75---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----634e54818e75--------------------------------)
+    ·13 min read·Jan 25, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F634e54818e75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreaming-big-data-files-from-cloud-storage-634e54818e75&user=Chaim+Rand&userId=9440b37e27fe&source=-----634e54818e75---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F634e54818e75&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstreaming-big-data-files-from-cloud-storage-634e54818e75&source=-----634e54818e75---------------------bookmark_footer-----------)![](../Images/d4e67f787dac3bd4e6d982b7bfd56796.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Aron Visuals](https://unsplash.com/@aronvisuals?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Working with very large files can pose challenges to application developers
+    related to efficient resource management and runtime performance. Text file editors,
+    for example, can be divided into those that can handle large files, and those
+    that make your CPU choke, make your PC freeze, and make you want to scream. These
+    challenges are exacerbated when the large files reside in a remote storage location.
+    In such cases one must consider the manner in which the files will be pulled to
+    the application while taking into account: bandwidth capacity, network latency,
+    and the application’s file access pattern. In this post we consider the case in
+    which our data application requires access to one or more large files that reside
+    in **cloud object storage**. This continues a series of posts on the topic of
+    efficient ingestion of data from the cloud (e.g., [here](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056),
+    [here](/training-in-pytorch-from-amazon-s3-6156d5342d1), and [here](https://julsimon.medium.com/deep-dive-on-tensorflow-training-with-amazon-sagemaker-and-amazon-s3-12038828075c)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we get started, let’s be clear…when using cloud storage, it is usually
+    **not** recommended to work with files that are particularly large. If you are
+    working with multiple data files, it is also preferred **not** to choose a file
+    size that is particularly small (due to the overhead incurred by numerous requests
+    to the storage service). The sweet spot varies across platforms but is usually
+    somewhere between a few MBs to a few hundred MBs. (If you rely heavily on cloud
+    storage, you may want to design a simple experiment to test this out.) Unfortunately,
+    we don’t always have control over the data design process and sometimes have no
+    choice but to work with the cards we’ve been dealt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another good practice, especially when working with large files, is to choose
+    a format that supports partial file reads — that is, a format that does not require
+    ingesting the entire file in order to process any part of it. A few examples of
+    such files are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a simple text file,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a sequential dataset — a dataset containing individual records that are grouped
+    into a single file in a sequential manner,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a dataset that is stored in a columnar format, such as [Apache Parquet](https://parquet.apache.org/),
+    that is specifically designed to enable loading only selected columns of the data,
+    and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a video file that is stored in a format that allows playback from any time offset
+    (as most formats do).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this post, we assume that our large files allow for partial reads. We will
+    consider several options for ingesting the file contents in Python and measure
+    how they perform in different application use cases. Although our demonstrations
+    will be based on AWS’s object storage service, [Amazon S3](https://aws.amazon.com/s3/),
+    most of what we write pertains equally to any other object storage service. Please
+    note that our choice of specific services, APIs, libraries, etc., should not be
+    viewed as an endorsement of these over any other option. The best solution for
+    streaming data from the cloud is very much dependent on the details of your project
+    and your environment, and it is highly recommended that you conduct your own in-depth
+    analysis before drawing any conclusions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Direct Download from Amazon S3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we will assume that we are downloading files directly from Amazon
+    S3\. However, it should be noted that there a number of services and/or solutions
+    that include an intermediate step between the object storage and the application.
+    AWS, for example, offers services such as [Amazon FSx](https://aws.amazon.com/fsx/)
+    and [Amazon EFS](https://aws.amazon.com/efs/) for mirroring your data in a high-performance
+    file system in the cloud. [AI Store](https://github.com/NVIDIA/aistore) offers
+    a [kubernetes](https://kubernetes.io/)-based solution for a lightweight storage
+    stack adjacent to the data consuming applications. These kinds of solutions might
+    alleviate some of the challenges associated with using large files, e.g., they
+    may reduce latency and support higher bandwidth. On the other hand, they often
+    introduce a bunch of new challenges related to deployment, maintenance, scalability,
+    etc. Plus, they cost extra money.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metrics for Comparative Performance Measurement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the next few sections, we will describe different ways of pulling large
+    files from Amazon S3 in Python. To compare the behavior of these methods, we will
+    use the following metrics:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Time to first sample** — how much time does it take until the first sample
+    in the file is read.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Average sequential read time** — what is the average read time per sample
+    when iterating sequentially over all of the samples.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Total processing time** — what is the total processing time of the entire
+    data file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Average random read time**— what is the average read time when reading samples
+    at arbitrary offsets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Different applications will have different preferences as to which of these
+    metrics to prioritize. For example, a video streaming application might prioritize
+    a low time-to-first-sample in order to improve viewer experience. It will also
+    require efficient reads at arbitrary offsets to support features such as fast-forward.
+    On the other hand, as long as the average time-per-sample passes a certain threshold
+    (e.g., 30 frames per second) optimizing this metric is not important. In contrast,
+    a deep learning training application might prioritize reducing the average sequential
+    read and total processing time in order to minimize the potential for performance
+    bottlenecks in the training flow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To facilitate our discussion, we create a 2 GB binary file and assume that
+    the file contains 2,048 data samples, each one being 1 MB in size. The code block
+    below includes snippets for: creating a file with random data and uploading it
+    to Amazon S3 (using boto3), iterating over all of the samples sequentially, and
+    sampling the data at non-sequential file offsets. For this and all subsequent
+    code snippets, we assume that your AWS account and local environment have been
+    appropriately [configured](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html)
+    to access Amazon S3.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Downloading from S3 to Local Disk
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first option we consider is to download the large file to a local disk
+    and then read it from there in the same manner that we would read any other local
+    file. There a number of methods for downloading a file to a local disk. The three
+    we will evaluate here are: Python boto3 API, AWS CLI, and S5cmd.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Boto3 File Download**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The most straightforward way to pull files from Amazon S3 in Python is to use
+    the dedicated [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/index.html)
+    Python library. In the code block below, we show how to define an *S3* *client*
+    and use the [download file](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.download_file)
+    API to pull our file from S3 to a local path. The API takes a [TransferConfig](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/customizations/s3.html#boto3.s3.transfer.TransferConfig)
+    object which includes controls for tuning the download behavior. In our example,
+    we have left the settings with their default values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We ran this script (and all subsequent scripts) in our local environment and
+    averaged the results over 10 trials. Not surprisingly, the average time-to-first-sample
+    was relatively high, ~21.3 seconds. This is due to the fact that we needed to
+    wait until the entire file was downloaded before opening it. Once the download
+    was completed, the average read time for both sequential and arbitrary samples
+    was miniscule, as we would expect from any other local file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boto3 includes a similar API, [download_fileobj](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.download_fileobj),
+    for downloading the file directly into memory (e.g., using an [io.BytesIO](https://docs.python.org/3/library/io.html#io.BytesIO)
+    object). However, this would generally **not** be recommended when working with
+    large files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AWS CLI
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The [AWS CLI](https://docs.aws.amazon.com/cli/latest/index.html) utility offers
+    similar functionality for command line use. AWS CLI is written in Python and uses
+    the same underlying APIs as Boto3\. Some developers feel more comfortable with
+    this mode of use. The download configuration settings are controlled via the [AWS
+    config file](https://docs.aws.amazon.com/cli/latest/topic/s3-config.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Not surprisingly, the results of running this script (with the default configuration
+    settings) were nearly identical to the previous Boto3 results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**S5cmd**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We covered the [S5cmd](https://github.com/peak/s5cmd) command line utility at
+    length in a [previous post](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056)
+    in which we showed its value in downloading hundreds of small files from cloud
+    storage in parallel. Contrary to the previous method, S5cmd is written in the
+    [Go Programming Language](https://go.dev/) and is thus able to better utilize
+    the underlying resources (e.g., CPU cores and TCP connections). Check out [this
+    informative blog](https://joshua-robinson.medium.com/s5cmd-for-high-performance-object-storage-7071352cc09d)
+    for more details on how S5cmd works and its significant performance advantages.
+    The S5cmd [*concurrency*](https://github.com/peak/s5cmd#concurrency)flag allows
+    for controlling the download speed. The code block below demonstrates the use
+    of S5cmd with the *concurrency* set to 10.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sadly, we were not able to reproduce the overwhelming performance benefit of
+    S5cmd that was [previously demonstrated on a 50 GB file](https://joshua-robinson.medium.com/s5cmd-for-high-performance-object-storage-7071352cc09d).
+    The average time-to-first-sample was ~23.1 seconds, slightly higher than our previous
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multi-part vs. Single-threaded Download**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Each of the previous methods employed multi-part downloading under the hood.
+    In multi-part downloading, multiple threads are run in parallel, each of which
+    is responsible for downloading a disjoint chunk of the file. Multi-part downloading
+    is critical for pulling large files from the cloud in a timely fashion. To demonstrate
+    its importance, we reran the Boto3 experiment with the *use_threads* flag set
+    to *False*, effectively disabling multi-part downloading. This caused the resultant
+    average time-to-first-sample to jump to a whopping 156 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The Art of Prefetching Data Files**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Prefetching is a common technique that is employed when iterating over multiple
+    large files. When prefetching, an application will start to download one or more
+    subsequent files in parallel to its processing the current file. In this way the
+    application can avoid the download delay for all but the very first file. Effective
+    prefetching requires appropriate tuning to reach the most optimal results. Prefetching
+    data from the cloud is employed by many frameworks for accelerating the speed
+    of data ingestion. For example, both [PyTorch](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&cd=&cad=rja&uact=8&ved=2ahUKEwiHkcyujc_8AhV0g_0HHTphBe8QFnoECAkQAQ&url=https%3A%2F%2Fpytorch.org%2F&usg=AOvVaw2mABY6VbqZdRJYnleMzDSb)
+    and [TensorFlow](https://www.google.com/url?sa=t&rct=j&q=&esrc=s&cd=&cad=rja&uact=8&ved=2ahUKEwjzjMS_jc_8AhVvi_0HHWgpBPQQFnoECAkQAQ&url=https%3A%2F%2Fwww.tensorflow.org%2F&usg=AOvVaw0TGZBeXHx2CVPI2FiDZclR)
+    support prefetching training-data files for optimizing deep learning training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streaming Data from S3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Some applications may be willing to compromise on the average read-time-per-sample
+    in exchange for a low time-to-first-sample. In this section we demonstrate a Boto3
+    option for streaming the file from S3 in such a way that allows us to begin processing
+    it before completing the file download. The method we describe involves creating
+    a [Linux FIFO pipe](https://www.gnu.org/software/libc/manual/html_node/Pipes-and-FIFOs.html)
+    and feeding it into the Boto3 [download_fileobj](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.download_fileobj)
+    API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sure enough, the average time-to-first-sample dropped all the way down to ~2.31
+    seconds (from more than 20). On the other hand, both the average time-per-sample
+    and the total file processing time increased to ~0.01 seconds and ~24.7 seconds,
+    respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading Data from Arbitrary Offsets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Some applications require the ability to read only select portions of the file
+    at arbitrary offsets. For these use cases, downloading the entire file can be
+    extremely wasteful. Here we show how to download specific [byte-ranges](https://docs.aws.amazon.com/whitepapers/latest/s3-optimizing-performance-best-practices/use-byte-range-fetches.html)
+    of the file using the Boto3 [get_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.get_object)
+    data streaming API. The code block below demonstrates the use of the API for both
+    streaming the entire file and reading arbitrary data chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: While this solution results in a time-to-first-sample result of ~1.37 seconds,
+    the total file processing time (~119 seconds) renders it unusable for sequential
+    reading. Its value is demonstrated by the average time to read arbitrary samples
+    — ~0.191 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that our example did not take advantage of the fact that the arbitrary
+    offsets were predetermined. A real-world application would use this information
+    to prefetch file segments and boost performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned above, pulling large files from the cloud efficiently relies on
+    parallel multi-part downloading. One way to implement this is by using the Boto3
+    [get_object](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.get_object)
+    API to read disjoint file chunks in the manner just shown.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Filtering Data with Amazon S3 Select
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Sometimes the partial data we are seeking is a small number of rows and/or columns
+    from a large file that is stored in a CSV, JSON, or Apache Parquet file format.
+    In such cases, we can simply apply an SQL filter using a dedicated service such
+    as [Amazon S3 Select](https://docs.aws.amazon.com/AmazonS3/latest/userguide/selecting-content-from-objects.html).
+    To run an SQL filter to multiple files, you may consider a service such as [Amazon
+    Athena](https://aws.amazon.com/athena/). Both services allow you to limit your
+    data retrieval to the specific information you need and avoid high overhead of
+    having to pull one or more large files. Be sure to check out the documentation
+    to learn more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mounting S3 Data Using Goofys
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All of the solutions we have covered until now have involved explicitly pulling
+    data directly from cloud storage. Other solutions expose the cloud storage access
+    to the application as a (POSIX-like) file system. [Goofys](https://github.com/kahing/goofys)
+    is a popular [FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace) based
+    library for reading from Amazon S3\. The command below demonstrates how to mount
+    an S3 bucket to a local file path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once the goofys mount has been configured, the application can access the large
+    files by pointing to them via the local path, as shown in the code block below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The goofys-based solution resulted in a time-to-first-sample of ~1.36 seconds,
+    total file processing time of ~27.6 seconds, and an average time of ~0.149 seconds
+    for reading arbitrary samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should be noted that under the hood, goofys attempts to optimize the response
+    time even at the expense of additional calls to Amazon S3 (e.g., by prefetching
+    data chunks even before they are requested). Depending on your setup and details
+    of your application’s data access pattern, this could result in slightly higher
+    Amazon S3 costs relative to other solutions. Goofys includes a number of settings
+    for controlling its behavior, such as the “ — cheap” flag for trading performance
+    for potentially lower costs. Note that these controls are applied when defining
+    the mount. Contrary to the Boto3 based solutions, goofys does not enable you to
+    tune the controls (e.g., chunk size, prefetching behavior, etc.) during runtime
+    to support varying data ingestion patterns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another point to be aware of is that the portions of data read by goofys are
+    cached. Thus, if you read the same portion of data a second time while it is still
+    in the cache, the response will be immediate. Keep this in mind when running your
+    tests and be sure to reset the goofys mount before each experiment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be sure to check out the [documentation](https://github.com/kahing/goofys) for
+    more details on how goofys works, how to control its behavior, its limitations,
+    and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparative Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The following table summarizes the results of the experiments that we ran:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c94ab478e7b7e84f96c6bf7beb61754c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparative Results of Pulling 2 GB File from S3 (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results indicate that the best method for ingesting a large data file is
+    likely to depend on the specific needs of the application. Based on these results,
+    an application that seeks to minimize the time-to-first-sample would benefit most
+    from a goofys based solution, while an application that seeks to minimize the
+    total processing time would opt for downloading the file to a local disk using
+    Boto3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We strongly caution against relying on this table to make any decisions for
+    your own applications. The tests were run in a very specific setup with the versions
+    of the tools available at the time of this writing. The comparative results are
+    likely to vary greatly based on: the setup, the network load, the distance from
+    the cloud storage facility, the versions of the utilities used, the resource requirements
+    of the application, and more.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our results did not account for differences in the utilization of CPU, memory,
+    and other system resources between the different solutions. In practice, the load
+    on the system resources should be taken into consideration as they may impact
+    the application behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Be sure to run your own in-depth, use-case driven experiments before making
+    any design decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have covered the topic of pulling big data files from cloud
+    storage. We have seen that the best approach will likely vary based on the particular
+    needs of the data application in question. Our discussion has highlighted a theme
+    that is common across all of our posts covering cloud based services — while *the
+    cloud* opens up a wide range of new opportunities for technological development
+    and advancement, it also introduces quite a number of unique and exciting challenges,
+    and compels us to rethink common application design principles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, comments, questions, and corrections are more than welcome.
+  prefs: []
+  type: TYPE_NORMAL

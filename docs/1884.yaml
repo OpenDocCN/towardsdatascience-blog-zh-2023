@@ -1,0 +1,418 @@
+- en: Instance Selection for Deep Learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/instance-selection-for-deep-learning-7463d774cff0?source=collection_archive---------11-----------------------#2023-06-07](https://towardsdatascience.com/instance-selection-for-deep-learning-7463d774cff0?source=collection_archive---------11-----------------------#2023-06-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to choose the best machine for your ML workload
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----7463d774cff0--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----7463d774cff0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7463d774cff0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7463d774cff0--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----7463d774cff0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finstance-selection-for-deep-learning-7463d774cff0&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----7463d774cff0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7463d774cff0--------------------------------)
+    ·12 min read·Jun 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7463d774cff0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finstance-selection-for-deep-learning-7463d774cff0&user=Chaim+Rand&userId=9440b37e27fe&source=-----7463d774cff0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7463d774cff0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Finstance-selection-for-deep-learning-7463d774cff0&source=-----7463d774cff0---------------------bookmark_footer-----------)![](../Images/177887cd1f82961bcb53c3f57d959134.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Cezary Morga](https://unsplash.com/@cezarymorga?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the course of our daily AI development, we are constantly making decisions
+    about the most appropriate machines on which to run each of our machine learning
+    (ML) workloads. These decisions are not taken lightly as they can have a meaningful
+    impact on both the speed as well as the cost of development. Allocating a machine
+    with one or more GPUs to run a sequential algorithm (e.g., the standard implementation
+    of the *connected components* algorithm)might be considered wasteful, while training
+    a large language model on a CPU would likely take a prohibitively long time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In most cases we will have a range of machine options to choose from. When using
+    a cloud service infrastructure for ML development, we typically have the choice
+    of a wide selection of machine types that vary greatly in their hardware specifications.
+    These are usually grouped into families of machine types (called [instance types](https://aws.amazon.com/ec2/instance-types/?trk=3fc1271f-8d0f-43b5-b177-4fba4b680f8b&sc_channel=ps&ef_id=CjwKCAjwvdajBhBEEiwAeMh1U_5B_UvAVhlBq4He6fU_TBPuLafVduG8_SjT0GOhgh32WklDkroGDxoCzuAQAvD_BwE%3AG%3As&s_kwcid=AL%214422%213%21645125292191%21e%21%21g%21%21aws+ec2+instance+types%2119574556935%21145779862552)
+    on AWS, [machine families](https://cloud.google.com/compute/docs/machine-resource)
+    on GCP, and [virtual machine series](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/series/)
+    on Microsoft Azure) with each family targeting different types of use cases. With
+    all the many options it’s easy to feel overwhelmed or suffer from [choice overload](https://en.wikipedia.org/wiki/Overchoice),
+    and many online resources exist for helping one navigate the process of instance
+    selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we would like to focus our attention on choosing an appropriate
+    instance type for deep learning (DL) workloads. DL workloads are typically extremely
+    compute-intensive and often require dedicated hardware accelerators such as GPUs.
+    Our intentions in this post are to propose a few guiding principles for choosing
+    a machine type for DL and to highlight some of the primary differences between
+    machine types that should be taken into consideration when making this decision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s Different About this Instance Selection Guide
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In our view, many of the existing instance guides result in a great deal of
+    missed opportunity. They typically involve classifying your application based
+    on a few predefined properties (e.g., compute requirements, memory requirements,
+    network requirements, etc.) and propose a flow chart for choosing an instance
+    type based on those properties. They tend to underestimate the high degree of
+    complexity of many ML applications and the simple fact that classifying them in
+    this manner does not always sufficiently foretell their performance challenges.
+    We have found that naively following such guidelines can, sometimes, result in
+    choosing a sub-optimal instance type. As we will see, the approach we propose
+    is much more hands-on and data driven. It involves defining clear metrics for
+    measuring the performance of your application and tools for comparing its performance
+    on different instance type options. It is our belief that it is this kind of approach
+    that is required to ensure that you are truly maximizing your opportunity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disclaimers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Please do not view our mention of any specific instance type, DL library, cloud
+    service provider, etc. as an endorsement for their use. The best option for you
+    will depend on the unique details of your own project. Furthermore, any suggestion
+    we make should not be considered as anything more than a humble proposal that
+    should be carefully evaluated and adapted to your use case before being applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 1: Proposed Principles for Instance Type Selection'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As with any other important development design decision, it’s highly recommended
+    that you have a clear set of guidelines for reaching an optimal solution. There
+    is nothing easier than just using the machine type you used for your previous
+    project and/or are most familiar with. However, doing so may result in your missing
+    out on opportunities for significant cost savings and/or significant speedups
+    in your overall development time. In this section we propose a few guiding principles
+    for your instance type search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define Clear Metrics and Tools for Comparison
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Perhaps the most important guideline we will discuss is the need to clearly
+    define both the **metrics** for comparing the performance of your application
+    on different instance types and the tools for measuring them. Without a clear
+    definition of the utility function you are trying to optimize, you will have no
+    way to know whether the machine you have chosen is optimal. Your utility function
+    might be different across projects and might even change during the course of
+    a single project. When your budget is tight you might prioritize reducing cost
+    over increasing speed. When an important customer deadline is approaching, you
+    might prefer speed at any cost.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Example: Samples per Dollar Metric** In previous posts (e.g., [here](/cloud-ml-performance-checklist-caa51e798002))
+    we have proposed ***Samples per Dollar —*** i.e. the number of samples that are
+    fed into our ML model for every dollar spent — as a measure of performance for
+    a running DL model (for training or inference. The formula for ***Samples per
+    Dollar*** is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac69309639f2d604afaff5296b1bdfcd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Samples per Dollar formula (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '…where *samples per second = batch size * batches per second*. The training
+    instance cost can usually be found online. Of course, optimizing this metric alone
+    might be insufficient: It may minimize the overall cost of training but without
+    including a metric that considers the overall development time, you might end
+    up missing all of your customer deadlines. On the other hand, the speed of development
+    can sometimes be controlled by training on multiple instances in parallel allowing
+    us to reach our speed goals regardless of the instance type of choice. In any
+    case, our simple example demonstrates the need to consider multiple performance
+    metrics and weigh them based on details of the ML project such as budget and scheduling
+    constraints.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formulating the metrics is useless if you don’t have a way to measure them.
+    It is critical that you define and build tools for measuring your metrics of choice
+    into your applications. In the code block below, we show a simple PyTorch based
+    training loop in which we include a simple line of code for periodically printing
+    out the average number of samples processed per second. Dividing this by the published
+    cost (per second) of the instance type gives you the cost per dollar metric we
+    mentioned above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Have a Wide Variety of Options
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once we have clearly defined our utility function, choosing the best instance
+    type is reduced to finding the instance type that maximizes the utility function.
+    Clearly, the larger the search space of instance types we can choose from, the
+    greater the result we can reach for overall utility. Hence the desire to have
+    a **large number** of options. But we should also aim for **diversity** in instance
+    types. Deep learning projects typically involve running multiple application workloads
+    that vary greatly in their system needs and system utilization patterns. It is
+    likely that the optimal machine type for one workload will differ substantially
+    in its specifications from the optimal workload of another. Having a **large**
+    **and** **diverse** set of instance types will increase your ability to maximize
+    the performance of all of your project’s workloads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consider Multiple Options
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Some instance selection guides will recommend categorizing your DL application
+    (e.g., by the size of the model and/or whether it performs training or inference)
+    and choosing a (single) compute instance accordingly. For example AWS promotes
+    the use of certain types of instances (e.g., the [Amazon EC2 g5](https://aws.amazon.com/ec2/instance-types/g5/)
+    family) for ML inference, and other (more powerful) instance types (e.g., [the
+    Amazon EC2 p4](https://aws.amazon.com/ec2/instance-types/p4/) family) for ML training.
+    However, as we mentioned in the introduction, it is our view that blindly following
+    such guidance can lead to missed opportunities for performance optimization. And,
+    in fact, we have found that for many training workloads, including ones with large
+    ML models, our utility function is maximized by instances that were considered
+    to be targeted for inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, we do not expect you to test *every* available instance type. There
+    are many instance types that can (and should) be ruled out based on their hardware
+    specifications alone. We would not recommend taking the time to evaluate the performance
+    of a large language model on a CPU. And if we know that our model requires high
+    precision arithmetic for successful convergence we will not take the time to run
+    it on a Google Cloud TPU (see [here](https://cloud.google.com/tpu/docs/intro-to-tpu#when_to_use_tpus)).
+    But barring clearly prohibitive HW limitations, it is our view that instance types
+    should only be ruled out based on the **performance data results**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the reasons that multi-GPU [Amazon EC2 g5](https://aws.amazon.com/ec2/instance-types/g5/)
+    instances are often not considered for training models is the fact that, contrary
+    to [Amazon EC2 p4](https://aws.amazon.com/ec2/instance-types/p4/), the medium
+    of communication between the GPUs is PCIe, and not [NVLink](https://en.wikipedia.org/wiki/NVLink),
+    thus supporting much lower data throughput. However, although a high rate of GPU-to-GPU
+    communication is indeed important for multi-GPU training, the bandwidth supported
+    by PCIe may be sufficient for your network, or you might find that other performance
+    bottlenecks prevent you from fully utilizing the speed of the NVLink connection.
+    The only way to know for sure is through experimentation and performance evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any instance type is fair game in reaching our utility function goals and in
+    the course of our instance type search we often find ourselves rooting for the
+    lower-power, more environment-friendly, under-valued, and lower-priced underdogs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Develop your Workloads in a Manner that Maximizes your Options
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Different instance types may impose different constraints on our implementation.
+    They might require different initialization sequences, support different floating
+    point data types, or depend on different SW installations. Developing your code
+    with these differences in mind will decrease your dependency on specific instance
+    types and increase your ability to take advantage of performance optimization
+    opportunities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some high-level APIs include support for multiple instance types. [PyTorch Lightening](https://www.pytorchlightning.ai/index.html),
+    for example, has built-in support for running a DL model on many different types
+    of processors, hiding the details of the implementation required for each one
+    from the user. The supported processors include CPU, [GPU](https://lightning.ai/docs/pytorch/latest/accelerators/gpu_basic.html),
+    [Google Cloud TPU](https://lightning.ai/docs/pytorch/stable/accelerators/tpu.html),
+    [HPU (Habana Gaudi)](https://lightning.ai/docs/pytorch/latest/accelerators/hpu_basic.html),
+    and more. However, keep in mind that some of the adaptations required for running
+    on specific processor types may require code changes to the model definition (without
+    changing the model architecture). You might also need to include blocks of code
+    that are conditional on the accelerator type. Some API optimizations may be implemented
+    for specific accelerators but not for others (e.g., the [scaled dot product attention
+    (SDPA)](https://pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html)
+    API for GPU). Some hyper-parameters, such as the batch size, may need to be tuned
+    in order to reach maximum performance. Additional examples of changes that may
+    be required were demonstrated in our series of blog posts on the topic of [dedicated
+    AI training accelerators](/tpu-training-6eb84100d138).
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Re)Evaluate Continuously
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Importantly, in our current environment of consistent innovation in the field
+    of DL runtime optimization, performance comparison results become outdated very
+    quickly. New instance types are periodically released that expand our search space
+    and offer the potential for increasing our utility. On the other hand, popular
+    instance types can reach end-of-life or become difficult to acquire due to high
+    global demand. Optimizations at different levels of the software stack (e.g.,
+    see [here](https://openai.com/research/triton)) can also move the performance
+    needle considerably. For example, PyTorch recently released a new graph compilation
+    mode which can, reportedly, [speed up training by up to 51% on modern GPUs](https://pytorch.org/get-started/pytorch-2.0/#pytorch-2x-faster-more-pythonic-and-as-dynamic-as-ever).
+    These speed-ups have not (as of the time of this writing) been demonstrated on
+    other accelerators. This is a considerable speed-up that may force us to reevaluate
+    some of our previous instance choice decisions. (For more on PyTorch compile mode,
+    see [our recent post on the topic](https://medium.com/towards-data-science/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d).)
+    Thus, performance comparison should **not** be a one-time activity; To take full
+    advantage of all of this incredible innovation, it should be conducted and updated
+    on a regular basis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Part 2: Differences Between Instance Types'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Knowing the details of the instance types at your disposal and, in particular,
+    the differences between them, is important for deciding which ones to consider
+    for performance evaluation. In this section we have grouped these into three categories:
+    HW specifications, SW stack support, and instance availability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hardware Specifications
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The most important differentiation between potential instance types is in the
+    details of their hardware specifications. There are a whole bunch of hardware
+    details that can have a meaningful impact on the performance of a deep learning
+    workload. These include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The specifics of the hardware accelerator: Which AI accelerators are we using
+    (e.g., GPU/HPU/TPU), how much memory does each one support, how many FLOPs can
+    it run, what base types does it support (e.g., bfloat16/float32), etc.?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The medium of communication between hardware accelerators and its supported
+    bandwidths
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The medium of communication between multiple instances and its supported bandwidth
+    (e.g., does the instance type include a high bandwidth network such as [Amazon
+    EFA](https://aws.amazon.com/hpc/efa/) or [Google FastSocket](https://cloud.google.com/blog/products/ai-machine-learning/how-to-optimize-google-cloud-for-deep-learning-training)).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The network bandwidth of sample data ingestion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The ratio between the overall CPU compute power (typically responsible for the
+    sample data input pipeline) and the accelerator compute power.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For a comprehensive and detailed review of the differences in the hardware
+    specifications of ML instance types on AWS, check out the following TDS post:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/choosing-the-right-gpu-for-deep-learning-on-aws-d69c157d8c86?source=post_page-----7463d774cff0--------------------------------)
+    [## Choosing the right GPU for deep learning on AWS'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to choose the right Amazon EC2 GPU instance for deep learning training and
+    inference — from best performance to the…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/choosing-the-right-gpu-for-deep-learning-on-aws-d69c157d8c86?source=post_page-----7463d774cff0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having a deep understanding of the details of instance types you are using is
+    important not just for knowing which instance types are relevant for you, but
+    also for understanding and overcoming runtime performance issues discovered during
+    development. This has been demonstrated in many of our previous [blog posts](https://chaimrand.medium.com/)
+    (e.g., [here](/cloud-ml-performance-checklist-caa51e798002)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Software Stack Support
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another input into your instance type search should be the SW support matrix
+    of the instance types you are considering. Some software components, libraries,
+    and/or APIs support only specific instance types. If your workload requires these,
+    then your search space will be more limited. For example, some models depend on
+    compute kernels built for GPU but not for other types of accelerators. Another
+    example is the dedicated library for model distribution offered by Amazon SageMaker
+    which can boost the performance of multi-instance training but, as of the time
+    of this writing, supports a [limited number of instance types](https://docs.aws.amazon.com/sagemaker/latest/dg/distributed-model-parallel-support.html)
+    (For more details on this, see [here](/smart-distributed-training-on-amazon-sagemaker-with-smd-part-1-cd296f87a0ee).)
+    Also note that some newer instance types, such as [AWS Trainium](https://aws.amazon.com/machine-learning/trainium/)
+    based [Amazon EC2 trn1](https://aws.amazon.com/ec2/instance-types/trn1/) instance,
+    have limitations on the frameworks that they [support](https://awsdocs-neuron.readthedocs-hosted.com/en/latest/index.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instance Availability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The past few years have seen extended periods of chip shortages that have led
+    to a drop in the supply of HW components and, in particular, accelerators such
+    as GPUs. Unfortunately, this has coincided with a significant increase in demand
+    for such components driven by the recent milestones in the development of large
+    generative AI models. The imbalance between supply and demand has created a situation
+    of uncertainty with regards to our ability to acquire the machine types of our
+    choice. If once we would have taken for granted our ability to spin up as many
+    machines as we wanted of any given type, we now need to adapt to situations in
+    which our top choices may not be available at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The availability of instance types is an important input into their evaluation
+    and selection. Unfortunately, it can be very difficult to measure availability
+    and even more difficult to predict and plan for it. Instance availability can
+    change very suddenly. It can be here today and gone tomorrow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that for cases in which we use multiple instances, we may require not just
+    the availability of instance types but also their **co-location** in the same
+    data-centers (e.g., see [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html#placement-groups-cluster)).
+    ML workloads often rely on low network latency between instances and their distance
+    from each other could hurt performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another important consideration is the availability of low cost [spot](https://aws.amazon.com/ec2/spot/?cards.sort-by=item.additionalFields.startDateTime&cards.sort-order=asc)
+    instances. Many cloud service providers offer discounted compute engines from
+    surplus cloud service capacity (e.g., [Amazon EC2 Spot Instances](https://aws.amazon.com/ec2/spot/?cards.sort-by=item.additionalFields.startDateTime&cards.sort-order=asc)
+    in AWS, [Preemptible VM Instances](https://cloud.google.com/compute/docs/instances/preemptible)
+    in Google Cloud Platform, and [Low-Priority VMs](https://docs.microsoft.com/en-us/azure/batch/batch-low-pri-vms)
+    in Microsoft Azure).The disadvantage of spot instances is the fact that they can
+    be interrupted and taken from you with little to no warning. If available, and
+    if you program fault tolerance into your applications, spot instances can enable
+    considerable cost savings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have reviewed some considerations and recommendations for instance
+    type selection for deep learning workloads. The choice of instance type can have
+    a critical impact on the success of your project and the process of discovering
+    the most optimal one should be approached accordingly. This post is by no means
+    comprehensive. There may be additional, *even critical*, considerations that we
+    have not discussed that may apply to your deep learning project and should be
+    accounted for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The explosion in AI development over the past few years has been accompanied
+    with the introduction of a number of new dedicated AI accelerators. This has led
+    to an increase in the number of instance type options available and with it the
+    opportunity for optimization. It has also made the search for the most optimal
+    instance type both more challenging and more exciting. Happy hunting :)!!
+  prefs: []
+  type: TYPE_NORMAL

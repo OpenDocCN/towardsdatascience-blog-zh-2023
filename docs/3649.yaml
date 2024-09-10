@@ -1,0 +1,398 @@
+- en: Large Language Models, MirrorBERT — Transforming Models into Universal Lexical
+    and Sentence Encoders
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/large-language-models-mirrorbert-transforming-models-into-universal-lexical-and-sentence-511bd592da48?source=collection_archive---------10-----------------------#2023-12-12](https://towardsdatascience.com/large-language-models-mirrorbert-transforming-models-into-universal-lexical-and-sentence-511bd592da48?source=collection_archive---------10-----------------------#2023-12-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Discover how mirror augmentation generates data and aces the BERT performance
+    on semantic similarity tasks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----511bd592da48--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----511bd592da48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----511bd592da48--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----511bd592da48--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----511bd592da48--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-mirrorbert-transforming-models-into-universal-lexical-and-sentence-511bd592da48&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----511bd592da48---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----511bd592da48--------------------------------)
+    ·7 min read·Dec 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F511bd592da48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-mirrorbert-transforming-models-into-universal-lexical-and-sentence-511bd592da48&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----511bd592da48---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F511bd592da48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-mirrorbert-transforming-models-into-universal-lexical-and-sentence-511bd592da48&source=-----511bd592da48---------------------bookmark_footer-----------)![](../Images/786055ae126ec853b631f556033eba06.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is no secret that BERT-like models play a fundamental role in modern NLP
+    applications. Despite their phenomenal performance on downstream tasks, most of
+    these models are not that perfect on specific problems without fine-tuning. Embedding
+    construction from raw pretrained models usually leads to metrics being far from
+    state-of-the-art results. At the same time, fine-tuning is a heavy procedure and
+    usually requires at least thousands of annotated data samples to make the model
+    better understand the domain data. In some cases, this aspect becomes problematic
+    when we cannot simply collect already annotated data or it comes with a high price.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MirrorBERT** was designed to overcome the aforementioned issue. Instead of
+    the standard fine-tuning algorithm, MirrorBERT relies on self-supervision by smartly
+    augmenting initial data without any external knowledge. This approach allows MirrorBERT
+    to show comparable performance on *semantic similarity problems*. Furthermore,
+    by using its innovative contrastive learning technique, MirrorBERT can transform
+    pretrained models like [BERT](/bert-3d1bf880386a) or [RoBERTa](https://medium.com/towards-data-science/roberta-1ef07226c8d8)
+    into universal lexical encoders in less than a minute!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/roberta-1ef07226c8d8?source=post_page-----511bd592da48--------------------------------)
+    [## Large Language Models: RoBERTa — A Robustly Optimized BERT Approach'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn about key techniques used for BERT optimisation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/roberta-1ef07226c8d8?source=post_page-----511bd592da48--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the help of the official [MirrorBERT paper](https://arxiv.org/pdf/2104.08027.pdf),
+    we will dive into its crucial details to understand how it works under the hood.
+    The obtained knowledge will be universal as the discussed techniques could then
+    be used for other NLP models dealing with similarity tasks as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methodology
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To put it simply, MirrorBERT is the same BERT model except for several steps
+    introduced in its learning process. Let us discuss each of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6246e91c630233298c6072c1d634a84f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MirrorBERT learning process
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Self-duplication
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As the name suggests, MirrorBERT simply duplicates the initial data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c9a0786ab2891c98633d61f547b057e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Self-duplication
+  prefs: []
+  type: TYPE_NORMAL
+- en: This duplicated data is then used to further construct two different embedding
+    representations of the same strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Data augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The authors of the paper propose two intuitive techniques that slightly modify
+    dataset texts. According to them, in a vast majority of cases, these text corruptions
+    do not change their meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.1\. Input augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given a pair of strings (xᵢ, x̄ᵢ), the algorithm randomly chooses one of them
+    and applies **random span masking** consisting of a random substitution of a substring
+    of a fixed length *k* in the text with the [MASK] token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63f14a1113cf5967175836dd7075d40d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Input augmentation through random span masking
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.2\. Feature augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Random span masking operates on sentence- / phrase-level. To make a model able
+    to work well on word-level tasks as well, another augmentation mechanism is needed
+    operating on shorter text fragments. Feature augmentation solves this problem
+    by using dropout.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The **dropout** process refers to turning off a given percentage *p* of neurons
+    in a certain network layer. This can be viewed as the equivalent of zeroing corresponding
+    neurons in the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The authors of the paper propose using dropout for data augmentation. When a
+    pair of strings (xᵢ, x̄ᵢ) is passed to the network with dropout layers, their
+    output representations will be slightly different if, on each forward pass, dropout
+    layers always disable different neurons.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The great aspect of using dropout for feature augmentation is that the dropout
+    layers are already included in BERT / RoBERTa architecture meaning no additional
+    implementation is needed!
+  prefs: []
+  type: TYPE_NORMAL
+- en: While random span masking is applied only to each second object in the dataset,
+    the dropout is applied to all of them.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. Constrastive learning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Contrastive learning** is a machine learning technique consisting of learning
+    data representations in a way that similar objects lie close to each other in
+    the embedding space while dissimilar are far away from each other.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: One of the ways of constrastive learning implementation is the usage of a **constrastive
+    loss function**. The one chosen for MirrorBERT is ***InfoNCELoss***. Let us understand
+    how it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**InfoNCELoss**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At first sight, the formula for *InfoNCELoss* might look intimidating, so let
+    us gradually come to it step by step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The cosine similarity between two vectors measures how close they align to each
+    other taking values in the range from -1 to 1 with greater values indicating higher
+    similarity.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/cb4165ec044813fff40e2d051d3d4715.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cosine similarity between two vectors
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. To better understand the next steps, it is necessary to be aware that *InfoNCELoss*
+    uses softmax transformation with the temperature parameter T controlling the smoothness
+    of the output softmax distribution. That is why similarities are divided by T.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more information about softmax temperature, refer to [this article](https://medium.com/towards-data-science/distilbert-11c8810d29fc)
+    explaining it in more detail.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/1041d8194b2bd4dbb761d5e7dd99c559.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cosine similarity divided by the temperature
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. As in the standard softmax formula, a prediction (similarity) is then transformed
+    to the exponent form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48220b69b90b9d528b1201a70829643e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Exponent of cosine similarity
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4\. In the normal softmax formula, the numerator contains an exponent of a
+    class probability whereas the denominator is the exponential sum of all distribution
+    probabilities. In the case with similarities in *InfoNCELoss*, the formula analogously
+    follows the logic:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The numerator contains exponential similarity of two slightly modified identical
+    strings (xᵢ, x̄ᵢ) which can be thought of as a *positive example*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The denominator consists of a sum of exponential similarities between xᵢ and
+    all other dataset strings xⱼwhich can be seen as a set of *all negative examples*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/71f072adfc5040e087c104b86521453c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Softmax formula for cosine similarity. Nᵢ denotes all dataset strings except
+    for xᵢ and x̄ᵢ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. In the ideal scenario, we want the similarity between identical strings
+    (xᵢ, x̄ᵢ) to be high while the similarity of xᵢ with other strings xⱼ to be low.
+    If it is true, then the numerator in the formula above will increase while the
+    denominator will decrease making the whole expression larger.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Loss functions work inversely: in ideal cases, they take smaller values, and,
+    in worse situations, they highly penalise the model. To make the formula above
+    compatible with this loss principle, let us add the *negative logarithm* before
+    the whole expression.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08b63c2c2bb05cd1d427075d0cb09d57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Negative log of softmax similarities. This expression can be viewed as a loss
+    value for a single string xᵢ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. The expression in the previous step already corresponds to a loss value
+    for a single string xᵢ. Since the dataset consists of many strings, we need to
+    take all of them into account. For that, let us sum up this expression for all
+    the strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cebef6dbecffc5bbd9148f2d04687326.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: InfoNCELoss
+  prefs: []
+  type: TYPE_NORMAL
+- en: The obtained formula is exactly the *InfoNCELoss*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: InfoNCELoss tries to group similar objects close to each other while pushing
+    away the dissimilar ones in the embedding space.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Triplet loss used in [SBERT](https://medium.com/towards-data-science/sbert-deb3d4aef8a4)
+    is another example of contrastive learning loss.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](/sbert-deb3d4aef8a4?source=post_page-----511bd592da48--------------------------------)
+    [## Large Language Models: SBERT — Sentence-BERT'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how siamese BERT networks accurately transform sentences into embeddings
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/sbert-deb3d4aef8a4?source=post_page-----511bd592da48--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A surprising fact about MirrorBERT is that it does not require a lot of data
+    to be fine-tuned. Furthermore, this data does not have to be external as the whole
+    training process is self-supervised.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The researchers report that for fine-tuning lexical representations, they use
+    only 10k most frequent words in each language. For sentence-level tasks, 10k sentences
+    are used.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Training details
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The details on the MirrorBERT training are listed below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The temperature is set to *T = 0.04* in sentence-level tasks and to *T = 0.2*
+    in word-level tasks.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In random span masking, *k* is set to 5.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dropout is set to *p = 0.1*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: AdamW optimizer is used with a learning rate of *2e-5*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The batch size is set to 200 (or 400 with duplicates).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lexical models are trained for 2 epochs and sentence-level models are trained
+    for a single epoch.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Instead of the mean pooling of all output token representations, the [CLS] token
+    representation is created.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Single MirrorBERT training epoch needs only 10–20 seconds.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Evaluations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The authors evaluated metrics on a set of benchmarks by applying mirror fine-tuning.
+    The results were reported on three types of tasks: lexical, sentence-level and
+    cross-lingual. In each of them, MirrorBERT demonstrated comparable performance
+    to other BERT-like fine-tuned models.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results also showed that the range between 10k and 20k training examples
+    is the most optimal for fine-tuning. The performance of the model gradually decreases
+    with more training examples.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Mirror fine-tuning literally acts like a magic spell: instead of heavy fine-tuning
+    procedures, the mirror framework requires much less time without the use of external
+    data being on par with other fine-tuned models like BERT, SBERT or RoBERTa on
+    semantic similarity tasks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result, MirrorBERT can transform BERT-like pretrained model into universal
+    encoders capturing linguistic knowledge with high efficiency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Fast, Effective, and Self-Supervised: Transforming Masked Language Models
+    into Universal Lexical and Sentence Encoders](https://arxiv.org/pdf/2104.08027.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless noted are by the author*'
+  prefs: []
+  type: TYPE_NORMAL

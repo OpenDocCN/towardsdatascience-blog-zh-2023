@@ -1,0 +1,298 @@
+- en: PyTorch Model Performance Analysis and Optimization — Part 6
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b?source=collection_archive---------3-----------------------#2023-09-20](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b?source=collection_archive---------3-----------------------#2023-09-20)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to Identify and Analyze Performance Issues in the Backward Pass with PyTorch
+    Profiler, PyTorch Hooks, and TensorBoard
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----b87412a0371b--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----b87412a0371b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b87412a0371b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b87412a0371b--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----b87412a0371b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----b87412a0371b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b87412a0371b--------------------------------)
+    ·8 min read·Sep 20, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb87412a0371b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b&user=Chaim+Rand&userId=9440b37e27fe&source=-----b87412a0371b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb87412a0371b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b&source=-----b87412a0371b---------------------bookmark_footer-----------)![](../Images/acfc647db438fa36a7a5dabe53b3b43a.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [David Clode](https://unsplash.com/@davidclode?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the sixth part in our [series of posts](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
+    on the topic of analyzing and optimizing PyTorch models using [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    and [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
+    In this post we will tackle one of the more complicated types of performance issues
+    to analyze — **a bottleneck in the backward-propagation pass of a training step**.
+    We will explain what makes this type of bottleneck especially challenging and
+    propose one way of analyzing it using PyTorch’s built-in [support for attaching
+    hooks to different parts of the training step](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook).
+    Many thanks to [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/)
+    for his contributions to this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To facilitate our discussion, we define a simple Vision Transformer (ViT)-based
+    classification model using the popular [timm](https://pypi.org/project/timm/)
+    python module (version 0.9.7). We define the model with the *patch_drop_rate*
+    flag set to *0.5*, which causes the model to randomly drop half of the patches
+    in each training step. The training script is programmed to [minimize non-determinism](https://pytorch.org/docs/stable/notes/randomness.html),
+    using the [torch.use_deterministic_algorithms](https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html#torch.use_deterministic_algorithms)
+    function and the [cuBLAS](https://docs.nvidia.com/cuda/cublas/index.html#cublasApi_reproducibility)
+    environment variable, *CUBLAS_WORKSPACE_CONFIG*. Please see the code block below
+    for the full model definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will run our experiments on an [Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/)
+    instance (containing an NVIDIA A10G GPU and 8 vCPUs) and using the official [AWS
+    PyTorch 2.0 Docker image](https://github.com/aws/deep-learning-containers).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initial Performance Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the image below we capture the performance results as displayed in the [TensorBoard
+    plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    *Trace View*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a66a097dd3a3a3ed1df10d9c683b002.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A Bottleneck in the Backward Pass (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the operations in the forward pass of the training step are bunched together
+    in the top thread, a performance issue appears to present itself in the backward
+    pass in the bottom thread. There we see that a single operation, *GatherBackward*,
+    takes up a significant portion of the trace. Taking a closer look, we can see
+    that the underlying operations include “to”, “copy_”, and “cudaStreamSynchronize”.
+    As we saw in [part 2](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)
+    of our series, these operations typically indicate that data is being copied from
+    the host to the device — something that we would like to avoid mid-training-step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this point you will naturally ask: Why is this happening? And what part
+    of our model definition is causing it? The *GatherBackward* trace hints that a
+    [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html) operation
+    may be involved, but where is it coming from and why is it causing a synchronization
+    event?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our previous posts (e.g., [here](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)),
+    we advocated using labeled [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    context managers in order to pinpoint the source of a performance issue. The problem
+    here is that the performance issue occurs in the backward pass which we do not
+    have control over! In particular, **we do not have the ability to wrap individual
+    operations in the backward pass with context managers.** In theory, one could
+    identify the problematic model operation through an in-depth analysis of the trace
+    view and by matching each segment in the backward pass with its corresponding
+    operation in the forward pass. However, not only can this be quite tedious, but
+    it also requires an intimate knowledge of all of the low-level operations of the
+    model training-step. The advantage to using [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    labels was that it allowed us to easily zone in on the problematic portions of
+    our model. Ideally, we would like to be able to retain the same capability even
+    in the case of performance issues in the backward pass. In the next section we
+    will describe how this can be achieved using PyTorch hooks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance Analysis with PyTorch Backward Hooks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Although PyTorch does not allow you to wrap individual backward-pass operations,
+    it does allow you to prepend and/or append custom functionality using its hook
+    support. PyTorch supports registering hooks to both [torch.Tensors](https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html)
+    and [torch.nn.Modules](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook).
+    Although the technique we will propose in this post will rely on **registering
+    backward hooks to modules**, tensor-hook registering can be similarly used to
+    either replace or augment the module-based method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the code block below we define a wrapper function that takes a module and
+    registers both a [full_backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)
+    and a [full_backward_pre_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_pre_hook)
+    (although in practice one should suffice). Each hook is programmed to simply add
+    a message to the captured profiling trace using the [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    function. The [backward_pre_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_pre_hook)
+    is programmed to print a “before” message and the [backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)
+    an “after” message. An optional *details* string is appended to distinguish between
+    multiple instances of the same module type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the *backward_hook_wrapper* function, we can begin the work of locating
+    the source of our performance issue. We start by wrapping just the model and loss-function
+    as in the code block below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Using the search box of the [TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    *Trace View*, we can identify the locations of our “before” and “after” messages
+    and deduce where the backward propagation of the model and loss start and end.
+    This enables us to conclude that the performance issue occurs in the backward
+    pass of the model. The next step is to wrap the Vision Tranformer’s internal modules
+    with our *backward_hook_wrapper* function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the code block above, we specified each of the internal modules. An alternative
+    way to wrap all of model’s first-level modules is to iterate over its [named_children](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.named_children):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The image capture below shows the presence of the “before backward of PatchDropout”
+    message right before the problematic *GatherBackward* operation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/781626897e23f9935309b0fe43cd9da6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Identifying the Source of the Problematic Backward Operation in the Trace View
+    (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our profiling analysis has indicated that the source of the performance problem
+    is the [*PathDropout*](https://github.com/huggingface/pytorch-image-models/blob/v0.9.7/timm/layers/patch_dropout.py#L7)
+    module. Examining the [*forward*](https://github.com/huggingface/pytorch-image-models/blob/v0.9.7/timm/layers/patch_dropout.py#L27)function
+    of the module, we can indeed see a call to [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of our toy model, we needed just two iterations of analysis in order
+    to zone in on the source of the performance issue. In practice, it is likely that
+    additional iterations of this method may be required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that PyTorch includes the [torch.nn.modules.module.register_module_full_backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.modules.module.register_module_full_backward_hook.html)
+    function that will — in a single call — append a hook to *all* of the modules
+    in the training step. Although this may be sufficient in simple cases (such as
+    our toy example), it does not enable one to distinguish between different instances
+    of the same module type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we know the source of the performance issue, we can get to work on
+    trying to fix it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization Proposal: Use Indexing Instead of Gather Wherever Possible'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we know that the source of the issue is in the [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)
+    operation of the DropPatches module, we can research what the trigger of the lengthy
+    host-device synchronization event might be. Our investigation takes us back to
+    the documentation of the [torch.use_deterministic_algorithms](https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html)
+    function which informs us that, *when called on a CUDA tensor that requires grad*,
+    [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html) exhibits
+    nondeterministic behavior, unless [torch.use_deterministic_algorithms](https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html)
+    is called with *mode* set to *True*. In other words, by configuring our script
+    to use deterministic algorithms, we modified the default behavior of the [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)
+    backward pass. As it turns out, it is precisely this change that causes the need
+    for a sync event. Indeed, if we remove this configuration, the performance issue
+    disappears! The question is, can we maintain the algorithm determinism without
+    needing to pay a performance penalty.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the code block below we propose an alternative implementation of the [*PathDropout*](https://github.com/huggingface/pytorch-image-models/blob/v0.9.7/timm/layers/patch_dropout.py#L7)
+    module *forward* function that produces the same output using [torch.Tensor indexing](https://pytorch.org/cppdocs/notes/tensor_indexing.html)
+    instead of [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html).
+    The modified lines of code have been highlighted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the image below we capture the *Trace View* following the above change:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f3ef66d8d70c3d1c0f51b9836b25c16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View Following Optimization (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can clearly see that the lengthy synchronization event is no longer present.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of our toy model, we were fortunate enough that the way in which
+    the [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)
+    operation was used allowed it to be replaced with PyTorch indexing. Naturally,
+    this is not always the case; other usages of [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)
+    may not have an equivalent implementation based on indexing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the table below we compare the performance results of training our toy model
+    in different scenarios:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4747889a916d822f41a4c4b7a40676c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Optimization Results (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of our toy example, the optimization had a modest, though measurable,
+    impact — a performance boost of ~2%. Interestingly, torch indexing in the reproducible
+    mode performed better than the default (non-deterministic) [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html).
+    Based on these findings, it might be a good idea to evaluate the option of using
+    indexing rather than [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html),
+    whenever possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Despite PyTorch’s (justified) reputation for being easy to debug and trace,
+    [torch.autograd](https://pytorch.org/tutorials/beginner/blitz/autograd_tutorial.html)
+    remains a bit of an enigma and analyzing the backward pass of a training step
+    can be quite difficult. To address this challenge, PyTorch includes support for
+    inserting hooks at different stages of the backward propagation. In this post,
+    we have shown how PyTorch backward hooks, along with [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler),
+    can be used in an iterative process in order to identify the source of performance
+    issues in the backward pass. We applied this technique to a simple ViT model and
+    learned about some of the nuances of the [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)
+    operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we have covered a very specific type of performance bottleneck.
+    Be sure to check out our [other posts on medium](https://chaimrand.medium.com/)
+    which cover a wide variety of topics pertaining to performance analysis and performance
+    optimization of machine learning workloads.
+  prefs: []
+  type: TYPE_NORMAL

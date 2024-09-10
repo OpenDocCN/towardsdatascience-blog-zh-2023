@@ -1,0 +1,539 @@
+- en: 'Mapping the Jams: Traffic Analysis Using Graph Theory'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748?source=collection_archive---------0-----------------------#2023-08-19](https://towardsdatascience.com/mapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748?source=collection_archive---------0-----------------------#2023-08-19)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to find potential critical points in your city infrastructure using
+    graph theory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)[![Mateusz
+    Praski](../Images/229c7711bef235e4eaa3aa8df918e32c.png)](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------)
+    [Mateusz Praski](https://medium.com/@mateusz.praski?source=post_page-----a387135ea748--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F61bf49684bbc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748&user=Mateusz+Praski&userId=61bf49684bbc&source=post_page-61bf49684bbc----a387135ea748---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a387135ea748--------------------------------)
+    ·10 min read·Aug 19, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa387135ea748&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748&user=Mateusz+Praski&userId=61bf49684bbc&source=-----a387135ea748---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa387135ea748&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmapping-the-jams-traffic-analysis-using-graph-theory-a387135ea748&source=-----a387135ea748---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph theory has plenty of applications in real-life problems such as social
+    networks, molecular biology, or geospatial data. Today, I’ll present the last
+    one, analyzing city’s road layout to predict critical streets, junctions, and
+    how changes to the infrastructure can affect it. But first, let’s start with the
+    basics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graphs and their centrality measures
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Graphs are sets of vertices and their edges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb004f1130bfc1d5c601c12c00867cd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Set E is subset of unordered tuples (x, y) where x and y are vertices of the
+    graph and x is not equal to y. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where the edges represent connections between the nodes. If edges do not have
+    directions, we call a graph undirected. A real-life example of an undirected graph
+    can be a chemical molecule, where the vertices are atoms, and bonds are represented
+    as edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d25a830ea2ea7889dc3e32ab9936a250.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Serotonin molecule is an example of a simple undirected graph. [[source](https://commons.wikimedia.org/wiki/File:Serotonin-Spartan-HF-based-on-xtal-3D-balls-web.png)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, sometimes we need information about whether the edge goes from *u*
+    to *v*, from *v* to *u*, or both ways. For example, if Mark likes Alice, it doesn’t
+    necessarily mean it’s mutual ( ☹ ). In those situations, we can define the edge
+    as an ordered tuple instead of unordered one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2fb927f2d95f51c9facf34a4375eefb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Brackets represent unordered tuple in formulas, while parentheses represent
+    ordered one. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/91e1651615b14a5c4ce7bceb25291f1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Human interactions can be described using directed graphs. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the graph structure, we can define a centrality measure. It’s a metric
+    used for answering the question:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How important is this vertex/edge in a graph?”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: And there are many ways to answer it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Different ways to evaluate the importance of graph components
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Depending on the task, we can start from a different point evaluating centrality.
+    One of the most common metrics are: Degree, Closeness and Betweenness. We will
+    discuss them using Zachary’s Karate Club graph [[more info]](https://en.wikipedia.org/wiki/Zachary%27s_karate_club).
+    It presents ties between different karate club members. You can find code used
+    to generate pictures below [here](https://github.com/Thematiq/cracow-roads-capacity/blob/master/vis-to-article.ipynb).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Degree centrality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The most basic of centralities. It’s defined only for vertices and it’s equal
+    to the degree of the vertex (which is the number of the neighboring vertices).
+    As an example, we can think back to the graph of human relationships, and in case
+    of the friendships among people this metric would answer the question
+  prefs: []
+  type: TYPE_NORMAL
+- en: “How popular is this person?”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/3c1c54563a723c48e9592a9d68ca1813.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nodes’ degree centrality for Karate Club graph. Centrality measures are normalized
+    by maximum degree of the graph (which is number of the nodes minus one). [Image
+    by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Paths in graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the next two centralities, we need to introduce a few concepts to our knowledge
+    of the graph theory. All of them are very intuitive, starting from the edge’s
+    weights. We can add weights to our edges, to mark the difference between them.
+    For example, this can be road length in case of traffic graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In graphs we can define paths, which are lists of vertices we need to traverse
+    to get from A to B. Consecutive vertices in the path are neighbors, first vertex
+    is the A, and the last is B. Path distance is the sum of the edges weights along
+    of it. The shortest path between A and B is the path with the smallest distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5544102cafbd5a0dc2fff2691163b2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The shortest path between A and F is [A, C, E, D, F] with distance 20\. [[source]](https://en.wikipedia.org/wiki/Shortest_path_problem#/media/File:Shortest_path_with_direct_weights.svg)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closeness centrality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ­­­Having all this new knowledge, we can go back to our metrics. Next one is
+    closeness centrality, which tells us how close a node to the rest of the graph
+    is. It’s defined for a specific vertex as an inverse of a mean of shortest paths
+    to all other vertices in the graph. This way, shorter average path translates
+    to higher closeness centrality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2c538e1e7a2866631eef0b5b68dc08a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nodes’ closeness centrality for Karate Club graph. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Betweenness centrality
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Betweenness centrality gives us information, which nodes of a graph are crucial
+    for the traffic going through it. Imagine a city with an extensive road network,
+    where every junction is a node. Some of those serve as a key connectors in daily
+    commutes, while others may be a cul-de-sacs with close to none impact on traffic
+    flow. The former one possess high Betweenness centrality scores, calculated as
+    proportion of the shortest paths traversing through the intersection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/89fc3f2029f4a9f57f56022d7034ff2a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nodes’ betweenness centrality for Karate Club graph. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: City plan as a graph
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now, as we have tools for describing and analyzing graph, we can start extracting
+    city’s plan to a graph form. To do that we can **Open Street Maps** (OSM), to
+    import it in Python as NX graph using [osmnx](https://github.com/gboeing/osmnx)
+    library. We’ll start with a smaller example to discuss what additional process
+    we need to apply, in order to improve time and efficiency of our work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Grzegórzki is one of the eighteen districts of Krakow’s city, with two complex
+    roundabouts — Mogilskie and Grzegórzeckie, and many junctions. Thus, we’ll be
+    able to see most of potential pitfalls with data engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Grzegórzki’s administrative borders. [©Google]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start with importing data from the OSM repository to a Python graph,
+    and plot the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f42d7350e1c085b62e46144b949a422.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Raw OSM data import. White dots are nodes, which should represents roads’ junctions.
+    [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s something wrong with this graph — can you spot what it is?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We get multiple edges for single sections of roads, resulting the graph with
+    almost 3 000 “junctions”. This does not provide proper representation (we can’t
+    make a U-turn in the middle of a road, and every node cause calculation to be
+    slower). To fix this situation, we will perform **graph topology simplification**
+    by removing all nodes on the road between two junctions. In OSMnx, we have a function
+    for that called *ox.simplify_graph()*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0012b6bc2ff5be6da6551f4b70f19dd6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Road layout after topology simplifications. Now every node represents road crossing.
+    [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s one more catch — as you may see, we have two edges for the most of roads,
+    one for each way. Due to this, we have multiple nodes for every intersection,
+    which is an unwanted behavior. Imagine that we’re on a junction, we’re turning
+    left, and there’s no separate lane for a left turn (or it’s already full). As
+    long as we won’t be able to do the turn, the other cars are blocked. In our current
+    graph, this isn’t the truth. The left turn is made of 2 separate nodes, one for
+    turning left, and the other for crossing opposite lane. This would indicate that
+    those are two independent operations, while they are not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s why we’re going to consolidate intersections, meaning that we will combine
+    multiple nodes close to each other into one. We’ll choose the consolidation radius
+    big enough to consolidate multiple parts of the intersections into one, but on
+    the other hand keep roundabouts as multiple node structures, as they can be only
+    partially blocked. To do this we will use osmnx function *ox.consolidate_intersections()*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ca6ccff4bdef9ab0d6b498675d6e6c56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Road layout after intersection consolidation. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/252c4c862597b357d5a2f2c1f7585138.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of the intersection. Before and after. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After those operations, we’re almost ready for the analysis. The last caveat
+    is Krakow’s municipality borders — as many people travel from the neighboring
+    towns, and graph analysis includes only data within the graph, we need to include
+    those areas. I’ll present in the next chapter implications of not doing that.
+    And here’s our graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea07855e65f33cb18ea5ff2b2f7da23e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Colors indicate maximum speed. The brighter the color the higher the value.
+    We can see the A4 highway colored using yellow. Most of the roads, colored in
+    blue, are 50 km/h. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the source code used to generate this map, as well as all graphic
+    used in the next chapter in this [jupyter notebook](https://github.com/Thematiq/cracow-roads-capacity/blob/master/cracow-analysis.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Betweenness centrality of road layout
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For this case study we will focus only on Betweenness centrality measurement
+    for estimating road traffic. In future, this might be extended to other techniques
+    from graph theory, including **GNN** usage (Graph Neural Networks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will start with calculating Betweenness centrality measurement for all nodes
+    and edges in a road layout representation. For that we will use [**NetworkX**](https://networkx.org/)
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2d9b8f4fd097855bd926ea6136faf476.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Krakow’s Betweenness centrality for each road segment. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Due to a high number of roads on a graph, it’s hard to see which components
+    have highest probability of being critical for traffic. Let’s take a look at a
+    centrality measurement distribution for the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec5b60184b208e3d55c7c5123e37e5d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of centrality measures for streets and junctions in Krakow road
+    layout. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can use those distributions to filter out less important junctions and streets.
+    We will select top 2% of each where the threshold values are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 0.047 for nodes,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 0.021 for edges.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/9fb659e4d79408ee290cc1e5d7490ab7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Graph centrality measurements after thresholding. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see that the most important road segments by betweenness are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The A4 highway and the S7 being the beltway of Krakow (note that Krakow does
+    not have northern part of the beltway),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The western part of 2nd ring road and it’s connection to A4,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The northern part of 3rd ring road (substituting missing northern beltway),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Nowohucka street connecting 2nd ring road with north-eastern part of the
+    city,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Wielicka road leading from city center to the south-eastern highway part.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let’s compare this information to a real life traffic map of Krakow from Google
+    Maps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/18710d95d494f8146b14289e3f183933.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Typical traffic in Krakow on Monday commute [©2023 Google, [source](https://www.google.com/maps/@50.0527231,19.8925913,12z/data=!5m1!1e1?entry=ttu)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that our insights correlate with the results from traffic radar.
+    The mechanism behind that is quite simple — components with high betweenness centrality
+    are those used to commute most of shortest paths in the graph. If car drivers
+    select the best paths for their routes, then the streets and junctions with the
+    highest traffic volumes will be the ones with the highest betweenness centrality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s head back to the last part of the graph engineering — extending graph
+    borders. We can check what would happen if we only took the city’s borders to
+    our analysis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/341e0a2e7b29c2fe717ad97eb6e43a87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Krakow’s road betwenness centrality without taking neighboring towns into the
+    graph. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: The A4 highway, which is one of the most important component due to the beltway
+    nature, has one of the lowest centrality measures in the whole graph! This happens
+    because as the A4 is at the outskirts of the city, and most of its traffic comes
+    from the outside, we cannot include this factor in the betweenness centrality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to use betweenness centrality to analyze effects of layout change to traffic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s take a look at a different scenario for graph analysis. Suppose that we
+    want to predict how a road closure (for example due to the accident) affects the
+    traffic. We can use the centrality measurements to compare differences between
+    two graphs, and thus examine changes in the centrality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this study, we will simulate car accident on A4–7 highway segment, which
+    is a common occurrence. The accident will cause a complete closure of the segment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will start by creating a new road network by removing A4–7 segment from graph,
+    and recalculating centrality measurement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b262e552a258a75c4fd9d4121e295284.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: New layout centrality measurements. Red A4 section represent missing part. [Image
+    by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at a centrality distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b7d263dc10d1082311bd47a1b5f02888.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of centrality measures for streets and junctions in Krakow road
+    layout after removing A4–7 highway segment. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see that it’s still very similar to the original one. To inspect changes
+    in the centrality measurements we will calculate **residual graph**, where centrality
+    measurements are the difference between original road layout and after the accident.
+    Positive values will indicate higher centrality after the accident. Nodes and
+    junctions missing in one the graphs (such as A4–7) won’t be included in the residual
+    graph. Below is the measurement distribution of the residuals:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9a038502f2549fedbc912d8d602d20c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Centrality change distribution after removing A4–7 highway segment. [Image by
+    the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Again, we will filter out top 2% of streets and nodes affected. The threshold
+    values this time are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 0.018 for nodes,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 0.017 for edges.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/df1d12f65b9621bc234eb763d9a547fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Streets and junctions with highest increase in betwenness centrality after removing
+    the A4–7 highway segment. [Image by the author]
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see increases in roads connecting split parts of beltway to the city
+    center, where the 2nd ring road is located. The highest change can be seen in
+    the 2nd ring road which contains one of two left bridges over Vistula river on
+    the western side of the city.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What graph centrality analysis cannot do on a road network
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are a few things that we cannot take account in during graph analysis.
+    The two most important ones, that we could see in this analysis, are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph centrality analysis assumes uniform distribution of traffic among the
+    nodes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Which is false in most cases, as villages and cities have different population
+    densities. However, there are other effects that can reduce this, for example
+    a higher amount of people living in neighboring villages will choose a car as
+    a commute option in comparison to the people living in a city center.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph analysis takes into the account only things that are present within the
+    graph.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is harder to see in the provided examples, especially for someone outside
+    the Krakow. Let’s take a look at **Zakopianka**. It’s a major traffic artery between
+    the city centre and most of the municipalities south of Krakow, and it’s also
+    part of DK7 (national road no. 7) which spans across whole country.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6eec83cb269da6610c8ee9eec3b0a7a0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DK7 road [](https://pl.wikipedia.org/wiki/Droga_krajowa_nr_7_(Polska)#/media/Plik:Mapa_DK7.png)
+    — green parts represent expressways. [[source]](https://pl.wikipedia.org/wiki/Droga_krajowa_nr_7_(Polska)#/media/Plik:Mapa_DK7.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we compare typical traffic on DK7 in Krakow to our centrality measures, they’re
+    completely different. Average betweenness centrality is around 0.01, which is
+    a two times smaller value than the top 2% threshold. While in reality, it’s one
+    of the most blocked sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3108379ae12e6e0ada7d78104dd87fe9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison between Zakopianka average congestion and betweenneess centrality.
+    [©2023 Google, [source](https://www.google.com/maps/@49.9953143,19.9187393,14.47z/data=!5m1!1e1?entry=ttu)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Graph theory and its analysis have applications in multiple scenarios, such
+    as traffic analysis presented in this study. Using basic operations and metrics
+    on graphs, we can get valuable insights in much shorter time in comparison to
+    building a whole simulation model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This whole analysis can be performed using several dozen lines of Python code,
+    and it’s not limited to one road layout. We can also very easily transition to
+    other analysis tools from Graph Theory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As all things, this method has also its drawbacks. The major ones being assumptions
+    about uniform traffic distribution and scope limited to graph structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Github repository containing code used in this study can be found [here](https://github.com/Thematiq/cracow-roads-capacity).
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1183 @@
+- en: Can LLMs Replace Data Analysts? Getting Answers Using SQL
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/can-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259?source=collection_archive---------0-----------------------#2023-12-22](https://towardsdatascience.com/can-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259?source=collection_archive---------0-----------------------#2023-12-22)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Part 2: Diving deeper into LLM agents'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)[![Mariya
+    Mansurova](../Images/b1dd377b0a1887db900cc5108bca8ea8.png)](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8cf7da132259--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8cf7da132259--------------------------------)
+    [Mariya Mansurova](https://miptgirl.medium.com/?source=post_page-----8cf7da132259--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F15a29a4fc6ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=post_page-15a29a4fc6ad----8cf7da132259---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8cf7da132259--------------------------------)
+    ·31 min read·Dec 22, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8cf7da132259&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259&user=Mariya+Mansurova&userId=15a29a4fc6ad&source=-----8cf7da132259---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8cf7da132259&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcan-llms-replace-data-analysts-getting-answers-using-sql-8cf7da132259&source=-----8cf7da132259---------------------bookmark_footer-----------)![](../Images/a9a7ac47dced35c371073a2c4bd70565.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by DALL-E 3
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [the previous article](https://medium.com/towards-data-science/can-llms-replace-data-analysts-building-an-llm-powered-analyst-851578fa10ce),
+    we’ve started building an LLM-powered analyst. We decided to focus on descriptive
+    analytics and reporting tasks since they are the most common for analysts. Most
+    analysts start their careers with such tasks, and most companies start building
+    the analytical function with reporting and BI tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our first prototype can use ready-made tools to answer questions related to
+    the defined metrics, like in the example below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/37dd8da1463d0133009b5fea8137b792.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step would be to teach our LLM-powered analyst to get any metrics.
+    Analysts usually use SQL to get data. So, the most helpful skill for the LLM analyst
+    would be interacting with SQL databases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve already discussed OpenAI functions and learned how LLMs can use tools
+    to integrate with the world. In this article, I would like to focus on LLM agents
+    and discuss them in more detail. We will learn how to build agents using LangChain
+    and try different agent types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up a database
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, let’s set up a database we will be interacting with. My choice is ClickHouse.
+    ClickHouse is an open-source column-oriented SQL database management system for
+    online analytical processing (OLAP). It’s a good option for big data and analytical
+    tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to learn more about ClickHouse, please check [my article](https://towardsdev.com/clickhouse-tips-tricks-i-wish-i-knew-f575f0371cd3).
+    However, you can use any database. You will need just to tweak the code for functions
+    that get data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing ClickHouse is just one line of code. The initial command executes
+    the script provided by the ClickHouse team to download the proper binary for your
+    platform. Then, you need to launch a server, and that’s it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can access ClickHouse via HTTP API. By default, it listens on the 8123 port.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: I usually check that `r.status_code = 200` to ensure the request has been successfully
+    completed and raise the error otherwise. However, we will pass the results of
+    this function to LLM. So, getting any output DB returns is okay, regardless of
+    whether it is an error or not. LLM will be able to handle it properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve generated synthetic data for this example. If you would like to learn more
+    about data simulation, you can find the code [here](https://github.com/miptgirl/miptgirl_medium/blob/main/analyst_agent/generate_synthetic_data_for_sql.ipynb).
+    I used retention curves to model sessions for customers, considering the number
+    of days since account creation and weekly seasonality. It could be a bit of an
+    overcomplicated approach right now since we don’t use data much. But I hope in
+    future prototypes, we will be able to get some insights from this data using LLMs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need just a couple of tables representing a data model for a basic e-commerce
+    product. We will work with the list of users (`ecommerce.users`) and their sessions
+    (`ecommerce.sessions`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the `ecommerce.sessions` table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8430e5082dd3450b91d9779b4faf0aa1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: And here, you can see what features we have for users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/faf4589845750ce8ac3151e06172aced.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have data to work with and are ready to move on and discuss LLM agents
+    in more detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Agents overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The core idea of the LLM agents is to use LLM as a reasoning engine to define
+    the set of actions to take. In the classic approach, we hardcode a sequence of
+    actions, but with agents, we give the model tools and tasks and let her decide
+    how to achieve them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One of the most foundational papers regarding LLM agents is [“ReAct: Synergizing
+    Reasoning and Acting in Language Models”](https://arxiv.org/abs/2210.03629) by
+    Shunyu Yao et al. The ReAct (**Re**asoning + **Act**ing) approach suggests combining:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: reasoning that helps to create the plan and update it in case of exceptions,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: actions that allow the model to leverage external tools or gather data from
+    external sources.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Such an approach shows much better performance on different tasks. One of the
+    examples from the paper is below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35ba2a3b5a9028a1189160df6725e4e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example from [the paper by Yao et al.](https://arxiv.org/abs/2210.03629)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Actually, that’s how human intelligence works: we combine inner voice reasoning
+    with task-oriented actions. Suppose you need to cook a dinner. You will use reasoning
+    to define a plan (“guests will be in 30 minutes, I have time only to cook pasta”),
+    adjust it (“Ben has become a vegan, I should order something for him”) or decide
+    to delegate which is an equivalent of external tools (“there’s no pasta left,
+    I need to ask my partner to buy it”). At the same time, you will use actioning
+    to use some tools (ask a partner for help or use a mixer) or get some information
+    (to look up in the internet how many minutes you need to cook pasta to make it
+    al dente). So, it’s reasonable to use a similar approach with LLMs since it works
+    for humans (who are no doubt AGI).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, there are quite a lot of different approaches for LLM agents since ReAct.
+    They differ in prompts used to set the model’s reasoning, how we define tools,
+    output format, handling memory about the intermediate steps, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some of the most popular approaches are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI functions,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: AutoGPT,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: BabyAGI,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Plan-and-execute agent.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will use these approaches later on for our task and see how they work and
+    what the differences are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building Agent from Scratch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start to build an agent. We will do it from scratch to understand how
+    everything works under the hood. Then, we will use LangChain’s tools for faster
+    prototyping if you don’t need any customisation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The core components of LLM agents are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompt to guide the model’s reasoning.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Tools that the model can use.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Memory — a mechanism to pass previous iterations to the model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the first version of the LLM agent, we will use OpenAI functions as a framework
+    to build an agent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining tools
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s start with defining the tools for our robot. Let’s think about what information
+    our LLM-powered analyst might need to be able to answer questions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: List of tables — we can put it in the system prompt so that the model has some
+    view on what data we have and doesn’t need to execute a tool for it every time,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: List of columns for the table so that the model can understand the data schema,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Top values for the column in the table so that the model can look up values
+    for filters,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Results of SQL query execution to be able to get actual data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To define tools in LangChain, we need to use `@tool` decorator for the function.
+    We will use Pydantic to specify the arguments schema for each function so that
+    the model knows what to pass to the function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve discussed tools and OpenAI functions in detail in [the previous article](https://medium.com/towards-data-science/can-llms-replace-data-analysts-building-an-llm-powered-analyst-851578fa10ce).
+    So don’t hesitate to read it if you need to revise this topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code below defines three tools: `execute_sql`, `get_table_columns` and
+    `get_table_column_distr`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s worth noting that the code above uses Pydantic v1\. In June 2023, Pydantic
+    released v2, which is incompatible with v1\. So, check your version if you see
+    validation errors. You can find more details on the Pydantic compatibility in
+    [the documentation](https://python.langchain.com/docs/guides/pydantic_compatibility).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We will be working with OpenAI functions and need to convert our tools. Also,
+    I saved our toolkit in a dictionary. It will be handy when executing tools to
+    get observations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Defining a chain
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ve created tools for the model. Now, we need to define the agent chain. We
+    will use the latest GPT 4 Turbo, which was also fine-tuned to be used with the
+    functions. Let’s initialise a chat model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The next step is to define a prompt consisting of a system message and a user
+    question. We also need a `MessagesPlaceholder` to set up a place for the list
+    of observations the model will be working with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we discussed, I’ve added the list of tables in the database to the prompt
+    so that the model has at least some knowledge about our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have all the building blocks and are ready to set up the agent chain. The
+    input parameters are a user message and intermediate steps (previous messages,
+    function calls and observations). We pass the input parameters to the prompt using
+    `format_to_openai_function_messages` to convert them into the expected format.
+    Then, we pass everything to the LLM and, in the end, use the output parser `OpenAIFunctionsAgentOutputParser`
+    for convenience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ve defined our primary agent chain. Let’s try to invoke it. I’ve passed an
+    empty list since we have no intermediate steps in the beginning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We got an `AgentActionMessageLog` object, which means the model wants to call
+    `execute_sql` function. When the model is ready to return the final answer to
+    the user, it returns the `AgentFinish` object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we look at the `tool_input`, we can see that the model wants to execute the
+    following query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The query looks pretty good but uses the wrong column name: `active` instead
+    of `is_active`. It will be interesting to see whether LLM will be able to recover
+    from this error and return the result.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can do execution step by step manually, however it will be more convenient
+    to automate it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the `AgentActionMessageLog` object is returned, we need to call a tool, add
+    the observation to the `agent_scratchpad`, and invoke the chain one more time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we got the`AgentFinish` object, we can terminate execution since we have
+    the final answer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I will also add a break after ten iterations to avoid potential endless loops.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: I added some logging of the tools’ usage to the output to see how the execution
+    is going. Also, you can always use LangChain debug mode to see all the calls.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a result of the execution, we got the following output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note: there’s no guarantee that the agent won’t execute DML operations on your
+    database. So, if you’re using it in a production environment, ensure that LLM
+    either doesn’t have permission to change data or your tool implementation doesn’t
+    allow it.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So, the model tried to execute SQL but got an error that there was no column
+    `active`. Then, it decided to see the table schema, corrected the query accordingly,
+    and got the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a pretty decent performance. I behave the same way myself. I usually try
+    recalling or guessing column names first and check the documentation only if the
+    first attempt fails.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, in most cases, we don’t need to write the execution ourselves. We can
+    use the LangChain `AgentExecutor` class for it. Check documentation to learn about
+    all possible [parameters](https://api.python.langchain.com/en/latest/agents/langchain.agents.agent.AgentExecutor.html)
+    for the class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You need to write your own executor only if you want to customise something.
+    For example, add some conditions to terminate the execution or logic to use tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the same code using the `AgentExecutor` below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: As a result, we got an easy-to-trace output with the same result. You can note
+    that LangChain’s formatting for the agent’s output is very convenient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9af57b26a48a6cae3401a95f913919fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve built the LLM agent from scratch. So now, we understand how it works and
+    know how to customise it. However, LangChain provides a high-level function `initialize_agent`
+    that could do it within just one call. You can find all the details in the [documentation](https://api.python.langchain.com/en/latest/agents/langchain.agents.initialize.initialize_agent.html?highlight=initialize_agent#langchain.agents.initialize.initialize_agent).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that we passed the ChatOpenAI model without functions bound to it. We’ve
+    passed tools separately, so we don’t need to link them to the model.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Different Agent Types
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve built an LLM agent based on OpenAI functions from scratch. However, there
+    are quite a lot of other approaches. So let’s try them out as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will look at the ReAct approach (the initial one from the paper we discussed
+    earlier) and several experimental approaches provided by LangChain: Plan-and-execute,
+    BabyAGI and AutoGPT.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ReAct agent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with looking at ReAct agents. With the current implementation, we
+    can easily change the agent type and try the ReAct approach described in the paper.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The most general ReAct implementation is [Zero-shot ReAct](https://python.langchain.com/docs/modules/agents/agent_types/react).
+    It won’t work for us because it supports only tools with a single string in input.
+    Our tools require multiple arguments, so we need to use [Structured Input ReAct](https://python.langchain.com/docs/modules/agents/agent_types/structured_chat).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can leverage the advantage of using a modular framework: we need to change
+    just one parameter `agent = AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION`,
+    and that’s it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: You might wonder how to find the arguments you can specify for the agent. Unfortunately,
+    it’s not documented, so we need to dive into the source code to understand it.
+    Let’s discuss it step-by-step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that `analyst_agent_react` is an object of the `AgentExecutor` class.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This class has an agent field. In our case, it’s an object of the `StructuredChatAgent`
+    class. The class depends on the specified agent type.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s find a `StructuredChatAgent` class implementation and see how it works.
+    In this case, LangChain [creates](https://github.com/langchain-ai/langchain/blob/133971053a0b84a034fb0bc78cd1150cdb7f5dbf/libs/langchain/langchain/agents/structured_chat/base.py#L91)
+    a prompt consisting of prefix, tools’ description, formatted instructions and
+    suffix.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can find the complete list of parameters you can pass as `agent_kwargs`
+    in [the code](https://github.com/langchain-ai/langchain/blob/133971053a0b84a034fb0bc78cd1150cdb7f5dbf/libs/langchain/langchain/agents/structured_chat/base.py#L103).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So, we can override the default `PREFIX` value from [here](https://github.com/langchain-ai/langchain/blob/133971053a0b84a034fb0bc78cd1150cdb7f5dbf/libs/langchain/langchain/agents/structured_chat/prompt.py#L2)
+    and pass it as a `prefix` in `agent_kwargs`. Also, if you’re interested, you can
+    read through the default ReAct prompt here and think about how to tweak it for
+    your task.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you are interested, you can see the final prompt using the following call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s invoke our method and see the result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can notice that the model follows a slightly different framework for reasoning.
+    The model starts iteration with writing down the thought (reasoning), then moves
+    to action (function call) and observation (the result of function call). Then,
+    iteration repeats. In the end, the model returns `action = Final Answer`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "get_table_columns",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"database": "ecommerce",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"table": "users"'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "execute_sql",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"query": "SELECT COUNT(*) AS active_customers_uk FROM ecommerce.users WHERE
+    country = ''United Kingdom'' AND is_active = 1"'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "Final Answer",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": "There are 111,469 active customers from the United Kingdom."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Even though the model followed a different path (starting with understanding
+    the table schema and then executing SQL), it came to the same result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s move on to experimental approaches. In LangChain, there are experimental
+    agent types. They are not advised for production usage yet. However, it will be
+    interesting to try using them and see how they work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plan-and-execute agent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*The code below is based on the* [*example*](https://github.com/langchain-ai/langchain/blob/master/cookbook/plan_and_execute_agent.ipynb)
+    *from LangChain’s cookbook.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This agent follows a “Plan-and-execute” approach in contrast to the “Action”
+    agents we looked at previously. This approach was inspired by the BabyAGI framework
+    and [the paper “Plan-and-Solve Prompting”](https://arxiv.org/abs/2305.04091).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The characteristic of such an approach is that the agent first tries to plan
+    the next steps and then executes them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two components in this approach:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Planner — a regular Large Language Model with the primary goal — just to reason
+    and plan,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Executor — Action agent, an LLM empowered with the set of tools it can use to
+    action.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The advantage of this approach is that you have a separation: one model focuses
+    on planning (reasoning), while the other focuses on execution (action). It’s more
+    modular, and potentially, you could use smaller and cheaper models fine-tuned
+    for your specific tasks. However, this approach also generates more LLM calls,
+    so it’s more expensive if we are using ChatGPT.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s initialise the planner and the executor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: There’s currently no way to specify a custom prompt for the executor since you
+    can’t pass it to [the function](https://github.com/langchain-ai/langchain/blob/master/libs/experimental/langchain_experimental/plan_and_execute/executors/agent_executor.py).
+    However, we can hack the prompt and add our initial system message that gives
+    some context about the task to the beginning of the default prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Disclaimer: overriding objects’ fields is a bad practice because we might bypass
+    some prompt validations. We are doing it now only to experiment with this approach.
+    Such a solution is not suitable for production.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, it’s time to define an agent and execute the same query we were asking
+    before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The call returned an error: `RateLimitError: Error code: 429 — {''error'':
+    {''message'': ''Request too large for gpt-4–1106-preview in organization on tokens_usage_based
+    per min: Limit 150000, Requested 235832.'', ''type'': ''tokens_usage_based'',
+    ''param'': None, ''code'': ''rate_limit_exceeded''}}` . It looks like the model
+    tried to send too many tokens to OpenAI.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s try to understand what has happened by looking at the model’s output
+    (you can find it below):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the model decided to look at `ecommerce.users` and `ecommerce.sessions`
+    columns to determine the criteria for “active” customers.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It realised that it needed to use `is_active` in `ecommerce.users` table. However,
+    the model decided it should also use sessions’ data to define the customer’s activity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Then, the model went down this rabbit hole trying to define criteria for recent
+    activity in `ecommerce.sessions`. It looked at the distributions for `action_date`,
+    `session_duration` and `revenue`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, it defined active customers as those who have had a session within
+    the last 30 days, with a session duration and revenue above certain thresholds,
+    neglecting that it could just use `is_active`. The model planned to look at the
+    data to define these thresholds.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The final error was caused by an attempt to load all user_ids for customers
+    since there are too many tokens for ChatGPT.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Even though there is quite a lot of text, I encourage you to read it to see
+    how the model thinks through the problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "Final Answer",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": "The data regarding customers is stored in a SQL Database,
+    specifically in the table named ''ecommerce.users''."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "get_table_columns",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"database": "ecommerce",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"table": "users"'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "get_table_columns",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"database": "ecommerce",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"table": "sessions"'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "get_table_column_distr",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"database": "ecommerce",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"table": "sessions",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"column": "action_date",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"n": 10'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "get_table_column_distr",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"database": "ecommerce",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"table": "sessions",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"column": "session_duration",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"n": 10'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "get_table_column_distr",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"database": "ecommerce",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"table": "sessions",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"column": "revenue",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"n": 10'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "Final Answer",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": "Based on the data available in the ''ecommerce.users'' and
+    ''ecommerce.sessions'' tables, an ''active'' customer could preliminarily be defined
+    as one who has had a session within the last 30 days, with a session duration
+    and revenue above certain thresholds. The ''is_active'' column in the ''users''
+    table may already reflect this or a similar definition, but further analysis would
+    be required to set specific thresholds for ''session_duration'' and ''revenue''.
+    These thresholds could be determined by calculating averages or percentiles based
+    on the data distribution."'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "get_table_columns",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"database": "ecommerce",'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '"table": "users"'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: '{'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action": "execute_sql",'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"action_input": {'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '"query": "SELECT user_id FROM ecommerce.users WHERE country = ''United Kingdom''"'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '}'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s an excellent example of the situation when the agent overcomplicated
+    the question and went into too much detail. Human analysts also make such mistakes
+    from time to time. So, it’s interesting to see similar patterns in LLM behaviour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we try to reflect on how we could potentially fix this issue, there are
+    a couple of ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we could prevent the cases when we try to get too much data from the
+    database, returning an error if there are more than 1K rows in the output of the
+    `execute_sql` function.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The other thing I would think about is allowing LLM to ask follow-up questions
+    and instruct it not to make assumptions.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s move on to the BabyAGI approach that inspired the current one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BabyAGI agent with Tools
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*The code below is based on* [*example*](https://github.com/langchain-ai/langchain/blob/master/cookbook/baby_agi_with_agent.ipynb)
+    *from LangChain’s cookbook.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similar to the previous approach, our other experimental one, BabyAGI, tries
+    to plan first and then execute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach uses retrieval, so we need to set up a vector storage and embedding
+    model. I use open-source and lightweight [Chroma](https://python.langchain.com/docs/integrations/vectorstores/chroma)
+    for storage and OpenAI embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: Retrieval allows the model to store all the results for a long term and extract
+    and pass only the most relevant ones. If you want to learn more about retrieval,
+    read [my article on RAG](https://medium.com/towards-data-science/rag-how-to-talk-to-your-data-eaf5469b83b0)
+    (Retrieval Augmented Generation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, we will create a TO-DO chain that we will use as a tool for our executor
+    later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we will create an agent specifying tools and prompts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: The last step is to define the BabyAGI executor and run it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Again, the model failed to return results because it wasn’t able to follow the
+    input schema for the tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, surprisingly, the model decided not to use the TO-DO function to create
+    a to-do list but to jump into querying SQL. However, the first query wasn’t correct.
+    The model tried to recover and call the`get_table_columns` function to get column
+    names, but it failed to follow the schema.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the log.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, we’ve seen another problem that is pretty common for agents not powered
+    by OpenAI functions — they fail to follow the structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AutoGPT agent with Tools
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*The code below is based on* [*example*](https://github.com/langchain-ai/langchain/blob/master/cookbook/autogpt/marathon_times.ipynb)
+    *from LangChain’s cookbook.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at another experimental approach — the implementation of [AutoGPT](https://github.com/Significant-Gravitas/AutoGPT)
+    using the LangChain framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we need to set up a vector storage for intermediate steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE38]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this case, again, we can’t specify any prompt to the model. Let’s try to
+    use it without any specific guidance. But let’s add the `get_tables` tool so the
+    model can see all the available tables. I hope it will help the model with writing
+    correct SQL queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE39]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s create an AutoGPT agent. It’s as easy as one function call. Then, let’s
+    execute it and see how it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE40]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The model was able to come up with the right answer: “The number of active
+    customers from the United Kingdom is 111,469.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading through the prompt is interesting since we used the default one. You
+    can access it via `analyst_agent_autogpt.chain.prompt`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE41]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, we can see that this model has long-term memory via vector storage. Also,
+    it has a comprehensive reasoning consisting of thought, reasons, plan, criticism
+    and summary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at the model’s reasoning (I’ve filtered only the model’s responses).
+    So, it followed the same way as the previous successful agents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE42]'
+  prefs: []
+  type: TYPE_PRE
+- en: Overall, AutoGPT looks like a working approach. However, I still believe that
+    the most reliable way to build agents right now is through OpenAI functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do we need to build everything from scratch?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve spent some wonderful learning time building the agent integrated with
+    SQL Database. However, I must mention that LangChain has its own implementation
+    of SQL agent — [SQLDatabaseChain](https://python.langchain.com/docs/integrations/toolkits/sql_database).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This approach uses SQL Alchemy to interact with the databases. So, we need to
+    install the package `clickhouse-sqlalchemy` to connect to ClickHouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE43]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can set up a connection to the database and initialize a toolkit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE44]'
+  prefs: []
+  type: TYPE_PRE
+- en: A toolkit is a collection of useful tools related to some topic. You can find
+    lots of examples in [the documentation](https://python.langchain.com/docs/integrations/toolkits).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see the list of tools we have in the toolkit. There are tools to make
+    an SQL query or get information related to the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE45]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, we can quickly create and run an agent based on OpenAI functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE46]'
+  prefs: []
+  type: TYPE_PRE
+- en: We got the correct answer without much hassle on our side.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE47]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can use `langchain.debug = True` to see what prompt was used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE48]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, we have a pretty convenient and working implementation of SQL analyst. If
+    you don’t need any custom changes, you can just use the LangChain implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, you can tweak it a bit, for example, by passing a prompt to the `create_sql_agent`
+    function ([documentation](https://api.python.langchain.com/en/latest/agent_toolkits/langchain_community.agent_toolkits.sql.base.create_sql_agent.html?highlight=create_sql_agent#langchain_community.agent_toolkits.sql.base.create_sql_agent)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Today, we’ve learned how to create different types of agents. We’ve implemented
+    an LLM-powered agent that can work with SQL databases entirely from scratch. Then,
+    we leveraged high-level LangChain tools to achieve the same result with a couple
+    of function calls.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, now our LLM-powered analyst can use data from your DB and answer questions.
+    It’s a significant improvement. We can add our SQL Database agent as a tool for
+    our LLM-powered analyst. It will be our first skill.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The agent now can answer data-related questions and work on their own. However,
+    the cornerstone of the analytics work is collaboration. So, in the following article,
+    we will add memory and learn agents to ask follow-up questions. Stay tuned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you a lot for reading this article. I hope it was insightful to you. If
+    you have any follow-up questions or comments, please leave them in the comments
+    section.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

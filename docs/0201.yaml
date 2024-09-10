@@ -1,0 +1,373 @@
+- en: 'Why WGANs beat GANs: A journey from KL divergence to Wasserstein loss'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/why-wgans-beat-gans-a-journey-from-kl-divergence-to-wasserstein-loss-9ee5faf10b48?source=collection_archive---------11-----------------------#2023-01-12](https://towardsdatascience.com/why-wgans-beat-gans-a-journey-from-kl-divergence-to-wasserstein-loss-9ee5faf10b48?source=collection_archive---------11-----------------------#2023-01-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rm12?source=post_page-----9ee5faf10b48--------------------------------)[![Shashank
+    Kumar](../Images/292e56fa174e7e882a94348815501370.png)](https://medium.com/@rm12?source=post_page-----9ee5faf10b48--------------------------------)[](https://towardsdatascience.com/?source=post_page-----9ee5faf10b48--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----9ee5faf10b48--------------------------------)
+    [Shashank Kumar](https://medium.com/@rm12?source=post_page-----9ee5faf10b48--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe447b689ba76&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-wgans-beat-gans-a-journey-from-kl-divergence-to-wasserstein-loss-9ee5faf10b48&user=Shashank+Kumar&userId=e447b689ba76&source=post_page-e447b689ba76----9ee5faf10b48---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----9ee5faf10b48--------------------------------)
+    ·7 min read·Jan 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F9ee5faf10b48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-wgans-beat-gans-a-journey-from-kl-divergence-to-wasserstein-loss-9ee5faf10b48&user=Shashank+Kumar&userId=e447b689ba76&source=-----9ee5faf10b48---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F9ee5faf10b48&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhy-wgans-beat-gans-a-journey-from-kl-divergence-to-wasserstein-loss-9ee5faf10b48&source=-----9ee5faf10b48---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In 2014, Ian Goodfellow came up with the idea of GAN or vanilla GAN as we call
+    it today. Although impressive, it was notoriously hard to train. Vanilla GAN suffered
+    from an inability to converge, vanishing gradients, and mode collapse. Subsequently,
+    a ton of research centred around addressing these issues. Researchers experimented
+    with different model architectures, loss functions, and training methodologies.
+    A particularly effective solution was Wasserstein GAN, introduced in 2017 by [Arjovsky
+    et al](https://arxiv.org/pdf/1701.07875.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ab1e1997f5b968193345c74a21c1811e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Arnold Francisca](https://unsplash.com/ja/@clark_fransa?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post attempts to explain why Wasserstein GANs function better than vanilla
+    GANs. It assumes readers have some familiarity with the math behind GANs and VAEs
+    and their training process. Let’s begin with an introduction to generative networks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. Generative Networks: A brief'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Generative networks strive to spawn new samples that resemble the real data
+    family. They do so by mimicking the data distribution. Popular frameworks like
+    GANs and VAEs approach this by learning a mapping **G** that transforms a known/assumed
+    distribution **Z** to the actual distribution space. Generators in GANs and encoders
+    in VAEs handle this job. The neural weights of these networks parametrise **G**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Networks minimise the difference between the actual and generated data distributions
+    to learn the mapping. Three popular measures to quantify this difference are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: KL Divergence
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: JS Divergence
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Earth-Mover (EM) or Wasserstein-1 distance
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s peek into them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Why KL and JS divergence fail?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ll briefly introduce KL and JS divergences and understand why they fail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kullback-Leibler(KL) divergence can be computed in two ways, forward or reverse,
+    and is thus asymmetric. Depending on whether the distributions are continuous
+    or discrete, their forward KL divergence is as follows
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/46ab4d141c548248f9b44bbd517e6187.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Forward KL Divergence
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can calculate the reverse KL divergence by using **Q,** instead of **P,**
+    to weight the log difference of distributions. **VAEs** operate on reverse KL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e92cea64338b4874690578f660b98be7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reverse KL divergence
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Unlike the former, Jensen-Shannon(JS) divergence is symmetric. It’s essentially
+    an average of the two KL divergences. It is not conspicuous from their loss function,
+    binary cross-entropy, but GANs function on JS divergence when the discriminator
+    attains optimality. I urge you to read this [blog](https://lilianweng.github.io/posts/2017-08-20-gan/#:~:text=best%20value%20for,D)
+    to understand why so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b123b27d3befe15ac389ee0ae3a77b7d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: JS Divergence
+  prefs: []
+  type: TYPE_NORMAL
+- en: Arjovsky et al. used a simple example to show the pitfalls of KL and JS divergence.
+    Consider two probability distributions described by the two parallel lines in
+    the image below. Red is the actual distribution(P), while green is its estimation(Q).
+    θ is the horizontal distance between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f7f9f833f50963e862b1d0d6df22702e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A generative model would work to shift green closer to red, which is fixed at
+    0\. Can you calculate the JS and KL divergence when θ = 1?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7239ab35f62e5489711d66c91e2ffa76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: KL Divergences
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e27fe2e5473dbf62e05f20ace68b5b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: JS Divergence
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, how would these measures vary as a function of θ? If you observe closely,
+    they won’t change unless θ=0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/41c0c2af283c7aeab6181ec4fd94ecf4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I observe two main drawbacks with these measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The difference between distributions at θ=0.1 and θ=1 is the same. At θ=0.1,
+    the green line is much closer to the red, so the difference must be less.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: θ can be loosely considered as the estimated distribution. If our generative
+    model is parametrised by φ, then θ is a function f(φ). During back-propagation,
+    we’ll calculate the gradient of loss function, defined by one of the above measures,
+    with respect to φ to tune the parameters. The first term of the second equation
+    will always be 0\. Hence, owing to zero gradients, our poor model will not learn
+    anything.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/49a3208baa4b366140e715d2876da14c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Back-propagation using chain rule
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the above example we can make certain crucial inferences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: KL and JS divergences do not account for the horizontal difference between two
+    probability distributions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In situations where the predicted and actual distributions don’t overlap, which
+    is common during training, the gradients might be 0 leading to no learning.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: So, how does the Wasserstein distance address these issues?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Why Wasserstein distance is a better measurement?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Frankly, the formulation of EM/Wasserstein-1 distance is horrific. So, I’ll
+    refrain from its mathematical details. Instead, let’s understand it intuitively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13770808faec6388f74006f120e040c7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: EM/Wasserstein-1
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s go back to parallel lines. This time, four of them. The red lines constitute
+    a probability distribution, and so do the blue ones. The numbers on top are the
+    probability mass at corresponding points (x=0,1,2,3). We intend to modify the
+    blue lines to align (similar distributions) them with the red family. To do so,
+    we’ll shift the probability masses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b5371bc183ec38b56661a87a0fc4f0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shift 0.2 from x=2 to x=0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shift 0.1 from x=3 to x=0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shift remaining 0.7 from x=3 to x=1
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This, however, is just one amongst many other transport plans. We could also
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shift 0.1 from x=2 to x=0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shift 0.1 from x=2 to x=1
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shift 0.2 from x=3 to x=0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shift 0.6 from x=3 to x=0
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Of the two plans, which is more optimal? To ascertain that, let’s take the analogy
+    of work from physics. Here, we define work as mass multiplied by shift distance.
+    So, the work done in the two transport schemes is 2.1 and 2.7.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fdbd1e27e83b74d44cabe144ebb01339.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2.1, work involved in the optimal transport plan, is thus the EM distance. The
+    same is applicable in the continuous realm also. As each point has an associated
+    probability mass in continuous distributions, integration replaces summation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a nutshell, the above morbid equation involves computing the work required
+    in all transport schemes that bring similarity between two distributions and selecting
+    the minimum amongst them. As opposed to the other measures, EM distance accounts
+    for the horizontal difference between two distributions while preserving their
+    overall shape. Moreover, it also does away with the problem of vanishing gradients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reconsider the example in section 1\. The minimum cost in aligning the two distributions
+    is θ, the horizontal distance between the lines. Hence, we get stable gradients
+    to tune the parameters even when the predicted and actual distributions don’t
+    overlap.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e414790a833fd4f3a41e86ede2a48d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Using python to visualize all measures
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, let’s calculate all the discussed measures in python to visualize their
+    behaviour.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ll define functions to calculate KL and JS divergences and thankfully, for
+    EM distance, we can use the scipy library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we’ll define two normal distributions and visualize how the measures change
+    as the gaussians are separated. That is, their mean difference is increased.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2266b01d390c96758de8b5c48c01ca2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plot of all measures vs mean difference
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do you note? As the mean difference is increased, the KL divergences explode
+    and the JS divergence saturates. However, the EM distance increases linearly.
+    Thus, amongst the four, EM distance seems to be the best option for maintaining
+    gradient flow during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: EM/Wasserstein distance also alleviates mode collapse. Roughly speaking, mode
+    collapse happens when the generator learns to produce a particular mode that fools
+    a discriminator stuck in local minima. As discussed in section 2, GANS — when
+    the discriminator is at a minimum — operates on JS divergence leading to zero
+    gradients. Consequently, the discriminator is trapped, and the generator is disincentivised
+    to create varying samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With Wasserstein distance, discriminators can attain optimality without the
+    gradients vanishing. They can escape local minima and discard generator outputs,
+    impelling the generator to not overfit on a particular discriminator and produce
+    multiple modes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With this, we come to the end of the post. I hope it summarised why Wasserstein
+    GANs outperform vanilla GANs and VAEs. I’ve glossed over some mathematical intricacies
+    surrounding the EM distance. If you’re interested, you need to read the [paper](https://arxiv.org/pdf/1701.07875.pdf).
+    You must note that the discussed equation of EM distance is intractable. A mathematical
+    trick is applied to approximate it. It’s unlikely that you’ll ever need it in
+    practice. Still, if you’re itching to know, you can read about the approximation
+    [here](https://www.alexirpan.com/2017/02/22/wasserstein-gan.html#:~:text=exactly%20is%20intractable)
+    or in the [paper](https://arxiv.org/pdf/1701.07875.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[https://arxiv.org/pdf/1701.07875.pdf](https://arxiv.org/pdf/1701.07875.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://www.alexirpan.com/2017/02/22/wasserstein-gan.html#](https://www.alexirpan.com/2017/02/22/wasserstein-gan.html#)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[https://lilianweng.github.io/posts/2017-08-20-gan/#:~:text=best%20value%20for,D](https://lilianweng.github.io/posts/2017-08-20-gan/#:~:text=best%20value%20for,D)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

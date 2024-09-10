@@ -1,0 +1,426 @@
+- en: 'Large Language Models: TinyBERT — Distilling BERT for NLP'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tinybert-1a928ba3082b?source=collection_archive---------1-----------------------#2023-10-21](https://towardsdatascience.com/tinybert-1a928ba3082b?source=collection_archive---------1-----------------------#2023-10-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Unlocking the power of Transformer distillation in LLMs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----1a928ba3082b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----1a928ba3082b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1a928ba3082b--------------------------------)
+    ·8 min read·Oct 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1a928ba3082b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----1a928ba3082b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1a928ba3082b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftinybert-1a928ba3082b&source=-----1a928ba3082b---------------------bookmark_footer-----------)![](../Images/e042b2ab6730abf5297f0af4960b2a95.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In recent years, the evolution of large language models has skyrocketed. BERT
+    became one of the most popular and efficient models allowing to solve a wide range
+    of NLP tasks with high accuracy. After BERT, a set of other models appeared later
+    on the scene demonstrating outstanding results as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The obvious trend that became easy to observe is the fact that **with time large
+    language models (LLMs) tend to become more complex by exponentially augmenting
+    the number of parameters and data they are trained on**. Research in deep learning
+    showed that such techniques usually lead to better results. Unfortunately, the
+    machine learning world has already dealt with several problems regarding LLMs
+    and scalability has become the main obstacle in effective training, storing and
+    using them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By taking into consideration this issue, special methods have been elaborated
+    for compressing LLMs. In this article, we will focus on **Transformer distillation**
+    which led to the development of a small version of BERT called TinyBERT. Additionally,
+    we will understand the learning process in TinyBERT and several subtleties that
+    make TinyBERT so robust. This article is based on the official [TinyBERT paper](https://arxiv.org/pdf/1909.10351.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Main idea
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Recently we have already covered how distillation works in DistilBERT: in short
+    words, the loss function objective is modified in a way to make the predictions
+    of the student and teacher similar. In DistilBERT, the loss function compares
+    the output distributions of the student and teacher and also takes into consideration
+    the output embeddings of both models (for similarity loss).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/distilbert-11c8810d29fc?source=post_page-----1a928ba3082b--------------------------------)
+    [## Large Language Models: DistilBERT — Smaller, Faster, Cheaper and Lighter'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unlocking the secrets of BERT compression: a student-teacher framework for
+    maximum efficiency'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/distilbert-11c8810d29fc?source=post_page-----1a928ba3082b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the surface, the distillation framework in TinyBERT does not change that
+    much from DistilBERT: the loss function is again modified to make the student
+    imitate the teacher. However, in the case of TinyBERT, it goes a step beyond:
+    **the loss function takes into consideration not only WHAT both models produce
+    but also HOW predictions are obtained**. According to the paper, the TinyBERT
+    loss function consists of three components that cover different aspects of both
+    models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the output of the embedding layer
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: the hidden states and attention matrices derived from the Transformer layer
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 3\. the logits output by the prediction layer
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e51605f8fc3a47cf1d74b0b8d1c2d40c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer distillation losses
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is the point of comparing the hidden states of both models?** Including
+    the outputs of hidden states and attention, matrices makes it possible for the
+    student to learn the hidden layers of the teacher, thus constructing layers similar
+    to those of the teacher. This way, the distilled model does not only imitate the
+    output of the original model but also its inner behaviour.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Why is it important to replicate the teacher’s behaviour?** The researchers
+    claim that the attention weights learned by BERT can be beneficial for capturing
+    language structure. Therefore, their distillation to another model also gives
+    the student more chances to gain linguistic knowledge.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Layer mapping
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Representing a smaller BERT version, TinyBERT has fewer encoder layers. Let
+    us define the number of BERT layers as N, and the number of those of TinyBERT
+    as M. Given the fact that the number of layers is different, it is not obvious
+    how it would be possible to calculate the distillation loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this purpose, a special function *n = g(m)* is introduced to define which
+    BERT layer n is used to distillate its knowledge to a corresponding layer m in
+    TinyBERT. The chosen BERT layers are then used for loss calculation during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The introduced function *n = g(m)* has two reasoning constraints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***g(0) = 0***. This means that the embedding layer in BERT is mapped directly
+    to the embedding layer in TinyBERT which makes sense.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***g(M + 1) = N + 1***. The equation indicates that the prediction layer in
+    BERT is mapped to the prediction layer in TinyBERT.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For all other TinyBERT layers *1 ≤ m ≤ M*, the corresponding function values
+    of *n = g(m)* need to be mapped. For now, let suppose that such function is defined.
+    The TinyBERT settings will be studied later in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformer distillation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 1\. Embedding-layer distillation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before raw input is passed to the model, it is firstly tokenized and then mapped
+    to learned embeddings. These embeddings are then used as the first layer of the
+    model. All the possible embeddings can be expressed in the form of a matrix. To
+    compare how much different the student and teacher embeddings are, it is possible
+    to use a standard regression metric applied on their respective embedding matrices
+    *E*. For instance, transformer distillation uses MSE as a regression metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since student and teacher embedding matrices have different sizes, it is not
+    possible to compare them element-wisely by using MSE. That is why, the student
+    embedding matrix is multiplied by a learnable weight matrix W, so the resulting
+    matrix is of the same shape as the teacher embedding matrix.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/7f8f61fb24d312e5effa89253414fc61.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Embedding-layer distillation loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the embedding spaces of the student and teacher are different, matrix
+    W also plays an important role in linearly transforming the embedding space of
+    a student to that of the teacher.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 2\. Transformer-layer distillation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/6e92bf7c292e18da1bbbeead28019102.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transformer-layer distillation loss visualisation
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2A. Attention-layer distillation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At its core, the multi-head attention mechanism in Transformer produces several
+    attention matrices containing rich linguistic knowledge. By transferring the attention
+    weights from the teacher, the student can also understand important language concepts.
+    To implement this idea, the loss function is used to calculate the differences
+    between student and teacher attention weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In TinyBERT, all the attention layers are considered and the resulting loss
+    value for each layer equals the sum of MSE values between respective student and
+    teacher attention matrices for all heads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ecd2185a565cb6c0d9053e65209d7d51.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Attention-layer distillation loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: The attention matrices A used for attention-layer distillation are unnormalized,
+    instead of their softmax output softmax(A). According to the researchers, this
+    subtlety leads to faster convergence and improved performance.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**2B. Hidden-layer distillation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following the idea of capturing rich linguistic knowledge, the distillation
+    is applied to the outputs of transformer layers as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a3234bc380e40db7ff6391d11b735b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hidden-layer distillation loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: The weight matrix W plays the same role as the one described above for embedding-layer
+    distillation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Prediction-layer distillation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, to make the student reproduce an output of the teacher, the prediction-layer
+    loss is considered. It consists of computing cross-entropy between predicted logit
+    vectors by both models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67f453832f6073a1dc6e153509af78eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Prediction-layer distillation loss
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes, the logits are divided by temperature parameter T which controls
+    the smoothness of an output distribution. In TinyBERT, the temperature T is set
+    to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loss equation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In TinyBERT, based on its type, each layer has its own loss function. To give
+    some layers more or less importance, corresponding loss values are multiplied
+    by a constant *a*. The ultimate loss function equals a weighted sum of loss values
+    on all TinyBERT layers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf4e8fd2c8eee6edee00a3704dd0d6b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss function in TinyBERT
+  prefs: []
+  type: TYPE_NORMAL
+- en: In numerous experiments, it was shown that among three loss components, the
+    transformer-layer distillation loss has the highest impact on the model’s performance.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It is important to note that most NLP models (including BERT) are developed
+    in two stages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model is **pretrained** on a large corpus of data to gain a general knowledge
+    of the language structure.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The model is **fine-tuned** on another dataset to solve a specific downstream
+    task.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Following the same paradigm, the researchers developed a framework in which
+    TinyBERT learning process also consists of two stages. **In both training stages
+    the Transformer distillation is used to transfer BERT knowledge to TinyBERT.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**General distillation**. TinyBERT gains rich general knowledge about the language
+    structure from pre-trained BERT (without fine-tuning) acting as a teacher. By
+    using fewer layers and parameters, after this stage, TinyBERT performs generally
+    worse than BERT.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Task-specific distillation**. This time, the fine-tuned version of BERT plays
+    the role of the teacher. To further improve performance, as proposed by the researchers,
+    the data augmentation method is applied on the training dataset. Results show
+    that after the task-specific distillation, TinyBERT achieves comparable performance
+    regarding BERT.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/4fcfb5ba3bbdba7d68c74235627016f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training process
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A special data augmentation technique was elaborated for task-specific distillation.
+    It consists of taking sequences from a given dataset and substituting a percentage
+    of words in one of two ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the word is tokenized into the same word, then this word is predicted by
+    BERT model and the predicted word replaces the original word in the sequence.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the word is tokenized into several subwords, then those subwords are replaced
+    by the most similar GloVe embeddings.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Despite a considerable reduction of the model size, the described data augmentation
+    mechanism makes a high impact on TinyBERT performance by allowing to it to learn
+    more diverse examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6763911054f0e4156a914fc8c30edde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Augmentation example
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model settings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**By having only 14.5M parameters, TinyBERT is about 7.5x smaller than BERT
+    base**. Their detailed comparison is demonstrated in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/213ab92b5cd72b99697d1181936387d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: BERT base vs TinyBERT comparison
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For the layer mapping, the authors propose **a** **uniform strategy according
+    to which the layer mapping function maps each TinyBERT layer to each third BERT
+    layer: *g(m) = 3 * m***. Other strategies were also studied (like taking all bottom
+    or top BERT layers) but the uniform strategy showed the best results which seems
+    logical because it allows to transfer knowledge from different abstraction layers
+    making the transferred information more varied.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6eefcad8b9d60b7794b850c07484e9a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Different layer mapping strategies. Performance results are shown for the GLUE
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Speaking of the training process, TinyBERT is trained on English Wikipedia (2500M
+    words) and has most of its hyperparameters the same as in BERT base.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Transformer distillation is a big step in natural language processing. Taking
+    into consideration that Transformer-based models are one of the most powerful
+    at the moment in machine learning, we can further cherish them by applying Transformer
+    distillation to effectively compress them. One of the greatest examples is TinyBERT
+    which is compressed by 7.5x times from BERT base.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Despite such a huge reduction of parameters, experiments show that TinyBERT
+    demonstrates comparable performance with BERT base: achieving a 77.0% score on
+    the GLUE benchmark, TinyBERT is not far away from BERT whose score equals 79.5%.
+    Obviously, this is an amazing achievement! Finally, other popular compression
+    techniques like quantization or pruning can be applied to TinyBERT to make it
+    even smaller.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[TinyBERT: Distilling BERT for Natural Language Understanding](https://arxiv.org/pdf/1909.10351.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author*'
+  prefs: []
+  type: TYPE_NORMAL

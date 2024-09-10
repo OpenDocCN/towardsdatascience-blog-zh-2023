@@ -1,0 +1,320 @@
+- en: Code understanding on your own hardware
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/code-understanding-on-your-own-hardware-dd38c4f266d6?source=collection_archive---------8-----------------------#2023-07-05](https://towardsdatascience.com/code-understanding-on-your-own-hardware-dd38c4f266d6?source=collection_archive---------8-----------------------#2023-07-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Setting up an LLM to talk about your code — with LangChain and local hardware
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)[![Dorian
+    Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------)
+    [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----dd38c4f266d6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcode-understanding-on-your-own-hardware-dd38c4f266d6&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----dd38c4f266d6---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----dd38c4f266d6--------------------------------)
+    ·7 min read·Jul 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdd38c4f266d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcode-understanding-on-your-own-hardware-dd38c4f266d6&user=Dorian+Drost&userId=1d49ea537d1c&source=-----dd38c4f266d6---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdd38c4f266d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcode-understanding-on-your-own-hardware-dd38c4f266d6&source=-----dd38c4f266d6---------------------bookmark_footer-----------)![](../Images/14ea7eeae6ca02ac579d218a93a066c4.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I promise your code won’t leave your local hardware. Photo by [Clément Hélardot](https://unsplash.com/@clemhlrdt?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Among the various tasks Large Language Models (LLMs) can perform today, code
+    understanding may be of particular interest for you, if you work with source code
+    as a software developer or a data scientist. Wouldn’t it be great to have a chatbot
+    you can ask questions about your code? *Where is the data preprocessing implemented?*
+    *Is there a function for verifying the user’s authentication already? What is
+    the difference between the calculate_vector_dim and calculate_vector_dimension
+    function?* Instead of searching for the correct file yourself, just ask the bot
+    and it gives you an answer, together with a pointer to the files that contain
+    the relevant code snippets. That mechanism is called semantic search, and you
+    can imagine how useful it is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial, I will show you how to implement a LangChain bot that does
+    exactly that. In addition, I will focus on the specific, data-privacy-related
+    issue of not giving your code out of hand. The code you or your company produced
+    is private property and may contain sensitive information or valuable knowledge.
+    You may not want to, or your company's policies may not allow you to send it to
+    an LLM hosted by another company, that may be located in a foreign country. Hence
+    in this tutorial, I will show you how to set up a code understanding bot that
+    runs on your local hardware, so your code never leaves your infrastructure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start already! First I will give you a brief introduction to the general
+    process of semantic search before we implement a bot for code understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to semantic search
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/d2a2495d247f2a0c813df9e0d7df3d07.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In semantic search, it’s all about finding the relevant documents. Photo by
+    [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First of all, let me briefly explain the general idea of semantic search. This
+    approach consists of two main steps, that are the retrieval and the answer generation
+    by the LLM itself. In the retrieval step, documents are selected that contain
+    relevant information, and those are fed into the LLM to create a natural language
+    answer. For example, if you ask a question about a function called *transform_vectors,*
+    the retrieval will select those files that are relevant to answer that question.
+    That may include the file where the *transform_vectors* function is implemented,
+    but also files using it or parts of the documentation mentioning it. In the second
+    step, those files’ content is given to the LLM in a prompt that may look somewhat
+    like that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The LLM creates a natural language answer to the question using information
+    from the documents given to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That is the main idea of semantic search. Now let’s start implementing! First
+    of all, we have to install our requirements and read in our data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install requirements
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before we can start, make sure you have set up an environment running Python
+    and install the following packages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Read in the documents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now we need to read in the data and convert it into a format LangChain can
+    work with. For this demonstration, I will download the code of LangChain itself,
+    but you can use your own code base, of course:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We load all files and convert them to a *Document* each, i.e. each *Document*
+    will contain exactly one file of the code base.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Retrieval
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/b141a8ee6f486c209b660f19068f37ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Which of these is relevant to answering our question? It’s the retrieval’s job
+    to decide that. Photo by [Ed Robertson](https://unsplash.com/@eddrobertson?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have created our *Documents*, we need to index them to make them
+    searchable. To index a *Document* means to calculate a numerical vector, that
+    captures the most relevant information of the *Document*. Unlike plain text itself,
+    a vector of numbers can be used to perform numerical calculations, and that means
+    that we can easily calculate a similarity on it, which is then used to determine
+    which *Documents* are relevant to answer a given question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a technical level, this index we will create with the help of an embedding
+    and store it in a *VectorStore*. There are *VectorStores* available as a service
+    (e.g. [DeepLake](https://www.deeplake.ai)), which comes with some handy advantages,
+    but in our scenario, we don’t want to give the code out of our hands, so we create
+    a *VectorStore* locally on our machine. The easiest way to do that is using *Chroma*,
+    which creates a *VectorStore* in memory and allows us to persist it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Within the *from_documents* function, the indices are calculated and stored
+    in the *Chroma* database*.* Next time, instead of calling the *from_documents*
+    function again, we can load the persisted *Chroma* database itself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you saw above, as an embedding I used [*krlvi/sentence-t5-base-nlpl-code-x-glue*](https://huggingface.co/krlvi/sentence-t5-base-nlpl-code_search_net),
+    which is an embedding that was trained on code from open-source GitHub libraries.
+    As you can imagine, it is crucial that the embedding we use has been trained on
+    code (among other data), so it can make use of the data we feed it with. An embedding,
+    that was trained on natural language only, will perform less well, most likely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we have our *VectorStore* and our embedding, we can create the retriever
+    from the *Chroma* database directly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: LLM
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/05fb0674b4aaeda3e15588bc43d0967e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The LLM has to do the reasoning over the documents and come up with an answer
+    to the user’s question. Photo by [Tingey Injury Law Firm](https://unsplash.com/@tingeyinjurylawfirm?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last component we need is an LLM. The easiest solution would be to use a
+    hosted LLM, e.g. by using the OpenAI interface. However, we don’t want to send
+    our code to such a hosted service. Instead, we will run an LLM on our own hardware.
+    To do that we use the [HuggingFacePipeline](https://python.langchain.com/docs/modules/model_io/models/llms/integrations/huggingface_pipelines),
+    which allows us to use a model from HuggingFace in the LangChain framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you see, I used the [*mosaic mpt-7b*](https://huggingface.co/mosaicml/mpt-7b)
+    model, which only needs ~16GB memory on a GPU. I created an *AutoModelForCausalLM*,
+    which is passed into the *transformers.pipeline*, which is eventually being transformed
+    into a *HuggingFacePipeline*. The *HuggingFacePipeline* implements the same interface
+    as the typical LLM objects in LangChain. That is, you can use it in the same way
+    as you would use the OpenAI LLM interface, for example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have multiple GPUs on your machine, you have to specify which one to
+    use. In this case, I want to use the GPU with index 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Some additional parameters I have set above can be explained as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*trust_remote_code*: This has to be set to true to allow running a model coming
+    from outside LangChain.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*max_new_tokens*: This defines the maximum number of tokens the model may produce
+    in its answer. If this value is too low, the model’s response may be cut off before
+    it was able to answer the question at all.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Connect everything together
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/a1a78263500282ac4514caf874b3f3c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We have all the components we need. We just have to plug it all together. Photo
+    by [John Barkiple](https://unsplash.com/@barkiple?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have all the components we need and can combine them in a *ConversationalRetrievalChain*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Eventually, we can query the chain to answer our questions. The result object
+    will include a natural language answer and a list of *source_documents* that were
+    consulted to arrive at that answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is the answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’re done! Well, kind of. With the code above we are now able to ask questions
+    regarding the source code. However, there are some steps you may want to alter
+    according to your needs
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use your own source code as *Documents* instead of LangChain’s code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Try a different embedding. If the embedding doesn’t fit, the retriever cannot
+    find the right documents, and in the end, the questions cannot be answered precisely.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Try a different model. There are bigger, more powerful models outside, but some
+    may be too big to run on your hardware. You have to find the sweet spot where
+    you have decent performance but are still able to run the model in a satisfying
+    way.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Try different ways of preprocessing the *Documents* to facilitate the retrieval
+    step*.* A common example would be to [split them into chunks of equal length](https://python.langchain.com/docs/modules/data_connection/document_transformers/).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I’m sure there is much more to try out to obtain better performance. Just play
+    around and adapt the bot to your needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For more examples of code understanding with LangChain, take a look at their
+    documentation here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://python.langchain.com/docs/use_cases/code/](https://python.langchain.com/docs/use_cases/code/#)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'On HuggingFace you can find models and embeddings you can easily use in LangChain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://huggingface.co/models](https://huggingface.co/models)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Like this article?* [*Follow me*](/@doriandrost) *to be notified of my future
+    posts.*'
+  prefs: []
+  type: TYPE_NORMAL

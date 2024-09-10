@@ -1,0 +1,303 @@
+- en: 'Text Classification Challenge with Extra-Small Datasets: Fine-Tuning Versus
+    ChatGPT'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/text-classification-challenge-with-extra-small-datasets-fine-tuning-versus-chatgpt-6348fecea357?source=collection_archive---------3-----------------------#2023-07-07](https://towardsdatascience.com/text-classification-challenge-with-extra-small-datasets-fine-tuning-versus-chatgpt-6348fecea357?source=collection_archive---------3-----------------------#2023-07-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: LLMs excel on extra-small datasets, but classical approaches shine as datasets
+    grow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://v-zhukov.medium.com/?source=post_page-----6348fecea357--------------------------------)[![Viacheslav
+    Zhukov](../Images/c08a514fd6dc82214b72e419efb81d27.png)](https://v-zhukov.medium.com/?source=post_page-----6348fecea357--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6348fecea357--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6348fecea357--------------------------------)
+    [Viacheslav Zhukov](https://v-zhukov.medium.com/?source=post_page-----6348fecea357--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F996e241eda9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-classification-challenge-with-extra-small-datasets-fine-tuning-versus-chatgpt-6348fecea357&user=Viacheslav+Zhukov&userId=996e241eda9b&source=post_page-996e241eda9b----6348fecea357---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6348fecea357--------------------------------)
+    ·7 min read·Jul 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6348fecea357&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-classification-challenge-with-extra-small-datasets-fine-tuning-versus-chatgpt-6348fecea357&user=Viacheslav+Zhukov&userId=996e241eda9b&source=-----6348fecea357---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6348fecea357&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-classification-challenge-with-extra-small-datasets-fine-tuning-versus-chatgpt-6348fecea357&source=-----6348fecea357---------------------bookmark_footer-----------)![](../Images/f25a15c69eb89ab31cc985d9ceff3b86.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Debby Hudson](https://unsplash.com/de/@hudsoncrafted?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Toloka ML team continually researches and compares different approaches
+    to text classification under various conditions. Here we present another one of
+    our experiments on the performance of NLP models when trained on extra-small datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Previously, we provided a [brief overview of potential solutions](https://medium.com/toloka/choosing-the-best-architecture-for-your-text-classification-task-aee30ecc7870)
+    and [compared classical models with large language models (LLMs)](https://www.kdnuggets.com/2023/04/best-architecture-text-classification-task-benchmarking-options.html)
+    for a specific text classification task. However, those comparisons were based
+    on a “regular” dataset that contained enough data points to build a reliable classifier.
+    In real-world scenarios, you may encounter situations where limited data is available
+    or human labeling hasn’t been carried out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuitively, LLMs such as GPT-3 or ChatGPT might outperform smaller models due
+    to their extensive “knowledge”. To investigate this hypothesis, we created an
+    artificially small dataset by extracting a portion of a larger one and compared
+    several approaches. We fine-tuned the RoBERTa base model, employed ChatGPT for
+    few-shot classification, and fine-tuned the GPT-3 Babbage model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To evaluate the comprehension capabilities of various models, we selected a
+    multiclass dataset consisting of scientific article abstracts. The task was to
+    determine each article’s domain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We opted for the [WOS-11967](https://data.mendeley.com/datasets/9rw3vkcfy4/6)
+    [1] dataset, which contains 11,967 documents with 35 categories that include seven
+    parent categories: medical, psychology, computer science, biochemistry, electrical
+    engineering, civil sciences, and mechanical engineering. We sampled 10,000 data
+    points and focused solely on the parent categories for our analysis.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the dataset was not perfectly balanced, the class distribution was reasonably
+    proportional. Therefore, satisfactory results could potentially be achieved across
+    all classes. The class distribution is illustrated below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9170f11ccb793cb99aa9a0db664bbcd7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The class distribution of the sample of the [WOS-11967](https://paperswithcode.com/dataset/web-of-science-dataset)
+    dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: Upon manual analysis, we found that determining the domain of some abstracts
+    was relatively straightforward, while in other cases, the task became more challenging.
+    For instance, computer science articles may discuss mathematical topics, or psychology
+    articles might contain medical or biochemical terms and abbreviations, making
+    it difficult to distinguish them from biochemistry or medical domains. The abstracts
+    also varied significantly in length, with a mean of 274 tokens (ChatGPT tokens)
+    and a standard deviation of 115 tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To simulate scenarios involving extra-small datasets, we performed a train-test
+    split on the corpora and allocated a small number of samples to the training set.
+    We repeated this process three times with different training set sizes to evaluate
+    any changes in performance in the models based on the available training data.
+    We created three splits for our experiment: WOS-11967-s200 (200 samples in the
+    training set, 9,800 samples in the test set), WOS-11967-s500 (500 / 9,500), and
+    WOS-11967-s2000 (2,000 / 8,000).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let’s take a look at the results obtained using different models to tackle
+    these problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regular fine-tuning with RoBERTa
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For our baseline, we selected the [RoBERTa base](https://huggingface.co/roberta-base)
+    model [2] and fine-tuned it on the three datasets mentioned earlier. We used the
+    same hyperparameter configuration for each run (a batch size of 32, a learning
+    rate of 3e-5, a linear scheduler with warmup, and a 256-token window), along with
+    early stopping to prevent overfitting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We obtained the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d34e0b776b929c71e86f362bbb949c6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The data shows that 200 samples are insufficient when it comes to extracting
+    all the necessary patterns and information required to accurately classify the
+    abstracts. The lower macro-average F1 score also indicates that the model underperforms
+    on under-represented classes like mechanical engineering. This suggests that it’s
+    not enough to have only a few samples from a particular class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As expected, the model’s performance improved as the amount of available data
+    increased — ultimately resulting in robust performance for multiclass classification
+    across seven classes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Few-shot with ChatGPT
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The second approach we explored was few-shot classification using ChatGPT. This
+    method differs significantly from traditional classification as it doesn’t involve
+    training a model per se. Instead, we engineered the input prompt to achieve optimal
+    performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it was impossible to feed all 200 samples into the model due to its
+    4096-token context size limit. Given the measurements above, we could only present
+    around 14 abstracts to the model. That number was further reduced when considering
+    the tokens used for instructions and delimiters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initially, we employed the “system” role for instructions and provided a single
+    example per class to guide the model’s response. We simplified the class names
+    to single tokens while retaining their meaning. This made it easier for the model
+    to select the appropriate category and limit the output to a single token. For
+    instance, “Biochemistry” became “Bio,” and “Computer Science” became “Computer.”
+    Additionally, we restricted the number of tokens generated by providing a list
+    of classes to choose from and instructing the model to return the “Unknown” token
+    if it was unsure about the category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, ‌performance with this method was inferior compared to the RoBERTa
+    model trained on just 200 samples. We noticed that the model’s classification
+    ability heavily depended on the supplied prompt. Modifying a single sentence could
+    either improve or worsen the metrics. In some cases, ChatGPT missed categories
+    despite explicit instructions not to do so (which could be a drawback of how we
+    formulated our prompt).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a few fringe cases, it produced categories not listed in the instructions,
+    but described the article domains, such as “Math” or “Chemistry”. It’s unclear
+    whether these flaws should be attributed to the model or the dataset. However,
+    according to the validation set, these categories can be corrected using simple
+    rules like changing all instances of “Math” to “Computer”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To improve metrics, we tried to use as much data as possible. Since we still
+    couldn’t feed all 200 samples into the model, we devised a two-stage process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we asked the model to identify similarities between abstracts from a
+    specific domain and generate summaries.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Second, we incorporated these summaries into the instructions to provide the
+    model with insights about the classes and features identified by the model itself
+    in the first stage.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This approach allowed us to feed more training data samples into the model;
+    and it worked — we boosted metrics by approximately 10%. Below is the prompt we
+    used to generate these summaries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b4b133bdb8221b7550efaf7c2611a75d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The prompt for ChatGPT used to extract meaningful information about article
+    domains
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each domain, we supplied seven to eight abstracts, resulting in a total
+    of 63 distinct abstracts used to prepare the classification prompt (eight abstracts
+    per seven classes to build summaries and seven abstracts provided as examples
+    in the actual prompt).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, we instructed the model to respond with “Unknown” if it was uncertain
+    about the class. In the validation set we observed that most “Unknown” responses
+    corresponded to computer science articles. We then replaced all “Unknown” instances
+    with the “Computer” class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The resulting classification prompt read as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dc6b4f585eed094a3ab7603da457ecea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The final prompt for ChatGPT used to classify article abstracts
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once again, performance was heavily influenced by the prompt and the samples
+    provided. The model also generated several categories outside the target list,
+    requiring manual adjustments to be made based on the validation set. This approach
+    yielded the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/01ddbbce428c0cb90661725195fbb622.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The performance was notably better than fine-tuning a RoBERTa model on 200 samples
+    — and fewer samples were required. However, as the availability of labeled data
+    increased, RoBERTa began to outperform this approach, even with just 500 samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We believe that further performance improvements are possible through proper
+    prompt engineering. Some useful tips and tricks can be found in the [Prompting
+    Guide](https://www.promptingguide.ai/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning a GPT-3 model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For our final approach, we fine-tuned the GPT-3 Babbage model on these three
+    datasets. We followed the dataset preparation recommendations outlined in the
+    [OpenAI guide](https://platform.openai.com/docs/guides/fine-tuning/preparing-your-dataset)
+    and opted for the default hyperparameters without making any specific adjustments.
+    The training process for each dataset took about 20 minutes, yielding the following
+    results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c84cd45bfa9a44da632ae4ffe4272287.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The fine-tuned GPT-3 model delivered impressive results even on the smallest
+    dataset, surpassing both RoBERTa and ChatGPT. As the amount of training data increased,
+    the performance gap between RoBERTa and the tuned GPT-3 model narrowed. This raised
+    questions about the resources and feasibility of using either option. We discussed
+    the pros and cons of both approaches in our [previous articles](https://medium.com/toloka/choosing-the-best-architecture-for-your-text-classification-task-aee30ecc7870).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This experiment demonstrates that our initial hypothesis was correct — larger
+    models trained on more extensive data perform significantly better on extra-small
+    datasets. With proper prompt engineering and few-shot techniques, it’s possible
+    to achieve favorable results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, differences in performance decrease as the dataset size increases.
+    Moreover, an appropriately tailored classical model, such as a domain-adapted
+    RoBERTa model, can sometimes outperform generic LLMs in classification tasks.
+    It can be attributed to the model’s specialized “knowledge” of the subject matter.
+    Furthermore, with the right optimizations, inference using these models can be
+    significantly faster, which is crucial when developing online services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images unless otherwise noted are by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Kowsari K, Brown DE, Heidarysafa M, Jafari Meimandi K, Gerber MS, Barnes LE.
+    HDLTex: Hierarchical Deep Learning for Text Classification. In: *Machine Learning
+    and Applications (ICMLA), 2017 16th IEEE International Conference On*. IEEE; 2017.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Liu Y, Ott M, Goyal N, et al. RoBERTa: A Robustly Optimized BERT Pretraining
+    Approach. *CoRR*. 2019;abs/1907.11692\. [http://arxiv.org/abs/1907.11692](http://arxiv.org/abs/1907.11692)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

@@ -1,0 +1,443 @@
+- en: Comparing Outlier Detection Methods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/comparing-outlier-detection-methods-956f4b097061?source=collection_archive---------1-----------------------#2023-12-16](https://towardsdatascience.com/comparing-outlier-detection-methods-956f4b097061?source=collection_archive---------1-----------------------#2023-12-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using batting stats from Major League Baseball’s 2023 season
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)[![John
+    Andrews](../Images/f8022a4e19de5e10e563a31e9b79befc.png)](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)[](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------)
+    [John Andrews](https://medium.com/@andrews_or?source=post_page-----956f4b097061--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F58a322305d14&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&user=John+Andrews&userId=58a322305d14&source=post_page-58a322305d14----956f4b097061---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----956f4b097061--------------------------------)
+    ·12 min read·Dec 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F956f4b097061&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&user=John+Andrews&userId=58a322305d14&source=-----956f4b097061---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F956f4b097061&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcomparing-outlier-detection-methods-956f4b097061&source=-----956f4b097061---------------------bookmark_footer-----------)![](../Images/a98521c8a1b53bffd94feb52c42911b8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shohei Ohtani, photo by [Erik Drost](https://www.flickr.com/photos/edrost88/)
+    on [Flikr](https://www.flickr.com/photos/edrost88/48484060286/in/album-72157629239820345/),
+    [CC BY 2.0](https://commons.wikimedia.org/w/index.php?curid=88998688)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Outlier detection* is an unsupervised machine learning task to identify anomalies
+    (unusual observations) within a given data set. This task is helpful in many real-world
+    cases where our available dataset is already “contaminated” by anomalies. Scikit-learn
+    [implements several outlier detection algorithms](https://scikit-learn.org/stable/modules/outlier_detection.html),
+    and in cases where we have an *uncontaminated* baseline, we can also use these
+    algorithms for *novelty detection*, a semi-supervised task that predicts whether
+    new observations are outliers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The four outlier detection algorithms we’ll compare are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Elliptic Envelope](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.EllipticEnvelope.html)
+    is suitable for normally-distributed data with low dimensionality. As its name
+    implies, it uses the multivariate normal distribution to create a distance measure
+    to separate outliers from inliers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Local Outlier Factor](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.LocalOutlierFactor.html)
+    is a comparison of the local density of an observation with that of its neighbors.
+    Observations with much lower density than their neighbors are considered outliers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[One-Class Support Vector Machine (SVM) with Stochastic Gradient Descent (SGD)](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDOneClassSVM.html)
+    is an O(n) approximate solution of the One-Class SVM. Note that the O(n²) [One-Class
+    SVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html#sklearn.svm.OneClassSVM)
+    works well on our small example dataset but may be impractical for your actual
+    use case.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Isolation Forest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html)
+    is a tree-based approach where outliers are more quickly isolated by random splits
+    than inliers.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since our task is unsupervised, we don’t have ground truth to compare accuracies
+    of these algorithms. Instead, we want to see how their results (player rankings
+    in particular) differ from one another and gain some intuition into their behavior
+    and limitations, so that we might know when to prefer one over another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s compare a few of these techniques using two metrics of batter performance
+    from 2023’s Major Leage Baseball (MLB) season:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On-base percentage (OBP), the rate at which a batter reaches base (by hitting,
+    walking, or getting hit by pitch) per plate appearance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Slugging (SLG), the average number of total bases per at bat
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are [many more sophisticated metrics of batter performance](https://library.fangraphs.com/offense/offensive-statistics-list/),
+    including OBP plus SLG (OPS), weighted on-base average (wOBA), and adjusted weighted
+    runs created (WRC+). However, we’ll see that in addition to being [commonly used](https://www.mlb.com/glossary/miscellaneous/slash-line)
+    and easy to understand, OBP and SLG are moderately correlated and approximately
+    normally distributed, making them well suited for this comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset preparation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We use the `pybaseball` package to obtain hitting data. This Python package
+    is under MIT [license](https://github.com/jldbc/pybaseball/blob/master/LICENSE)
+    and returns data from [Fangraphs.com](https://www.fangraphs.com/leaders/major-league?pos=all&stats=bat&lg=all&qual=y&type=8&season=2023&month=0&season1=2023&ind=0),
+    [Baseball-Reference.com](https://www.baseball-reference.com/leagues/majors/2023-standard-batting.shtml),
+    and other sources which have in turn obtained offical records from Major League
+    Baseball.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We use pybaseball’s 2023 batting statistics, which can be obtained either by
+    `batting_stats` (FanGraphs) or `batting_stats_bref` (Baseball Reference). It turns
+    out that the player names [are more correctly formatted](https://github.com/jldbc/pybaseball/issues/393)
+    from Fangraphs, but player teams and leagues from Baseball Reference are better
+    formatted in the case of traded players. For a dataset with improved readability,
+    we actually need to merge three tables: FanGraphs, Baseball Reference, and a key
+    lookup.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data Exploration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, we note that these metrics differ in mean and variance and are moderately
+    correlated. We also note that each metric is fairly symmetric, with median value
+    close to mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s visualize this joint distribution, using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scatterplot of the players, colored by National League (NL) vs American League
+    (AL)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Bivariate kernel density estimator (KDE) plot of the players, which smoothes
+    the scatterplot with a Gaussian kernel to estimate density
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Marginal KDE plots of each metric
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0b7360e584c3624d2b341bc40a88616a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The top-right corner of the scatterplot shows a cluster of excellence in hitting
+    corresponding to the heavy upper tails of the SLG and OBP distributions. This
+    small group excels at getting on base *and* hitting for extra bases. How much
+    we consider them to be outliers (because of their distance from the majority of
+    the player population) versus inliers (because of their proximity to one another)
+    depends on the definition used by our selected algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply outlier detection algorithms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Scikit-learn’s outlier detection algorithms typically have `fit()` and `predict()`
+    methods, but there are exceptions and also differences between algorithms in their
+    arguments. We’ll consider each algorithm individually, but we’ll fit each to a
+    matrix of attributes (n=2) per player (m=453). We’ll then score not only each
+    player but a grid of values spanning the range of each attribute, to help us visualize
+    the prediction function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To visualize decision boundaries, we need to take the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a 2D `meshgrid` of input feature values.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Apply the `decision_function` to each point on the `meshgrid`, which requires
+    unstacking the grid.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Re-shape the predictions back into a grid.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Plot the predictions.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We’ll use a 200x200 grid to cover the existing observations plus some padding,
+    but you could adjust the grid to your desired speed and resolution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Elliptic Envelope
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The shape of the elliptic envelope is determined by the data’s covariance matrix,
+    which gives the variance of feature `i` on the main diagonal `[i,i]` and the covariance
+    of features `i` and `j` in the `[i,j]` positions. Because the covariance matrix
+    is sensitive to outliers, this algorithm uses the Minimum Covariance Determinant
+    (MCD) Estimator, which is [recommended](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.MinCovDet.html#sklearn.covariance.MinCovDet)
+    for unimodal and symmetric distributions, with shuffling determined by the `random_state`
+    input for reproducibility. This robust covariance matrix will come in handy again
+    later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because we want to compare the outlier scores in their ranking rather than a
+    binary outlier/inlier classification, we use the `decision_function` to score
+    players.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Local Outlier Factor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This approach to measuring isolation is based on k-nearest neighbors (KNN).
+    We calculate the total distance from each observation to its nearest neighbors
+    to define local density, and then we compare each observation’s local density
+    with that of its neighbors. Observations with local density much less than their
+    neighbors are considered outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Choosing the number of neighbors to include:** In KNN, a rule of thumb is
+    to let K = sqrt(N), where N is your observation count. From this rule, we obtain
+    a K close to 20 (which happens to be the default K for LOF). You can increase
+    or decrease K to reduce overfitting or underfitting, respectively.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Choosing a distance measure:** Note that our features are correlated and
+    have different variances, so Euclidean distance is not very meaningful. We will
+    use Mahalanobis distance, which accounts for feature scale and correlation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In calculating the Mahalanobis distance, we’ll use the robust covariance matrix.
+    If we had not already calculated it via Ellliptic Envelope, we could calculate
+    it [directly](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.MinCovDet.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Fitting the Local Outlier Factor:** Note that using a custom distance matrix
+    requires us to pass `metric="precomputed"` to the constructor and then the distance
+    matrix itself to the `fit` method. (See [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.LocalOutlierFactor.html#sklearn.neighbors.LocalOutlierFactor.fit)
+    for more details.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also note that unlike other algorithms, with LOF we are [instructed](https://scikit-learn.org/stable/auto_examples/neighbors/plot_lof_novelty_detection.html)
+    not to use the `score_samples` method for scoring existing observations; this
+    method should only be used for novelty detection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Create the decision boundary:** Because we used a custom distance metric,
+    we must also compute that custom distance between each point in the grid to the
+    original observations. Before we used the spatial measure `pdist` for pairwise
+    distances between each member of a single set, but now we use `cdist` to return
+    the distances from each member of the first set of inputs to each member of the
+    second set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Support Vector Machine (SGD-One-Class SVM)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: SVMs use the kernel trick to transform features into a higher dimensionality
+    where a separating hyperplane can be identified. The radial basis function (RBF)
+    kernel requires the inputs to be standardized, but as the [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html)
+    for `StandardScaler` notes, that scaler is sensitive to outliers, so we'll use
+    `RobustScaler`. We'll pipe the scaled inputs into Nyström kernel approximation,
+    as suggested by the [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDOneClassSVM.html)
+    for `SGDOneClassSVM`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Isolation Forest
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This tree-based approach to measuring isolation performs random recursive partitioning.
+    If the average number of splits required to isolate a given observation is *low*,
+    that observation is considered a *stronger* candidate outlier. Like Random Forests
+    and other tree-based models, Isolation Forest does not assume that the features
+    are normally distributed or require them to be scaled. By default, it builds 100
+    trees. Our example only uses two features, so we do not enable feature sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Results: inspecting decision boundaries'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Note that the predictions from these models have different distributions. We
+    apply `QuantileTransformer` to make them more visually comparable on a given grid.
+    From the [documentation](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html),
+    please note:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note that this transform is non-linear. It may distort linear correlations
+    between variables measured at the same scale but renders variables measured at
+    different scales more directly comparable.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d1bd465c1408e983e2d1f49ea206f488.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Analysis and Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It looks like the four implementations mostly agree on how to define outliers,
+    but with some noticeable differences in scores and also in ease of use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Elliptic Envelope** has narrower contours around the ellipse’s minor axis,
+    so it tends to highlight those interesting players who run contrary to the overall
+    correlation between features. For example, Rays outfielder José Siri ranks as
+    more of an outlier under this algorithm due to his high SLG (88th percentile)
+    versus low OBP (5th percentile), which is consistent with an aggressive hitter
+    who swings hard at borderline pitches and either crushes them or gets weak-to-no
+    contact.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Elliptic Envelope is also easy to use without configuration, and it provides
+    the robust covariance matrix. If you have low-dimensional data and a reasonable
+    expectation for it to be normally distributed (which is often not the case), you
+    might want to try this simple approach first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**One-class SVM** has more uniformly spaced contours, so it tends to emphasize
+    observations along the overall direction of correlation more than the Elliptic
+    Envelope. All-Star first basemen Freddie Freeman (Dodgers) and Yandy Diaz (Rays)
+    rank more strongly under this algorithm than under others, since their SLG and
+    OBP are both excellent (99th and 97th percentile for Freeman, 99th and 95th for
+    Diaz).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The RBF kernel required an extra step for standardization, but it also seemed
+    to work well on this simple example without fine-tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Local Outlier Factor** picked up on the “cluster of excellence” mentioned
+    earlier with a small bimodal contour (barely visible in the chart). Since the
+    Dodgers’ outfielder/second-baseman Mookie Betts is surrounded by other excellent
+    hitters including Freeman, Yordan Alvarez, and Ronald Acuña Jr., he ranks as only
+    the 20th-strongest outlier under LOF, versus 10th or stronger under the other
+    algorithms. Conversely, Braves outfielder Marcell Ozuna had slightly lower SLG
+    and considerably lower OBP than Betts, but he is more of an outlier under LOF
+    because his neighborhood is less dense.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LOF was the most time-consuming to implement since we created robust distance
+    matrices for fitting and scoring. We could have spent some time tuning K as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Isolation Forest** tends to emphasize observations at the corners of the
+    feature space, because splits are distributed across features. Backup catcher
+    Austin Hedges, who played for the Pirates and Rangers in 2023 and signed with
+    Guardians for 2024, is strong defensively but the worst batter (with at least
+    200 plate appearances) in both SLG and OBP. Hedges can be isolated in a single
+    split on either OBP or OPS, making him the strongest outlier. Isolation Forest
+    is the *only* algorithm that didn’t rank Shohei Ohtani as the strongest outlier:
+    since Ohtani was edged out in OBP by Ronald Acuña Jr., both Ohtani and Acuña can
+    be isolated in a single split on only *one* feature.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As with common *supervised* tree-based learners, Isolation Forest does not extrapolate,
+    making it better suited for fitting to a contaminated dataset for outlier detection
+    than for fitting to an anomaly-free dataset for novelty detection (where it wouldn’t
+    score new outliers more strongly than the existing observations).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Although Isolation Forest worked well out of the box, its failure to rank **Shohei
+    Ohtani** as the *greatest outlier in baseball (and probably all professional sports)*
+    illustrates the primary limitation of any outlier detector: the data you use to
+    fit it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not only did we omit defensive stats (sorry, Austin Hedges), we didn’t bother
+    to include *pitching* stats. Because pitchers don’t even try to hit anymore… except
+    for Ohtani, whose season included the second-best batting average against (BAA)
+    and 11th-best earned run average (ERA) in baseball (minimum 100 innings), a complete-game
+    shutout, and a game in which he struck out ten batters and hit two home runs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It has been suggested that Shohei Ohtani is an advanced extraterrestrial impersonating
+    a human, but it seems more likely that there are **two** advanced extraterrestrials
+    impersonating the same human. Unfortunately, one of them just had elbow surgery
+    and won’t pitch in 2024… but the other just signed a record 10-year, $700 million
+    contract. And thanks to outlier detection, now we can see why!
+  prefs: []
+  type: TYPE_NORMAL

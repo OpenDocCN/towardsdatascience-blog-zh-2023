@@ -1,0 +1,312 @@
+- en: 'Text search vs. Vector search: Better together?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/text-search-vs-vector-search-better-together-3bd48eb6132a?source=collection_archive---------2-----------------------#2023-02-16](https://towardsdatascience.com/text-search-vs-vector-search-better-together-3bd48eb6132a?source=collection_archive---------2-----------------------#2023-02-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to use OpenSearch to set up a hybrid search system so you can benefit
+    from both text and vector search advantages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)[![Noam
+    Schwartz](../Images/c5bf11b1267a95242290ca6105eb0b16.png)](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------)
+    [Noam Schwartz](https://medium.com/@noamschwartz1?source=post_page-----3bd48eb6132a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F77ffd6350db9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&user=Noam+Schwartz&userId=77ffd6350db9&source=post_page-77ffd6350db9----3bd48eb6132a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3bd48eb6132a--------------------------------)
+    ·8 min read·Feb 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3bd48eb6132a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&user=Noam+Schwartz&userId=77ffd6350db9&source=-----3bd48eb6132a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3bd48eb6132a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-search-vs-vector-search-better-together-3bd48eb6132a&source=-----3bd48eb6132a---------------------bookmark_footer-----------)![](../Images/aca0f6a6b0a70bba0d30d5f9db3b1511.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Aarón Blanco Tejedor](https://unsplash.com/@innernature?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text databases play a critical role in many business workloads, especially in
+    e-commerce where customers rely on product descriptions and reviews to make informed
+    purchasing decisions. Vector search, a method that utilizes embeddings of text
+    to find semantically similar documents is another powerful tool out there. However,
+    due to concerns about the complexity of implementing it into their current workflow
+    some businesses may be hesitant to try out vector search. But what if I told you
+    that it could be done easily and with significant benefits?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I’ll show you how to easily create a hybrid setup that combines
+    the power of text and vector search. This setup will give you the most comprehensive
+    and accurate search results. I’ll be using OpenSearch as the search engine and
+    Hugging Face’s [Sentence Transformers](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+    for generating embeddings. The dataset I chose for this task is the ”XMarket”
+    dataset (which is described in greater depth [here](https://arxiv.org/pdf/2109.05929.pdf)),
+    where we will embed the title field into a vector representation during the indexing
+    process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Preparing the dataset**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, let’s start by indexing our documents using Sentence Transformers. This
+    library has pre-trained models that can generate embeddings for sentences or paragraphs.
+    These embeddings act as a unique fingerprint for a piece of text. During the indexing
+    process, I converted the title field to a vector representation and indexed it
+    in OpenSearch. You can do this by simply importing the model and encoding any
+    textual field.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model can be imported by writing the following two lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s that simple!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will create an index named “products” by passing the following mapping:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*asin — the document unique ID which is taken from the product metadata.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*description_vector — this is where we will store our encoded product title
+    field.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*item_image- this is an image url of the product*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*text_field — this is the title of the product*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that we are using standard OpenSearch analyzer, which knows to tokenize
+    each word in a field into single keywords. OpenSearch takes these keywords and
+    uses them for the Okapi BM25 algorithm. I also took the title field and saved
+    it twice in the document; once in its raw format and once as a vector representation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I will then use the model to encode the title field and create documents which
+    will be bulked to OpenSearch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Hybrid search implementation**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The plan is to create a client which will take input from the user, generate
+    an embedding using the Sentence Transformers model and perform our hybrid search.
+    The user will also be asked to provide a boost level, which is the amount of significance
+    they want to give to either text or vector search. This way, the user can choose
+    to prioritize one type of search over the other. So if for example the user wants
+    the semantic meaning of his query to be taken into account more than the simple
+    textual appearance in the description then he would give vector search a higher
+    boost than text search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Search**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We’ll first run a text search on the index using OpenSearch’s search method.
+    This method takes in a query string and returns a list of documents that match
+    the query. OpenSearch obtains the results for text search by utilizing the Okapi
+    BM25 as the ranking algorithm. Text search using OpenSearch is performed by sending
+    the following request body:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Where *textual_query* is the text written by the user. For my results to come
+    back in a clean manner I added “_source” in order that OpenSearch will only return
+    the specific fields I am interested in seeing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since text and vector search’s ranking score algorithm are different we will
+    need to bring the scores to the same scale in order to combine the results. To
+    do that we’ll normalize the scores for each document from the text search. The
+    maximum BM25 score is the highest score that can be assigned to a document in
+    a collection for a given query. It represents the maximum relevance of a document
+    for the query. The value of the maximum BM25 score depends on the parameters of
+    the BM25 formula, such as the average document length, the term frequency, and
+    the inverse document frequency. For that reason, I took the max score received
+    from OpenSearch for each query and divided each of the results scores by it, giving
+    us scores on the scale between 0 and 1\. The following function demonstrates our
+    normalization algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we’ll conduct a vector search using the vector search method. This method
+    takes a list of embeddings and returns a list of documents that are semantically
+    similar to the embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The search query for OpenSearch looks like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Where get_vector_sentence_transformers sends the text to *model.encode(text_input)*
+    which returns a vector representation of the text. Also note that the higher your
+    topK results, the more accurate your results will be, but this will increase latency
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Interpolate results and apply boost**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/c9d936ba33da7aa726d3b90eb3535cb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Amol Tyagi](https://unsplash.com/@amoltyagi2?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we’ll need to combine the two search results. To do that, we’ll interpolate
+    the results so every document that occurred in both searches will appear higher
+    in the hybrid results list. This way, we can take advantage of the strengths of
+    both text and vector search to get the most comprehensive results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following function is used to interpolate the results of keyword search
+    and vector search. It returns a dictionary containing the common elements between
+    the two sets of hits as well as the scores for each document. If the document
+    appears in only one of the search results, then we will assign it the lowest score
+    that was retrieved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Ultimately we will have a dictionary with the document ID as a key and an array
+    of score values as a value. The first element in the array is the vector search
+    score and the second element is the text search normalized score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we apply a boost to our search results. We will iterate over the scores
+    of the results and multiply the first element by the vector boost level and the
+    second element by the text boost level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It’s time to see what we have! This is what the complete workflow looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/000c25b2e146cd2c629b827904ac79d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GIF by the Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I searched for a sentence “an ice cream scoop” with a 0.5 boost for vector
+    search and a 0.5 boost for text search, and this is what I got in the top few
+    results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vector search returned —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e6554daeaa9b29867ea8166fa4922bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Images from XMarket Dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: Text search returned —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e58754765f018fd267f896b9de2dc8bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Images from XMarket Dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hybrid search returned —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a74a31afd65dba32864934c3b57be1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Images from XMarket Dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this example, we searched for “an ice cream scoop” using both text and vector
+    search. The text search returns documents containing the keywords “an”, “ ice”,“cream”
+    and “scoop”. The result that came in fourth for text search is an ice cream machine
+    and it is certainly not a scoop. The reason it came in so high is because its
+    title which is “Breville BCI600XL Smart Scoop Ice Cream Maker” contained three
+    of the keywords in the sentence: “Scoop”, “Ice”, “Cream” and therefore scored
+    highly on BM25 although it did not match our search. Vector search on the other
+    hand, returns results that are semantically similar to the query, regardless of
+    whether the keywords appear in the document or not. It knew that the fact that
+    “scoop” appeared before “ice cream” meant that it would not match as well. Thus,
+    we get a more comprehensive set of results that includes more than documents that
+    mention “an ice cream scoop”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly, if you were to only use one type of search, you would miss out on valuable
+    results or display inaccurate results and frustrate your customers. When using
+    the advantages of both worlds we receive more accurate results. So, I do believe
+    that the answer to our question is that better together has proven itself to be
+    true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But wait, can better become **even better**? One way to improve search experience
+    is by utilizing the [power of the APU](/bolster-opensearch-performance-with-5-simple-steps-ca7d21234f6b)
+    (Associative Processing Unit) in OpenSearch. By conducting the vector search on
+    the APU using [Searchium.ai](https://www.searchium.ai/)’s plugin, we can take
+    advantage of advanced algorithms and processing capabilities to further [improve
+    the latency and significantly cut costs](https://betterprogramming.pub/tired-of-troubleshooting-idle-search-resources-use-opensearch-benchmark-for-performance-tuning-d4277c9f724)
+    (for example, $0.23 vs. $8.76) of our search while still getting [similar results](https://www.youtube.com/watch?v=AqbRTT5Z7h0)
+    for vector search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can [install the plugin](https://www.youtube.com/watch?v=7p08K-Ul1O0), [upload
+    the index to the APU](https://www.youtube.com/watch?v=RfoeZKmJcTY&t=3s) and search
+    by sending a slightly modified request body:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: All the other steps are identical!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conclusion, by combining text and vector search using OpenSearch and Sentence
+    Transformers, businesses can easily improve their search results. And, by utilizing
+    the APU, businesses can take their search results to the next level while also
+    cutting infrastructure costs. Don’t let concerns about complexity hold you back.
+    Give it a try and see for yourself the benefits it can bring. Happy searching!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code can be found [here](https://github.com/Searchium-ai/hybrid-search)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A huge thanks to [Yaniv Vaknin](https://medium.com/@yaniv.vaknin) and [Daphna
+    Idelson](https://www.linkedin.com/in/daphnaidelson/) for all of their help!
+  prefs: []
+  type: TYPE_NORMAL

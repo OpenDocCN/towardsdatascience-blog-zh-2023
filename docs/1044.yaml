@@ -1,0 +1,541 @@
+- en: Demystifying Curvelets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/desmystifying-curvelets-c6d88faba0bf?source=collection_archive---------1-----------------------#2023-03-22](https://towardsdatascience.com/desmystifying-curvelets-c6d88faba0bf?source=collection_archive---------1-----------------------#2023-03-22)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Signal-processing deep dive
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Learn what curvelets are, how they are built and what they can be used for
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@cdacostaf?source=post_page-----c6d88faba0bf--------------------------------)[![Carlos
+    Costa, Ph.D.](../Images/fc5e03e455f11b963086355fe0ccc077.png)](https://medium.com/@cdacostaf?source=post_page-----c6d88faba0bf--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6d88faba0bf--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6d88faba0bf--------------------------------)
+    [Carlos Costa, Ph.D.](https://medium.com/@cdacostaf?source=post_page-----c6d88faba0bf--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc1d045b63ee9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesmystifying-curvelets-c6d88faba0bf&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=post_page-c1d045b63ee9----c6d88faba0bf---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6d88faba0bf--------------------------------)
+    ·13 min read·Mar 22, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6d88faba0bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesmystifying-curvelets-c6d88faba0bf&user=Carlos+Costa%2C+Ph.D.&userId=c1d045b63ee9&source=-----c6d88faba0bf---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6d88faba0bf&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdesmystifying-curvelets-c6d88faba0bf&source=-----c6d88faba0bf---------------------bookmark_footer-----------)![](../Images/cadc2b13524972ae84b9e39e26c97165.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edifício Niemeyer, Belo Horizonte. Photo by [Matheus Frade](https://unsplash.com/fr/@matheusfrade?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Curvelets are multiscale, oriented, non-adaptive representations of images and
+    multi-dimensional signals. If some of these words didn't make sense, you're in
+    the right place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Developed in the early 2000s by Emmanuel Candès and David Donoho [1] in the
+    flurry of wavelet-transform related signal processing boom, curvelets were designed
+    to solve certain issues that plagued previous alternatives. Wavelets generalize
+    the 1D Fourier transform by using arbitrary — but especially crafted — functions
+    instead of complex exponentials. Like the Fourier transform, they can be readily
+    extended to 2D by simply repeatedly applying the transform over multiples axes.
+    Constructing 2D wavelets with this naïve approach runs into issues when representing
+    edges that are not exactly horizontal or exactly vertical. In practice, transforms
+    that have trouble with edges can cause “blocky” artifacts in strongly compressed
+    images. Many transforms suffer from the same fate, including the discrete cosine
+    transform (DCT) which powers the ubiquitous JPEG format (see Figure 1). JPEG2000
+    which relies on the wavelet transform to improve on JPEG, still suffers from the
+    same blocky artifacts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8d4817a73e9c1be9da9c787906f5422.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1\. "Blocky" artifacts appearing in strongly compressed JPEG images
+    for both 50x and 100x resampling. Credit to: [Shlomi Tal (CC BY-SA 3.0)](https://commons.wikimedia.org/wiki/File:JPEG_2000_Artifacts_Demonstration.png).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Curvelets don't have these issues — *they can preserve any kind of edges*. They
+    also exhibit some nice properties, such as being the optimal representation of
+    wave-like phenomena, energy conservation, unitarity (having its adjoint/transpose
+    be the same as its inverse), among others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Today, curvelets are used in a variety of image-processing tasks including denoising,
+    compression, inpainting, smoothing, etc. In the geophysical community, it has
+    become a powerful workhorse for several tasks including adaptive subtraction,
+    image matching, preconditioning, among others. In the medical community, it has
+    been used for segmentation, diagnosis, etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While it is true that deep learning has quickly displaced classical algorithms
+    for many of these tasks, curvelets (and other wavelet transforms) still have their
+    use. Whereas deep learning offers the possibility to create *adaptive*, multiscale
+    representations of signals, curvelets already offer that predictably, without
+    requiring training, and optimally for many types of signals. One may use curvelets
+    directly as a substitute when no training data is available, or even employing
+    them alongside deep learning methods, thereby reducing model complexity and data
+    requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this deep dive, we will go over the building blocks of the curvelet transform,
+    focusing on the intuition behind it. The goal is to provide a starting point for
+    users interested in developing new applications which use curvelets. Find all
+    the code for this tutorial in the [Curvelops repository](https://github.com/PyLops/curvelops/blob/main/notebooks/Desmystifying_Curvelets.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before Curvelets: the Fourier Transform'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To understand the curvelet transform, we need to first understand the Fourier
+    transform. The 2D FFT (Fast Fourier Transform) tells us what kind of spatial frequencies
+    an image has. The more energy on the larger (away from the origin) wavenumbers
+    (spatial frequencies), the faster the image varies along a certain direction.
+    In this section we will understand how to find this direction, as well as how
+    to quantify “fast”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start by creating images which vary rapidly in the one particular direction,
+    but not at all in the perpendicular direction. These will be helpful in understanding
+    what the 𝑘-space spectrum (another name for Fourier domain, the transform domain
+    after applying FFT) is telling us. We will do so by modulating a cosine in the
+    direction normal to a vector 𝑣 = (sin 𝜃, cos 𝜃).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66f3df3f1554dc1c44d22d8acb0b7b23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2\. 2D monochromatic images, with direction of change in each image
+    denoted by the red arrow. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each plot in this image has an arrow pointing towards the direction of maximum
+    variation 𝑣. Along the direction perpendicular to it, the signal does not vary
+    at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This won’t always happen, signals can vary in more than one direction at once.
+    The question is, which directions? And how do we find out? Cue the FFT transform.
+    Let’s take one of these images, say the one at 45°, and apply the 2D FFT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c553d81ac79ab14a5d997286b756d336.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3\. 2D FFT of the monochromatic signal which varies most at the 45°
+    direction. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the Fourier domain, we can see that our signal has two peaks. A property
+    of the 2D Fourier transform for real input signals, is that its Fourier spectrum
+    symmetric about the origin. In the above plot, the top-left quadrant carries the
+    same information as the bottom-right quadrant; the top-right carries the same
+    information as the bottom-left quadrant. So we can safely “ignore” the negative
+    frequencies for one axis. One convention is to choose the “fastest” axis, in this
+    case the vertical (𝑧) axis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'WARNING: This is not true for complex signals! But it doesn’t change the math
+    much, just the visual interpretation. We will only use real signals here.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'So we can scan the (positive 𝑘𝑧) 𝑘-space to identify a single peak. Its corresponding
+    𝑘𝑥 and 𝑘𝑧 coordinates are given by: `[6.931, 6.931]`. Not particulaly interesting,
+    until we normalize this vector to `[0.707, 0.707]` and compare it with the original
+    direction of maximum variation: `[0.707, 0.707]`. Up to a constant, the vectors
+    are the same! Let’s try this for all images create above.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compute the 2D FFT
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find the maximum amplitude location in *k*-space
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: (𝑘𝑥-max, 𝑘𝑧-max) is the direction of maximum variability of the input
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/63475a16e701e47b1bec3e33dd2c770f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4\. 2D FFT of the monochromatic signals in Figure 2\. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice how these follow exactly the direction of maximum change in the data.
+    Indeed, if we overlay these normalized vector onto the data-space images, we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f31dc5e52674719863bcde9173bf92b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5\. Monochromatic signals in Figure 2\. Red arrow: direction of maximum
+    variability. Yellow arrows: direction of maximum variability estimated from 2D
+    FFT. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looks good! What does this have to do with the curvelet transform? Well, imagine
+    we try applying the same method to the following signal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7770d97a4d381ab90be2ef8993f4e10d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5\. Bichromatic signal in spatial (left) and Fourier (right) domains.
+    Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that there is a low-frequency signal in the background, corresponding
+    to the -15° component. Atop it, there is a high frequency component in another
+    direction (15°). If we apply our 𝑘-max algorithm, because the low-frequency signal
+    is weaker, it won’t get picked up. We will think that our signal’s only direction
+    is 15°. But the FFT spectrum has all the information, so what can we do with it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the Curvelet Transform
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Separating scales
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The curvelet transform handles this wealth of information by separating the
+    signal at different *scales*, which are defined as concentric regions in the 𝑘-space
+    domain. These regions will encompass frequencies that are similar. Let’s apply
+    this concept to the example above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f03c682439afe59ef59ad037efeb8cd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6\. Original bichromatic signal (left column). Low-passed signal (center
+    column). High-passed signal (right column). Spatial domain (top row). Fourier
+    domain (middle row). Masks in Fourier domain which generate the signals in the
+    top row (bottom row). Deep purple denotes zero value, crimson corresponds to unity.
+    Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The top-left signal is the original input signal. The image below it (second
+    row) is its the Fourier spectrum. The image below that (third row) is the “mask”
+    applied to the Fourier spectrum to reconstruct the original signal. It is entirely
+    red, representing ones, that is, no change to the spectrum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second column, depicts signals from the first region, constructed by a low-pass
+    filter defined by its mask (third row, middle column). Where it zeroes the signal,
+    the mask is purple. Finally, the third column depicts the second region, constructed
+    by a high-pass filter which is `1 - lowpass`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the curvelet transform, the number of scales is the first parameter. A choice
+    of scales = 2 would create a division very similar to the one above (but with
+    a different, special type of smoothing). The more scales there are, the more precisely
+    the curvelet transform coefficients will be able to separate signals with different
+    frequencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And what will these coefficients be? In this case, something very similar to
+    the inverse transform of the low-pass and high-pass filters, that is, the two
+    rightmost panels in the top row. The only caveat (in addition to the smoothing)
+    is that the lower frequency scale does not require the same sampling as the original
+    signal. Indeed, the Nyquist frequency (highest frequency that a certain sampling
+    can represent) of the lowpass signal is *half* of the original Nyquist frequency.
+    This is clear from the fact that the lowpass signal removes all frequencies above
+    Nyquist/2\. Therefore we could actually *double* the sampling of lowpass component
+    compared to that of the original signal. This is a general rule, and we will see
+    that the coarsest scale (scale = 0) can be sampled at 2*ᵐ* times the original
+    sampling, where *m* is equal to the number of scales minus 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The finest scale (in this example, scale = 1) cannot be treated the same way,
+    as its highest frequency remains the frequency of the original signal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For visualization’s sake, we can apply this resampling to the lower frequency
+    scale to get an idea of what the curvelet coefficients would look like for a scales
+    = 2 and no additional subdivisions (more about this soon).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c407c94c34a7bb05df70d7e46d048889.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7\. Original signal (left column). Coarsest curvelet scale using scales
+    = 2 (center column). Finest curvelet scale (right column). All other panels like
+    Figure 6\. Note: this curvelet transform has a wavelet at the finest scale. Credit:
+    own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing this plot to the original plot without resampling, we notice that
+    the signal is accurately represented in both, but the strength of the resampled
+    signal is larger. This is because the Fourier transform used to “return” to the
+    spatial domain now has a normalization factor which is smaller than the original.
+    Therefore the signal will be twice as strong (2 = √2 × √2, one square root per
+    dimension, in this case two). This is also a general rule of the curvelet transform
+    and Fourier transforms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s apply this decomposition to another example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc5a9faa1f6d452622e58bf94244af48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 8\. Tetrachromatic signal composed of four signals: two spatial frequencies
+    at -30° and 30° orientations. Panels like Figure 7\. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Separating Dips
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While we have separated in *scale*, we still are not able to distinguish the
+    two separate events, one at -30° and one at 30°. We need another type subdivision,
+    one which splits a signal (of similar frequencies) further, into “subsignals”
+    of similar *direction* (or *dip*, in geophysical lingo). Starting with the second
+    scale (the one after the coarsest), we will further split it scale into *wedges*.
+    These are approximately angular sectors in the 𝑘-space domain. The coarsest scale
+    (scale = 0) is exempt from this splitting because the origin can’t be assigned
+    to any particular wedge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3143a7c6b209b17881966b2a0469030.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 9\. Original tetrachromatic signal (leftmost column). Signal separated
+    by "wedges" *in the Fourier domain (center-left to rightmost columns). Rows like
+    Figures 6, 7 and 8\. Credit: own work.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that we have been able to separate the signal into its two constituent
+    components. For this signal, two of the wedges are identically zero. The signals
+    in the first row, starting from the second column, are essentially what the curvelet
+    coefficients would look like if we applied the curvelet transform with the parameters
+    scales = 2 and wedges = 8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One small caveat is that we are actually only showing **four wedges**. This
+    is again because of the symmetry of the Fourier domain for real signals. For complex
+    signals, we would have to treat each wedge (without its symmetrical counterpart)
+    separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fast Discrete Curvelet Transform
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We now have all ingredients to understand how Curvelet Transforms are implemented
+    in practice. For example, we still have some kinks to iron out. One of them is
+    the tapering: if we sum every wedge mask, we don’t get an exact value of 1.0 at
+    every grid point in the 𝑘-space domain. This means that we may “lose” or “create”
+    signal. A more pressing issue is performance: the wedges were transformed back
+    to the spatial domain in a non-optimal way: we used a full-sized FFT transform
+    to transform a small sliver of the 𝑘-space domain. This results in curvelet coefficients
+    all shaped the same shape as our input image (in that example, 101 × 101).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, an important property of the continuous curvelet transform is that
+    performing the steps backward to generate an output image *from* curvelet coefficients,
+    should give you the exact same image that was used to obtain these coefficients
+    in the first place. Mathematically, the transformation is unitary, that is, its
+    adjoint is equal to its inverse. Our implementation does not respect this property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All these issues can be fixed. One construction which solves all these problems
+    is the Fast Discrete Curvelet Transforms, developed by Emmanuel Candès, Laurent
+    Demanet, David Donoho and Lexing Ying. Its most famous implementation is provided
+    by the [CurveLab package](http://www.curvelet.org/software.html), which the [Curvelops](https://pylops.github.io/curvelops/)
+    package wraps via Python (disclaimer: I developed Curvelops). Curvelops thereby
+    provides a linear operator interface relying on [PyLops](https://pylops.readthedocs.io/)
+    (disclaimer: I am one of the core devs of this library).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s explore the FDCT by applying it to the signal at hand, and compare the
+    curvelet coefficients with what we generated before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9ae9e8ac86bd0ad9a7dc3eb3b43e5185.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 10\. (Real) curvelet coefficients of the tetrachromatic signal. Credit:
+    own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These look very similar to what we obtained before, with a few differences.
+    First, as mentioned before, the algorithm actually outputted 8 wedges in the second
+    scale; we merged them due to the symmetry of the Fourier space for real input
+    signals. Second, we can see that the shapes are not the same as the input signal.
+    The coarsest scale is about ⅔ of the input signal. On the second scale, not only
+    the shapes are different, but the aspect ratio is also different. This is because
+    different directions require different sampling. The FDCT handles all these issues
+    for us, in a way that is performant and that respects the unitary nature of the
+    continuous transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we are ready to understand the parameters of the FDCT:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**nbscales** (no default, minimum 2): Number of scales. The more scales, the
+    finer the details the curvelet transform will capture. The downsides to more scales
+    are performance and tapering issues. Both of these issues can be mitigated by
+    setting `allcurvelets=False`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**nbangles_coarse** (default: 16, minimum 8, must be a multiple of 4): Number
+    of angles/wedges at the second coarsest scale. Remember that the coarsest scale
+    is never subdivided. This value is only specified for the second scale because
+    it will double every two scales (counting as if the first had `nbangles_coarse`
+    wedges). So by setting a `nbscales=5` and `nbangles_coarse=8`, the second scale
+    will have 8 wedges, the third 16 (as we have seen 2 scales by now), the fourth
+    also 16, the fourth and last, 32 (as we have seen four scales so far). Downsides
+    to increasing this parameter is also performance and tapering issues. Mitigate
+    them also with `allcurvelets=False`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**allcurvelets** (default: True, boolean): Controls whether we perform wedge
+    subdivision on the finest (last) scale. We did this in the latter example, but
+    not in the one before that. From a practical point of view, despite defaulting
+    to True, you should set this options to False unless there is a strong reason
+    not to.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Examples of the Fast Discrete Curvelet Transform
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we understand these parameters, let’s have a look at the some curvelet
+    coefficients from different parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b35be09a962f8c89d04c3c4dd43b7b98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 11\. Python "two-snakes" Logo. Credit: [Python Software Foundation](https://www.python.org/community/logos/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf357ca1a486da0b56d75948c508ff3e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 12\. Curvelet coefficients (`nbscales=4, nbangles_coarse=8, allcurvelets=False)`
+    of the Python logo in Figure 11\. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e484815f7751bbfcb3bc8ae94c094d27.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 13\. Curvelet coefficients (`nbscales=3, nbangles_coarse=8, allcurvelets=True)`
+    of the Python logo in Figure 11\. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is interesting to notice that the “color” of the image is only in the coarsest
+    scale because this scale contains the zero frequency aka the DC-component. All
+    other scales add only variations on top of that initial image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another interesting aspect of the curvelet transform is that it is very easy
+    to interpret its coefficients. They are essentially a “piece” of the original
+    image which varies along certain preferential directions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But visualizing all of these coefficients can quickly become overwhelming. One
+    way to overcome that is to extract features from a single wedge. In the following
+    example we will subdivide each wedge into rows/cols, of which we will compute
+    the energy. These energies will be mapped to disks in the Fourier domain. We will
+    see below how this visualization can help us identify the preferential directions
+    of events in an image in each scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40a86e1ec80383592951466d4ca507f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 14\. Sigmoid seismic model with curvelet strength disks overlain. Strength
+    of disks should be largest perpendicular to the local dip. Credit: own work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here we are plotting, overlain on the original input signal (sigmoid seismic
+    model) the strength of the curvelet coefficients at certain window in each scale/wedge.
+    These disks mimic the wedge division we discussed above: the closest to the center,
+    the lower the scale; the angular wedges map to the same place in the 𝑘-space domain,
+    in a polar projection.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Consequently, similar to our visualization of the 𝑘-max vectors, we should see
+    that the strongest energy lies *perpendicular* to the preferential local dips.
+    As a reminder, this happens because the strongest points in the 𝑘-space are those
+    where the image varies the most in that direction. So, perpendicularly to where
+    it varies the least. We can identify this behavior in the image especially near
+    the top of the image, where the structure is regular.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, these disks give us even more information than the preferential dip
+    at any arbitrary location. They also can give us an idea of the anisotropy of
+    the image. For example, when there is no preferential direction, or many preferential
+    directions, the image is more isotropic. And this information is provided not
+    only locally in *space*, but also separated by *scales* (spatial frequencies).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, even the disks are a aggregate of the full information that the curvelet
+    transform contains, which attests to its power and versatility!
+  prefs: []
+  type: TYPE_NORMAL
+- en: These are just some examples of the curvelet transform. In upcoming articles,
+    we will explore how they can be used for other tasks!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Key Takeaways
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The **Fourier transform** of images give us an idea of the **preferential directions
+    of change**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **curvelet transform** goes a step beyond that, telling us how the image
+    is **varies at each location, in which direction and with which spatial frequency**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The curvelet transform is traditionally performed with the FDCT (**Fast Discrete
+    Curvelet Transform**) provided in **Python by curvelops and CurveLab**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The FDCT can be used in many areas such as **signal processing and deep learning**
+    (see TorchOperator in PyLops).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Further Reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Candès, E., Demanet, L., Donoho, D., & Ying, L. (2006). Fast Discrete Curvelet
+    Transforms. *Multiscale Modeling & Simulation*, *5*(3), 861–899.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Ma, J., & Plonka, G. (2010). The Curvelet Transform. *IEEE Signal Processing
+    Magazine*, *27*(2), 118–133.'
+  prefs: []
+  type: TYPE_NORMAL

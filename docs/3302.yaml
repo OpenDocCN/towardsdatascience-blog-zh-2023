@@ -1,0 +1,405 @@
+- en: Building a Single Customer View Using Open-Source Tools and Databricks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-single-customer-view-using-open-source-tools-and-databricks-ecc7d020ef4f?source=collection_archive---------1-----------------------#2023-11-06](https://towardsdatascience.com/building-a-single-customer-view-using-open-source-tools-and-databricks-ecc7d020ef4f?source=collection_archive---------1-----------------------#2023-11-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*A scalable data quality and record linkage workflow enabling customer data
+    science*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rjconstable1989?source=post_page-----ecc7d020ef4f--------------------------------)[![Robert
+    Constable](../Images/57ac4eff68e4fec31e3e240f9b363725.png)](https://medium.com/@rjconstable1989?source=post_page-----ecc7d020ef4f--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ecc7d020ef4f--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ecc7d020ef4f--------------------------------)
+    [Robert Constable](https://medium.com/@rjconstable1989?source=post_page-----ecc7d020ef4f--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccf6eef145fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-single-customer-view-using-open-source-tools-and-databricks-ecc7d020ef4f&user=Robert+Constable&userId=ccf6eef145fa&source=post_page-ccf6eef145fa----ecc7d020ef4f---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ecc7d020ef4f--------------------------------)
+    ·11 min read·Nov 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fecc7d020ef4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-single-customer-view-using-open-source-tools-and-databricks-ecc7d020ef4f&user=Robert+Constable&userId=ccf6eef145fa&source=-----ecc7d020ef4f---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fecc7d020ef4f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-single-customer-view-using-open-source-tools-and-databricks-ecc7d020ef4f&source=-----ecc7d020ef4f---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A single customer view is a comprehensive representation of a customer’s data
+    across all interactions with a business. It combines data from multiple sources,
+    such as purchases, interactions with websites, social media, email enquiries,
+    feedback, and any other data sources, into a single record per unique customer
+    [1]. Once achieved a single customer view offers many opportunities for targeted
+    marketing, improved customer retention and maximising customer lifetime value
+    [2]. However, arriving at a single customer view and maintaining it over time
+    can be challenging, with data quality limitations, the cost of licensing many
+    third-party master data management (MDM) tools and customer privacy and compliance
+    considerations for the handling of personal data, all complicating the construction
+    of a single customer view. This article offers an approach to building a data
+    quality and record linkage pipeline for single customer views, taking into account
+    these challenges and offering a low-cost open-source approach using the Spark-based
+    cloud computing platform Databricks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The diagram below summarises an open-source approach to generating a single
+    customer view using Databricks. In a series of Databricks notebooks connected
+    in a workflow, we can implement data profiling and validation checks with the
+    help of the Great Expectations library, address any data quality issues and ensure
+    compliance with data protection and retention policies in a cleansing and compliance
+    notebook, use the Splink library for probabilistic record linkage between or within
+    customer data tables and finally apply golden record logic and join all customer
+    records, to deduplicate and link disparate customer datasets, generating the single
+    customer view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57df35f3861ac0f49551e01124b6d714.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Overview of an open-source data quality and record linkage workflow in Databricks.
+    Image by author*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All transformations are implemented in queries written in Pyspark/Spark SQL
+    or utilising the Spark backends of any open-source components, so that we leverage
+    the parallel computing power of Databricks to scale the processing required in
+    the various stages to potentially accommodate massive customer datasets. Using
+    a Lakehouse architecture for the storage of all intermediate tables and finished
+    outputs we can benefit from an audit log of all operations performed on the data,
+    delete customer data permanently if required for compliance, whilst retaining
+    anonymised information for analytics purposes and benefit from the performance
+    and reliability of the Delta table format [3]. Data enters the process from source
+    systems (e.g., customer relationship management (CRM) tools such as Dynamics 365
+    or Salesforce) and leaves in the form of a single customer view ready for analytical
+    or operational use cases, such as customer profiling dashboards, machine learning
+    applications such as recommendation engines and automated marketing and upselling
+    via email, text or post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Profiling and Validation Using Great Expectations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Great Expectations is an open-source Python library [4] that allows you to programmatically
+    create automated tests for data pipelines, ensuring that the data is valid, complete,
+    and of consistent schema. Users can define dictionaries of expectations, for fields
+    in their data, and then test their data against those expectations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Example of an expectation definition using great expectations*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The library provides a wide range of expectations out of the box, such as testing
+    for null values, unique values and value ranges; users can also create custom
+    expectations if the standard set doesn’t provide the expectation required for
+    their dataset. Great Expectations supports a variety of data sources, including
+    databases, CSV files, and Pandas or Pyspark dataframes and can take advantage
+    of the Spark backend when using Databricks. After running a validation test, the
+    user is provided with a web-based data validation report, which highlights which
+    fields have passed and which fields have not passed the expectation suite and
+    if so why not, as shown in the example below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/327d238e5339348fe2552bed9e7efe71.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Data validation report produced with Great Expectations* [https://docs.greatexpectations.io/docs/](https://docs.greatexpectations.io/docs/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great Expectations also offers data profiling, allowing the user to gain insights
+    into their datasets, such as summary statistics (mean, median, and standard deviation),
+    completeness and uniqueness and provides a suite of visualisation tools to enable
+    users to explore their data and identify potential issues. These insights may
+    highlight the need for additional expectations in the suite or alerts to be sent
+    to data stewards, if subsequent iterations of customer data move outside of their
+    expected values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the context of building a single customer view, Great Expectations can help
+    you understand the composition and quality of customer datasets and verify outputs
+    before they are passed to subsequent steps in the pipeline or handed over to downstream
+    applications. Great Expectations can be used to initially highlight data quality
+    issues during the first pass over customer datasets and in production can be integrated
+    with CI/CD tools to enable the unit testing of datasets as part of a deployment
+    pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cleansing and Compliance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The cleansing and compliance stage involves addressing any data quality issues
+    highlighted by profiling and validation and ensuring that stored customer data
+    is compliant with any restrictions on data retention (e.g. GDPR [5]). In Databricks
+    this can be achieved using Pyspark/Spark SQL queries, selecting, filtering, or
+    mapping fields or values to provide the desired set of data cleansing operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Customer datasets contain personally identifiable information (names, email
+    addresses, phone numbers and postal addresses) which are crucial for the linkage
+    of customer data from multiple sources. Each customer dataset will also have attributes
+    associated with each customer, such as transaction logs, preferences, flags indicating
+    memberships/statuses and timestamps indicating when communications were made with
+    them. In order to prepare data for a single customer view, these datasets may
+    need to be aggregated so that any time series or event log datasets are summarised
+    into single row per entity tables that can subsequently be joined and/or deduplicated/linked
+    in the probabilistic matching stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data retention policies may also be implemented programmatically at this stage
+    as well as code for specific user deletion requests. Delta Lake offers optimisations
+    that make point deletes in data lakes more efficient using data skipping [6].
+    If personally identifiable information is not necessary for downstream uses of
+    the customer data, it can be permanently anonymised at this stage or pseudonymised/split
+    into sensitive and non-senstitve tables with different levels of permissions so
+    that access to the raw customer data is restricted [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Example of a point delete of a customers’ data in a Delta table*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Probabilistic Record Matching Using Splink
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Customer datasets often contain duplicates of each unique customer; customers
+    may manually input their details introducing spelling errors, over time customers
+    might move address or change account information creating multiple records with
+    only one being valid and up-to-date and where the customer is represented in multiple
+    datasets there will obviously be multiple records between those tables which require
+    linkage. This problem of deduplication and record linkage can be addressed using
+    Splink [7], an open-source probabilistic record matching algorithm implemented
+    in Spark, created by a team at the UK Ministry of Justice to assist record matching
+    for judicial applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/deece1f80b5402c9b7700b9199532766.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Example of a customer dataset in need of deduplication and linkage* [https://github.com/moj-analytical-services/splink](https://github.com/moj-analytical-services/splink)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splink uses a Bayesian algorithm to combine fuzzy matching scores across multiple
+    fields into an overall match probability, enabling the user to mark customer records
+    as linked between tables or as duplicates of a given individual within tables,
+    using those match probability thresholds. The user can define a suite of fuzzy
+    matching scores to be calculated such as Jaccard similarity and Levenshstein distance
+    over various personal data fields, such as names, emails, phone numbers and addresses,
+    as well as blocking rules which reduce the computational complexity of the matching
+    process, by limiting fuzzy matching comparisons to records with exact matches
+    on other fields. A probabilistic record linkage model is trained using expectation
+    maximisation and used to generate match probabilities for each pairwise comparison
+    included in the prediction blocking rules. The output of this prediction stage
+    represents a graph data structure, with all pairwise comparisons of records as
+    nodes connected with edges representing their pairwise match probabilities and
+    this graph can be resolved into clusters of highly connected similar records with
+    match probabilities greater than a user-defined threshold, using the connected
+    components algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/708522812c1d834630f58beb8765455b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Overview of a typical Splink deduplication workflow.* [https://github.com/moj-analytical-services/splink](https://github.com/moj-analytical-services/splink)
+    *edited with permission by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although Splink requires numerous decisions from the user in order to carry
+    out linkage successfully, most notably choosing the confidence level at which
+    to accept or reject matches across the range of match probabilities generated,
+    being an open-source project Splink does not require the licensing fees required
+    for commercial record matching tools and works well provided suitable matching
+    rules and blocking rules are chosen and match probability thresholds are set appropriately.
+    To evaluate the quality of the linkage provided by Splink, a data steward should
+    ideally manually verify the match quality of a random sample of matched records
+    to build confidence in the output and potentially trade-off false positive and
+    false negative rates, depending on the criticality of the final application of
+    the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/969a7be7123d233575bbb1bca0d8e6dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Evaluation of match accuracy by inspection of a random sample of pairwise
+    matches at different match probabilities.* [https://github.com/moj-analytical-services/splink](https://github.com/moj-analytical-services/splink)
+    *edited with permission by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Golden Record Logic
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once duplicate records or linked records between tables are identified, the
+    final stage in building a single customer view is to implement golden record logic,
+    to unify all records per unique customer into a single row with a defined set
+    of fields containing all relevant customer data for downstream use [8]. The decision
+    as to which fields and which copies of a customer’s information to carry forward
+    as golden records, will be determined by how the data will be used, knowledge
+    of recording practices and criteria for relevance. In the example below, a custom
+    golden record logic is applied in Pyspark over a customer dataset deduplicated
+    in Splink (where unique customers have been assigned a unique “cluster_id”), selecting
+    the most recent and most complete duplicate records for a customer. Other applications
+    may see multiple records and fields, from potentially multiple tables, combined
+    to make a composite record. Moreover, multiple golden record definitions might
+    also be applied over the same data and used for different purposes (e.g., customers
+    with memberships may have a different set of golden record logic applied to them
+    compared to non-members). Often a given marketing use case will require a particular
+    subset of the customer data and multiple marketing use cases may be derived from
+    the same dataset; for each of these marketing use cases, a different set of flags
+    can be implemented at this stage, to make their selection convenient downstream.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Example golden record logic implemented using Pyspark window functions and
+    binary flags*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integrations and Use Cases
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: An Azure architecture such as the one shown below can be used for the cloud
+    deployment of the single customer view, as a platform for customer analytics and
+    data science use cases [9]. Using a cloud platform such as Azure, allows you to
+    scale in a cost-effective way and also simplify the data protection and compliance
+    aspects associated with storing and using customer data. Azure also offers a suite
+    of ETL and data science components to implement the solution. A variety of customer
+    data sources, such as CRMs and point of sale systems, can be landed in a data
+    lake storage account using orchestration tools in Azure such as Synapse Analytics
+    and Data Factory for batch loads and Event Hubs and Delta Live Tables for streamed
+    sources. Use of a Databricks lakehouse architecture makes it easier to combine
+    multiple customer data types in a common storage account and structure the subsequent
+    transformations according to a medallion pattern, with a bronze raw area, silver
+    single customer view area with defined schema and a gold area for any analytical
+    views or data science outputs, which can be dimensionally modelled for downstream
+    use cases, such as the operational use of the data within CRM systems for marketing
+    campaigns, customer analytics dashboards helping you to understand your customer
+    base quantitatively and other applications built from customer data such as churn
+    models or recommendation engines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/40925be104a4d1ac2d8d9cda69c822e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Cloud architecture for a single customer view-focused analytics and data science
+    platform on Azure.* [*https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/azure-databricks-modern-analytics-architecture*](https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/azure-databricks-modern-analytics-architecture)
+    *edited with permission by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By storing and processing customer data in the cloud, you delegate some responsibility
+    for the security of customer data to the cloud service provider (e.g., Microsoft)
+    and can use private networking of the Azure environment and elevated encryption
+    standards wherever possible, to ensure the safeguarding of customer data. By configuring
+    access controls, access to customer data can also be restricted, so that whilst
+    a wide audience within a business may be able to view anonymised or aggregated
+    customer data, raw customer data access can be limited to those in the business
+    that need to use it for marketing purposes or solution maintenance, so that the
+    risk of leaks is minimised.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once curated, a single customer view opens the door to many data science applications
+    such as customer profiling by demographics, customer lifetime value analysis or
+    recency-frequency-monetary value analysis, market basket analysis (the analysis
+    of buying patterns and the propensity of the co-purchasing of item sets), as well
+    as ML modelling for churn prediction enabling timely email interventions such
+    as discounts and offers to improve retention and recommendation engines which
+    match customers with products they are most likely to buy at a particular point
+    in time during the customer lifecycle. Other analytics applications of a single
+    customer view include the dashboarding of aggregated customer data to understand
+    buying trends and seasonality, and text analytics over customer feedback to understand
+    areas a business can improve service; a single customer view is also intrinsically
+    useful from an operational perspective within a CRM system, as it will increase
+    the efficiency of marketing campaigns and other interventions, particularly where
+    the cost of contacting the customer is elevated, such as postal marketing or cold-calling/SMS
+    messaging, by minimising contacts to duplicate customers or out of date addresses/phone
+    numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using open-source tools, Databricks and other Azure components it is possible
+    to build a cost-effective and scalable single customer view and deploy it to the
+    cloud in a secure and compliant way
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The proposed solution is high code, requires domain expertise and involves some
+    decision making on the part of the data steward to cleanse and perform linkage
+    over disparate customer datasets
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: However, the solution also has numerous advantages over commercial offerings,
+    in terms of lower licensing fees and running costs, solution customisability and
+    convenient integrations with other cloud components for deploying analytics and
+    data science uses cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A single customer view opens the door to a variety of impactful data science
+    and analytics use cases which can help a business market more efficiently, understand
+    their customers and deliver better service
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thanks for reading and if you’re interested in discussing or reading further,
+    please get in touch or check out some of the references below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.linkedin.com/in/robert-constable-38b80b151/](https://www.linkedin.com/in/robert-constable-38b80b151/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [https://www.informatica.com/content/dam/informatica-com/en/collateral/white-paper/improve-service-with-single-view-of-customer_white-paper_2446.pdf](https://www.informatica.com/content/dam/informatica-com/en/collateral/white-paper/improve-service-with-single-view-of-customer_white-paper_2446.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [https://www.experian.co.uk/assets/about-us/white-papers/single-customer-view-whitepaper.pdf](https://www.experian.co.uk/assets/about-us/white-papers/single-customer-view-whitepaper.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [https://www.databricks.com/blog/2022/03/23/implementing-the-gdpr-right-to-be-forgotten-in-delta-lake.html](https://www.databricks.com/blog/2022/03/23/implementing-the-gdpr-right-to-be-forgotten-in-delta-lake.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [https://docs.greatexpectations.io/docs/](https://docs.greatexpectations.io/docs/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] [https://gdpr-info.eu/](https://gdpr-info.eu/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] [https://docs.databricks.com/en/security/privacy/gdpr-delta.html](https://docs.databricks.com/en/security/privacy/gdpr-delta.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] [https://github.com/moj-analytical-services/splink](https://github.com/moj-analytical-services/splink)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] [https://www.informatica.com/blogs/golden-record.html](https://www.informatica.com/blogs/golden-record.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] [https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/azure-databricks-modern-analytics-architecture](https://learn.microsoft.com/en-us/azure/architecture/solution-ideas/articles/azure-databricks-modern-analytics-architecture)'
+  prefs: []
+  type: TYPE_NORMAL

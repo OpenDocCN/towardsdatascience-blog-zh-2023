@@ -1,0 +1,626 @@
+- en: 'Similarity Search, Part 6: Random Projections with LSH Forest'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21](https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Understand how to hash data and reflect its similarity by constructing random
+    hyperplanes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----f2e9b31dcc47---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)
+    ·12 min read·Jul 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----f2e9b31dcc47---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&source=-----f2e9b31dcc47---------------------bookmark_footer-----------)![](../Images/12114a0785739ca563e1e315b906d96b.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: S**imilarity search** is a problem where given a query the goal is to find the
+    most similar documents to it among all the database documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In data science, similarity search often appears in the NLP domain, search engines
+    or recommender systems where the most relevant documents or items need to be retrieved
+    for a query. There exists a large variety of different ways to improve search
+    performance in massive volumes of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [last part](https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203),
+    we looked at the main paradigm of LSH which is to *transform input vectors to
+    lower-dimensional hash values while preserving information about their similarity*.
+    For obtaining hash values (signatures) minhash functions were used. In this article,
+    we are going to randomly project input data to get analogous binary vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------)
+    [## Similarity Search, Part 5: Locality Sensitive Hashing (LSH)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explore how similarity information can be incorporated into hash function
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Idea
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Consider a group of points in a high-dimensional space. It is possible to construct
+    a random hyperplane that acts as a wall and separates each point into one of two
+    subgroups: positive and negative. A value of “1” is assigned to each point on
+    the positive side and “0” to each point on the negative side.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db91cd0f54fb01f7056f6323feec17e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a hyperplane separating two points in 3D space
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can the side of a hyperplane for a certain vector be determined? By using
+    the inner product! Getting to the essence of linear algebra, the sign of the dot
+    product between a given vector and the normal vector to the hyperplane determines
+    on which side the vector is located. This way, every dataset vector can be separated
+    into one of two sides.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00c4e7a079ad44deb761eef2c59a5cf4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Calculating the inner product of a vector with the normal vector of a hyperplane
+    and comparing it with 0 can tell on which side the vector is located relative
+    to the hyperplane
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously, encoding every dataset vector with one binary value is not be sufficient.
+    That is several random hyperplanes should be constructed, so every vector can
+    be encoded with that many values of 0 and 1 based on its relative position to
+    a specific hyperplane. If two vectors have absolutely the same binary code, it
+    indicates that none of the constructed hyperplanes could have separated them into
+    different regions. Thus, they are likely to be very close to each other in reality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For finding the nearest neighbour for a given query, it is sufficient to encode
+    the query with 0s and 1s in the same way by checking its relative positions to
+    all the hyperplanes. The found binary vector for the query can be compared to
+    all other binary vectors obtained for dataset vectors. This can be done linearly
+    by using the Hamming distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hamming distance** between two vectors is the number of positions at which
+    their values are different.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/6110f31884e5d2440dd027e66a2037a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of computing Hamming distance. A pair of vectors on the left are more
+    similar to each other since their Hamming distance is smaller.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The binary vectors with the least Hamming distances to the query are taken as
+    candidates and then fully compared to the initial query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Why are hyperplanes built randomly?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'At the current stage, it seems logical to demand why hyperplanes are built
+    in a random manner and not in deterministic meaning that custom rules for separating
+    dataset points could have been defined. There are two principal reasons behind
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, the deterministic approach is not able to generalize the algorithm
+    and can lead to overfitting.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Secondly, randomness allows for making probabilistic statements regarding the
+    algorithm’s performance which is not dependent on the input data. For a deterministic
+    approach, this would not work out because it might act well on one data and have
+    a poor performance on another. A good analogy for this is the deterministic [quick-sort](https://medium.com/@slavahead/quick-sort-explained-and-visualised-866cae28308e)
+    algorithm which works on average in *O(n * log n)* of time. However, it works
+    for *O(n²)* of time on a sorted array as the worst-case scenario. If somebody
+    has knowledge about the algorithm’s workflow, then this information can be used
+    to expressively damage the efficiency of the system by always providing the worst-case
+    data. That is why a randomized quick-sort is much more preferred. The absolutely
+    similar situation occurs with random hyperplanes.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why are LSH random projections also called “trees”?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The random projections method is sometimes called **LSH Tree**. This is due
+    to the fact that the process of hash code assignment can be represented in the
+    form of the decision tree where each node contains a condition of whether a vector
+    is located on the negative or positive side of a current hyperplane.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd1474b48056732a935964db924be732.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The first node checks on which side a vector is located relative to the red
+    hyperplane. Nodes on the second level check the same condition but relatively
+    to the green hyperplane. Finally, the third level checks the relative position
+    of the blue hyperplane. Based on these 3 conditions, the vector is assigned a
+    3-bit hash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forest of hyperplanes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hyperplanes are constructed randomly. This may result in a scenario when they
+    poorly separate dataset points which is shown in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7d909830c7dcf2b1f125e7222cb89ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 4 hyperplanes are constructed to represent dataset points as 4-length binary
+    vectors. Even though points D and E have the same hash code, they are relatively
+    far from each other (FP). The inverse situation occurs with a pair of points E
+    and F which are located in different regions but are very close to each other
+    (FN). Taking into consideration the Hamming distance, the algorithm normally predicts
+    point D as being closer to E than point F.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Technically, it is not a big deal when two points have the same hash code but
+    are far from each other. In the next step of the algorithm, these points are taken
+    as candidates and are fully compared — this way the algorithm can eliminate *false
+    positive* cases. The situation is more complicated with *false negatives*: when
+    two points have different hash codes but in reality are close to each other.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why not use the same approach with decision trees from classical machine learning
+    which are combined into random forests to improve the overall prediction quality?
+    *If one estimator commits an error, other estimators can produce better predictions
+    and alleviate the final prediction error*. Using this idea, the process of building
+    random hyperplanes can be independently repeated. Resulting hash values can be
+    aggregated for a pair of vectors in a similar way to how it was with minhash values
+    in the previous chapter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If a query has the same hash code at least once with another vector, then
+    they are considered candidates*.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using this mechanism the number of *false negatives* can be decreased.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quality vs speed trade-off
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is important to choose an appropriate number of hyperplanes to run on the
+    dataset. The more hyperplanes are chosen to partition dataset points, the fewer
+    collisions there are and the more time it takes to compute hash codes and more
+    memory to store them. Speaking exactly, if a dataset consists of *n* vectors and
+    we split it by *k* hyperplanes, then on average every possible hash code will
+    be assigned to *n / 2ᵏ* vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e5344a069b049e23f0319c2a8645138a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: k = 3 results in 2³ = 8 buckets
+  prefs: []
+  type: TYPE_NORMAL
+- en: Complexity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The LSH Forest training phase consists of two parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Generation of k hyperplanes*. This is a relatively fast procedure since a
+    single hyperplane in *d*-dimensional space can be generated in *O(d)* of time.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Assigning hash codes to all dataset vectors*. This step might take time, especially
+    for large datasets. Obtaining a single hash code requires *O(dk)* of time. If
+    a dataset consists of n vectors, then the total complexity becomes *O(ndk)*.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The process above is repeated several times for each tree in the forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b0b47d41f8109c64aafe892d1b6fed2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training complexity
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the advantages of LSH forest is its fast inference which includes two
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Getting the hash code of a query*. This is equivalent to computing *k* scalar
+    products which result in *O(dk)* of time (*d* — dimensionality).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Finding the nearest neighbours* to the query within the same bucket (vectors
+    with the same hash code) by calculating precise distances to the candidates. Distance
+    computation proceeds linearly for *O(d)*. Every bucket on average contains *n
+    /* *2ᵏ* vectors. Therefore, distance calculation to all the potential candidates
+    requires *O(dn / 2ᵏ)* of time.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The total complexity is *O(dk + dn / 2ᵏ)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, the process above is repeated several times for each tree in the forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/630951b782bb1e19a0a66758900557f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inference complexity
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the number of hyperplanes *k* is chosen in such a way that *n ~ 2ᵏ* (which
+    is possible in most cases), then the total inference complexity becomes *O(ldk)
+    (l* is the number of trees*)*. Basically**,** this means that **the computational
+    time does not depend on the dataset size!** This subtlety results in efficient
+    scalability of similarity search for millions or even billions of vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Error rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the previous part of the article about LSH, we discussed how to find the
+    probability that two vectors will be chosen as candidates based on their signature
+    similarity. Here we are going to use almost the same logic to find the formula
+    for LSH forest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c452b2188fcbfd0bc3d7f8ed2e3ad179.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let s be the probability that two vectors have the same bit at the same position
+    of their hash values (s will be estimated later)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2627cc16d15c4dea9ed77b25464231e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that hash codes of length k of two vectors are equal
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f77f816eddd37ab45ba57197a22d3e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that hash codes of length k of two vectors are different (or
+    at least one bit is different)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f4b47775fb0a7e28aedcc187af92cd60.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that all l hash codes (for l hyperplanes) of two vectors are
+    different
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d73960509a18827c37433c71dfafcace.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that at least one of l hash codes of two vectors is equal, so
+    the vectors will become candidates
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far we have almost obtained the formula for estimating the probability of
+    two vectors being candidates. The only thing left is to estimate the value of
+    the variable *s* in the equation. In the classic LSH algorithm, *s* is equal to
+    the Jaccard index or signature similarity of two vectors. On the other hand, for
+    estimating *s* for LSH forest, linear algebra theory is going to be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Frankly speaking, *s* is the probability that two vectors *a* and *b* have
+    the same bit. This probability is equivalent to the probability that a random
+    hyperplane separates these vectors to the same side. Let us visualise it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0af7b3dc68161821c43c1b390fded16f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vectors a and b are separated by the blue hyperplane. The green hyperplane does
+    not separate them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the figure, it is clear that a hyperplane separates vectors *a* and *b*
+    into two different sides only in case when it passes between them. Such probability
+    *q* is proportional to the angle between the vectors which can be easily computed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fe558b85b717c872df9910f1eba0d58.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that a random hyperplane separates two vectors (i.e. so they
+    have different bits)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/28bd65fa3c1e8a5ddbc1a48bb8fc3405.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that a random hyperplane does not separate two vectors (i.e.
+    so, they have the same bit)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Plugging this equation into the one which was obtained previously leads to
+    the final formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8df3753d3ee282c6ec9722a0e8396e6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The probability that two vectors have at least one corresponding hash value
+    (i.e. so they become candidates) based on the number of hyperplanes k and the
+    number of LSH trees l
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualisation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*Note*. Cosine similarity is formally defined in range [-1, 1]. For simplicity,
+    we will map this interval to [0, 1] where 0 and 1 indicate the lowest and the
+    highest possible similarity respectively.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the last obtained formula, let us visualise the probability of two vectors
+    being candidates based on their cosine similarity for a different number of hyperplanes
+    *k* and trees *l*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c8d1abc9f4f92ee1e09f12117a17500.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adjusting number of trees l
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d5d2615dac869b093f4842dd1483f5e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adjusting number of hyperplanes k
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Several useful observations can be made, based on the plots:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A pair of vectors with the cosine similarity of 1 always become candidates.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A pair of vectors with the cosine similarity of 0 never become candidates.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The probability *P* of two vectors being candidates increases (i.e. more *false
+    positives*) when the number of hyperplanes *k* decreases or the number of LSH
+    trees *l* increases. The inverse statement is true.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'To summarise things up, LSH is a very flexible algorithm: it is possible to
+    adjust different values *k* and *l* based on a given problem and acquire the probability
+    curve that satisfies the problem’s requirements.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let us look at the following example. Imagine *l = 5* trees are constructed
+    with *k = 10* hyperplanes. Apart from it, there are two vectors with the cosine
+    similarity of 0.8\. In most systems, such cosine similarity indicates that the
+    vectors are indeed very close to each other. Based on the results in previous
+    sections, it turns out that this probability equals only 2.5%! Obviously, it is
+    a very low result for such a high cosine similarity. Using these parameters of
+    *l = 5* and *k = 10* resultsin a huge number of *false negatives*! The green line
+    below represents the probability in this case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f07e7d21fa0e15e1ea4370c54939e14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Probability curve based on the cosine similarity of two vectors
+  prefs: []
+  type: TYPE_NORMAL
+- en: This issue can be solved by adjusting better values of *k* and *l* to move the
+    curve to the left.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, if *k* is decreased to 3 (red line), then the same value of the
+    cosine similarity of 0.8 will correspond to the probability of 68% which is better
+    than before. At first sight, it seems like the red line fits much better than
+    the green one but it is important to keep in mind that using small values of *k*
+    (as in the case with the red line) leads to an enormous number of collisions.
+    That is why it is sometimes preferable to adjust the second parameter which is
+    the number of trees *l*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unlike with *k*, it usually requires a very high number of trees *l* to get
+    a similar line shape. In the figure, the blue line is obtained from the green
+    one by changing the value of *l* from 10 to 500\. The blue line clearly fits better
+    than the green one but it is still far from being perfect: because of a high slope
+    between cosine similarity values of 0.6 and 0.8, the probability is almost equal
+    to 0 around cosine similarity of 0.3-0.5 which is unfavorable. This small probability
+    for a document similarity of 0.3–0.5 should normally be higher in real life.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based on the last example, it is evident that even a very high number of trees
+    (which require lots of computations) still results in many *false negatives*!
+    That is the main disadvantage of the random projections method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though it is potentially possible to get a perfect probability curve, it would
+    either require lots of computations or would result in lots of collisions. Otherwise,
+    it leads to a high false negative rate.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Faiss implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[**Faiss**](https://github.com/facebookresearch/faiss) (Facebook AI Search
+    Similarity) is a Python library written in C++ used for optimised similarity search.
+    This library presents different types of indexes which are data structures used
+    to efficiently store the data and perform queries.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Based on the information from the [Faiss documentation](https://faiss.ai), we
+    will find out how to build LSH index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The random projections algorithm is implemented in Faiss inside the *IndexLSH*
+    class. Though the Faiss authors use a slightly another technique called “random
+    rotations”, it still has similarities with what was described in this article.
+    The class implements only a single LSH tree. If we want to use an LSH forest,
+    then it is enough just to create several LSH trees and aggregate their results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The constructor of the *IndexLSH* class takes two arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**d**: the number of dimensions'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**nbits**: the number of bits required to encode a single vector (the number
+    of possible buckets equals *2ⁿᵇᶦᵗˢ*)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Distances returned by the search() method are Hamming distances to the query
+    vector.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/bee3e4613c3f739d5d7ccf1b92d88a87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Faiss implementation of IndexLSH
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, Faiss allows inspecting encoded hash values for each dataset vector
+    by calling the *faiss.vector_to_array(index.codes)* method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since every dataset vector is encoded by *nbits* binary values, the number
+    of bytes required to store a single vector is equal to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de186f2e3138d8eb7e1a5d77ed3e8617.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Johnson-Lindenstrauss lemma
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Johnson-Lindenstrauss lemma](https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf)
+    is a fabulous lemma related to dimensionality reduction. While it may be difficult
+    to fully understand its original statement, it can be formulated in simple words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing a random subset and projecting original data on it preserves corresponding
+    pairwise distances between points.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To be more precise, having a dataset of *n* points, it is possible to represent
+    them in a new space of *O(logn)* dimensions in such a way that the relative distances
+    between points will almost be preserved. If a vector is encoded by *~logn* binary
+    values in the LSH method, then the lemma can be applied. Moreover, LSH creates
+    hyperplanes in a random manner exactly as the lemma requires.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is also incredible about Johnson-Lindenstrauss lemma is the fact that **the
+    number of dimensions of a new dataset does not depend on the dimensionality of
+    the original dataset**! In practice, this lemma does not work well for very small
+    dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have gone through a powerful algorithm for similarity search. Being based
+    on a simple idea of separating points by random hyperplanes it usually performs
+    and scales very well on large datasets. Moreover, it comes with good flexibility
+    by allowing one to choose an appropriate number of hyperplanes and trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Theoretical results from Johnson-Lindenstrauss lemma reinforce the usage of
+    the random projections approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[LSH Forest: Self-Tuning Indexes for Similarity Search](http://infolab.stanford.edu/~bawa/Pub/similarity.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[The Johnson-Lindenstrauss Lemma](https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss documentation](https://faiss.ai)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss repository](https://github.com/facebookresearch/faiss)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Summary of Faiss indexes](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

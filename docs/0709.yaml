@@ -1,0 +1,271 @@
+- en: Can Weight Decay Work Without Residual Connections?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/weight-decay-is-useless-without-residual-connections-ef65197e5944?source=collection_archive---------13-----------------------#2023-02-21](https://towardsdatascience.com/weight-decay-is-useless-without-residual-connections-ef65197e5944?source=collection_archive---------13-----------------------#2023-02-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How do residual connections secretly fight overfitting?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)[![Guy
+    Dar](../Images/0a3b1ddd33d595e97e7a0dad551b2708.png)](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------)
+    [Guy Dar](https://guydar.medium.com/?source=post_page-----ef65197e5944--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ffab216dbde3e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&user=Guy+Dar&userId=fab216dbde3e&source=post_page-fab216dbde3e----ef65197e5944---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef65197e5944--------------------------------)
+    ·9 min read·Feb 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef65197e5944&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&user=Guy+Dar&userId=fab216dbde3e&source=-----ef65197e5944---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef65197e5944&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fweight-decay-is-useless-without-residual-connections-ef65197e5944&source=-----ef65197e5944---------------------bookmark_footer-----------)![](../Images/f8e4f8de8c3ec7f53556112e57392c22.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by ThisisEngineering RAEng on Unsplash
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, we will show mathematically (using *simple* math, don’t worry!)
+    that LayerNorm could have caused detrimental overfitting in neural networks if
+    it weren’t for residual connections (* a few technical caveats will be discussed
+    soon). Overfitting is a severe problem in machine learning that scientists could
+    really do without. Roughly, it means that the network memorizes the training set
+    instead of learning the task and generalizing to new unseen data. Weight decay
+    is a regularization technique that is supposed to fight against overfitting. However,
+    we will show that in rather standard feedforward networks, they need residual
+    connections to be effective (in a sense I will clarify below). Residual connections
+    are known for their role in stabilizing training during backpropagation. Normalization
+    layers, such as LayerNorm, on the other hand, stabilize the input as it passes
+    through the network’s layers. The idea behind normalization layers is that we
+    want the norms of internal representations to stay in check. In LayerNorm, we
+    divide each internal representation vector by its norm (I’m omitting some details
+    at this point). Some previous work has suggested adding LayerNorm to residual
+    networks [*Liu et al, 2020*] helps them perform better. Our investigation is the
+    other way around — why you shouldn’t probably use LayerNorm without residual connections,
+    at least from a theoretical point of view. In fact, even post-norm residual connections
+    (whatever that means..) suffer from the same problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea in broad strokes is fairly simple: we can render weight decay practically
+    useless by making it arbitrarily small (except for the last layer, which is a
+    bane but still renders most of the weight decay useless). Just a quick recap of
+    what weight decay is: weight decay is a regularization technique that is used
+    to prevent neural networks from converging to solutions that do not generalize
+    to unseen data (overfitting). If we train the neural network to only minimize
+    the loss on the training data we might find a solution specifically tailored to
+    this particular data and its idiosyncrasies. To avoid that, we add a term that
+    corresponds to the norm of the weight matrices of the network. This is supposed
+    to encourage the optimization process to converge to solutions that might not
+    be optimal for the training data, but have smaller weight matrices in terms of
+    norm. The thinking is that models that have high norm weights are less natural
+    and might be trying to fit specific data points in order to lower the loss a bit
+    more. In a way, this is a way to integrate Occam’s razor (the philosophical idea
+    that simpler solutions are probably the right ones) into the loss — where simplicity
+    is captured by the norm of the weights. We will not discuss deeper justifications
+    for weight decay here.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TL;DR**:in this article,we show that in ReLU feedforward networks with LayerNorm
+    that don’t have residual connections, the optimal loss value is not changed by
+    weight decay regularization (* except for the pesky last layer but we will discuss
+    later why we think it’s not enough).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Theory Playtime
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Positive Scaling of ReLU Networks**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Both linear and ReLU networks share the following scaling feature: Let **a**
+    > 0 be a positive scalar. Then **ReLU(ax) = a ReLU(x)**. Eventually, in any network
+    that is composed of a stack of matrix multiplication followed by a ReLU activation,
+    this property will still hold. This is the most vanilla kind of neural network
+    — no normalization layers and no residual connections. Yet, it’s rather surprising
+    that such feedforward (FF) networks that have been ubiquitous not so long ago
+    demonstrate such a structured behavior: multiply your input by a positive scalar
+    and, lo and behold, the output isscaled **exactly** by the same factor. This is
+    what we call *(positive)* ***scale equivariance*** (meaning that scaling in the
+    input translates to scaling in the output, unlike *invariance* where the output
+    is not affected at all by scaling in the input)*.* But there’s more: if we do
+    this with any of the weight matrices along the way (and the corresponding bias
+    terms) — the same effect occurs: the output will be multiplied by the same factor.
+    Nice? For sure. But can we use it? Let’s see.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see what happens when we add LayerNorm. First, what is LayerNorm? Quick
+    recap:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5124a0125668a4824ed9dcf3ede31074.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where **µ** is the average of the entries of **x**, *◦*stands for elementwise
+    multiplication, and **β, γ** are vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, what happens to the scaling property when we add LayerNorm? Of course,
+    nothing changes before the point we added the LayerNorm, so if we scaled a weight
+    matrix by **a**>0 before this point, the input to the LayerNorm is scaled by **a**,and
+    then what happens is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1e9da85a8554edb34aabbfe7c5ca942.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So, we get a new property, this time scaling just leaves the output *unchanged
+    —* **positive scale *invariance***. And it’s about to regret that...
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Note:*** while we discuss LayerNorm, other forms of normalization, such
+    as BatchNorm, satisfy the positive scale invariance property and so they are as
+    susceptible as LayerNorm to the discussed problems.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to Disappear Completely
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s remind ourselves what we’re trying to minimize:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f19404ac9585bb2ca33a7afd4e576dde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'where the training set is represented as a set of pairs of {***(x_i, y_i)***},and
+    the parameters (weights) of the neural network ***f*** are designated by **Θ**.
+    The expression is made of two parts: the empirical loss to minimize — the loss
+    of the neural network on the training set, and the regularization term designed
+    to make the model reach “simpler” solutions. In this case, simplicity is quantified
+    as the weights of the network having low norms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But here’s the problem, we found a way to bypass restrictions on the weight
+    scale. We can scale every weight matrix by an arbitrarily small factor and still
+    get the same output. Said otherwise — the **function *f***that both networks,
+    the original one and the scaled one, implement is exactly the same! The internals
+    might differ, but the output is the same. It holds for every network with this
+    architecture, regardless of the actual values of the parameters. The shrewd reader
+    might notice that **β, γ** are also parameters and so they also should be accounted
+    for, but due to the scale invariance of the next LayerNorm, they can also be scaled
+    (* except again for the pesky last layer).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall that generalization to unseen data is our goal. If the regularization
+    term goes to zero, the network is free to overfit the training data, and the regularization
+    term becomes useless. As we have seen, for every network with such architecture,
+    we can design an equivalent network (i.e. computing exactly the same function)
+    with arbitrarily small weight matrix norms, meaning the regularization term can
+    go to zero without affecting the empirical loss term. In other words, we can remove
+    the weight decay term and it’s not going to matter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The last layer technicality is still a pebble in our shoe, we cannot take its
+    weight decay term out, because the last layer is usually not followed by a LayerNorm,
+    moreover: the last LayerNorm cannot be rescaled because it is not followed by
+    any LayerNorm, so this leaves us also its **β, γ**. So we are left with the norm
+    of the last layer and the parameters of the LayerNorm. Why is it not that bad?
+    Overfitting can take place in the entire network and so we are free to overfit
+    almost all the parameters. Even more importantly, the inner layers of the model
+    are the feature extractors that learn what to pay attention to, while the last
+    layer is a classifier over the learned features. It seems (intuitively at least)
+    that its role in overfitting might be minor in comparison to feature extraction.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another word of caution is due: while theoretically, the model should find
+    a solution that overfits the training data, it has been observed that optimization
+    might converge to generalizing solutions even without explicit regularization.
+    This has to do with the optimization algorithm. We use local optimization algorithms
+    such as gradient descent, SGD, Adam, AdaGrad, etc. They are not guaranteed to
+    converge to the most ***globally*** optimal solution. This sometimes happens to
+    be a blessing. An interesting line of work (e.g., [*Neyshabur, 2017*]) suggests
+    that these algorithms are a form of **implicit regularization**, even when explicit
+    regularization is missing! It’s not bulletproof, but sometimes the model converges
+    to a generalizing solution — even without regularization terms!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Do Residual Connections Resolve This?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let me remind you what residual connections are. A residual connection adds
+    the input of the layer to the output. If the original function that the layer
+    is computing is ***f(x) = ReLU(Wx)*** then the new function is***x + f(x)***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, the scaling property on weights breaks for this new layer. This is because
+    there is no coefficient learned in front of the residual part of the expression.
+    So the ***f(x)*** part is being scaled by a constant because of the weight scaling,
+    but the ***x*** part remains unchanged. Now, when we apply LayerNorm to this,
+    the scaling factor can no longer cancel out: ***LayerNorm(x + a f(x)) ≠ LayerNorm(x
+    + f(x))***.Importantly, it is the case only when the residual connection is applied
+    ***before*** LayerNorm. If we apply LayerNorm and only then the residual connection,
+    it turns out that we still get the scaling invariance of LayerNorm: ***x + LayerNorm(a
+    f(x)) = x + LayerNorm(f(x))***.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first variant is often referred to as the ***pre-norm variant***(more precisely,
+    it is actually ***x + f(LayerNorm(x))*** that is called this way, but we can attribute
+    the LayerNorm to the previous layer, and take the next layer’s LayerNormyielding
+    the above expression, apart for the edge cases of the first and last layers).
+    The second variant is called the ***post-norm variant***. These terms are often
+    used in transformer architectures, which are out of the scope of this article.
+    However, it might be interesting to mention that a few works such as [*Xioang
+    et al, 2020*] found that pre-norm is easier to optimize (they discuss different
+    reasons for the problem). Note however this may not be related to the scaling
+    invariance discussed here. Transformer pre-training datasets often contain vast
+    amounts of data, and overfitting becomes less of a problem. Also, we haven’t discussed
+    transformer architectures per se. It is nonetheless still something to think about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Words
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we saw some interesting properties of feedforward neural networks
+    without pre-norm residual connections. Specifically, we noticed that if they don't
+    contain LayerNorm, they propagate input scaling and weight scaling to the output.
+    If they do contain LayerNorm, they are scale-invariant (except for the last layer),
+    and weight/input scaling does not affect the output at all. We used this property
+    to show that the **optimal** solutions to such networks can avoid weight norm
+    penalty in feature extraction (leaving only classifier penalty), and so the network
+    can converge to more or less the same function it would have converged to without
+    them. While this is a statement about optimality, there is still the question
+    of whether these solutions are actually found using gradient descent. We might
+    tackle this in a future post. We also discussed how (pre-norm) residual connections
+    break the scale invariance and thus seem to resolve the above theoretical problem.
+    It is still possible that there will be similar properties that residual connections
+    could not avoid that I failed to consider. As always, I want to thank you for
+    reading and I’ll see you in the next post!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: F. Liu, X. Ren, Z. Zhang, X. Sun, and Y. Zou. *Rethinking residual connection
+    with layer normalization,* 2020.
+  prefs: []
+  type: TYPE_NORMAL
+- en: B. Neyshabur. *Implicit regularization in deep learning*, 2017\. URL [https://arxiv.org/abs/1709.01953](https://arxiv.org/abs/1709.01953).
+  prefs: []
+  type: TYPE_NORMAL
+- en: R. Xiong, Y. Yang, D. He, K. Zheng, S. Zheng, C. Xing, H. Zhang, Y. Lan, L.
+    Wang, and T.-Y. Liu. *On layer normalization in the transformer architecture*,
+    2020\. URL [https://arxiv.org/abs/2002.04745](https://arxiv.org/abs/2002.04745).
+  prefs: []
+  type: TYPE_NORMAL

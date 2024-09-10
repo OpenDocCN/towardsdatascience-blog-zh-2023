@@ -1,0 +1,362 @@
+- en: The Principled Approach to Early Ranking Stages
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-principled-approach-to-early-ranking-stages-05ce49692f7c?source=collection_archive---------7-----------------------#2023-12-06](https://towardsdatascience.com/the-principled-approach-to-early-ranking-stages-05ce49692f7c?source=collection_archive---------7-----------------------#2023-12-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A systematic method for designing and evaluating candidate generation and early
+    ranking stages in recommender systems, with an in-depth analysis of the core guiding
+    principle.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)[![Michael
+    Roizner](../Images/bcb68ee626ea57234b62e512ed4b383b.png)](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------)
+    [Michael Roizner](https://roizner.medium.com/?source=post_page-----05ce49692f7c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1bee5af37d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-principled-approach-to-early-ranking-stages-05ce49692f7c&user=Michael+Roizner&userId=1bee5af37d8&source=post_page-1bee5af37d8----05ce49692f7c---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----05ce49692f7c--------------------------------)
+    ·9 min read·Dec 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F05ce49692f7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-principled-approach-to-early-ranking-stages-05ce49692f7c&user=Michael+Roizner&userId=1bee5af37d8&source=-----05ce49692f7c---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F05ce49692f7c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-principled-approach-to-early-ranking-stages-05ce49692f7c&source=-----05ce49692f7c---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is well known that in recommendation systems, there are several stages of
+    building recommendations: first comes candidate generation, also often referred
+    to as retrieval, followed by one or more stages of ranking. Academic papers do
+    not pay much attention to the early stages. But in practice, they are quite important.
+    And it is important how to measure their quality.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed86ca54d33ececba5f454e7890cc56a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Candidate generation is most often organized as a combination of different
+    sources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the most popular items,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: similar to the user’s history,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[ANN](https://en.wikipedia.org/wiki/Nearest_neighbor_search) — similar by embeddings
+    (for example, [HNSW](https://github.com/nmslib/hnswlib)),'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'a combination of the previous methods at different levels: for instance, taking
+    categories from the user’s history (or from ANN, or popular ones), and then selecting
+    popular items from them.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Although each method here might not be complex on its own, the entire combination
+    turns out to be quite non-trivial, prompting one to think: how can it be optimized?
+    To do this, of course, it’s necessary to define what exactly needs to be optimized,
+    i.e., what metric should be used to measure the quality of candidate generation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although our discussion focuses on the candidate generation phase, it’s worth
+    noting that these principles can equally apply to all early ranking stages, as
+    they also provide candidates for subsequent stages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are various approaches. Sometimes the quality is simply not measured (or
+    just ‘eyeballed’) and this stage is not systematically optimized. Sometimes, the
+    overall relevance of the candidates is measured in some way. If the system recommends
+    something odd, it is also considered indicative of a bug in candidate generation.
+    Sometimes, this relevance is even contrasted with what is optimized in the final
+    stage. That is, the candidates should already be sufficiently relevant, no matter
+    how measured, and the final ranking will select the most engaging ones (attractive,
+    clickable, etc.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sometimes, especially in papers, metrics like *HitRate@k*, *Recall@k*, *Precision@k*,
+    *MRR*, *NDCG*, etc., are used, focusing only on positive (relevant) documents.
+    A document is considered relevant if the user subsequently interacted with it.
+    I prefer this approach over the previous ones, although there is a significant
+    issue with various biases: for example, users tend to interact more frequently
+    with items that the system itself recommends.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At some point, I attempted to formulate a different approach to candidate generation
+    and have since been an advocate of it. Fortunately, I am not the only one — this
+    approach is already in use in various systems (for example, as detailed in [this
+    article about scaling Instagram’s Explore recommendations system](https://engineering.fb.com/2023/08/09/ml-applications/scaling-instagram-explore-recommendations-system/)).
+    However, I am not sure it can be called an industry standard — there are definitely
+    major systems where it is not used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The approach is based on the following principle:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***The main goal of the early stages is to find the best documents from the
+    perspective of the final ranking.***'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Or, in simple terms, the goal is to find the top. The top is defined not by
+    any relevance, but simply by the current final ranker. The candidates that are
+    ultimately selected by the final ranker are good, the others not so much. If the
+    ranker changes (and it can change quite often), then the assessment of quality
+    changes as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(There can be a modification for multi-stage ranking: the quality of the early
+    stage can be assessed either with the final ranker specifically, or with the ranker
+    of the next stage. That is, candidates that pass the next stage but not the final
+    one can be considered either negative or positive. I am not sure which approach
+    is better.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although this approach is not perfect, I personally consider it the only viable
+    one, meaning that only with it can one systematically improve the quality of all
+    stages in the long term without running into a fundamental problem. At least,
+    I do not understand how to achieve this with other approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having outlined the fundamental principle of this approach, let’s now delve
+    deeper into its advantages and disadvantages, beginning with an examination of
+    its potential drawbacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cons of the Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The entire candidate generation process, including the way its quality is measured,
+    begins to significantly depend on the current ranking method. This increases complexity,
+    and it’s important to take this into account when making comparisons. And when
+    the ranker changes, the early stages need to be retrained.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Most often, systems are initially built without following this principle. Transitioning
+    a system to adhere to this principle from another state can be very challenging.
+    Particularly, if a system has rather poor ranking (but acceptable recommendation
+    results due to various hacks), adhering to this principle will not improve the
+    system but, on the contrary, might significantly worsen the recommendations at
+    the moment.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The principle assumes that the ranker should work well across the entire document
+    base. Otherwise, if there are poor documents that the ranker would mistakenly
+    recommend, then candidate generation, in trying to please the ranker, will eventually
+    find them too. This complicates the training of the ranker compared to a scenario
+    where it only operates on a set of already fairly good candidates.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Candidate generation does not attempt to improve the end-to-end metrics of
+    the service. It is possible to improve it according to this principle, but end
+    up with a failed experiment. (However, this would exactly indicate that there
+    is a problem in the ranking, such as incorrect targets.) This complicates the
+    work: you keep improving, but then you can’t deploy it.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Limited support for [product rules](https://roizner.medium.com/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18).
+    This principle dictates that all such rules, except for the hard ones, should
+    be applied at the final stage, and the early stages will adapt to them. This refers
+    not only to hacks but also to reasonable methods for improving various aspects
+    of recommendations like exploration, diversity, etc. You have to provide diverse
+    candidates simply because the ranking selects them.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[](/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=post_page-----05ce49692f7c--------------------------------)
+    [## From Hacks to Harmony: Structuring Product Rules in Recommendations'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t let heuristics undermine your ML, learn to combine them
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/from-hacks-to-harmony-structuring-product-rules-in-recommendations-838af0873f18?source=post_page-----05ce49692f7c--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having explored the limitations, let’s now shift our focus to the advantages
+    of this approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pros of the Approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The principle is grounded in decomposition. It provides the early stages with
+    a clearer and more measurable goal, significantly simplifying the system. The
+    complexity involved in choosing targets and losses for recommendations is concentrated
+    in the ranking stage (an aspect that cannot be avoided), while the early stages
+    are primarily focused on the utilitarian task of efficiently finding the top candidates.
+    Thus, the early stages serve simply as an instrument to expedite the ranking process.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In this principle, there are no fundamental limitations. If one imagines an
+    ideal recommendation system, nothing prevents it from being structured in this
+    way. (This cannot be said for other approaches — perfect recommendations are not
+    obliged to guess exactly what the user will interact with!) And as the ranking
+    improves, such simplified metrics for candidate generation become increasingly
+    closer to end-to-end metrics. This is similar to the well-known iterative approach
+    in certain circles: ‘improve the metrics — improve the product based on these
+    metrics.’'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Different stages of ranking are aligned with each other; they do not try to
+    optimize different things. In systems where this is not the case, for example,
+    if you were to double the total number of candidates, the overall quality of the
+    system might not improve but could actually degrade. For instance, if the early
+    stages optimized some form of relevance, then the additional candidates would
+    be less relevant, and the overall relevance would decrease (although clickability
+    might increase).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As a consequence of the point about decomposition: the early stages are much
+    easier to measure (and therefore to optimize). The process of evaluation will
+    be covered in the section below. Training essentially boils down to distilling
+    the ranking model. (Although there are nuances. For example, it would be good
+    to log some candidates that did not make it to the top of the ranking.)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Furthermore, for training and measuring the early stages, we no longer need
+    users, meaning it’s not necessary to roll out a new method on them. For example,
+    one could use scraping, as we will discuss later, by sending a number of requests
+    using new candidates to the ranking service.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Measuring Candidate Generation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, let’s delve into the most hands-on part of the article, discussing how
+    the quality of candidate generation (or the early stages of ranking) can be measured
+    in practice, based on the principle we’ve outlined earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s examine a simplified but quite important case: when ranking is
+    performed based solely on the scores of one final model. In this case, we can
+    simply compare the average scores of this model for two sets of candidates. If
+    one method finds candidates to which the final model assigns higher predictions
+    than the other method, then the first method is better.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whether to take the average predictions across the entire output, only for the
+    top positions, or with some decay by position (resulting in something akin to
+    [*IDCG*](https://en.wikipedia.org/wiki/Discounted_cumulative_gain#Normalized_DCG)
+    — the denominator in *NDCG*) seems not to be very crucial. Any of these options
+    can be chosen based on preference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s a technical nuance to consider though. If such a metric is measured
+    offline, one needs to be able to run ranking (or the entire recommendation stack)
+    on custom candidates. This can be done either through simulation (offline replay
+    — that is, attempting to retrospectively reproduce all the information about all
+    entities) on historical queries, or through scraping — as mentioned earlier, sending
+    a large number of new queries to the recommendation service, so that it uses the
+    candidate generation methods of interest. In both cases, results (predictions
+    of the final model) are obtained for different generation methods for the same
+    queries. This is beneficial for the sensitivity of the metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If, however, this metric is measured online, on a production service, it can
+    all be calculated simply based on the logged predictions of the model. This is
+    much simpler, but not as flexible, and the comparison will be across different
+    queries. The sensitivity of the metric decreases (it’s possible that one of the
+    methods just happened to receive more complex queries).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s move on to the general case: final ranking is not just the predictions
+    of a certain model, but also involves a lot of other logic, reranking, business
+    rules, randomization, etc. When you think about how to compare different sets
+    of candidates in such a loose formulation (what is good and what is bad), it’s
+    not at all obvious.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, I once devised a method for this, which turned out to be very simple
+    and effective. And so far, I have not seen it mentioned anywhere else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method is as follows. We add a special source to the list of candidate sources,
+    which produces random candidates (say, uniformly distributed). We assign this
+    source a small fixed quota (say, 50 candidates). Then we observe what proportion
+    of the recommended documents ultimately come from this source. If our main candidate
+    generation is good enough, then random candidates will very rarely outperform
+    it, i.e., make it to the top. If it is poor, they will do so frequently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ad7534c4c7e6b0c8791e4e79820a934f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Synthetic data for illustration purposes only
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of course, here we assume that adding random candidates does not significantly
+    worsen the system: most of them will not be recommended, and those that are recommended
+    will not greatly deteriorate the user experience, and will even add exploration
+    both for users and for the ranking model (it will further train on these examples).
+    If this is not the case, then it’s first necessary to ‘fix the ranking’. 😉'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The coolest thing about this method is that it can serve not only as a metric
+    for candidate generation, but also as a monitoring tool for the health of the
+    entire system, including the final ranking. It checks how well candidate generation
+    is aligned with ranking (optimized for ranking). If the ranking itself degrades
+    for some reason, then the candidates also become less suitable for it. We have
+    seen this in practice, when one of the components broke down, the proportion of
+    random candidates in the response increased.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By the way, the randomness of this special source can be adjusted. If you use
+    not a uniform distribution but one proportional to the popularity of the document,
+    it becomes a stronger ‘adversarial’ player (which can also increase sensitivity).
+    However, with uniform sampling, it’s possible to provide an analytical estimate
+    of the proportion of queries where our candidate generation was ideal (i.e., the
+    result would not have changed, even if we had added the entire database to the
+    candidates):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d194aa1ee6b1719b09a6a41b9e4b7bb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this formula, *N* represents the total number of candidates in the database,
+    *k* is the number of random candidates used, and *R* denotes the ratio of queries
+    where at least one random candidate appears in the output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Throughout this exploration, we’ve centered on a specific principle for candidate
+    generation and early ranking stages in recommendation systems. By thoroughly examining
+    its advantages and challenges, and proposing practical evaluation methods, we
+    underscored the principle’s potential as a powerful tool for refining these systems.
+    Embracing this principle not only simplifies the complex process of recommendation
+    but also ensures efficiency and effectiveness. As we continue to refine and apply
+    this principle, it stands as a promising direction for advancing the field of
+    recommendation systems.
+  prefs: []
+  type: TYPE_NORMAL

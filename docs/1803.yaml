@@ -1,0 +1,532 @@
+- en: My (Very) Personal Data Warehouse
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/my-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133?source=collection_archive---------3-----------------------#2023-05-31](https://towardsdatascience.com/my-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133?source=collection_archive---------3-----------------------#2023-05-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Fitbit activity analysis with DuckDB
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)[![Simon
+    Aubury](../Images/fb757b7175c211450dcfa7249549c31e.png)](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------)
+    [Simon Aubury](https://simon-aubury.medium.com/?source=post_page-----8d1193046133--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb7b3bb643843&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&user=Simon+Aubury&userId=b7b3bb643843&source=post_page-b7b3bb643843----8d1193046133---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8d1193046133--------------------------------)
+    ·13 min read·May 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8d1193046133&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&user=Simon+Aubury&userId=b7b3bb643843&source=-----8d1193046133---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8d1193046133&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmy-very-personal-data-warehouse-fitbit-activity-analysis-with-duckdb-8d1193046133&source=-----8d1193046133---------------------bookmark_footer-----------)![](../Images/d002b45123ebfc0803be779dbe0d1fe1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Jake Hills](https://unsplash.com/es/@jakehills?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wearable fitness trackers have become an integral part of our lives, collecting
+    and tracking data about our daily activities, sleep patterns, location, heart
+    rate, and much more. I’ve been using a Fitbit device for 6 years to monitor my
+    health. However, I have always found the data analysis capabilities lacking —
+    especially when I wanted to track my progress against long term fitness goals.
+    What insights are buried within my archive of personal fitness activity data?
+    To start exploring I needed a good approach for performing data analysis over
+    thousands of poorly documented JSON and CSV files … extra points for analysis
+    that doesn’t require my data to leave my laptop.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Enter [DuckDB](https://duckdb.org/why_duckdb) — a lightweight, free yet powerful
+    analytical database designed to streamline data analysis workflows — that runs
+    locally. In this blog post, I want to use DuckDB to explore my Fitbit data achieve
+    and share the approach for analysing a variety of data formats and charting my
+    health and fitness goals with the help of [Seaborn](https://seaborn.pydata.org/)
+    data visualisations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Export Fitbit data archive
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Firstly, I needed to get hold of all of my historic fitness data. Fitbit make
+    it fairly easy to export your Fitbit data for the lifetime of your account by
+    following the instructions at [export your account archive](https://www.fitbit.com/settings/data/export).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa73415b842cc76279e913c0efaac903.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Instructions for using the export Fitbit data archive — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You’ll need to confirm your request … and be patient. My archive took over three
+    days to create — but I finally received an email with instructions to download
+    a ZIP file containing my Fitbit data. This file should contain all my personal
+    fitness activity recorded by my Fitbit or associated service. Unzipping the archive
+    reveals a huge collection of files — mine for example had 7,921 files once I unzipped
+    the 79MB file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce1b07a83af019cead0416c777cb7f8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A small sample of the thousands of nested files — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start looking at the variety of data available in the archive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why DuckDB?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are many great blogs ([1](https://betterprogramming.pub/duckdb-whats-the-hype-about-5d46aaa73196),[2](https://mattpalmer.io/posts/whats-the-hype-duckdb/),[3](/a-serverless-query-engine-from-spare-parts-bd6320f10353))
+    describing DuckDB — the [TL;DR](https://www.dictionary.com/browse/tl-dr) summary
+    is DuckDB is an open-source in-process OLAP database built specifically for analytical
+    queries. It runs locally, has extensive SQL support and can run queries directly
+    on Pandas data, Parquet, JSON data. Extra points for its seamless integration
+    with Python and R. The fact it’s insanely fast and does (mostly) all processing
+    in memory make it a good choice for building my personal data warehouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fitbit activity data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first collection of files I looked at was activity data. Physical Activity
+    and broad exercise information appears to be stored in numbered files such as
+    `Physical Activity/exercise-1700.json`
+  prefs: []
+  type: TYPE_NORMAL
+- en: I couldn’t work out what the file numbering actually meant, my guess is they
+    are just increasing integers for a collection of exercise files. In my data export
+    the earliest files started at 0 and went to file number 1700 over a 6 year period.
+    Inside is an array of records, each with a description of an activity. The record
+    seems to change depending on the activity — here is an example of a “walk”
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This physical activity data is one file of the 7,921 files now on my laptop.
+    Fortunately, DuckDB can read (and auto-detect the schema) from JSON files using
+    [read_json](https://duckdb.org/docs/data/json/overview.html#read_json_auto-function)
+    function, allowing me to load all of the exercise files into the `physical_activity`
+    table using a single SQL statement. It’s worth noting I needed to specify the
+    date format mask as the Fitbit export has a very [American style date](https://en.wikipedia.org/wiki/Date_and_time_notation_in_the_United_States)
+    format 😕.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This SQL command reads the physical activity data from disk, converts the activity
+    and duration and loads into a DuckDB table in memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load Physical Activity data into data frame
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I wanted to understand how I was spending my time with each month. As the activity
+    data is stored at a very granular level I used the DuckDB SQL [time_bucket](https://duckdb.org/docs/sql/functions/timestamp.html)
+    function to truncate the *activityTime* timestamp into monthly buckets. Loading
+    the grouped physical activity data into data frame can be accomplished with this
+    aggregate SQL and the query results can be directed into a Pandas dataframe with
+    the << operator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This single SQL query groups my activity data (bike, walk, run etc.,) into monthly
+    buckets and allows me to honestly reflect on how much time I was devoting to physical
+    activity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot Monthly Activity Minutes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I want to now explore my activity data visually — so let’s get the Fitbit data
+    and produce some statistical graphics. I’m going to use the Python [Seaborn](https://seaborn.pydata.org/)
+    data visualisation library to create a bar plot of the monthly activity minutes
+    directly from the *activity_df* dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Executing this against the loaded activity data creates this bar plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e444629dea3ac0ca0427b4ec89659ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Workout activity breakdown — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It looks like my primary activity continues to be walking, and my New Years
+    resolution to run more often in 2023 hasn’t actually happened (yet?)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sleep
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: About [one in three adults doesn’t get enough sleep](https://www.health.harvard.edu/heart-health/are-you-getting-enough-sleep),
+    so I wanted to explore my long term sleeping patterns. In my Fitbit archive sleep
+    data appears to be recorded in dated files such as`Sleep/sleep-2022-12-28.json`.
+    Each file holds a months worth of data, but confusingly is dated for the month
+    before the event. For example, the file `sleep-2022-12-28.json` appears to have
+    data for January spanning the dates 2023-01-02 to 2023-01-27\. Anyway — file naming
+    weirdness aside we can explore the contents of the file. Within the record is
+    an extended “levels” block with a breakdown of sleep type (wake, light, REM, deep)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: If I look at some of the older files (possibly created with my older Fitbit
+    surge device) there is a different breakdown of sleep type (restless, awake, asleep).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Regardless of the schema, we can use the [DuckDB JSON](https://duckdb.org/docs/extensions/json.html)
+    reader to read the records into a single table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Schema changes for sleep data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I wanted to process all of my sleep data, and handle the apparent schema change
+    in the way sleep is recorded (most likely as I changed models of Fitbit devices).
+    Some of the records have time recorded against `$.awake` which is similar (but
+    not identical to) `$.wake`
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used the SQL [coalesce](https://duckdb.org/docs/sql/functions/utility.html)
+    function — which return the first expression that evaluates to a non-NULL value
+    to combine similar types of sleep stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: With DuckDB I can query with [json_extract](https://duckdb.org/docs/extensions/json.html#json-extraction-functions)
+    to extract the duration stages from the nested JSON to generate a *sleep_log_df*
+    dataframe with all of the historic sleep stages grouped.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot sleep activity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can not take the daily sleep logs and produce a stacked bar plot showing
+    the breakdown each night of being awake and in light, deep and [REM](https://en.wikipedia.org/wiki/Rapid_eye_movement_sleep)
+    sleep.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading a month of sleep data allows me to create a broader analysis of sleep
+    duration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e9cfbb697bb69a1449463626e94ab1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sleep cycle duration each night — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ability to graph multiple nights of sleep together on a single plot allows
+    me to start understanding how days of the week and cyclic events affects the duration
+    and quality of my sleep.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Heart rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Heart rate is captured very frequently (every 10–15 seconds) in files stored
+    daily named like `Physical Activity/heart_rate-2023-01-26.json`. These files are
+    really big — each day has around 70,000 lines — all wrapped in a single array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: My theory here is the file name represents the locale of the user. For example,
+    in my timezone (GMT+11) named `heart_rate-2023-01-26.json` the data covers the
+    day 26 00:00 (AEST) to 23:59 (AEST) - and it makes logical sense if the dates
+    within the files are in GMT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transform JSON files
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Up to now I’ve managed to process my Fitbit data as-is with included DuckDB
+    functions. However, I hit a problem when trying to process these enormous heart
+    rate files. DuckDB gave me this error when trying to process a large array of
+    records in a JSON files
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**(duckdb.InvalidInputException) “INTERNAL Error: Unexpected yyjson tag in
+    ValTypeToString”**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think this error message is an abrupt way of telling me it’s unreasonable
+    to expect a JSON array to have so many elements. The fix was to pre-process the
+    file so it wasn’t an array of JSON records, instead converted to newline-delimited
+    JSON, or [ndjson](http://ndjson.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: To transform heart rate array_of_records into newline-delimited JSON I used
+    a sneaky bit of Python to convert each file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will find each *.json* file, read converting the contents into newline-delimited
+    JSON with a new file created with the file extension *.ndjson*. This converts
+    an array with 70,000 records to a file with 70,000 lines — with each JSON record
+    now stored on a new line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load heart rate data into table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With the newly converted *ndjson* files, I’m now ready to load heart rate data
+    into a DuckDB table. Note the use of `timestampformat='%m/%d/%y %H:%M:%S');` to
+    describe the leading month in the dates (for example *"01/25/23 13:00:07"*)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can load all the .ndjson files by setting the format to ’newline_delimited’.
+    Note we can extract the BPM (beats per minute) with the JSON extraction and cast
+    into an integer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3085503bcdcd2945270d26a383b88a08.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DuckDB is blazing fast at processing JSON- Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth highlighting here how insanely fast DuckDB is — it took only 2.8
+    seconds to load 12 million records!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load heart rate into data frame
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With 12 million hear rate measurements loaded, let’s load a single days worth
+    of data into a data frame for the 21st of May.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: This DuckDB query aggregates the variability of heart rate into time bucks of
+    1 minute; banding into min, average and maximum within each period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot Heart rate
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I can plat the heart rate using a plot like this (and also to show off I actually
+    did go for a run at 6am)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9962db0f04ea299fd471bc8b221b5da7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Heart rate over a day — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring heart rate with fine granularity allows me to track my fitness goals
+    — especially if I stick with my regular running routine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Steps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Steps are recorded in daily files named `Physical Activity/steps-2023-02-26.json`.
+    This appears to be a fine grain count of steps during period blocks (every 5 to
+    10 minutes) throughout the day
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: To aggregate the steps into daily counts I needed to convert GMT into my local
+    timezone (GMT+11)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Aggregating the number of daily steps into the *steps_df* dataframe allows me
+    to explore the longer term activity trends as I attempt to exceed 10,000 steps
+    to realise the [increased health benefits](https://www.10000steps.org.au/articles/healthy-lifestyles/health-check-do-we-really-need-take-10000-steps-day/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plot daily steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can now take dataframe and plot a daily step count
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8a95077d4b6046f60e34eef75c8ff1de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Daily step count — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which shows I’ve still got to work at my daily step goal — another strike against
+    my new years fitness resolution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPS Mapping
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Fitbit stores GPS logged activities as [TCX (Training Center XML)](https://en.wikipedia.org/wiki/GPS_Exchange_Format)
+    files. These XML files are *not* in the downloaded ZIP, but we have a reference
+    to their location in the Physical Activity files, which I can query like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: The tcxLink field is a URL reference to their location in the Physical Activity
+    files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6037d84f1ca242c03cced5f82d2e7f4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The URL for each TCX file — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use this URL directly in a browser (once logged onto the Fitbit website)
+    to do download the GPS XML file. Looking inside the TCX file, we find low level
+    GPS locations every few seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c850bc9f8b7d837fb45767fd1fa6780c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: TCX GPS XML file sample contentents - Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The good news is this has some obvious fields like latitude, longitude and time.
+    The not so good news is this is XML, so we need to pre-process these files prior
+    to loading into DuckDB as presently XML isn’t supported by the file reader. We
+    can convert XML files into JSON files with another bit of Python code, looping
+    over each *.tcx* file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a bit of nasty XML nesting going on here, with the location data found
+    under *TrainingCenterDatabase/Activities/Activity/Lap*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Loading GPS Geospatial data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can load the Geospatial data like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: This DuckDB query flattens the JSON, converts the latitude, longitude and time
+    into the correct data types and loads into the *route_df* dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualize GPS Routes with Folium
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having a table of location information isn’t very descriptive, so I wanted to
+    start plotting my running routes on an interactive map. I used this blog to help
+    [Visualize routes with Folium](https://betterdatascience.com/data-science-for-cycling-how-to-visualize-gpx-strava-routes-with-python-and-folium/).
+    Modifying the code helped me plot my own runs, for example this is a plot of a
+    recent run while on holiday in [Canberra](https://en.wikipedia.org/wiki/Canberra).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9d1e52b607975ce6d097d1cb3e5b5d7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Folium map plot of a run — Screenshot by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which generates a plot of my run using [open street map](https://openmaptiles.org/)
+    tiles, giving me a great interactive detailed map of my run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data goals and fitness goal summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Did I get get closer to my goal of analysis my Fitbit device data — absolutely!
+    DuckDB proved to be an ideal flexible lightweight analytical tool for wrangling
+    my extensive and chaotic Fitbit data achieve. Blazing through literally millions
+    of records in seconds with the extensive SQL support and flexible file parsing
+    options locally into dataframes makes DuckDB ideal for building my own personal
+    data warehouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for my fitness goal — I have some work to do. I think I should leave this
+    blog now as I’m short of my step goal target for today
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 🛠️Code for Fitbit activity analysis with DuckDB — [https://github.com/saubury/duckdb-fitbit](https://github.com/saubury/duckdb-fitbit)
+  prefs: []
+  type: TYPE_NORMAL

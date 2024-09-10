@@ -1,0 +1,384 @@
+- en: Studying the Gender Wage Gap in the US Using Distributional Random Forests
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0?source=collection_archive---------6-----------------------#2023-02-18](https://towardsdatascience.com/studying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0?source=collection_archive---------6-----------------------#2023-02-18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An example of a real data analysis with DRF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)[![Jeffrey
+    Näf](../Images/0ce6db85501192cdebeeb910eb81a688.png)](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------)
+    [Jeffrey Näf](https://medium.com/@jeffrey_85949?source=post_page-----ec4c2a69abf0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fca780798011a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=post_page-ca780798011a----ec4c2a69abf0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ec4c2a69abf0--------------------------------)
+    ·13 min read·Feb 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fec4c2a69abf0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&user=Jeffrey+N%C3%A4f&userId=ca780798011a&source=-----ec4c2a69abf0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fec4c2a69abf0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fstudying-the-gender-wage-gap-in-the-us-using-distributional-random-forests-ec4c2a69abf0&source=-----ec4c2a69abf0---------------------bookmark_footer-----------)![](../Images/83e1f7f686159af39dc754a071bba552.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Ehimetalor Akhere Unuabona](https://unsplash.com/@mettyunuabona?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In two previous articles, I explained [Distributional Random Forests (DRFs)](/drf-a-random-forest-for-almost-everything-625fa5c3bcb8),
+    a Random Forest that is able to estimate conditional distributions, as well as
+    an [extension of the method](https://medium.com/@jeffrey_85949/inference-for-distributional-random-forests-64610bbb3927)
+    that allows for uncertainty quantification, like Confidence Intervals, etc. Here
+    I present an example of a real-world application to wage data from the 2018 American
+    Community Survey by the US Census Bureau. In the first [DRF paper](https://www.jmlr.org/papers/v23/21-0585.html),
+    we obtained data on approximately 1 million full-time employees from the 2018
+    American Community Survey by the US Census Bureau from which we extracted the
+    salary information and all covariates that might be relevant for salaries. This
+    wealth of data is ideal to experiment with a method like DRF (in fact we will
+    only use a tiny subset for this analysis).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When one studies the raw data on hourly wages, there is a consistent gap between
+    the two genders, in that men tend to earn more. An interesting question is whether
+    the observed gap in hourly wages (*W*) of men (*G=1*) and women (*G=0*) is due
+    to gender alone or whether it can be explained by some other confounding variables
+    ***X***, which are influenced by gender and in turn influence wage. That is, we
+    want to study the effect size corresponding to the bold arrow in the following
+    causal graph:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/892f002898dd8b65c8ad13852a66fedc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Assumed Causal Graph, G=Gender, W=Wage and **X** are confounders
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, let’s assume that ***X*** only includes occupation and that women
+    have a tendency to choose occupations that do not entail a high monetary reward,
+    such as doctors, nurses, or teachers, while men tend to have professional gambling
+    jobs with obscene hourly wages. If this alone were to drive the difference in
+    hourly wages between genders, we would still see a wage gap when looking directly
+    at the hourly wage data. However if we then fix the occupation (***X***) only
+    to doctors and compare the two wage distributions there, any statistically significant
+    difference can only come from gender alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We focus on a two-stage analysis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We fix ***X*** to a particular value and compare the distribution of wages
+    in the two groups for the covariates fixed to ***X****=****x***. This is interesting
+    from two points of view: First, if ***X*** really includes all other factors that
+    influence wages and are related to gender, then fixing ***X****=****x*** and looking
+    at wages for both genders means we really observe the effect of Gender on wages.
+    Second, it allows for the prediction of the whole wage distribution for an individual
+    with given characteristics ***x***.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We use the assumed causal graph above and the rules of causality to estimate
+    a counterfactual distribution with DRF: The distribution of women’s wages had
+    they been treated as men for setting the wage. If ***X*** contains all the relevant
+    covariates and there is no gender pay gap, this distribution should be the same
+    as the wage distribution for men (neglecting statistical randomness).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This article is the culmination of the work of several people: The code and
+    the dataset were obtained from the original [DRF repository](https://github.com/lorismichel/drf)
+    and then combined with the methods developed in our new paper on [arXiv](https://arxiv.org/abs/2302.05761),
+    written together with [Corinne Emenegger](http://www.linkedin.com/in/corinne-rahel-emmenegger).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before going on, I want to point out that this is *only an example to illustrate
+    the use of DRF*. I do not want to make any serious (causal) claims here, simply
+    because the analysis is surely flawed in some regard and the causal graph we assume
+    below is surely wrong. Moreover, we only use a tiny subset of the available data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d15a5fee83c73eba20dc6ec8d8bbafd7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Also, note that the code is quite slow to run. This is because, while DRF itself
+    is coded in C, the repeated fitting needed for Confidence Intervals is implemented
+    in R so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, let’s dive in. In the following, all images, unless otherwise noted,
+    are by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The PUMS (Public Use Microdata Area) data from the 2018 1-Year American Community
+    Survey is obtained from the [US Census Bureau API](https://www.census.gov/content/dam/Census/data/developers/api-user-guide/api-guide.pdf).
+    The survey is sent to ≈ 3.5 million people annually and aims to give more up-to-date
+    data than the official census that is carried out every decade. The 2018 data
+    set has about 3 million anonymized data points for the 51 states and the District
+    of Columbia. For the DRF paper linked above, we retrieved only the subset of variables
+    that might be relevant for the salaries, such as a person’s gender, age, race,
+    person’s marital status, education level, and level of English knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The preprocessed data can be found [here](https://github.com/lorismichel/drf/tree/master/applications/wage_data/data/datasets).
+    We first do some further cleaning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: These are actually way more observations than we need, and we instead subsample
+    4'000 training data points at random for the analysis here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Again, this is because it is just an illustration— in reality, you would want
+    to take as many data points as you can get. The estimated wage densities of the
+    two sexes for these 4''000 data points are plotted in Figure 1, with this code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/bccfbbe14f18245ac0f2b165ead75a19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimated densities for the (unconditional) raw log of the hourly wages
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating the percentage median difference between the two wages, that is
+  prefs: []
+  type: TYPE_NORMAL
+- en: (median wage men- median wage women)/(median wage women) *100,
+  prefs: []
+  type: TYPE_NORMAL
+- en: we obtain around 18 percent. That is, the median salary of men is 18 percent
+    higher than that of women in the unadjusted data (!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The question now becomes whether this is truly “unfair”. That is, we assume
+    the causal graph above, where Gender (*G*) influences both Wage (*W*), as well
+    as covariates ***X*** that in turn influence *W*. What we would like to know is
+    whether Gender directly influences Wage (the bold arrow). That is, if a woman
+    and a man with the exact same characteristics ***X****=****x*** get the same wage,
+    or whether she gets less, simply because of her gender.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will study this in two settings. The first one is to truly hold ***X****=****x***
+    fixed and to use the machinery explained in the [earlier article](https://medium.com/@jeffrey_85949/inference-for-distributional-random-forests-64610bbb3927).
+    Intuitively, if we fix all other covariates that could influence wage besides
+    gender, and now compare the two wage distributions, then any observed difference
+    must be by wage alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second one tries to quantify this difference over all possible values of
+    **X** This is done by calculating the counterfactual distribution of
+  prefs: []
+  type: TYPE_NORMAL
+- en: W(male, **X**(female)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This quantity is the counterfactual wage a man gets if he has exactly the characteristics
+    of a woman. That is, we ask for the wage a woman gets if treated like a man.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that this assumes that the causal graph above is correct. In particular,
+    it assumes that ***X*** captures all relevant factors besides gender, that would
+    determine the wage. It could very well be that this is not the case, thus the
+    disclaimer at the beginning of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Studying the conditional distributional differences
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the following, we fix ***x*** to an arbitrary point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following picture shows some of the values contained in this test point
+    ***x*** — we are looking at childcare workers with high school diplomas that are
+    married and have 1 child. With DRF we can estimate and plot the densities for
+    the two groups conditional on ***X****=****x***:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7cfec25cce114ab62067703b1ed4d919.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimated density of the log(hourly wage) for the two genders given **X**=**x**.
+    The code for this plot can be found at the end of the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this plot, there appears to be a clear difference in wages, even in the case
+    of this fixed ***x*** (remember, all the assumed confounders are fixed in this
+    case, so we really just compare wages directly). With DRF we now estimate and
+    test the *median difference*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives a confidence interval of the median difference of
+  prefs: []
+  type: TYPE_NORMAL
+- en: (0.06, 0.40) or (6%, 40%)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This interval very clearly does not contain zero and thus the median difference
+    is indeed significant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the Witobj function, we can make this difference better visible
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which leads to the Figure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/14fb297f3c3cd618bea9cf420f5d44a6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimate of the conditional witness function for wage men minus wage women.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We refer to the [companion article](https://medium.com/@jeffrey_85949/inference-for-distributional-random-forests-64610bbb3927)
+    for a more detailed explanation of this concept. Essentially it can be thought
+    of as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*conditional density of log(wage) of men given* ***x*** *— conditional density
+    of log(wage) of women given* ***x***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'That is, the conditional witness function shows where the density of one group
+    is larger than the other, without having to actually estimate the density. In
+    this example, negative values mean the density of women’s wages is higher than
+    that of men conditional on ***x***, and positive values mean the density of women’s
+    wages is lower. Since we already estimated the conditional densities above, the
+    conditional witness function alone does not add much more. But it’s good for illustration
+    purposes. Indeed, we see that it is negative at the start, for values where the
+    conditional density of women’s wages is higher than the conditional density of
+    men’s wages. Vice-versa it turns positive for larger values, for which the conditional
+    density of men’s wages is higher than for women. Thus the relevant information
+    about the two densities is summarized in the witness function plot: We see that
+    the density for women’s wages is higher for lower values of wages and lower for
+    higher values, indicating that the density is shifted to the left and women earn
+    less! Moreover, we can also provide 95% confidence bands in green that include
+    the true function with 95%, *uniformly over all y*. (Though one really needs a
+    lot of data to make this valid) Since this uniform confidence band does not contain
+    the zero line between around 2 and 2.5, we see again that the difference between
+    the two distributions is statistically significant.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conditioning on a particular ***x***, allows us to study individual effects
+    in great detail and with a notion of uncertainty. However, it can also be interesting
+    to study the overall effect. We do this by estimating the counterfactual distribution,
+    in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Estimating the counterfactual distribution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Using the calculation laws of causality on our assumed causal graph, it can
+    be derived that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/209bafc8d5ab2b422af60b484787a36b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: I.e. the distribution of the counterfactual we are looking for is obtained by
+    averaging the conditional distribution of *W | G=male*, ***X****=****x***, over
+    the ***x*** of the gender female.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As the distributions are given as simple weights, this is easily done with
+    DRF as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'which leads to the following counterfactual density estimate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/511ce06576e25650a552e2bd6ffc4572.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: These two densities are now the density of women’s wages in red, and the density
+    of women had they been treated as men for setting the wage in green-bluish. Clearly,
+    the densities are now closer together than they were before — adjusting for the
+    confounders made the difference in gender pay smaller. However, the median difference
+    is still
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 0.11 or 11 percent!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus if our analysis is correct, 11% of the difference in pay can still be attributed
+    to gender alone. In other words, while we managed to reduce the difference from
+    18% in median income in the unadjusted data to 11%, there is still a substantial
+    difference left over, indicating an “unfair” wage gap between the genders (at
+    least if ***X*** really captures the relevant confounders).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we studied an example of how DRF could be used for a real data
+    analysis. We studied both the case of a fixed ***x***, for which the methods discussed
+    in this article, allows to build uncertainty measures, as well as the distribution
+    of a counterfactual quantity. In both cases, we saw that there was still a substantial,
+    and in the case of fixed ***x***, significant difference when adjusting for the
+    available confounders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Though I did not check, it might be interesting to see how the results from
+    this little experiment stack up against more serious analysis. In any case, I
+    hope this article showcased how DRF could be used in a real-world data analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additional Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE

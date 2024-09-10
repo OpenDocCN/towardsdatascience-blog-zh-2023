@@ -1,0 +1,489 @@
+- en: Analyzing Chess960 Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/analyzing-chess960-data-da5c8cdb01de?source=collection_archive---------12-----------------------#2023-01-13](https://towardsdatascience.com/analyzing-chess960-data-da5c8cdb01de?source=collection_archive---------12-----------------------#2023-01-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using more than 14M Chess960 games to find if there’s a variation that’s better
+    than the others
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@alexmolasmartin?source=post_page-----da5c8cdb01de--------------------------------)[![Alex
+    Molas](../Images/52941b0208bc2094929feb965f145712.png)](https://medium.com/@alexmolasmartin?source=post_page-----da5c8cdb01de--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da5c8cdb01de--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----da5c8cdb01de--------------------------------)
+    [Alex Molas](https://medium.com/@alexmolasmartin?source=post_page-----da5c8cdb01de--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8fa4cb38d347&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyzing-chess960-data-da5c8cdb01de&user=Alex+Molas&userId=8fa4cb38d347&source=post_page-8fa4cb38d347----da5c8cdb01de---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da5c8cdb01de--------------------------------)
+    ·12 min read·Jan 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda5c8cdb01de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyzing-chess960-data-da5c8cdb01de&user=Alex+Molas&userId=8fa4cb38d347&source=-----da5c8cdb01de---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda5c8cdb01de&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanalyzing-chess960-data-da5c8cdb01de&source=-----da5c8cdb01de---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I analyze all the available Chess960 games played in Lichess.
+    With this information, and using Bayesian A/B testing, I show that there are no
+    starting positions that favor any of the players more than other positions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The original post was published [here](https://www.amolas.dev/blog/chess-960-initial-position/).
+    All the images and plots, unless stated otherwise, are by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fe33057b8146f1b28a6c55115a33718.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Hassan Pasha](https://unsplash.com/@hpzworkz?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The World Fischer Random Chess Championship recently took place in Reykjavik,
+    with [GMHikaru](https://twitter.com/GMHikaru) emerging victorious. Fischer Random
+    Chess, also known as Chess960, is a unique variation of the classic game that
+    randomizes the starting position of the pieces. The intention behind this change
+    is to level the playing field by eliminating the advantage of memorized openings
+    and forcing players to rely on their skill and creativity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As I followed the event, one question came to mind: are there certain initial
+    Chess960 variations that give one player an unfair advantage? As it stands, the
+    standard chess initial position gives white a slight edge, with white usually
+    winning around 55% of game points ([ref](https://en.wikipedia.org/wiki/First-move_advantage_in_chess)))
+    and Stockfish giving white a score of +0.3 ([ref](https://lichess.org/analysis))).
+    However, this edge is relatively small, which is likely one of the reasons why
+    this position has remained the standard.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is some work already done about this topic. Ryan Wiley wrote this [blog
+    post](https://lichess.org/@/rdubwiley/blog/using-lichesss-public-data-to-find-the-best-chess-960-position/GCpB9WLH)
+    where he analyzes some data from lichess and reach the conclusion that some variations
+    are better than others. In the post, he says that some positions have a higher
+    winning probability for white pieces, but he doesn’t show how significant is this
+    claim. This made me think that maybe his findings need to be revisited. He also
+    trains a ML model on the data in order to determine the winner of a game using
+    as inputs the variation and the ELOs of the players. The resulting model has an
+    accuracy of 65%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, there’s also this [repo](https://github.com/welyab/chess960-win-by-position-setup)
+    with the statistics for 4.5 millions games (~4500 games per variation). In this
+    repo the biggest difference for white and black are listed, but again no statistical
+    significance is given.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, there’s also some research about this topic focused in computer analysis.
+    In this [spreadsheet](https://docs.google.com/spreadsheets/u/1/d/1JVT6_ROOlCTtMmazzBe0lhcGv54rB6JCq67QOhaRp6U/edit#gid=0)
+    there’s the Stockfish evaluation at depth ~40 for all the starting positions.
+    Interestingly there’s no position where Stockfish gives black player an advantage.
+    There’s also this [database](http://computerchess.org.uk/ccrl/404FRC/opening_report_by_white_score.html)
+    with Chess960 games between different computer engines. However, I’m currently
+    only interested in analyzing human games, so I’ll not put a lot of attention to
+    this type of games. Maybe in a future post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since none of the previous work has addressed the problem of assigning statistical
+    confidence to the winning chances to each variation of Chess960 I decided to give
+    it a try.
+  prefs: []
+  type: TYPE_NORMAL
+- en: tl;dr
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post I analyze all the available Chess960 games played in Lichess. With
+    this information I show that
+  prefs: []
+  type: TYPE_NORMAL
+- en: using bayesian AB testing I show that there are no starting positions that favor
+    any of the players more than other positions
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: also, the past winning rate of a variation doesn’t predict the future winning
+    rate of the same variation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: and stockfish evaluations don’t predict actual winning rates for each variation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: finally, knowing the variation being played doesn’t help to predict the winner
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Lichess—the greatest chess platform out —maintains a [database](https://database.lichess.org/)
+    with all the games that have been played in their platform. To do the analysis,
+    I downloaded ALL the available Chess960 data (up until 31–12–2022). For all the
+    games played I extracted the variation, the players ELO and the final result.
+    The data is available on [Kaggle](https://www.kaggle.com/datasets/alexmolas/chess-960-lichess).
+    The scripts and notebooks to donwload and process the data are available on this
+    [repo](https://github.com/AlexMolas/chess-960).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data I used is released under the [Creative Commons CC0 license](https://tldrlegal.com/license/creative-commons-cc0-1.0-universal),
+    which means you can use them for research, commercial purpose, publication, anything
+    you like. You can download, modify and redistribute them, without asking for permission.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mathematical framework
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Bayesian A/B testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: According to the prior work mentioned above some variations are better than
+    others. But how can we be sure that these differences are statistically significant?
+    To answer this question we can use the famous A/B testing strategy. This is, we
+    start with the hypothesis that variation *A* has bigger winning chances than variation
+    *B*. The null hypothesis is then that and *A* and *B* have the same winning rate.
+    To discard the null hypothesis we need to show that the observed data is so extreme
+    under the assumption of the null hypothesis that it doesn’t make sense to still
+    believe in it. To do that we’ll use bayesian A/B testing [1](https://www.amolas.dev/blog/chess-960-initial-position/#fn:1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the bayesian framework, we assign to each variation a probability distribution
+    for the winning rate. This is, instead of saying that variation *A* has a winning
+    rate of `X%` we say that the winning rate for *A* has some probability distribution.
+    The natural choice when modelling this kind of problem is to choose the beta distribution
+    ([ref](https://www.countbayesie.com/blog/2015/4/25/bayesian-ab-testing)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The beta distribution is defined as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24ede66099b563d4b781df12d943538c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where *B(a, b) = Γ(a)Γ(b)/Γ(a+b), Γ(x)* is the gamma function, and for positive
+    integers is *Γ(n) = (n-1)!.* For a given variation, the parameter α can be interpreted
+    as the number of white wins plus one, and β as the number of white losses plus
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, for two variations *A* and *B* we want to know how probable is that the
+    winning rate of *A* is bigger than the winning rate of *B*. Numerically, we can
+    do this by sampling *N* values from *A* and *B*, namely *w_A* and *w_B* and compute
+    the fraction of times that *w_A > w_b*. However, we can compute this analytically,
+    starting with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66cb6695aef5fe4dd6ad66279b3e98a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that the beta function can give huge numbers, so to avoid overflow we
+    can transform it using `log`. Fortunately, many statistical packages have implementations
+    for the log beta function. With this transformation, the addends are transformed
+    to
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79a085f52c272028026d4ac7d687d5ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is implemented in python, using the `scipy.special.betaln` implementation
+    of log B(a, b) , as
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this method, we can compute how probable is for a variation to be better
+    than another, and with that, we can define a threshold *α* such that we say that
+    variation *B* is significantly better than variation *A* if *Pr(p_A>p_B)<1-α*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below you can see the plot of some beta distributions. In the first plot, the
+    parameters are *α_A*= 100, *β_A*=80, *α_B*=110 and *β_B=*70.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbcfb243bbfe096a0d530a021483bc76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Beta distributions with parameters *α_A*= 100, *β_A*=80, *α_B*=110 and *β_B=*70
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this second plot, the parameters *α_A*= 10, *β_A*=8, *α_B*=11 and *β_B=*7.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/02ae50aa2d80ea7b83272b4b9f1751d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Beta distributions with parameters *α_A*= 10, *β_A*=8, *α_B*=11 and *β_B=*7
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that, even in both cases the winning rates are the same, but the distributions
+    look different. This is because in the first case, we’re more sure about the actual
+    rate, and this is because we’ve observed more points than in the second case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Family-wise error rate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Usually, in A/B testing one just compares two variations, eg: conversions in
+    a website with white background vs blue background. However, in this experiment,
+    we’re not just comparing two variations, but we’re comparing all the possible
+    pairs of variations -remember that we want to find if there is at least one variation
+    that is better than another variation- therefore, the number of comparisons we
+    are doing is 960*959/2 ~ 5e5\. This means that using the typical value of *α=0.05*
+    is an error because we need to take into consideration that we’re doing a lot
+    of comparisons. For instance, assuming that the winning probabilities distributions
+    are the same for all the initial positions and using the standard one would have
+    a probability'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4215f76ceed934641ccbf577d3c4de98.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: of at least observing one false positive! This means that even if there’s no
+    statistically significant difference between any pair of variations we’ll still
+    observe at least one false positive. If we want to keep the same *α* but increase
+    the number of comparisons from 2 to we need then to define an effective *α* like
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1111c69d505aa6d33eaf5c53d27a7be6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and solving
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9cf2989d713285449a026cf88ac8532d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plugging our values we finally get *α_eff =1e-7*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train/Test split
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous sections, we developed the theory to determine if a variation
+    is better than another variation according to the observed data. This is, after
+    having seen some data we build a hypothesis of the form `variation B is better
+    than variation A` . However, we can’t test the truth of this hypothesis using
+    the same data we used to generate the hypothesis. We need to test the hypothesis
+    against a set of data that we haven’t used yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make this possible we will split the full dataset into two disjoint `train`
+    and `test` datasets. The `train` dataset will be used together with the bayesian
+    A/B testing framework to generate hypotheses of the form *B>A*. And then, using
+    the `test` dataset we’ll check if the hypotheses hold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that this approach makes sense only if the distribution of winning rates
+    doesn’t change over time. This seems a reasonable assumption since, AFAIK, there
+    haven’t been big theoretical advances that have changed the winning probability
+    of certain variations during the last few years. In fact, minimizing the theory
+    and preparation impact on game results is one of the goals of Chess960.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data preparation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the previous sections we have implicitly assumed that a game can be either
+    won or lost, however, it can also be drawn. I’ve assigned `1` point for a victory,
+    `1/2` point for a draw, and `0` points for a loss, which is the usual approach
+    in chess games.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will apply all the techniques explained above to the lichess
+    dataset. In the dataset, we have more than 13M games, which is ~14K games per
+    variation. However, the dataset contains games for a huge variety of players and
+    time controls (from ELO 900 to 2000, and from blitz to classic games). Therefore,
+    doing the comparisons using all the games would mean ignoring confounder variables.
+    To avoid this problem I’ve only used games for players with an ELO in the range
+    (1800, 2100) and with a blitz time control. I’m aware that these filters do not
+    resemble the reality of top-level contests such as the World Fischer Random Chess
+    Championship, but in lichess data, there are not a lot of classical Chess960 games
+    for high-rated players (>2600), so I will just use the group with more games.
+    After applying these filters we end up with a dataset with ~2.4M games, which
+    is ~2.5K games per variation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The train/test split has been done using a temporal split. All the games prior
+    to `2022-06-01` are part of the training dataset, and all the games after that
+    date are part of the testing dataset, which accounts for ~80% of the data for
+    training and ~20% for testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating hypotheses
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first step is to generate a set of hypotheses using A/B testing. The number
+    of variation pairs to compare is pretty big (1e5) and testing all of them would
+    take a lot, so we’ll just compare the 20 variations with the highest winning rates
+    against the 30 variations with the lowest winning rates. This means we’ll have
+    900 pairs of variations to compare. Here we see the pair of variations with the
+    bigger difference in the `train` dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7427f6589c9c58467da2056f4f8d9052.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that the *α* for these variations is bigger than *α*_*eff*, which means
+    that the difference is not significant. Since these are the variations with the
+    higher difference we know that there’s not any variation pair with a statistically
+    significant difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Anyway, even if the difference is not significant, with this table one can hypothesize
+    that variation `rnnqbkrb` is worse than variation `bbqrnkrn`. If we check these
+    variation values in the `test` dataset we get
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c464a5a432cccb5fa9a94c4655a18b8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Notice that the “bad” variation still has a winning rate lower than the “good”
+    variation, however, it has increased from `0.473` to `0.52`, which is quite a
+    lot. This brings a new question: do past variation performance guarantee future
+    performance?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Past vs Future performances
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the last section, we have seen how to generate and test hypotheses, but we
+    have also noticed that the performance of some variations changes over time. In
+    this section, we’ll analyze this question more in detail. To do so, I have computed
+    the winning rate in the `train` and `test` datasets and plotted one against the
+    other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58f09dc78392f377090b472ccbc38d6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Train vs Test winning rates
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, there’s no relation between past and future winning rates!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluation vs Rates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ve seen that past performances do not guarantee future performances, but
+    do Stockfish evaluations predict future performances? In the following plot, I
+    show the evaluation of Stockfish for each variation and the corresponding winning
+    rate in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eb685762948b82d79ce09c69cef055da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Stockfish Evaluation vs Winning rate for each variation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Machine learning model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Until now we’ve seen that there are no better variations in the Chess960 game
+    and that previous performance is no guarantee of future performance. In this section,
+    we’ll see if we can predict which side is going to win a match based on the variation
+    and the ELO of the players. To do so I’ll train an ML model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The features of the model are the ELO of the white and black player, the variation
+    being played, and the time control being used. Since the cardinality of the variation
+    feature is huge I’ll use `CatBoost`, which has been specifically designed to deal
+    with categorical features. Also, as a baseline, I’ll use a model that predicts
+    that white wins if `White ELO > Black ELO`, draws if `White ELO == Black ELO`,
+    and losses if `White ELO < Black ELO`. With this experiment, I want to see which
+    is the impact of the variation in the expected winning rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next tables, I show the classification reports for both models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: CatBoost model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/b68d8ca2ce3342cc675bf5e9c8a0ec91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Baseline model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/569e6151fe5136fba0e941216900256d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From these tables, we can see that the CatBoost and the baseline model have
+    almost the same results, which means that knowing the variation being played doesn’t
+    help to predict the result of the game. Notice that the results are compatible
+    with the ones obtained [here](https://lichess.org/@/rdubwiley/blog/using-lichesss-public-data-to-find-the-best-chess-960-position/GCpB9WLH)
+    (accuracy ~65%), but in the linked blog it’s assumed that the knowing the variation
+    helps to predict the winner, and we have seen that this is not true.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions & Comments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post, I’ve shown that
+  prefs: []
+  type: TYPE_NORMAL
+- en: using the standard threshold to determine significant results is not valid when
+    having more than one comparison, and it needs to be adjusted.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'there are no statistically significant differences in the winning rates, ie:
+    we can’t say that a variation is preferable for white than another.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: past rates don’t imply future rates.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: stockfish evaluations don’t predict winning rates.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: knowing which variation is being played doesn’t help to predict the result of
+    a match.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: However, I’m aware that the data I’ve used is not representative of the problem
+    I wanted to study in the first place. This is because the data accessible at Lichess
+    is skewed towards non-professional players, and even though I’ve used data from
+    players with a decent ELO (from 1800 to 2100) they are pretty far from the players
+    participating in the Chess960 World Cup (>2600). The problem is that the number
+    of players with an ELO >2600 is very low (209 according to [chess.com](https://www.chess.com/players?page=10)),
+    and not all of them play regularly Chess960 in Lichess, so the number of games
+    with such characteristics is almost zero.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,423 @@
+- en: 'Unbox the Cox: Intuitive Guide to Cox Regressions'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/unbox-the-cox-intuitive-guide-to-cox-regressions-c485408ae15d?source=collection_archive---------11-----------------------#2023-06-06](https://towardsdatascience.com/unbox-the-cox-intuitive-guide-to-cox-regressions-c485408ae15d?source=collection_archive---------11-----------------------#2023-06-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How do hazards and maximum likelihood estimates predict event rankings?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@igor-s?source=post_page-----c485408ae15d--------------------------------)[![Igor
+    Šegota](../Images/17c592b71fef9526a0679d47937837f6.png)](https://medium.com/@igor-s?source=post_page-----c485408ae15d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c485408ae15d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c485408ae15d--------------------------------)
+    [Igor Šegota](https://medium.com/@igor-s?source=post_page-----c485408ae15d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fe5f8ebca4ad8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funbox-the-cox-intuitive-guide-to-cox-regressions-c485408ae15d&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=post_page-e5f8ebca4ad8----c485408ae15d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c485408ae15d--------------------------------)
+    ·10 min read·Jun 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc485408ae15d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funbox-the-cox-intuitive-guide-to-cox-regressions-c485408ae15d&user=Igor+%C5%A0egota&userId=e5f8ebca4ad8&source=-----c485408ae15d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc485408ae15d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funbox-the-cox-intuitive-guide-to-cox-regressions-c485408ae15d&source=-----c485408ae15d---------------------bookmark_footer-----------)![](../Images/9eb4923328ea3ea068ceed2c39230ac5.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Chris Boyer](https://unsplash.com/fr/@csgboyer?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The goal of Cox regression is to model the relationship between predictor variables
+    and the time it takes for an event to happen — like events that only happen once.
+    Let’s dive into a made-up dataset with 5 subjects, labeled A to E. During the
+    study, each subject either experienced an event (event = 1) or not (event = 0).
+    On top of that, each subject got assigned a single predictor, let’s call it *x*,
+    before the study. As a practical example, if we are tracking the death events,
+    then *x* could be the dosage of a drug we are testing to see if it helps people
+    live longer, by affecting the time until death.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3fb26d1a5d08f6457756d77a06975e25.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In this dataset, subject E did not experience anything during the study, so
+    we set event = 0 and the time assigned is basically the last moment we knew about
+    them. This kind of data is called “censored” because we have no clue if the event
+    happened after the study ended. To make it easier to understand, a cool “lollipop”
+    🍭 plot comes in handy for visualizing this type of data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/96788e4368f5a669934f3b5990c8f847.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Lines indicate the duration of time each subject experienced before an event,
+    which is represented by a filled circle. Subject E does not have a circle since
+    it survived the entire study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (️️Plotting functions available on my [Github repo](https://github.com/igor-sb/blog/blob/main/posts/cox/plots.py).)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Just a heads up: I want to make the main ideas of Cox regression easier to
+    grasp, so we will focus on data where only one event can happen at a given time
+    (no ties).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hazards
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Hazard represents the instant rate (probability per unit time) at which an
+    event can occur at a specific time — assuming the event has not occurred before
+    that point. Since it is a rate at which events take place, it can have arbitrary
+    units and unlike probability, hazard values can range between 0 and infinity:
+    [0, ∞).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Cox regression, hazard works similar to the odds in logistic regression.
+    In logistic regression, odds = p/(1-p) takes probabilities from the range of [0,
+    1] and transforms them to a range of [0, ∞). Then, taking the logarithm converts
+    the odds to log-odds, which can have values from negative infinity to positive
+    infinity (-∞, ∞). This log-odds transformation of probabilities is done to match
+    the possible output values to the linear combination of predictors *β₁x₁ + β₂x₂
+    + …*, which also can range (-∞, ∞).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, we start with a hazard h(t, x) that already has values ranging from 0
+    to infinity [0, ∞). By applying a logarithm, we transform that range to (-∞, ∞),
+    allowing it to be fitted with a linear combination of predictors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc0695bae7d071593adceb20df485e57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In Cox regression, there’s another assumption that helps make things easier.
+    It assumes that all the time dependence of the log-hazard is packed into the intercept
+    term:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/531233308f98f878371c83f7fcb1115d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The motivation behind this assumption is to simplify the fitting process significantly
+    (we will show how in a moment). In the literature, the intercept term *β₀(t)*
+    is usually moved to the left side of this equation and expressed as a *baseline
+    hazard* *log[h₀(t)]*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f5424d6048b6c1fed45d84545dadf02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From this equation, we can expressed the hazard *h(t, x)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3954fe815dc8cd628e927d940715235.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now, here is the cool part: since the data from each subject only comes to
+    hazard through predictors *x*, every subject’s hazard has the same time dependence.
+    The only difference lies in the *exp(βx)* part, which makes hazards from different
+    subjects proportional to each other. That’s why this model is also called a “proportional
+    hazard” model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have been drawing a lot of parallels to the logistic regression. If you
+    read my previous post on logistic regression:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/logistic-regression-faceoff-67560de4f492?source=post_page-----c485408ae15d--------------------------------)
+    [## Logistic regression: Faceoff'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What do log-losses and perfectly separated data have to do with hockey sticks?
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/logistic-regression-faceoff-67560de4f492?source=post_page-----c485408ae15d--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: you may be wondering if Cox regression also suffers from predictors being “too
+    good”. Stay tuned for the next post which will cover that!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Likelihoods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Cox models are fit using a method called Maximum Likelihood Estimation (MLE).
+    Likelihoods are quite similar to probabilities: they share the same equation —
+    almost like two sides of the same coin. Probabilities are functions of data *x*,
+    with fixed model parameters *β*s, while likelihoods are functions of *β*s, with
+    fixed *x*. It‘s like looking at the probability density of a Normal distribution,
+    but instead of focusing on *x*, we focus on *μ* and *σ*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The MLE fitting process begins with a rank-order of event occurrence. In our
+    made-up data this order is: A, B, D, C, with E censored. This is the only instance
+    where time comes into play in Cox regression. **The actual numeric values of event
+    times do not matter at all, as long as the subjects experience the events in the
+    same order.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then move on to each subject one by one and estimate the probability or
+    likelihood of that subject experiencing an event compared to all the other subjects
+    who are *still at risk* of having an event. For instance, take subject A who experienced
+    an event at t = 1\. The likelihood of this happening is determined by the hazard
+    rate at which subject A experiences the event, relative to the combined hazard
+    rates of everyone else who is still at risk at t = 1 (which includes everyone):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22bde743e454b44530da2e6409211ca6.png)![](../Images/54b824e014a5d03c06363b78f76dccc3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As you may have noticed, we did not bother defining the baseline hazard *h₀(t)*
+    because it actually cancels out completely from the likelihood calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once we substitute the values for *x* (-1.7, -0.4, 0.0, 0.9, 1.2) for each
+    subject, we end up with an equation that only has *β* left:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/879d7ce7c23fe47b1fa333f0162c8f52.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'From this point on, for any time after t = 1, the hazard of subject A is considered
+    zero and is not taken into account when calculating further likelihoods. For instance,
+    at another time, t = 3, subject B experiences an event. So, the likelihood for
+    subject B is determined relative to the hazards of subjects B through E only:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3faac948b82115b83c1d3cc217e6d64c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We could keep going and calculate the likelihoods for all subjects A through
+    D, but we will cover that in the coding part in the next section. Subject E, being
+    censored and not experiencing an event does not have its own likelihood. Since
+    the censored data is only used in the likelihoods of uncensored subjects, the
+    resulting combined likelihood is often referred to as “partial likelihood”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To summarize this process, we can create an animated lollipop plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5a032e3aeb7bd02f84175c9d0adcdff6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finding β
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When events occur independently of each other, the joint probability or likelihood
+    of observing all events can be calculated by multiplying individual likelihoods,
+    denoted as *L= L(A) L(B) L(C) L(D)*. However, multiplying exponential expressions
+    can lead to numerical errors, so we often take the logarithm of this likelihood.
+    By applying the logarithm, we transform the product of likelihoods into a sum
+    of log-likelihoods:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d69effc0790722ed973c9fbc57e3dbf8.png)![](../Images/b1eb9b567f2776034ddfcd328389df9f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Since the logarithm is a monotonic function, both the likelihood and the log-likelihood
+    reach their maximum point at the same value of *β*. To facilitate visualization
+    and enable comparison with other cost functions, we can define a cost as the negative
+    log-likelihood and aim to minimize it instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ready, Set, Code!
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can implement this algorithm in Python, step by step. First, we need to
+    extract the event time and predictor *x* for each uncensored subject. This can
+    be accomplished using the function `event_time_and_x_from_subject()`. Once we
+    have the event time for a subject, we can subset our data frame to identify the
+    rows corresponding to all subjects who are still at risk. This is achieved using
+    the function `subjects_at_risk_data()`. Finally, we calculate the log-likelihood
+    for each subject using the function `log_likelihood()`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For visualization purposes, we plot the cost or negative log-likelihoods. Therefore,
+    we need to compute these values for each subject at a specific *β* value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To find the minimum cost, we sweep through the range of *β* values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c8e55f4725d681c1cc1c6e001ac32640.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Making sense of it all
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Rather than aggregating the data frame by summing the log-likelihoods grouped
+    by subject, we can keep it in its current form and visualize it as stacked bar
+    charts. In this visualization, the total height of each bar corresponds to the
+    sum of negative log-likelihoods. Each subject is represented by a different color
+    within the bar, indicating their individual likelihood and contribution to the
+    overall likelihood:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/80e3ddfac00be7575824dad21f243b1d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Each narrow vertical colored bar represents the individual negative log-likelihood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s understand how to interpret this plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, note that the negative log-likelihood (cost) is large when the likelihood
+    and hazards are small. Think of the y-axis similar to -log(p-value); larger values
+    indicate lower probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, censored subjects (like subject E) do not have their own individual
+    likelihoods, so they don’t appear on the plot. However, their contribution is
+    incorporated into the likelihoods of subjects A to D.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, consider different scenarios based on the value of *β*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If *β* is large and negative, subjects A, B, and C (with *x ≤ 0*) and their
+    events are fitted nearly perfectly. The likelihoods of these subjects are all
+    close to one. However, fitting such large negative *β* values for A, B, and C
+    comes at the cost of subject D. In this range of *β*, the probability of subject
+    D (with *x > 0*) having an event is very low. As a result, the total cost is dominated
+    by the small likelihood of subject D.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If *β* is large and positive, the hazard of subject D (with *x > 0*) becomes
+    significant compared to the other hazards. The purple section (subject D) becomes
+    a small part of the total cost. However, since subjects A, B, and C all have *x
+    ≤ 0*, the cost of fitting a large *β* for them is high. Consequently, these subjects
+    dominate the total cost.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The optimal value of β, located around 2 on the plot, strikes a balance between
+    assigning high probabilities to events of subjects A, B, and C versus subject
+    D. This optimal value can be verified numerically:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/5409dfe3fd3f2e8624ef9b997747366f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using lifelines library
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have a better understanding of how Cox regression works, we can
+    apply it to sample data using Python’s lifelines library to verify the results.
+    Here is a code snippet for our made-up data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/80353e673eb6a541c755657f79ded4f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the output, we can observe the coefficient (coef) value of -1.71, which corresponds
+    to the β coefficient. Next to it, we have exp(coef), representing exp(β), as well
+    as columns indicating standard errors and confidence intervals. The “partial log-likelihood”
+    value is -2.64, which matches our manual result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lastly, it is important to mention that Cox regression implementations also
+    offer an extension that allows the model to handle multiple events tied at the
+    same event time. However, this goes beyond the scope of this discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There was a lot to “unbox” here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cox regression models the association between predictor variables and the rank-order
+    of times to an event occurrence.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Actual numeric values of event times do not matter at all, as long as the subjects
+    experience the events in the same order.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hazards are probabilities per unit time and can have arbitrary units, while
+    likelihoods are related the probability of events occurring.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Stacked bar charts can be used to provide insights into maximum likelihood estimation
+    by stacking individual negative log-likelihoods and exploring how they change
+    with predictors *x*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By striking a balance between assigning probabilities to events for various
+    subjects, MLE finds *β* for which the observed data is *most likely to happen*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To be continued… 👀
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Code with plots: [https://github.com/igor-sb/blog/blob/main/posts/cox/plots.py](https://github.com/igor-sb/blog/blob/main/posts/cox/plots.py)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Survival Data Analysis slides from Prof. Patrick Breheny: [https://myweb.uiowa.edu/pbreheny/7210/f19/index.html](https://myweb.uiowa.edu/pbreheny/7210/f19/index.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: ChatGPT for text cleanup and funny hallucinations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

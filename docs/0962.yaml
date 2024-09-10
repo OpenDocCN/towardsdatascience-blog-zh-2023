@@ -1,0 +1,306 @@
+- en: Multi-regional source of truth
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/multi-regional-source-of-truth-d43e1cc9e098?source=collection_archive---------17-----------------------#2023-03-14](https://towardsdatascience.com/multi-regional-source-of-truth-d43e1cc9e098?source=collection_archive---------17-----------------------#2023-03-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Multi-regional BI solution with BigQuery as DWH
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@andrey.shalitkin_96428?source=post_page-----d43e1cc9e098--------------------------------)[![Andrey
+    Shalitkin](../Images/07d6267bb2e39c6ac306dbd56e00a470.png)](https://medium.com/@andrey.shalitkin_96428?source=post_page-----d43e1cc9e098--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d43e1cc9e098--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d43e1cc9e098--------------------------------)
+    [Andrey Shalitkin](https://medium.com/@andrey.shalitkin_96428?source=post_page-----d43e1cc9e098--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4657f2001666&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-regional-source-of-truth-d43e1cc9e098&user=Andrey+Shalitkin&userId=4657f2001666&source=post_page-4657f2001666----d43e1cc9e098---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d43e1cc9e098--------------------------------)
+    ·8 min read·Mar 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd43e1cc9e098&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-regional-source-of-truth-d43e1cc9e098&user=Andrey+Shalitkin&userId=4657f2001666&source=-----d43e1cc9e098---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd43e1cc9e098&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmulti-regional-source-of-truth-d43e1cc9e098&source=-----d43e1cc9e098---------------------bookmark_footer-----------)![](../Images/42968a7b091c74dfaa9535ffb32908ed.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by [Lars Kienle](https://unsplash.com/@larskienle) on [Unsplash](https://unsplash.com/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I created a [post](https://medium.com/towards-data-science/from-postgres-to-snowflake-f4b403548066)
+    a year ago about migration from Postgres to Snowflake, and here is another case
+    of migration. This time I’m going to concentrate on the business case, architecture,
+    and design rather than the technical aspects but I’ll also try to share some tips
+    that might be helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The business case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It’s a B2B (Business to Business) business. The company is an AaaS (Application
+    as a Service) provider. It has its software product available as an online service
+    for customers in multiple countries across the globe. It requires a BI (Business
+    Intelligence) system mostly to give customers access to the data. Here are the
+    most interesting requirements:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some customers need access to ready-to-use dashboards and visualizations, and
+    some want to pull the data into their DWH.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Since the customers operate in different countries, the data should stay in
+    the region it was initially created in
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The customers should see only their information. For the same region, the data
+    is stored within the same database and the same tables, so row-level security
+    must be applied
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the majority of cases, the customers want real-time data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Let me start with what the existing architecture looked like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec35a451a03a0e19db61f8ec82aa554f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key characteristics are read-only replicas to pull the data, no DWH, and
+    Looker on top of it. The obvious advantage of the solution is that it’s the quickest
+    one to set up. Replica, in general, has real-time data. Looker takes care of transformations,
+    semantic layer, and visualizations. The row-level security is also implemented
+    in Looker using different filters. Unfortunately, that’s probably the only advantage,
+    and it has a lot of drawbacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Very limited ability to apply any modern data engineering techniques. We can’t
+    save the transformed data, we can’t use proper tools to do the transformation,
+    implement pipelines, auto-tests, etc. Basically, the only available instrument
+    is a Looker Derived Tables functionality.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As there is no DWH, it’s impossible to pull data from other sources like CRM,
+    mix the data from different services, or upload any static dictionary. The BI
+    is limited to the data that is saved there by one particular software product.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As I’ve mentioned earlier, some customers need to pull the data and they’d like
+    to have as low-level and raw data as possible. Looker does a great job delivering
+    the reports but it works on top of its semantic layer which already has some joins,
+    not all the fields are available and each Looker explore is designed for a specific
+    business process. The structure is not optimized for export.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performance. This is probably the biggest problem as the OLTP database is not
+    designed for analytical purposes and we don’t have control over indexes as we
+    work with read-only replicas. It leads not only to initial slow performance but
+    also to performance degradation as without the indexes the more data we have the
+    slower the queries are.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The most straightforward way to address those drawbacks was to introduce a
+    DWH layer which we did. The new design looked like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83eda77d9e064e6783c2ad9cb17a746b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Streaming data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are various providers on the market to do the streaming, we’ve chosen
+    Fivetran but one can have a look at Stitch, Airbyte, or any open-source framework
+    like Meltano or poor Singer. We’ve also considered Google Storage Transfer Service,
+    but it was in the raw state and didn’t have enough flexibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The whole process of the streaming setup wasn’t without issues, of course.
+    Here are some of them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The OLTP database didn’t have public access so a VPN had to be set up for Fivetran
+    to pull the data. It involved some network configuration and required additional
+    back and forth to decide on the solution that worked for both Fivetran and us
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Fivetran adds to the database load, so we had to setup additional monitoring,
+    and make sure that the stream doesn’t affect the main functionality
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The initial plan was to sync data every 5 minutes but it was causing connections
+    to time out and was throwing errors in logs due to the big volume of changes.
+    Fivetran was able to recover so it was no data loss but it was generating a mess
+    that was making it difficult to distinguish between real errors and these overload
+    errors. There was no straightforward solution but to relax requirements related
+    to having real-time data and start pulling the data less frequently.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Transforming data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The BigQuery was chosen mainly because it satisfies all the requirements we
+    had and the majority of the existing infrastructure is also in Google cloud so
+    the transition was supposed to be smooth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we now have DWH, which is not read-only, we were able to utilize the [DBT](https://www.getdbt.com/)
+    tool to perform data transformation and mix data from different sources, but even
+    without any transformations, with Looker querying the same data as before but
+    from BigQuery, the performance has improved dramatically, sometimes more than
+    **100 times** for the heavy tables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I won’t stop on the data preparation for the Looker as it’s very domain specific.
+    What’s more interesting is how we solved the data export problem. In general,
+    it’s very simple, we’ve just given customers direct access to BigQuery but the
+    devil is in the details so let me share some of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The easiest requirement to implement was keeping data in different regions.
+    Fortunately, the region for each Dataset in BigQuery is configurable. Fivetran
+    streams data into different datasets and DBT models are run against these datasets
+    separately so the data from different regions don’t get mixed at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It was a bit more complicated to implement row-level security to make sure that
+    the customers have access to their data only. BigQuery supports row-level security,
+    but since we use DBT we’ve chosen a different approach to have better control
+    over the exposing data and more options to automate the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ve created a set of DBT models that apply security in SQL code based on
+    the information about the currently connected user and create views in BigQuery.
+    More precisely:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each customer who needs access is provided with the user/service account. The
+    IAM role has general access to BigQuery, but there is no access to any specific
+    dataset, so, initially, a new user can’t query the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The new user email is added to the DBT seed files along with the identification
+    of the customer. Files for different regions are kept separately. It gives a user-customer
+    mapping as well as information on what dataset the user should have access to.
+    The seed files are stored in GitHub and therefore, we can run a GitHub action
+    on every change in this file
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The GitHub Action runs the parametrized DBT project against different regions.
+    The regions and data are different but the structure is the same so we needed
+    to write SQL code just once per each view. The DBT uploads seed files, creates
+    views, and as a final step gives individual users read-only access to the needed
+    dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The views identify a currently logged-in user email using the `session_user()`
+    function, join it with the user-customer mapping, and filter out everything which
+    is not related to the customer from the mapping.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'One very specific case over here that I wanted to share is giving access to
+    oAuth users. In Google IAM there are two types of users: service account and oAuth
+    user. It’s easy to work with the first one but not all the downstream systems
+    support this type of access. E.g., Tableau online can’t work with the service
+    account. The second type is a way a normal user logs into the Google account.
+    It’s very poorly documented how to make sure that such a user has access to the
+    specific datasets only, so here are the tips:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A user should have all the permissions of the `BigQuery Job` user and a `bigquery.jobs.create`
+    permission additionally
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The dataset-level permission can be granted then the same way it works for the
+    service account, e.g. with the SQL GRANT command
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A user doesn’t necessarily need to be created by the same Google account. E.G.
+    people from other organizations can get access provided their IAM permissions
+    are configured correctly in our project
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Be careful with the group emails. Everything works about the access on the dataset
+    level, but the `session_user()` returns the user's individual email so the row-level
+    security won’t work with the group email
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Last but not least tip to mention is that since we the clients have access to
+    the views, not the tables, the views should be able to query the data from other
+    data sets without exposing the raw data to the client. BigQuery has such an ability,
+    one can allow all the views from one dataset to query the data from the other
+    dataset regardless of the end user permissions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: BigQuery monitoring
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since the customers have direct access to the DWH it’s important to know how
+    much each of the customers utilizes the functionality. Since each customer is
+    tied to the user the monitoring on the user level should be able to answer this
+    question. I’ve come across an [interesting article on how to do it](/monitoring-your-bigquery-costs-and-reports-usage-with-data-studio-b77819ffd9fa)
+    and we’ve just re-implemented the same approach in Looker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other part of the infrastructure is Github, more precisely GitHub actions.
+    This functionality allows to create an execution workflow and set up a schedule
+    for it. There are existing open-source actions like [this](https://github.com/marketplace/actions/dbt-action)
+    that can help implement it, and the only thing to pay for is the GitHub minutes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Single source of truth
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The last thing I’d like to mention is the solution's flexibility. I’ve described
+    the main and the most interesting case but the company has other services and
+    with the current solution we were able to move the analytics of all these services
+    into our DWH system and use it as a source of truth for the downstream systems.
+    In other words, it also serves as a data feed. DBT is used to produce the views
+    and tables for all the business cases and the Dataset level access allows separation
+    of the downstream systems and users on the data level.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The DBT flexibility allows creating models for different downstream systems
+    within one project which is automated by means of GitHub as I mentioned earlier.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,477 @@
+- en: 'Scalable Serving with Kubernetes and Seldon Core: A tutorial'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/scalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5?source=collection_archive---------20-----------------------#2023-01-09](https://towardsdatascience.com/scalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5?source=collection_archive---------20-----------------------#2023-01-09)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to deploy ML models in Kubernetes clusters and to implement autoscaling
+    for your deployment with HPA and KEDA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)[![Tin
+    Nguyen](../Images/f5a69125e3d42be7906c8cd51f827854.png)](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------)
+    [Tin Nguyen](https://medium.com/@tintn03?source=post_page-----37aec914c4d5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F78d51d946a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&user=Tin+Nguyen&userId=78d51d946a3&source=post_page-78d51d946a3----37aec914c4d5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----37aec914c4d5--------------------------------)
+    ·11 min read·Jan 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F37aec914c4d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&user=Tin+Nguyen&userId=78d51d946a3&source=-----37aec914c4d5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F37aec914c4d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscalable-serving-with-kubernetes-and-seldon-core-a-tutorial-37aec914c4d5&source=-----37aec914c4d5---------------------bookmark_footer-----------)![](../Images/b9678f7f5d613266724cc19254ea38e4.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Adam Kool](https://unsplash.com/@adamkool) on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In most ML applications, deploying trained models to production is a crucial
+    stage. It’s where the models demonstrate their values by giving predictions for
+    customers or other systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying a model can be as simple as implementing a Flask server and then exporting
+    its endpoints for users to call. Yet, It’s not easy to build a system that can
+    robustly and reliably serve a large number of requests with strict response time
+    or throughput requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For medium and large businesses, the systems must be able to scale to process
+    heavier workloads without significantly changing the codebase. Perhaps the corporation
+    is expanding and needs a scalable system to handle the growing number of requests
+    (this characteristic is scalability). The business needs the system to be able
+    to adapt to traffic fluctuations (this characteristic is elasticity). These characteristics
+    can be achieved if the systems are capable of autoscaling based on traffic volume.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this tutorial, we’re going to learn how to deploy ML models in Kubernetes
+    clusters with Seldon Core. We’ll also learn to implement autoscaling for our deployment
+    with HPA and KEDA. The code for this tutorial can be found in this [repo](https://github.com/tintn/ml-model-deployment-tutorials).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Train a PyTorch model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To go through the deployment process, we’ll need a model. We use the model from
+    this [tutorial](https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html)
+    from the official PyTorch website. It’s a simple image classification model that
+    can run with CPU easily, so we can test the whole deployment process on local
+    machines like your laptop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Assume you’re in the `toy-model` folder of this [repo](https://github.com/tintn/ml-model-deployment-tutorials).
+    You can train the model on the CIFAR10 dataset with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Seldon Core uses [Triton Inference Server](https://github.com/triton-inference-server/server)
+    to serve PyTorch models, so we need to prepare the model in a format that it can
+    be served with Triton. First, we need to export the model to TorchScript (it’s
+    also possible to serve PyTorch models with Triton’s [python backend](https://github.com/triton-inference-server/python_backend),
+    but it’s generally less efficient and more complicated to deploy).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tracing and scripting are the two methods for exporting a model to TorchScript.
+    The choice between them is still debatable, this [article](https://ppwwyyxx.com/blog/2022/TorchScript-Tracing-vs-Scripting/)
+    explores the benefits and drawbacks of both methods. We’ll use the tracing method
+    to export the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Triton loads models from a model repository. It must contain information that
+    the server needs to serve a model such as the model’s input/output information,
+    backend to use… A model repository must follow the following structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In our case, we only have one model. Let’s call the model `cifar10-pytorch`,
+    our model repo should have the following structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`cifar10-model` is the repository''s name, `cifar10-pytorch` is the model name
+    and `model.ts` is the TorchScript model we just exported. `config.pdtxt` defines
+    how the model should be served with Triton:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can find the final repository [here](https://github.com/tintn/ml-model-deployment-tutorials/tree/main/toy-model/cifar10-model).
+    Triton supports several features that may be used to tune the model’s performance.
+    You can also group multiple steps or multiple models into an inference pipeline
+    to implement your business logic. However, I deliberately keep the model config
+    simple to illustrate the entire process of model deployment instead of focusing
+    on performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to see a more realistic example of how to export and serve a PyTorch
+    model with Triton, have a look at this [post](https://tintn.github.io/deploy-detectron2-with-triton/).
+    It demonstrates how to use Triton to serve the MaskRCNN model from Detectron2,
+    a popular model for instance segmentation and used in many real-world computer
+    vision systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Triton can access models from local filesystem or cloud storage services (e.g.
+    S3, Google Storage, or Azure Storage). As we’re going to deploy the model in Kubernetes,
+    using a cloud storage service is more convenient because all nodes in the Kubernetes
+    cluster can access the same models. We’ll use AWS S3 as the model repository in
+    this tutorial. Assume that you already have an AWS account, let’s create an S3
+    bucket and upload the folder we have prepared:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Replace `<YOUR_BUCKET>` to the name of your bucket. We now have the model repository
+    on AWS S3, we can start to deploy the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploy models with Seldon Core
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ll deploy the model to a Kubernetes cluster with Seldon Core, a framework
+    specializing in ML model deployment and monitoring. Let’s create a local Kubernetes
+    cluster, so we can test the deployment process using our local machine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) can be
+    used to create local clusters. At the time of writing, Seldon Core has an [issue](https://github.com/SeldonIO/seldon-core/issues/4339)
+    with k8s ≥ 1.25, so we have to use version 1.24 or older. To specify the k8s version
+    with Kind, just choose the image with the corresponding version to start a cluster.
+    The following command creates a local cluster named `kind-seldon` with `k8s==1.24.7`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Also, make sure you have `docker`, `kubectl`, `helm` installed on your local
+    machine. Switching the context of `kubectl` to `kind-seldon` instructs `kubectl`
+    to connect to the newly created cluster by default:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Install Seldon Core
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’ll use [Istio](https://istio.io/) as the cluster’s Ingress and Seldon Core
+    as the serving platform. You can find the installation instruction [here](https://docs.seldon.io/projects/seldon-core/en/latest/install/kind.html).
+    After installing Istio and Seldon Core, run these commands to check if they are
+    all correctly installed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Check if the Istio gateway is running:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Check if the Seldon controller is running:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you haven’t done it, make sure the label `istio-injection` is enabled:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The Istio gateway is running on port 80 in the cluster, we need to forward
+    a port from your local machine to that port so we can access it externally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Serving with Seldon Core
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If your model repository is stored in a private bucket, you need to grant permission
+    to access your bucket from within the cluster. It can be done by creating a secret
+    and then referring to it when creating a deployment. This is a template to create
+    secrets for S3 buckets:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Replace `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` with your actual AWS
+    access key ID and secret access key. Create the secret:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can deploy the model with this [manifest](https://github.com/tintn/ml-model-deployment-tutorials/blob/main/scalable-serving/cifar10-deploy.yaml),
+    notice the created secret is referred to in the manifest with the `envSecretRefName`
+    key. Make sure that `spec.predictors[].graph.name` matches the model name you
+    uploaded to your model repository. Apply the manifest to create a deployment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If this is your first deployment in this cluster, it’ll take a while to download
+    the necessary docker images. Check if the model is successfully deployed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I created a [script](https://github.com/tintn/ml-model-deployment-tutorials/blob/main/testing/test.py)
+    using Locust to test the deployed models. You need to install the [requirements](https://github.com/tintn/ml-model-deployment-tutorials/blob/main/testing/requirements.txt)
+    needed for the script to run first:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Given that `localhost:8080` has been port-forwarded to the cluster''s gateway,
+    run the following command to send requests to models deployed with Seldon:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If your deployment name or model names are different, you can adjust the deployment’s
+    URL accordingly in the script. The URL for a deployed model follows Seldon Core’s
+    [inference protocol](https://docs.seldon.io/projects/seldon-core/en/latest/reference/apis/v2-protocol.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ve deployed our custom model with Seldon Core and tested it by sending inference
+    requests to the model. In the next section, we’ll explore how to scale the deployment
+    to handle more users or higher traffic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pod Autoscaling with HPA
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When it comes to scalability, Kubernetes offers HPA (Horizontal Pod Autoscaling).
+    When certain metrics reach their thresholds for a resource (e.g. CPU or memory),
+    HPA can add more pods to process heavier workloads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install Metrics Server
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'HPA needs to fetch metrics from an aggregated API, which is usually provided
+    through a [Metrics Server](https://github.com/kubernetes-sigs/metrics-server).
+    You can install a metrics server for your cluster with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If your cluster is local, you also need to disable certificate validation by
+    passing the argument `-kubelet-insecure-tls` to the server:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deploy models with HPA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can enable HPA in the deployment manifest by adding `hpaSpec` for the corresponding
+    component:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: The HPA spec tells the deployment to scale up when the current metric value
+    (CPU usage in this case) is higher than 50% of the desired value, and the maximum
+    replicas that the deployment can possibly have are 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Apply this [manifest](https://github.com/tintn/ml-model-deployment-tutorials/blob/main/scalable-serving/cifar10-deploy-hpa.yaml)
+    to create a deployment with HPA, make sure you replace `<YOUR_BUCKET>` with your
+    bucket name and the secret for accessing the bucket (as mentioned in the previous
+    section) has been created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can see the current metric value with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s check the running pods. You should see a running pod for the deployed
+    model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can test the deployed model with our [test script](https://github.com/tintn/ml-model-deployment-tutorials/blob/main/testing/test.py)
+    (which was mentioned in the previous section):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Monitoring the current metric value with `kubectl get hpa -w`, you can see
+    after a while the metric value exceeds the threshold, and HPA will trigger the
+    creation of a new pod:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE27]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If the current metric value is lower than the threshold for a certain period
+    (it’s 5 minutes by default), HPA will scale down the deployment. The period can
+    be configured with the argument `--horizontal-pod-autoscaler-downscale-stabilization`
+    flag to `kube-controller-manager`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE28]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this section, we’ve learned how to scale the number of pods up and down based
+    on CPU usage. In the next section, we’ll use KEDA to scale our deployment more
+    flexibly based on custom metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pod Autoscaling with KEDA
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: KEDA can fetch metrics from many sources (they are called scalers), see the
+    list of supported scalers [here](https://keda.sh/docs/2.9/scalers/). We’ll set
+    up KEDA to fetch metrics from a Prometheus server, and monitor the metrics to
+    trigger pod scaling. The Prometheus server collects metrics from Seldon deployments
+    in the cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install Seldon Monitoring and KEDA
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Follow this [instruction](https://docs.seldon.io/projects/seldon-core/en/latest/analytics/analytics.html)
+    to install Seldon’s stack for monitoring, which includes a Prometheus server.
+    The following pods should now be present in the `seldon-monitoring` namespace:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE29]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Check if the pod monitor for Seldon Core has been created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE30]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run the following command to enable KEDA in Seldon Core:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE31]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Install KEDA to the cluster, and make sure that the previously installed KEDA
+    (if any) is completely uninstalled:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE32]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deploy models with KEDA
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We’ve had everything set up. Let’s create a Seldon deployment with KEDA. Similar
+    to HPA, to enable KEDA in a deployment, we only need to include `kedaSpec` in
+    the deployment''s manifest. Consider the following spec:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE33]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`serverAddress` is the address of the Prometheus server within the cluster,
+    it should be the URL of the Prometheus service, we can check the service with
+    `kubectl get svc -n seldon-monitoring`. When the metric value surpasses `threshold`,
+    the scaling will be triggered. The `query` is the average number of requests per
+    second across running replicas, which is the metric we want to monitor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Apply this [manifest](https://github.com/tintn/ml-model-deployment-tutorials/blob/main/scalable-serving/cifar10-deploy-keda.yaml)
+    to deploy the model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE34]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s trigger the autoscaling by sending requests to the deployment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE35]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After a few seconds, you can see a new pod created:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE36]'
+  prefs: []
+  type: TYPE_PRE
+- en: Similar to HPA, downscaling will be triggered after a certain period (5 minutes
+    by default) of low traffic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE37]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve learned how to deploy machine learning models to Kubernetes clusters with
+    Seldon Core. Although we mainly focused on deploying PyTorch models, the procedures
+    shown in this guide may be used to deploy models from other frameworks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve also made the deployments scalable using HPA and KEDA. Compared to HPA,
+    KEDA provides more flexible ways to scale the system based on Prometheus metrics
+    (or other supported scalers from KEDA). Technically, we can implement any scaling
+    rules from metrics that can be fetched from the Prometheus server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*https://tintn.github.io*](https://tintn.github.io/Scalable-Serving-with-Kubernetes-and-Seldon-Core/)
+    *on January 9, 2023.*'
+  prefs: []
+  type: TYPE_NORMAL

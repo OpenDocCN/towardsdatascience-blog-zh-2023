@@ -1,0 +1,458 @@
+- en: Padding Large Language Models — Examples with Llama 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/padding-large-language-models-examples-with-llama-2-199fb10df8ff?source=collection_archive---------2-----------------------#2023-08-11](https://towardsdatascience.com/padding-large-language-models-examples-with-llama-2-199fb10df8ff?source=collection_archive---------2-----------------------#2023-08-11)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Best practices to pad training examples for causal LLMs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)[](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----199fb10df8ff--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----199fb10df8ff---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----199fb10df8ff--------------------------------)
+    ·10 min read·Aug 11, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F199fb10df8ff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&user=Benjamin+Marie&userId=ad2a414578b3&source=-----199fb10df8ff---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F199fb10df8ff&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpadding-large-language-models-examples-with-llama-2-199fb10df8ff&source=-----199fb10df8ff---------------------bookmark_footer-----------)![](../Images/5dee339a0ba5a939a758499baeec9333.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by the author — Based on an image from [Pixabay](https://pixabay.com/vectors/llama-alpaca-animal-mammal-zoo-297668/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Padding is one of the most under-documented aspects of large language models
+    (LLMs). Why? Simply because LLMs are usually pre-trained without padding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Nonetheless, for fine-tuning LLMs on custom datasets, padding is necessary.
+    Failing to correctly pad training examples may result in different kinds of unexpected
+    behaviors: Null loss or infinity loss during training, over-generation, or empty
+    output during inference, are all symptoms of incorrect padding.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I first explain what is padding and why it is necessary. Then,
+    I show how you can find the correct padding strategy for an LLM pre-trained without
+    padding. I propose two different solutions to add padding support to LLMs using
+    Hugging Face’s Transformers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toward the end of the article, I also provide examples showing how to pad your
+    training examples for Llama 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After reading this article, you should be able to figure out by yourself how
+    to pad training examples for LLMs without reading their documentation or tutorials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pad and batch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What is padding and why do we pad?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s take one example that we wish to use for fine-tuning an LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We have to turn this example into a sequence of tokens. Libraries, such as
+    Transformers, usually tokenize following these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Segment the example into subwords according to a given vocabulary:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Replace words by their index from the vocabulary to obtain a sequence of integers:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Add special tokens to the sequence: BOS token, EOS token, UNK token, PAD token,
+    etc.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: For this example, I use Llama 2’s tokenizer. We will see below in detail
+    how to do it.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, only the BOS (begin of sequence) special token has been added.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An attention mask is also generated for each training example. This mask tells
+    the transformer whether it should give attention to a token (1) or not (0). The
+    attention mask for this example is simple since all the tokens should be considered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The next step is to wrap everything into tensors with Pytorch. This wrapping
+    is necessary to apply the matrix operations for which CUDA and GPUs are optimized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let’s say that we have not one but two training examples. For the sake
+    of simplicity, I’ll just duplicate the one I already have. The new tensors have
+    one more row:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Both examples have the same length (of course, since they are identical). Both
+    tensors have the same dimensions 2x8 (N x M).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples are put in the tensors to create batches so that the neural network
+    can update its values after seeing N examples. Batching is critical for computing
+    efficiency and model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, let’s introduce a third example that is shorter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After tokenization, we obtain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you try to add it to our list of examples and create tensors, you will get
+    an error. But imagine that we don’t have any errors, we would obtain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Can you see the problem here and why it is not possible to create such tensors?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have one row of a different length. We can’t apply matrix operations on this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In most datasets, examples don’t have the same length. We have to modify them
+    to make sure that examples in the same batch have the same length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is why we need “padding”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Padding token and padding side
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You can see padding as extending a sequence up to a given length by repeating
+    a dummy token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This dummy token is a “pad token”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, our first example above has a length of 8 tokens (including the
+    BOS token). Let’s say that in our batch we won’t have sequences longer than 8
+    tokens. All the sequences must be 8 tokens long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our second example contains only 5 tokens. So we must add 3 pad tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: In practice, we don’t manually add “[PAD]” tokens to the sequences. Most tokenizers
+    would split “[PAD]” into subwords. The pad token is usually a special token defined
+    inside the tokenizer and automatically added, if necessary, along with the other
+    special tokens to the sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If the pad token has the ID 32000 in the vocabulary, we would obtain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we have a sequence with the expected length. But one problem remains:
+    We also need to modify the attention mask.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember, the pad tokens are dummy tokens, we don’t want the LLM to give any
+    attention to them. We only introduced these tokens to fill sequences and create
+    correct tensors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To indicate it to the model, we simply put “0” in the attention mask so that
+    the model will ignore them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Finally, we can create correct tensors with the padded examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: Padding is performed when a sequence is too short given the maximum
+    length. But in some cases, a sequence can be too long. In this situation, we have
+    to truncate the sequence so that its size matches the maximum length.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another important parameter of padding is the padding side. In the example above,
+    I padded right. If the model has an EOS token, the pad tokens will be added after
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also pad left. In this situation, the tensors look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Pad tokens are added before the BOS token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which side to choose mainly depends on the LLM you want to use and your downstream
+    tasks. That’s why it’s important to study the model and its tokenizer before taking
+    any decision. Below, we will see how to make this decision for Llama 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adding padding support for causal LLM
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we saw, padding is (almost) always necessary for fine-tuning. Yet, many LLMs
+    don’t support padding by default. It means that they don’t have a special pad
+    token in their vocabulary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, I present two solutions to add a pad token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The simple solution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This solution is the one that you will find in most tutorials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It simply assigns an existing token to the pad token. For instance, you can
+    declare that your pad token will be the EOS token. We would obtain tensors like
+    this (right-padded, and where “2” is the ID of the EOS token):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The problem with this solution is that the LLM is now confused: Most of the
+    time, the EOS token will have “0” in the attention mask. It encourages the LLM
+    to ignore the original EOS token. This is not ideal since the EOS token signals
+    the LLM to stop generating.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also with this solution, we have to pad right. If you pad left, you would have
+    sequences beginning with an EOS token thus early stopping the generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: I read several tutorials for fine-tuning Llama 2 that use the EOS token
+    for left padding. If you do that, you will have a 0.0 loss and the training will
+    diverge. Try it! It’s interesting to observe it.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my opinion, a better alternative is to use the UNK token as the pad token.
+    This token is rarely used. It appears in sequences only when a token is not in
+    the vocabulary. Using it for another purpose shouldn’t have a significant impact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Meta in its “[Llama recipes](https://github.com/facebookresearch/llama-recipes/blob/main/utils/train_utils.py)”
+    uses this alternative. With this solution, the padding side doesn’t matter much.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The alternative solution: Create a pad token from scratch'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The UNK token already has a role in the model. Ideally, we want a pad token
+    that is used only for padding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have to create from scratch a pad token in the vocabulary if it doesn’t exist.
+    [This is the solution recommended by Hugging Face for Llama 2](https://huggingface.co/docs/transformers/main/model_doc/llama2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: With libraries such as transformers, it’s easy to extend a vocabulary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you want to create a pad token, you have to follow these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: add the pad token as a special token in the vocabulary of the LLM
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: resize the token embeddings
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: retrain the token embeddings (optional)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you are on a budget and use LoRa for fine-tuning, you may want to skip the
+    last step since the token embeddings can weigh several 100 million parameters.
+    Moreover, in my experiments, retraining the embeddings always led to worse results,
+    indicating that my fine-tuning dataset is not large enough or that good hyperparameters
+    are difficult to find.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Case study: padding Llama 2 with Hugging Face’s Transformers'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this section, we will enable padding for Llama 2\. To replicate each step,
+    you will need access to Llama 2 on Hugging Face. I explained [how to get Llama
+    2 in this article](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: I share* [*a notebook (#8) replicating all these steps on The Kaitchup,
+    my substack newsletter.*](https://kaitchup.substack.com/publish/post/134749542)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, install the Transformers library:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, we import transformers and load the tokenizer. Make sure you put your
+    Hugging Face’s access token there:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We define two training examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we put in the same batch the prompt1 twice, everything goes well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But if you add prompt2, you will get an error as expected:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s clear that the tokenizer didn’t pad the examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can solve this problem by simply using the UNK token as a pad token, as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: In this example, I asked the tokenizer to pad up to max_length. I set max_length
+    to 20\. If your example contains 10 tokens, the tokenizer will add 10 pad tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: The alternative is to create a pad token from scratch. With Hugging Face’s transformers,
+    we can do this with the method “add_special_tokens”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE26]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Don’t forget to resize the token embeddings of Llama 2 after you added the
+    pad token to its vocabulary. I explained how to do it in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----199fb10df8ff--------------------------------)
+    [## Fine-tune Llama 2 on Your Computer with QLoRa and TRL'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On Guanaco and with the correct padding
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: kaitchup.substack.com](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----199fb10df8ff--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once you understand it, padding is very straightforward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the UNK token for padding, or creating a pad token from scratch, are very
+    safe solutions that will work for almost all causal LLMs. But you should always
+    have a look at how the tokenizer works. At least you should be aware of the special
+    tokens it already supports. For instance, not all LLMs have a UNK token, some
+    LLMs have a pad token that is not explicitly defined as a pad token in the vocabulary,
+    etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, if you have any questions, please leave drop a comment. I’ll try to
+    answer it.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,411 @@
+- en: How to Build a Multi-GPU System for Deep Learning in 2023
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935?source=collection_archive---------0-----------------------#2023-09-16](https://towardsdatascience.com/how-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935?source=collection_archive---------0-----------------------#2023-09-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)[![Antonis
+    Makropoulos](../Images/5bdd3826eeb31dfb6d8e6fc393b24d8b.png)](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------)
+    [Antonis Makropoulos](https://benuix.medium.com/?source=post_page-----e5bbb905d935--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F866c99d649d0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&user=Antonis+Makropoulos&userId=866c99d649d0&source=post_page-866c99d649d0----e5bbb905d935---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e5bbb905d935--------------------------------)
+    ·10 min read·Sep 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe5bbb905d935&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&user=Antonis+Makropoulos&userId=866c99d649d0&source=-----e5bbb905d935---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe5bbb905d935&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-a-multi-gpu-system-for-deep-learning-in-2023-e5bbb905d935&source=-----e5bbb905d935---------------------bookmark_footer-----------)![](../Images/4bd3724494a1436a98b96b853132d183.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: My deep learning build — always work in progress :).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This story provides a guide on how to build a multi-GPU system for deep learning
+    and hopefully save you some research time and experimentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Target
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Build a multi-GPU system for training of computer vision and LLMs models without
+    breaking the bank! *🏦*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Step 1\. GPUs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s start with the fun (and expensive 💸💸💸) part!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24f9a6334f3f16d591f251fdff672c5f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The H100 beast! Image from [NVIDIA](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main considerations when buying a GPU are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: memory (VRAM)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: performance (Tensor cores, clock speed)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: slot width
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: power (TDP)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Memory
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For deep learning tasks nowadays we need a loooot of memory. LLMs are huge even
+    to fine-tune and computer vision tasks can get memory-intensive especially with
+    3D networks. Naturally the most important aspect to look for is the GPU **VRAM**.
+    For LLMs I recommend at least 24 GB memory and for computer vision tasks I wouldn’t
+    go below 12 GB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The second criterion is performance which can be estimated with FLOPS (Floating-point
+    Operations per Second):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ffc752fed94dc4a6083ed15312f4173.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The crucial number in the past was the number of CUDA cores in the circuit.
+    However, with the emergence of deep learning, NVIDIA has introduced specialized
+    **tensor cores** that can perform many more FMA (Fused Multiply-Add) operations
+    per clock. These are already supported by the main deep learning frameworks and
+    are what you should look for in 2023.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Below you can find a chart of raw performance of GPUs grouped by memory that
+    I compiled after quite some manual work:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f43767df7f7dec9bff9c18fc1abdeb8b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Raw performance of GPUs based on the CUDA and tensor cores (TFLOPs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that you have to be *extra careful* when comparing performance of different
+    GPUs. Tensor cores of different generations / architectures are not comparable.
+    For instance, the A100 performs 256 FP16 FMA operations / clock while the V100
+    “only” 64\. Additionally, older architectures (Turing, Volta) do not support 32-bit
+    tensor operations. What makes the comparison more difficult is that NVIDIA doesn’t
+    always report the FMA, not even in the whitepapers, and GPUs of the same architecture
+    can have different FMAs. I kept banging my head with [this](https://forums.developer.nvidia.com/t/tf32-tflops-of-geforce-rtx-3090-vs-a40/265828)
+    😵‍💫. Also note that NVIDIA often advertises the tensor FLOPS with sparsity which
+    is a feature usable only at inference time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to identify the best GPU with respect to price, I collected the ebay
+    prices using the ebay API and computed the relative performance per dollar (USD)
+    for new cards:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f37be6f51d3986e0438c27fffaafd20f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Relative performance per USD of GPUs based on the CUDA and tensor cores (TFLOPs
+    / USD). Prices are based on current ebay prices (September 2023).
+  prefs: []
+  type: TYPE_NORMAL
+- en: I did the same for used cards but since the rankings don’t change too much I
+    omit the plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To select the best GPU for your budget, you can pick one of the top GPUs for
+    the largest memory you can afford. My recommendation would be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/97e05d42f4b815f70b2fe279adf077eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Recommendation of GPUs for different budgets based on current ebay prices (September
+    2023).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to dive into more technical aspects I advise to read Tim Dettmers’
+    excellent guide on [Which GPU(s) to Get for Deep Learning](https://timdettmers.com/2023/01/30/which-gpu-for-deep-learning/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Slot width
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'When building a multi-GPU system, we need to plan how to physically fit the
+    GPUs into a PC case. Since GPUs grow larger and larger, especially the gaming
+    series, this becomes more of an issue. Consumer motherboards have up to 7 PCIe
+    slots and PC cases are built around this setup. A 4090 can easily take up 4 slots
+    depending on manufacturer, so you can see why this becomes an issue. Additionally
+    we should leave at least 1 slot between GPUs that are not blower style or watercooled
+    to avoid overheating. We have the following options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Watercooling**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Watercooled variants will take up to 2 slots but they are more expensive. You
+    can alternatively convert an air-cooled GPU but this will void the warranty. If
+    you don’t get All-in-One (AIO) solutions you will need to build a custom watercooling
+    loop. This is also true if you want to fit multiple watercooled GPUs since the
+    AIO radiators may not fit in the case. Building your own loop is risky and I wouldn’t
+    personally do it with expensive cards. I would only buy AIO solutions straight
+    from the manufactures (risk averse 🙈).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Aircooled 2–3 slot cards and PCIe risers**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this scenario you interleave cards on PCIe slots and cards connected with
+    PCIe riser cables. The PCIe riser cards can be placed somewhere inside the PC
+    case or in the open air. In either case you should make sure the GPUs are secured
+    (see also the section about PC cases).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Power (TDP)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Modern GPUs get more and more power hungry. For instance, A 4090 requires 450
+    W while a H100 can get up to 700 W. Apart from the power bill, fitting three or
+    more GPUs becomes an issue. This is especially true in the US that the power sockets
+    can deliver up to around 1800w.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A solution to this problem if you are getting close to the max power you can
+    draw from your PSU / power socket is power-limiting. All you need to reduce the
+    max power a GPU can draw is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Power-limiting by 10-20% has been shown to reduce performance by less than 5%
+    and keeps the cards cooler ([experiment by Puget Systems](https://www.pugetsystems.com/labs/hpc/NVIDIA-GPU-Power-Limit-vs-Performance-2296/?utm=)).
+    Power-limiting four 3090s for instance by 20% will reduce their consumption to
+    1120w and can easily fit in a 1600w PSU / 1800w socket (assuming 400w for the
+    rest of the components).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 2\. Motherboard and CPU
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next step of the build is to pick a motherboard that allows multiple GPUs.
+    Here the main consideration is the PCIe lanes. We need at **minimum PCIe 3.0 slots
+    with x8 lanes** each for each of the cards (see [Tim Dettmers’ post](https://timdettmers.com/2018/12/16/deep-learning-hardware-guide/#PCIe_Lanes_and_Multi-GPU_Parallelism)).
+    PCIe 4.0 or 5.0 are rarer and not needed for most deep learning usecases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apart from the slot type, the spacing of the slots will determine where you
+    can place the GPUs. Make sure you have checked the spacing and that your GPUs
+    can actually go where you want them to. Note that most motherboards will use x8
+    configuration for some x16 slots when you use multiple GPUs. The only real way
+    to get this information is on the manual of the card.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The easiest way to not spend hours of research and also future-proof your system
+    is to pick a motherboard that has x16 slots everywhere. You can use PCPartPicker
+    and filter motherboards that have [7+ PCIe x16 slots](https://pcpartpicker.com/products/motherboard/#h=7,8&xcx=0).
+    This gives us 21 products to choose from. We then [reduce the list](https://pcpartpicker.com/products/motherboard/#h=7,8&xcx=0&D=137438953472,2199023255552&mt=ddr4,ddr5)
+    by selecting the minimum amount of RAM we want (e.g. 128 GB) with DDR4 / DDR5
+    type to bring it down to 10 products:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69337ca759a3ca823c2e554bc1134b3a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Motherboards with at least 7 PCIe x16 slots and 128 GB DDR4/DDR5 RAM based on
+    [PCPartPicker](https://pcpartpicker.com/products/motherboard/#h=7,8&xcx=0&D=137438953472,2199023255552&mt=ddr4,ddr5).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The supported CPU sockets of the above list are LGA2011–3 and LGA2066\. We
+    then move to the CPU selection and select CPUs with the desired number of cores.
+    These are mainly needed for data loading and batch preparation. Aim to have at
+    least **2 cores / 4 threads per GPU**. For the CPU we should also check the PCIe
+    lanes it supports. Any CPU of the last decade should support at least 40 lanes
+    (covering 4 GPUs at x8 lanes) but better be safe than sorry. With a filtering
+    of e.g. [16+ cores with the above sockets](https://pcpartpicker.com/products/cpu/#C=16,64&k=28,35&xcx=0)
+    we get the following CPUs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Intel Xeon E5 (LGA2011–3): 8 results'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Intel Core i9 (LGA2066): 9 results'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We then pick our favorite combination of motherboard and CPU based on the number
+    of cores, availability and price.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both LGA2011–3 and LGA2066 sockets are very old (2014 and 2017 respectively),
+    and therefore you can find good deals on ebay for both the motherboard and CPU.
+    An ASRock X99 WS-E motherboard and a 18-core Intel Xeon E5–2697 V4 can cost you
+    less than 300$ in used condition. Don’t buy the cheaper ES or QS versions for
+    CPUs as these are engineering samples and may fail ⚠️️.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you want to buy something more powerful and/or more recent and/or an AMD
+    CPU you can look into motherboards with e.g. 4+ PCIe x16 slots but make sure you
+    check the slot spacings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this stage it’s a good idea to start a [PCPartPicker build](https://pcpartpicker.com/list/).
+    🛠️
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PCPartPicker will check compatibilities between components for you and will
+    make your life easier.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Step 3\. RAM 🐏
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here the most important aspect is the amount of RAM. RAM is used in different
+    places of the deep learning cycle: loading data from disk for batch creation,
+    loading the model and of course prototyping. The amount needed depends a lot on
+    your application (e.g. 3D image data will need much more additional RAM) but you
+    should aim for 1x–2x the total amount of VRAM of your GPUs. The type should be
+    at least DDR4 but the RAM clock is not very important, so don’t spend your money
+    there 🕳️.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When buying RAM you should make sure that the form factor, type, number of modules
+    and memory per module all agree with your motherboard specs (PCPartPicker is your
+    friend!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 4\. Disks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Another component that you can save on is the disks 😌. Again the amount of disk
+    space is important and depends on the application. You don’t necessarily need
+    ultra-fast disks or NVMEs as they won’t affect your deep learning performance.
+    The data will be anyway loaded to RAM and in order to not create a bottleneck
+    you can simply use more parallel CPU workers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 5\. Power supply (PSU) 🔌
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we saw GPUs are power-hungry components. When setting up a multi-GPU system,
+    the selection of the PSU becomes an important consideration. The majority of PSUs
+    can deliver up to 1600w — this is in line with the power limits of US sockets.
+    There are a few PSUs that can deliver more than that but need some research and
+    they target especially miners.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fe334aa8016473809c613cf470581b1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimated wattage provided by PCPartPicker for your builds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To determine the wattage of your system, you can use again PCPartPicker that
+    computes the total amount of your build. To this we need to add an extra 10%+
+    for peace of mind since GPUs will have spikes of power more than what is on their
+    specs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An important criterion is the **PSU efficiency** that is marked with the 80
+    PLUS rating. The supply will reach the wattage it advertises but will lose some
+    power in the process. 80 PLUS Bronze supplies are rated with 82% efficiency vs
+    e.g. a Gold that will reach 87% efficiency. If we have a system that draws 1600w
+    and we use it 20% of the time, we would save 22$ per year with a GPU with Gold
+    rating, assuming a cost of 0.16$ / KWh. When comparing prices take that into account
+    in your calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2c585bf5a9b2f3468913cc0cb4d5159.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PSU efficiency ratings. Table from [techguided](https://techguided.com/80-plus-bronze-vs-gold-vs-platinum-vs-titanium-which-psu-rating-do-you-need/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: When running at full load some PSUs are more **noisy** than others since they
+    use a fan at high RPMs. If you are working (or sleeping!) close to your case this
+    can have some effect, so it’s a good idea to check the decibels from the manual
+    😵.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When selecting a supply, we need to verify that it has enough connectors for
+    all our parts. GPUs in particular use 8 (or 6+2) pin cables. One important note
+    here is that for each power slot of the GPU we should use **a separate 8 pin cable**
+    and not use multiple outputs of the same cable (daisy-chaining). 8 pin cables
+    are generally rated to ~150w. When using a single cable for more than one power
+    slot the GPU may not get enough power and throttle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 6\. PC case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Last but not least, selecting a PC case is not trivial. GPUs can get humongous
+    and some cases will not fit them. A 4090 for instance can reach 36 cm length 👻!
+  prefs: []
+  type: TYPE_NORMAL
+- en: On top of that, mounting GPUs with PCIe risers may require some hacks. There
+    are some some newer cases that allow to mount an additional card, especially dual
+    system cases like the Phanteks Enthoo 719\. Another option is the Lian-Li O11D
+    EVO that can house a GPU in upright position with the Lian-Li Upright GPU Bracket.
+    I don’t have these cases so I’m not sure how well they would fit e.g. multiple
+    3090 / 4090\. However you can still mount a GPU upright even if your PC case doesn’t
+    directly support it with the Lian-Li bracket. You will need to drill 2–3 holes
+    to the case but is not crazy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f678cf20bc13c76aa0594d1d51c3c98a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mounting a GPU in an upright position with the Lian Li upright bracket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The end
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I hope you enjoyed reading this guide and that you found some useful tips. The
+    guide is aimed to help in your research on building a multi-GPU system, and not
+    replace it. Feel free to send me any questions or comments you may have. If I
+    am wrong on anything in the above I would really appreciate a comment or DM to
+    make it even better 🙏!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: Unless otherwise noted, all images are by the author.'
+  prefs: []
+  type: TYPE_NORMAL

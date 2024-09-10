@@ -1,0 +1,363 @@
+- en: Deploy Your Local GPT Server With Triton
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/deploy-your-local-gpt-server-with-triton-a825d528aa5d?source=collection_archive---------3-----------------------#2023-04-14](https://towardsdatascience.com/deploy-your-local-gpt-server-with-triton-a825d528aa5d?source=collection_archive---------3-----------------------#2023-04-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to run large language models on your local server
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bnjmn_marie?source=post_page-----a825d528aa5d--------------------------------)[![Benjamin
+    Marie](../Images/3ea1ad230cb1e67610418a8e36a5e5dd.png)](https://medium.com/@bnjmn_marie?source=post_page-----a825d528aa5d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a825d528aa5d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a825d528aa5d--------------------------------)
+    [Benjamin Marie](https://medium.com/@bnjmn_marie?source=post_page-----a825d528aa5d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fad2a414578b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-your-local-gpt-server-with-triton-a825d528aa5d&user=Benjamin+Marie&userId=ad2a414578b3&source=post_page-ad2a414578b3----a825d528aa5d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a825d528aa5d--------------------------------)
+    ·8 min read·Apr 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa825d528aa5d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-your-local-gpt-server-with-triton-a825d528aa5d&user=Benjamin+Marie&userId=ad2a414578b3&source=-----a825d528aa5d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa825d528aa5d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeploy-your-local-gpt-server-with-triton-a825d528aa5d&source=-----a825d528aa5d---------------------bookmark_footer-----------)![](../Images/aa5dcc0e3ae51b6c33eee3078226b497.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image from [Pixabay](https://pixabay.com/photos/nvidia-graphic-card-bitcoin-gpu-5264921/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using OpenAI GPT models is possible only through OpenAI API. In other words,
+    you must share your data with OpenAI to use their GPT models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data confidentiality is at the center of many businesses and a priority for
+    most individuals. Sending or receiving highly private data on the Internet to
+    a private corporation is often not an option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For these reasons, you may be interested in running your own GPT models to process
+    locally your personal or business data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, there are many open-source alternatives to OpenAI GPT models. They
+    are not as good as GPT-4, yet, but can compete with GPT-3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instance, EleutherAI proposes several GPT models: GPT-J, GPT-Neo, and GPT-NeoX.
+    They are all fully documented, open, and under a license permitting commercial
+    use.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These models are also big. The smallest, GPT-J, takes almost 10 Gb of disk space
+    when compressed (6 billion parameters). On some machines, loading such models
+    can take a lot of time. Ideally, we would need a local server that would keep
+    the model fully loaded in the background and ready to be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One way to do that is to run GPT on a local server using a dedicated framework
+    such as nVidia Triton ([BSD-3 Clause license](https://github.com/triton-inference-server/server/blob/main/LICENSE)).
+    *Note: By “server” I don’t mean a physical machine. Triton is just a framework
+    that can you install on any machine.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Triton with a FasterTransformer ([Apache 2.0 license](https://github.com/NVIDIA/FasterTransformer/blob/main/LICENSE))
+    backend manages CPU and GPU loads during all the steps of prompt processing. Once
+    Triton hosts your GPT model, each one of your prompts will be preprocessed and
+    post-processed by FastTransformer in an optimal way based on your hardware configuration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will show you how to serve a GPT-J model for your applications
+    using Triton Inference Server. I chose GPT-J because it is one of the smallest
+    GPT models which is both performant and exploitable for commercial use ([Apache
+    2.0 license](https://huggingface.co/EleutherAI/gpt-j-6b)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hardware
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You need at least one GPU supporting CUDA 11 or higher. We will run a large
+    model, GPT-J, so your GPU should have at least 12 GB of VRAM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up the Triton server and processing the model take also a significant
+    amount of hard drive space. You should have at least 50 GB available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: OS
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You need a UNIX OS, preferably Ubuntu or Debian. If you have another UNIX OS,
+    it will work as well but you will have to adapt all the commands that download
+    and install packages to the package manager of your OS.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I ran all the commands presented in this tutorial on Ubuntu 20.04 under WSL2\.
+    *Note: I ran into some issues with WSL2 that I will explain but that you may not
+    have if you are running a native Ubuntu.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For some of the commands, you will need “sudo” privileges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dependencies
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: FasterTransformer requires [CMAKE](https://cmake.org/install/) for compilation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are other dependencies but I’ll provide a guide to install them, inside
+    this tutorial, when necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up a docker container for Triton
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will use a docker image already prepared by nVidia. It is provided in a specific
+    branch of the “fastertransformer_backend”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So first we have to clone this repository and get this branch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you don’t have Docker, jump to the end of this article where you will find
+    a short tutorial to install it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following command builds the docker for the Triton server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It should run smoothly. *Note: In my case, I had several problems with GPG
+    keys that were missing or not properly installed. If you have a similar issue,
+    drop a message in the comments. I’ll be happy to help you!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, we can run the docker image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If it succeeds, you will see something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bb49a3d37fffe75041ab4e8961fcb87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: If you see the error “docker: Error response from daemon: could not
+    select device driver “” with capabilities: [[gpu]].”, it may mean that you don’t
+    have the nVidia container installed. I provide installation instructions at the
+    end of the article.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Don’t leave or close this container: All the remaining steps must be performed
+    inside it.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prepare GPT-J for FasterTransformer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next steps prepare the GPT-J model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need to get and configure FasterTransformer. *Note: You will need CMAKE
+    for this step.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: It may take enough time to drink a coffee ☕.
+  prefs: []
+  type: TYPE_NORMAL
+- en: FasterTransformer is used to run the model inside the Triton server. It can
+    manage preprocessing and post-processing of input/output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, we can get GPT-J:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This command first downloads the model and then extracts it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It may take enough time to drink two coffees ☕☕or to take a nap if you don’t
+    have high-speed Internet. There is around 10 GB to download.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is the conversion of the model weights to FasterTransformer format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I put “1” for “ — n-inference-gpus” because I have only 1 GPU but if you have
+    more you can put a higher number. *Note: I added “nvidia-cuda-nvcc” because it
+    was needed in my environment. It may already be installed in yours. If you have
+    other issues with another library called “ptxas” drop a comment I’ll answer it.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are running into an error with the previous command about “jax” or “jaxlib”,
+    the following command solved it for me:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Optimization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Before starting the server, it is also recommended to run the kernel auto-tuning.
+    It will find among all the low-level algorithms the best one given the architecture
+    of GPT-J and your machine hardware. gpt_gemm will do that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: It should produce a file named “gemm_config.in”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Configuration of FasterTransformer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now, we want to configure the server to run GPT-J. Find and open the following
+    file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*fastertransformer_backend/all_models/gptj/fastertransformer/config.pbtxt*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Set up the parameter for your number of GPUs. *Note: It must be the same as
+    you have indicated with “n-inference-gpus” when converting the weights of GPT-J.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then, indicate where to find GPT-J:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Run the Triton server
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To launch the Triton server, run the following command: *Note: Change “CUDA_VISIBLE_DEVICES”
+    to set the IDs of your GPUs, e.g., “0,1” if you have two GPUs that you would like
+    to use.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: If everything works correctly, you will see in your terminal the server waiting
+    with 1 model loaded by FasterTransformer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It remains to create a client that queries the server. It can be for instance
+    your application that will exploit the GPT-J model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'nVidia provides an example of a client in:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*fastertransformer_backend/tools/end_to_end_test.py*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This script may look quite complicated but it only prepares all the arguments
+    and batch your prompts, and then send everything to the server which is in charge
+    of everything else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Modify the variable *input0* toinclude your prompts. It is located here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f001212d5e8e6084f23345dbf55feb7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, you can run this script to prompt your Triton server. You should get
+    the response quickly since the model is already fully loaded and optimized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s it! You have now everything you need to start exploiting your local
+    GPT model in your applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The steps explained in this article are also applicable to all other models
+    supported by FasterTransformer (except for specific parts that you will have to
+    adapt). You can find [the list here](https://github.com/NVIDIA/FasterTransformer#support-matrix).
+    If the model you want to use is not in the list, it may work as well or you may
+    have to modify some of the commands I provide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you have many GPUs at your disposal, you can straightforwardly apply the
+    same steps to GPT-Neo* models. You would only have to modify the “*config.pbtxt*”
+    to adapt to these models. *Note: nVidia may have already prepared these configuration
+    files, so look in the* [*FasterTransformer repository*](https://github.com/NVIDIA/FasterTransformer)
+    *before making your own configuration files.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you want to use T5 instead of a GPT model, you can have a look at [this
+    tutorial written by nVidia](https://developer.nvidia.com/blog/deploying-gpt-j-and-t5-with-fastertransformer-and-triton-inference-server/#entry-content-comments).
+    *Note: nVidia’s tutorial is outdated, you will have to modify some commands.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Successfully installing and running a Triton inference server by just following
+    these steps is very much dependent on your machine configuration. If you have
+    any issues, feel free to drop a comment and I’ll try to help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further instructions to install missing dependencies
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Installation of Docker (Ubuntu):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Installation of nvidia-container-toolkit (Ubuntu):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE

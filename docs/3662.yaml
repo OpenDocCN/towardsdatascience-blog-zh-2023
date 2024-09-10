@@ -1,0 +1,480 @@
+- en: Large Language Models and Vector Databases for News Recommendations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/large-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030?source=collection_archive---------1-----------------------#2023-12-14](https://towardsdatascience.com/large-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030?source=collection_archive---------1-----------------------#2023-12-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/86e2c1ed6d4dee9531096a56a7242931.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Roman Kraft](https://unsplash.com/@iamromankraft?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Making LLMs into production environments using Sentence Transformers and Qdrant*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)[![João
+    Felipe Guedes](../Images/4be4c6631a15540541fb96ac1bed88ec.png)](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------)
+    [João Felipe Guedes](https://medium.com/@guedes.joaofelipe?source=post_page-----6f9348fd4030--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F259f985d397f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030&user=Jo%C3%A3o+Felipe+Guedes&userId=259f985d397f&source=post_page-259f985d397f----6f9348fd4030---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6f9348fd4030--------------------------------)
+    ·8 min read·Dec 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6f9348fd4030&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030&user=Jo%C3%A3o+Felipe+Guedes&userId=259f985d397f&source=-----6f9348fd4030---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6f9348fd4030&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-language-models-and-vector-databases-for-news-recommendations-6f9348fd4030&source=-----6f9348fd4030---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language models (LLMs) generated a global buzz in the machine learning
+    community with recent releases of generative AI tools such as Chat-GPT, Bard,
+    and others alike. One of the core ideas behind these solutions is to compute a
+    numerical representation of unstructured data (such as texts and images) and find
+    similarities between these representations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, taking all of these concepts into a production environment has its
+    own set of machine learning engineering challenges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to generate these representations quickly?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to store them in a proper database?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to quickly compute similarities for production environments?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In this article, I introduce two open-source solutions that aim to solve these
+    questions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Sentence Transformers**](https://www.sbert.net/) **[1]**: an embedding generation
+    technique based on textual information and;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Qdrant**](https://qdrant.tech/): a vector database capable of storing embeddings
+    and providing an easy interface to query them.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'These tools are applied to NPR [2], a News Portal Recommendation dataset (openly
+    available at [Kaggle](https://www.kaggle.com/datasets/joelpl/news-portal-recommendations-npr-by-globo))
+    which was built to support the academic community to develop recommendation algorithms.
+    By the end of the articles, you''ll see how to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generate news embeddings with Sentence Transformers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Store embeddings with Qdrant
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Query embeddings to recommend news articles
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All code for this article is made available on [Github](https://github.com/guedes-joaofelipe/vector-search-api).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Generating embeddings with Sentence Transformers
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First of all, we need to find a way to convert input data into vectors, which
+    we'll call embeddings (if you want to dig deeper into the embedding concept, I
+    recommend Boykis' article [What Are Embeddings?](https://vickiboykis.com/what_are_embeddings/about.html)
+    [3]).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So let''s take a look at what kind of data we can work on with the NPR dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/cd97b85dc0c38903e97e0a8bdd45b542.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample data from NPR (image generated by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see that NPR has some interesting textual data such as the articles''
+    *title* and *body* content. We can use them in an embedding-generation process
+    as the following image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aee62f2688e895578154d8ba93f13661.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Embedding generation process (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So once we define the textual features from our input data, we need to establish
+    an embedding model to generate our numerical representation. Lucky for us, there
+    are websites like [HuggingFace](https://huggingface.co/) where you can look for
+    pre-trained models suitable for specific languages or tasks. In our example, we
+    can use the [*neuralmind/bert-base-portuguese-cased*](https://huggingface.co/neuralmind/bert-base-portuguese-cased)
+    model, which was trained in Brazilian portuguese for the following tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Named Entity Recognition
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Sentence Textual Similarity**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Recognizing Textual Entailment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Code-wise, this is how we translate the embedding-generation process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: So given an example input data, we can concatenate the *title* and *tags* content
+    into a single text and pass it to an encoder to generate the text embedding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can apply the same process for all other articles in the NPR dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Note**: bear in mind that this process might take a bit longer depending
+    on your machine''s processing power.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Once we have the embeddings for all news articles, let's define a strategy to
+    store them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Storing embeddings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Since generating embeddings might be an expensive process, we can use a vector
+    database to store these embeddings and execute queries based on diverse strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are several vector database software to achieve this task, but I'll use
+    **Qdrant** for this article, which is an open-source solution with APIs available
+    for popular programming languages like *Python*, *Go,* and *Typescript*. For a
+    better comparison between these vector databases, check this [article](https://www.datacamp.com/blog/the-top-5-vector-databases)
+    [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting Qdrant
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To deal with all Qdrant operations, we need to create a client object that
+    points out to a vector database. Qdrant lets you create a free tier service to
+    test remote connection to a database but, for the sake of simplicity, I''ll create
+    and persist the database locally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once this connection is stablished, we can create a collection in the database
+    that will store the news articles embeddings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that vector configuration parameters are used to create the collection.
+    These parameters tell Qdrant some properties from the vectors, like their *size*
+    and the *distance* metric to be used when comparing vectors (I'll use the cosine
+    similarity but you can also use other strategies like the [inner product or Euclidean
+    distance](https://qdrant.tech/documentation/concepts/search/#metrics)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating Vectors Points
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Prior to finally populating the database, we need to create proper objects
+    to be uploaded. In Qdrant, vectors can be stored using a [*PointStruct*](https://qdrant.tech/documentation/concepts/points/)
+    class, which you can use to define the following properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***id***: the vector''s ID (in the NPR case, is the *newsId*)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***vector***: a 1-dimensional array representing the vector (generated by the
+    embedding model)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***payload***: a dictionary containing any other relevant metadata that can
+    later be used to query vectors in a collection (in the NPR case, the article''s
+    *title*, *body,* and *tags*)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Uploading Vectors
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Finally, after all items are turned into point structures, we can upload them
+    in chunks to the database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Querying Vectors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that collections are finally populated with vectors, we can start querying
+    the database. There are many ways we can input information to query the database,
+    but I think there are 2 very useful inputs we can use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: An input text
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An input vector ID
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 3.1 Querying vectors with an input vector
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let's say we built this vector database to be used in a search engine. In this
+    case, we expect the user's input to be an input text and we have to return the
+    most relevant items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since all operations in a vector database are done with….VECTORS, we first need
+    to transform the user's input text into a vector so we can find similar items
+    based on that input. Recall that we used Sentence Transformers to encode textual
+    data into embeddings, so we can use the very same encoder to generate a numerical
+    representation for the user's input text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since the NPR contains news articles, let''s say the user typed *"Donald Trump"*
+    to learn about US elections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once the input query vector is computed, we can search for the closest vectors
+    in the collection and define what sort of output we want from those vectors, like
+    their *newsId*, *title,* and *topics:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Note**: by default, Qdrant uses Approximate Nearest Neighbors to scan for
+    embeddings quickly, but [you can also do a full scan and bring the exact nearest
+    neighbors](https://qdrant.tech/documentation/concepts/search/#search-api) — just
+    bear in mind this is a much more expensive operation.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'After running this operation, here are the generated output titles (translated
+    into english for better comprehension):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input Sentence**: *Donald Trump*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 1***:* *Paraguayans go to the polls this Sunday (30) to choose a new
+    president*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 2*:*** *Voters say Biden and Trump should not run in 2024, Reuters/Ipsos
+    poll shows*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 3*:*** *Writer accuses Trump of sexually abusing her in the 1990s*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 4*:*** *Mike Pence, former vice president of Donald Trump, gives testimony
+    in court that could complicate the former president*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It seems that besides bringing news related to Trump himself, the embedding
+    model also managed to represent topics related to presidential elections. Notice
+    that in the first output, there is no direct reference to the input term “*Donald
+    Trump*” other than the presidential election.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, I left out a *query_filter* parameters. This is a very useful tool if
+    you want to specify that the output must satisfy some given condition. For instance,
+    in a news portal, it is frequently important to filter only the most recent articles
+    (say from the past 7 days onwards). Therefore, you could query for news articles
+    that satisfy a minimum publication timestamp.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note:** in the news recommendation context, there are multiple concerning
+    aspects to consider like fairness and diversity. This is an open topic of discussion
+    but, should you be interested in this area, take a look at the articles from the
+    [NORMalize Workshop](https://sites.google.com/view/normalizeworkshop/home).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3.2 Querying vectors with an input vector ID
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Lastly, we can ask the vector database to "recommend" items that are closer
+    to some desired vector IDs but far from undesired vector IDs. The desired and
+    undesired IDs are called *positive* and *negative* examples, respectively, and
+    they are thought of as seeds for the recommendation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instance, let''s say we have the following positive ID:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can then ask for items similar to this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After running this operation, here are the translated output titles :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input item:** *Learn why Joe Biden launched his bid for re-election this
+    Tuesday*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 1:** *Biden announces he will run for re-election*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 2:** *USA: the 4 reasons that led Biden to run for re-election*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 3:** *Voters say Biden and Trump should not run in 2024, Reuters/Ipsos
+    poll shows*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output 4:** *Biden’s advisor’s gaffe that raised doubts about a possible
+    second government after the election*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article demonstrates how to combine LLMs and vector databases to serve
+    recommendations. In particular, Sentence Transformers were used to generate numerical
+    representations (embeddings) from textual news articles in the NPR dataset. Once
+    these embeddings are computed, they can populate a vector database such as Qdrant
+    which facilitates querying vectors based on several strategies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A whole lot of improvements can be made after the examples in this article,
+    such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: testing other embedding models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: testing other distance metrics
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: testing other vector databases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: using compile-based programming languages like Go for better performance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: creating an API to serve recommendations
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In other words, many ideas may come up to improve the machine learning engineering
+    of recommendations with LLMs. So, if you feel like sharing your ideas about these
+    improvements, don't hesitate to send me a message [here](https://www.linkedin.com/in/joao-felipe-guedes/)
+    :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: About Me
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I am a senior data scientist at [Globo](https://www.globo.com/), a Brazilian
+    media-tech company. Working at the company's recommendation team, I am surrounded
+    by an amazing and talented team who put a lot of effort to deliver personalized
+    content to millions of users through digital products like [G1](https://g1.globo.com/),
+    [GE](https://ge.globo.com/), [Globoplay](https://globoplay.globo.com/), and many
+    others. This article wouldn't be possible without their indispensable knowledge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] N. reimers and I. Gurevych, [Sentence-BERT: Sentence Embeddings using Siamese
+    BERT-Networks](http://arxiv.org/abs/1908.10084) (2019), Association for Computational
+    Linguistics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] J. Pinho, J. Silva and L. Figueiredo, [NPR: a News Portal Recommendations
+    dataset](https://sites.google.com/view/normalizeworkshop/contributions?authuser=0)
+    (2023), ACM Conference on Recommender Systems'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] V. Boykis, [What are embeddings?](https://vickiboykis.com/what_are_embeddings/),
+    personal blog'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] M. Ali, [The Top 5 Vector Databases](https://www.datacamp.com/blog/the-top-5-vector-databases)
+    (2023), DataCamp blog'
+  prefs: []
+  type: TYPE_NORMAL

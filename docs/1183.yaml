@@ -1,0 +1,323 @@
+- en: Building a Tree-Structured Parzen Estimator from Scratch (Kind Of)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-tree-structured-parzen-estimator-from-scratch-kind-of-20ed31770478?source=collection_archive---------4-----------------------#2023-04-04](https://towardsdatascience.com/building-a-tree-structured-parzen-estimator-from-scratch-kind-of-20ed31770478?source=collection_archive---------4-----------------------#2023-04-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An alternative to traditional hyperparameter tuning methods
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@coljhor?source=post_page-----20ed31770478--------------------------------)[![Colin
+    Horgan](../Images/1327a2996a36c0d5384e3316fd0ede2d.png)](https://medium.com/@coljhor?source=post_page-----20ed31770478--------------------------------)[](https://towardsdatascience.com/?source=post_page-----20ed31770478--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----20ed31770478--------------------------------)
+    [Colin Horgan](https://medium.com/@coljhor?source=post_page-----20ed31770478--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8d3875046cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-tree-structured-parzen-estimator-from-scratch-kind-of-20ed31770478&user=Colin+Horgan&userId=8d3875046cb&source=post_page-8d3875046cb----20ed31770478---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----20ed31770478--------------------------------)
+    ·9 min read·Apr 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F20ed31770478&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-tree-structured-parzen-estimator-from-scratch-kind-of-20ed31770478&user=Colin+Horgan&userId=8d3875046cb&source=-----20ed31770478---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F20ed31770478&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-tree-structured-parzen-estimator-from-scratch-kind-of-20ed31770478&source=-----20ed31770478---------------------bookmark_footer-----------)![](../Images/2ab4359012ab270c86d4e9cb71a89fb3.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualization of TPE for 2-dimensional hyperparameter tuning. Image by [Alexander
+    Elvers via Wikipedia Commons](https://commons.wikimedia.org/wiki/File:Hyperparameter_Optimization_using_Tree-Structured_Parzen_Estimators.svg).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The way a machine learning model fits itself to data is governed by a set of
+    initial conditions called hyperparameters. Hyperparameters help to restrict the
+    learning behavior of a model so that it will (hopefully) be able to fit the data
+    well and within a reasonable amount of time. Finding the best set of hyperparameters
+    (often called “tuning”) is one of the most important and time consuming parts
+    of the modeling task. Historical approaches to hyperparameter tuning involve either
+    a brute force or random search over a grid of hyperparameter combinations called
+    Grid Search and Random Search, respectively. Although popular, Grid and Random
+    Search methods lack any way of converging to a decent set of hyperparameters —
+    that is, they are purely trial and error. In this article we will tackle a relatively
+    new approach for hyperparameter tuning — the Tree-Structured Parzen Estimator
+    (TPE) — and understand its function programmatically through a step-by-step implementation
+    in Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b0b65b9623213ff0e406dd23dee0e14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: Animation of Grid Search and Random Search techniques.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: TPE is a Bayesian optimization algorithm. This means it allows us to start with
+    some initial beliefs about what our best model hyperparameters are, and update
+    these beliefs in a principled way as we learn how different hyperparameters impact
+    model performance. This is already a significant improvement over Grid Search
+    and Random Search! Instead of determining the best hyperparameter set through
+    trial and error, over time we can try more combinations of hyperparameters which
+    lead to good models and fewer that do not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'TPE gets its name from two main ideas: 1\. using Parzen Estimation to model
+    our beliefs about the best hyperparameters (more on this later) and 2\. using
+    a tree-like data structure called a posterior-inference graph to optimize the
+    algorithm runtime. In this example we will ignore the “tree-structured” part as
+    it has nothing to do with hyperparameter tuning per se. Additionally, we will
+    not go into the blow by blow of Bayesian statistics, expected improvement, etc.
+    The goal here is to develop a high-level conceptual understanding of TPE and how
+    it works. For a more thorough treatment of these topics see the original paper
+    on TPE by J. Bergstra and colleagues [[1]](https://proceedings.neurips.cc/paper/2011/hash/86e8f7ab32cfd12577bc2619bc635690-Abstract.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting Up The Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To build our implementation of TPE, we will need a toy example to work with.
+    Let’s imagine we want to find the line of best-fit through some randomly generated
+    data. In this example, we have two hyperparameters to tune — the line slope *m*
+    and intercept *b*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/067200e0643dfd2e28a1904dbdf0e9f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: Randomly generated linear data to be used for TPE.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since TPE is an optimization algorithm we also need some metric to optimize
+    over. We will use root mean-squared error (RMSE). Let’s define the function `rmse`
+    to calculate this metric as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The last thing we will need is some initial beliefs about what our best hyperparameters
+    are. Let’s say we believe that the slope of the line of best-fit is a uniform
+    random variable on the interval (10,100) and intercept is also a uniform random
+    variable on the interval (-6000, -3000). These distributions are called priors.
+    That they are uniform random variables is equivalent to saying we believe the
+    true values of the best hyperparameters are equally likely to lie anywhere within
+    their respective intervals. We will implement a class to encapsulate these variables,
+    and use them to define our initial search space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: With all this set up complete, we can move on to coding the algorithm itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1: Random Exploration**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first step of TPE is to randomly sample sets of hyperparameters from our
+    priors. This process gives us a first approximation of where the areas of our
+    search space are that produce good models. The function `sample_priors` consumes
+    our initial search space and a number of random samples to draw from it. It then
+    evaluates the resulting models using our objective function `rmse` and returns
+    a Pandas DataFrame containing the slope, intercept, and RMSE of each trial.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8cc42a2b57351e22227deb27808292e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Results of random sampling hyperparameters for 30 iterations. Each
+    ‘x’ denotes a hyperparameter sample.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Partitioning the Search Space and Parzen Estimation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After generating some initial samples from our priors, we now split our hyperparameter
+    search space in two using a quantile threshold γ, where γ is between 0 and 1\.
+    Let’s arbitrarily choose γ=0.2\. Hyperparameter combinations which result in a
+    model that performs in the top 20% of all models we have created thus far get
+    grouped into a “good” distribution l(x). All other hyperparameter combinations
+    belong to a “bad” distribution g(x).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fdd6cfdf07d5465a134c3cb4b4f8445b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: KDE of l(x) and g(x) distributions after 30 rounds of randomly selecting
+    hyperparameters. Darker colored areas indicate higher density.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It turns out that the best next combination of our hyperparameters to test is
+    given by the maximum of g(x)/l(x) (if you would like to see the derivation of
+    this see [[1]](https://proceedings.neurips.cc/paper/2011/hash/86e8f7ab32cfd12577bc2619bc635690-Abstract.html)).
+    This intuitively makes sense. We want hyperparameters which are highly likely
+    under our “good” distribution l(x) and not very likely under our “bad” distribution
+    g(x). We can model each of g(x) and l(x) using Parzen Estimators which is where
+    the “PE” in “TPE” comes from. The rough idea of Parzen Estimation a.k.a. Kernel
+    Density Estimation (or KDE) is that we are going to average across a series of
+    normal distributions each centered on an observation belonging to g(x) or l(x)
+    (respectively). The resulting distributions have high density over regions of
+    our search space where samples are close together and low density over regions
+    where samples are far apart. To perform Parzen Estimation we will use the `KernelDensity`
+    object from the SKLearn library. The function `segment_distributions` consumes
+    our trials DataFrame and our threshold γ and returns a Parzen Estimator for l(x)
+    and g(x) each. The resulting distributions are visualized in Figure 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 3: Determining the Next “Best” Hyperparameters to Test'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As mentioned in Step 2, the next best set of hyperparameters to test maximize
+    g(x)/l(x). We can determine what this set of hyperparameters are in the following
+    way. First we draw N random samples from l(x). Then for each of those samples
+    we evaluate their log-likelihood with respect to l(x) and g(x), selecting the
+    sample which maximizes g(x)/l(x) as the next hyperparameter combination to test.
+    The SKLearn `KernelDensity` implementation we decided to use makes this computation
+    very easy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: All Together Now
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All that is left for us to do is string all of the previously discussed components
+    together into a single algorithm and we have our implementation of TPE! The decisions
+    we have to make here are how many rounds of random exploration we want to perform,
+    how many total iterations of the algorithm we want to complete, and what our cutoff
+    threshold γ will be (yes, even TPE has hyperparameters). Here are a few things
+    to consider when choosing these quantities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the “best” set of hyperparameters are not captured by your priors before
+    you start TPE, the algorithm may have a difficult time converging.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The more rounds of random exploration you perform, the better your initial approximations
+    of g(x) and l(x) will be, which may improve the results of `tpe`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The higher the value of γ, the fewer samples will end up in l(x). Having only
+    a few samples to use when estimating l(x) may lead to poor hyperparameter selection
+    by `tpe`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To perform TPE over our synthetic data we created previously we run the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s it! We can now analyze our results. For the sake of brevity, the code
+    used to generate the following visualizations will not be shown. However, the
+    source code can be found in the GitHub repo for this project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First let’s compare our best set of hyperparameters from TPE with the actual
+    best slope and intercept from a regression solver.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b18d8ac0f54935ab6ca2605165ec7fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: Line of best-fit using hyperparameters obtained by TPE and Linear
+    Regression.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see from Figure 5, with TPE we are able to closely approximate the
+    best set of hyperparameters for our line. We wouldn’t expect TPE to out-perform
+    the regression solver because linear regression has a closed-form solution. However,
+    over an infinite number of trials we would expect it to converge to a similar
+    solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: TPE is an optimization algorithm, so we don’t just care that we were able to
+    find a decent set of hyperparameters. We also need to check that over the 200
+    iterations our objective function decreases. Figure 6 demonstrates that after
+    our initial 30 random samples our TPE implementation proceeds to minimize our
+    objective function with a clear(ish) trend.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/85c6dbd49209c25f64eb03f3a4221644.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 6: RMSE across all TPE trials. Note the difference in y-axis scale between
+    the left and right plots. Red dot indicates trial with lowest RMSE.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far everything looks great! The last thing we want to check is how our beliefs
+    about the “best” distribution of our hyperparameters changed across our 200 iterations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4ec859125be962d6c4b9f78e3481345.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 7: Parzen Estimation of l(x) across 200 iterations of our TPE algorithm.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see in Figure 7, we start with a very broad distribution of l(x) which
+    rapidly collapses down to something approximating our end result. Figures 6 and
+    7 clearly illustrate how each of TPE’s three simple steps combine to give us an
+    algorithm capable of exploring a search space in a complex yet intuitive way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusions**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hyperparameter tuning is a critical part of the modeling process. While Grid
+    Search and Random Search approaches are easy to implement, TPE as an alternative
+    provides a more principled way of tuning hyperparameters and is pretty simple
+    from a conceptual perspective. Several Python libraries exist with very good implementations
+    of TPE including [Hyperopt](https://github.com/hyperopt/hyperopt) (which was created
+    and is maintained by the authors of [1]) and [Optuna](https://optuna.org/). Whether
+    for something as simple as our toy example or as complex as hyperparameter tuning
+    for a neural network, TPE is a versatile, effective, and simple technique that
+    has been gaining popularity in Data Science and Machine Learning over the last
+    few years. Next time you find yourself tuning your model hyperparameters — maybe
+    skip the Grid Search.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Bergstra, J., Bardenet, R., Bengio, Y., & Kégl, B., Algorithms for hyper-parameter
+    optimization (2011), *Advances in neural information processing systems*, *24*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

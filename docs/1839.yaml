@@ -1,0 +1,484 @@
+- en: 'Text Tiling Done Right: Building Solid Foundations For Your Personal LLM'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/text-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1?source=collection_archive---------3-----------------------#2023-06-04](https://towardsdatascience.com/text-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1?source=collection_archive---------3-----------------------#2023-06-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to build a text tiling model from scratch using both semantic and lexical
+    similarity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)[![Massimiliano
+    Costacurta](../Images/599c3469021c53f116cc67c390db6695.png)](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------)
+    [Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----e70947779ac1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F233cb43234c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1&user=Massimiliano+Costacurta&userId=233cb43234c3&source=post_page-233cb43234c3----e70947779ac1---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e70947779ac1--------------------------------)
+    ·11 min read·Jun 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe70947779ac1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1&user=Massimiliano+Costacurta&userId=233cb43234c3&source=-----e70947779ac1---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe70947779ac1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftext-tiling-done-right-building-solid-foundations-for-your-personal-llm-e70947779ac1&source=-----e70947779ac1---------------------bookmark_footer-----------)![](../Images/cd5c60bf6539c088ca725c3a559d0bdd.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Gary Butterfield](https://unsplash.com/@garybpt?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s like everybody’s trying to get their own Large Language Model (LLM) these
+    days, tweaking it to work on their private collection of documents. The privacy
+    factor plays a big role here, amplifying the demand for more private GPT models.
+    However, the journey to crafting a personal chatbot isn’t straightforward and
+    you basically have two main options to do that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Firstly, you could build a custom question-answer dataset from scratch and use
+    it to fine-tune your LLM. But let’s face it, this isn’t a feasible option for
+    most of us due to the high costs and significant time commitment it requires.
+    An alternative, more affordable approach involves generating context on the fly.
+    This is done by retrieving relevant sections from your documents based on the
+    user’s query, with the help of embeddings. While there’s no shortage of tutorials
+    explaining how to do this, few highlight the critical importance of appropriately
+    chunking, or ‘tiling’, your documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s why it’s essential: if your document tiles aren’t well cut, your context
+    could be off, leading your LLM to provide answers that either completely miss
+    the point or, worse, generate false information — a phenomenon often referred
+    to as ‘hallucination’ in machine learning. This is where the art of text tiling
+    comes into play. It’s all about breaking down a document into coherent, meaningful
+    chunks that can facilitate precise, relevant context retrieval. In doing so, you’re
+    likely to improve the overall performance of your LLM, making it more adept at
+    understanding queries and providing accurate responses.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, it may surprise you (just like it surprised me) to know that in the world
+    of Python programming, there aren’t many options for text tiling. Our primary
+    tool available is [nltk.tokenize.texttiling](https://www.nltk.org/_modules/nltk/tokenize/texttiling.html),
+    which is not even very well documented. Realizing this lack of variety and the
+    potential for improvement, I’ve decided to embark on developing my own text-tiling
+    model, leveraging the revolutionary technologies offered by Natural Language Processing
+    (NLP) and transformers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluation Mechanism for Text Tiling Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Whenever I embark on developing a new model, I always try and begin with the
+    end in mind, then work backwards from there. In this case, our “end” is assessing
+    the output of our model. Without a means of evaluation, we can’t measure performance
+    and thus can’t make improvements. For this reason, creating an evaluation mechanism
+    is essential before even attempting to develop a model. Evaluating text tiling,
+    however, poses unique challenges because it relates to the topics found within
+    the document(s) at hand. This presents us with two major hurdles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t have a dataset of documents along with their corresponding tiling.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Even if we had such a dataset, it would be exceptionally difficult to utilize,
+    given that partitioning a document by topic is highly subjective.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'To navigate these issues, we’ll adopt a straightforward approach: create a
+    synthetic document. This document will be a concatenation of diverse documents,
+    which ensures we know the exact thresholds separating the original documents.
+    These thresholds should be identified by our model. In this article, I’ll employ
+    one document as an example (which can be found [here](https://github.com/massi82/texttiling/blob/master/doc.txt)).
+    Still, this same methodology could be applied to assemble a multitude of documents
+    for a comprehensive model test. The composite document is crafted from the concatenation
+    of the following Medium articles (to their respective authors, consider this a
+    bit of free promotion, you can thank me later 😀):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@brandeismarshall/3-unsavory-consequences-of-generative-ai-2b9f5c29f52b?source=post_page-----e70947779ac1--------------------------------)
+    [## 3 Unsavory Consequences of Generative AI'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ‘move fast and break things’ standard operating practices are in hyperdrive.
+    Each industry across all sectors are…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@brandeismarshall/3-unsavory-consequences-of-generative-ai-2b9f5c29f52b?source=post_page-----e70947779ac1--------------------------------)
+    [](https://blossomstreetventures.medium.com/average-contract-value-in-saas-a7f0d02ca350?source=post_page-----e70947779ac1--------------------------------)
+    [## Average contract value in SaaS
+  prefs: []
+  type: TYPE_NORMAL
+- en: Average Contract Value is an important metric in SaaS. If it’s trending up and
+    to the right, it’s a sign that customers…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: blossomstreetventures.medium.com](https://blossomstreetventures.medium.com/average-contract-value-in-saas-a7f0d02ca350?source=post_page-----e70947779ac1--------------------------------)
+    [](https://medium.com/wise-well/were-treating-stress-anxiety-and-depression-all-wrong-809566f1b73b?source=post_page-----e70947779ac1--------------------------------)
+    [## We’re Treating Stress, Anxiety and Depression All Wrong
+  prefs: []
+  type: TYPE_NORMAL
+- en: The best remedy for mental health conditions is obvious but rarely prescribed
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/wise-well/were-treating-stress-anxiety-and-depression-all-wrong-809566f1b73b?source=post_page-----e70947779ac1--------------------------------)
+    [](https://medium.com/illumination/your-side-hustle-sucks-compared-to-working-for-a-big-company-49664f1ef73?source=post_page-----e70947779ac1--------------------------------)
+    [## Your Side Hustle Sucks Compared to Working for a Big Company
+  prefs: []
+  type: TYPE_NORMAL
+- en: For all the freedom you gain, you miss out on many things when working for yourself
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/illumination/your-side-hustle-sucks-compared-to-working-for-a-big-company-49664f1ef73?source=post_page-----e70947779ac1--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we’ve established a method to evaluate our model, we need to define
+    how to measure its efficacy. Let’s first consider our synthetic document, which
+    has pre-known, clear thresholds. In our case, these thresholds are: (0, 56, 74,
+    118, 163). This implies that the first article concludes after 56 sentences, the
+    second after 74, and so forth. Our model will likely output a similar yet more
+    detailed list of thresholds based on the subtopics it identifies within each article.
+    An example output might be: (0, 26, 54, 67, 74, 90, 112, 120, 130, 163).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, how do we evaluate our model’s effectiveness? The most logical method I
+    could devise involves computing a sort of “edit distance” between the original
+    vector and the model’s output. This process works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identify all the numbers in the model’s output that are closer to the true thresholds
+    (excluding the first and the last ones). Using the example above we would end
+    up with (54, 74, 120).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If there are fewer numbers than the true thresholds, fill the gap with ‘None’
+    (not happening in our example).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the distance between each corresponding threshold, substituting the
+    maximum value of the original vector whenever you encounter a ‘None’. In our case
+    that would generate (2, 0, 2).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Sum these distances and normalize by dividing by the maximum threshold of the
+    original vector multiplied by the vector’s length. This provides a distance ranging
+    from 0 to 1 that can be easily transformed into a score by computing: 1-distance.
+    In our case: 1-4/163 → 1-0,0245 → **0,975**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: (Optional) Impose a penalty on the score depending on the total number of thresholds.
+    This is designed to penalize models that generate too many thresholds. Although
+    such thresholds are statistically likely to be close to the real ones, they might
+    not necessarily be meaningful.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here is the code implementing the scoring computation as described in the preceding
+    steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This function, as it currently stands, is far from perfect. Specifically, it
+    tends to produce values that skew towards 1\. However, it will suffice for our
+    purpose of comparing the results generated by our model. If you have any suggestions
+    for improving its implementation, I would be more than happy to hear them in the
+    comments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating Sentence Similarity Scores
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we’ve established a method to assess our model’s performance, we can
+    begin to consider how to extract the thresholds. The underlying concept of our
+    model is quite straightforward: the tiles of our document are essentially clusters
+    of sentences exhibiting some level of similarity. Put differently, pairs of sentences
+    within the same tile should yield a high similarity score, while pairs of sentences
+    from different tiles should yield a low one. Regardless of the clustering method
+    we’ll decide to use, we can safely say that we need a similarity measure for the
+    sentences. In NLP, the two most prevalent forms of similarity measures are lexical
+    (based on word comparison) and semantic (based on meaning, and more technically
+    on embeddings). In our model, we will test different types of similarity scores
+    and compare their performance on our test document. Specifically, we will utilize
+    the following models/algorithms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[BERT Score](https://huggingface.co/spaces/evaluate-metric/bertscore) (semantic)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[paraphrase-MiniLM-L6-v2](https://huggingface.co/sentence-transformers/paraphrase-MiniLM-L6-v2)
+    (semantic)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[SequenceMatcher](https://docs.python.org/3/library/difflib.html) (lexical)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Jaccard Similarity](https://en.wikipedia.org/wiki/Jaccard_index) (lexical)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The function that computes the similarity scores is essentially a large “IF-ELSE”
+    block of code, switching between different approaches based on the input model
+    selected by the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For performance optimization, this function accepts two lists of sentences as
+    input and returns the corresponding list of similarity measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we need to decide which similarity scores we actually want to calculate.
+    One approach could be to compute pairwise similarities by comparing each sentence
+    with all others. This method, while comprehensive, is not only inefficient and
+    hardly scalable, but also undesirable. The clusters we’re seeking will consist
+    of consecutive sentences, meaning that we aren’t interested in identifying connections
+    between sentences that are far apart in the document — in fact, we’re aiming to
+    avoid this! At the other extreme, we could consider computing similarity only
+    between a given sentence and the one that follows it. While it’s reasonable to
+    assume that adjacent sentences share the same meaning, this approach carries risks
+    too. Consider ‘filling sentences’ — those used to embellish the text but don’t
+    convey any specific meaning or contribute to the context. Examples include phrases
+    like “I’ll try to say it differently” or “But I digress” (which appears in our
+    test document!). Such sentences might create artificial thresholds that we certainly
+    want to avoid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll therefore adopt a hybrid approach, where we only compute the similarity
+    between each sentence and the K subsequent ones (yes, K is a hyperparameter).
+    As illustrated in the figure below, once we’ve set the K parameter, each sentence
+    will connect to 2*K sentences — K sentences preceding and K sentences following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35f8c03f8faacb2b6f7859325f29ace5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code that generates the similarity scores in this manner is encapsulated
+    within the function `create_similarity_graph`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As the function name suggests, what this function constructs is a graph where
+    the nodes represent sentences and the similarity scores serve as the weights of
+    the edges. The output format is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Sentence1, Sentence2, sim_ratio1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Sentence1, Sentence3, sim_ratio2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: …
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Sentence1, SentenceK, sim_ratioK-1)
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Sentence2, Sentence3, sim_ratioK)
+  prefs: []
+  type: TYPE_NORMAL
+- en: …
+  prefs: []
+  type: TYPE_NORMAL
+- en: Indeed, this is essentially a graph in the form of (parent, child, edge_weight).
+    It’s also important to note the coefficient `math.exp(-l/2)` at line 27, which
+    multiplies the similarity scores. We employ this coefficient to accommodate the
+    "distance effect"—the idea that the similarity between two sentences should decrease
+    the further apart they are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Graph-based Clustering for Text Segmentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With our similarity scores in hand, the next step is to find an effective way
+    to cluster them. The graph structure of our current data suggests a suitable direction
+    for selecting the right algorithm. There are numerous options for graph clustering,
+    but I have a particular fondness for the [Louvain method for community detection](https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.community.louvain.louvain_communities.html),
+    mainly due to its ease of implementation in Python and its ability to efficiently
+    handle large-scale data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the algorithm’s context, a “community” refers to a cluster of nodes densely
+    interconnected, while sparsely connected with nodes from other communities. Translating
+    this concept into our document tiling task, these “communities” represent the
+    tiles we seek. Each tile, or community, is a cluster of highly related sentences
+    forming a coherent topic or subtopic within the document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given the above graph structure, extracting communities is a matter of few lines
+    of code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the Louvain algorithm excels at finding communities within our graph,
+    it’s essential to remember that these communities may not always correspond to
+    coherent sequences of sentences in the context of document tiling. This is because
+    the algorithm is not inherently aware that it’s dealing with a textual document
+    where sequence and continuity of sentences matter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the process of community detection, the Louvain algorithm might produce clusters
+    that include non-sequential sentences. For example, it may generate a cluster
+    like (1, 2, 3, 4, 6, 7), leaving out sentence 5\. While this cluster may still
+    have high internal similarity, it does not form a logical tile in the document,
+    as there’s a “gap” or “jump” from sentence 4 to sentence 6\. This is a crucial
+    point to consider when applying graph-based clustering to document tiling. Our
+    expectation is to find coherent, uninterrupted segments of text — tiles that represent
+    contiguous blocks of related content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To solve this issue, I incorporated a post-processing step in the code, specifically
+    invoking the `compact_clusters` function at line 46\. As I didn''t come across
+    any pre-existing algorithm performing this task (if you know one, I''d be glad
+    to hear about it), I devised a simple one based on the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each pair of clusters, identify the range of overlap between them. Considering
+    clusters a=(1, 2, 3, 6, 7, 8) and b=(4, 5, 9, 10, 11), the range overlap would
+    be (4, 5, 6, 7, 8).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Determine the least number of movements required to eliminate the overlap. In
+    our example, we could either transfer (6, 7, 8) from cluster ‘a’ to ‘b’, or move
+    (4, 5) from cluster ‘b’ to ‘a’. The optimal choice is the latter, requiring fewer
+    movements. In case of a tie, a random decision can be made.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Reconfigure the clusters accordingly. Following this adjustment, we would have
+    a = (1, 2, 3, 4, 5, 6, 7, 8) and b = (9, 10, 11).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This approach ensures that the final tiles we produce are not just coherent
+    within themselves but also make sense in the context of the original document
+    sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the implementation of the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Putting It All Together
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we have built all our essential functions, it’s a straightforward
+    task to write a script that determines the tiles of our target document. It merely
+    takes a few lines of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As previously mentioned, we’re testing only four models, but integrating additional
+    ones is as easy as modifying the `get_similarity_scores` function by adding new
+    ‘elif’ sections. Given the nature of our problem, it''s also quite insightful
+    to construct a visual representation of the calculated tiles. This graphic depiction
+    provides an immediate sense of how our algorithms are performing compared to the
+    original document. Here is the plotting function I used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And below is the resultant plot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4db302b0747856074f0368ae9bc4eba0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first bar illustrates the original document, segmented into the four distinct
+    articles that compose it. It’s evident that BERT Score performs impressively,
+    perfectly matching all three primary thresholds, while paraphrase-MiniLM-L6-v2
+    misses 2 out of 3 (barely missing the second one, and significantly deviating
+    on the third). It’s also noteworthy that the two semantic models identify quite
+    similar subtopics within the articles, suggesting the potential to employ an ensemble
+    approach for determining accurate thresholds in real-world applications. Surprisingly,
+    the lexical models didn’t perform too poorly, although Jaccard did introduce spurious
+    thresholds that don’t correlate with the document’s structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To sum up, here are the scores of the four tested algorithms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'BERT Score: **0.9950**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'paraphrase-MiniLM-L6-v2: **0.9321**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'SequenceMatcher: **0.9208**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Jaccard: **0.9830**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Takeaway and next steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Based on our short test involving the target document, it’s clear that the
+    proposed approach to document tiling exhibits significant promise. As we anticipated,
+    the semantic approach shows an advantage over the lexical one for this specific
+    task due to its ability to capture deeper, context-based relationships within
+    the text. The repository with the working code explained in this article is available
+    [here](https://github.com/massi82/texttiling). Possible areas of improvement include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Refinement of the Scoring Function**: The current tiling score function exhibits
+    a bias towards the value of 1\. Addressing this bias to make the scoring function
+    more balanced would improve the reliability of the results and provide a more
+    accurate assessment of model performance.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Exploration of Additional Models**: We tested only four models in this study.
+    Testing additional models, especially different types of semantic models, could
+    reveal new insights and further improve performance. This could also include experimenting
+    with ensemble approaches that combine the strengths of multiple models.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Validation Across Multiple Documents**: Our test involved just one document.
+    Evaluating the performance of our approach over a variety of documents would give
+    us a clearer picture of its robustness and generalizability. Different types of
+    texts, genres, or topics could affect the performance of the tiling process.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Enhancement of Subtopic Identification**: Although our models identified
+    subtopics within the articles, there is potential for refinement. An ensemble
+    method or other advanced strategies could be used to improve the accuracy of subtopic
+    determination, ensuring that the derived tiles reflect the nuanced structure of
+    the document.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Did you enjoy this article? If you’re looking for applications of AI, NLP, Machine
+    Learning and Data Analytics in solving real-world problems, you’ll likely enjoy
+    my other work as well. My goal is to craft actionable articles that show these
+    transformative technologies in practical scenarios. If this is also you, follow
+    me on Medium to stay informed about my latest pieces!
+  prefs: []
+  type: TYPE_NORMAL

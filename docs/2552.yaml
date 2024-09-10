@@ -1,0 +1,664 @@
+- en: Visualised Explanation of PageRank
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/large-graph-analysis-with-pagerank-e571e3dec8ed?source=collection_archive---------9-----------------------#2023-08-09](https://towardsdatascience.com/large-graph-analysis-with-pagerank-e571e3dec8ed?source=collection_archive---------9-----------------------#2023-08-09)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Discover how Google search engine ranks documents based on their link structure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----e571e3dec8ed--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----e571e3dec8ed---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e571e3dec8ed--------------------------------)
+    ·14 min read·Aug 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe571e3dec8ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----e571e3dec8ed---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe571e3dec8ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Flarge-graph-analysis-with-pagerank-e571e3dec8ed&source=-----e571e3dec8ed---------------------bookmark_footer-----------)![](../Images/f23509038e4fe63a4a3baf5f188e97a1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ranking is an important problem in machine learning. Given a set of documents,
+    the goal is to sort them in a specific order based on certain criteria. Ranking
+    is widely used in information retrieval systems to sort search results or in recommender
+    systems to filter content will potentially be interesting to a particular user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Based on a given problem and objective, there exist an abundance of ranking
+    algorithms. The one we are going to study in this article is named [**PageRank**](https://arxiv.org/pdf/1002.2858.pdf).
+    Its main objective is to rank a set of documents (web pages) by using the information
+    about their connectivity. The rank assigned to each web page indicates its importance:
+    the higher the rank is, the higher the importance is. The algorithm is based on
+    two assumptions which we are going to look at in the next section.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Assumptions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can define the term “importance” of a web page by making two assumptions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The importance of a web page is high if there are many other web pages pointing
+    to it.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Imagine we have a popular research paper and many other articles linking to
+    it by using quotes or results from it. Primarily, it makes sense to give this
+    article a large importance. On the other hand, if there is an unknown web page
+    with no links to it from other resources, it seems logical to assign low importance
+    to the page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In reality, we should also care about the quality of the incoming links.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The importance of a web page is proportional to the importance of the web pages
+    pointing to it.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If a page is originally cited by a high-quality article on Wikipedia, then such
+    a link should have a larger weight. Conversely, when an absolutely unknown resource
+    points to another web page, it should not normally have high importance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2619d05b34a9a9a81ac493e26654dc6e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of importance distribution made by PageRank algorithm from the [official
+    paper](https://arxiv.org/pdf/1002.2858.pdf). Scores were normalized to sum up
+    to 100\. The node with the value of 38.4 has such high importance due to a large
+    number of other nodes pointing to it. On the other hand, the node with the importance
+    of 34.3 has only one incoming link but it is importance is still relatively high
+    because its single input link comes from another influential node. Nodes with
+    low importances of 1.6 do not have any incoming links.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formal definition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us say that the importance of a node is equal to the sum of the weights
+    of incoming links.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine a node *i* with importance *rᵢ* having *k* outcoming links. How can
+    we determine the weight of each link? The most straightforward approach is to
+    take the node’s importance and divide it equally between all the outcoming links.
+    This way, each outcoming link will receive the weight of *rᵢ / k*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1aa89e43a0ee6a6095fef51e9f7c7785.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of calculating the rank of a node
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d2f2575cf6eee5451d256668d55552f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The rank of a node is equal to the sum of ranks of incoming nodes divided by
+    their total out degree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given a graph of *n* web pages, we can create a system of *n* linear equations
+    to find the weights of the graph. However, such a system can have an infinite
+    number of solutions. That is why we should add another constraint that will impose
+    a unique solution. By the way, PageRank adds the normalized condition that the
+    sum of all node importance is equal to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/010fd0358235454b88c63e208722f3ad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finding a solution of a system of linear equations describing graph structure
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have come up with a solution but it is not scalable. Even with Gaussian elimination,
+    we end up with *O(n³)* complexity. Keeping in mind that the number of analyzed
+    web pages *n* can reach billions, we need to come up with a more efficient approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First of all, let us simplify the notation. For this, we introduce the adjacency
+    square matrix *G* which will contain link weights for every pair of linked web
+    pages (if two web pages are not linked, we will put 0 in a corresponding matrix
+    element). More formally:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3a76da3e63295a8f9f2a8b4e0d08b3fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Definition of a matrix element G[j][i]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix *G* is called **stochastic** because each of its columns sums up to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we define the rank vector *r* whose *i*-th element is equal to the rank
+    (importance) of page *i*. The sum of all elements of this vector also equals 1\.
+    Our ultimate goal is to find values of this vector *r*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PageRank equation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us see what will happen if we multiply matrix *G* by vector *r*. Based on
+    the example with the graph from the section above, we can see that it results
+    in the same vector *r*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/367e82305bad992b43ceb17a7b2ef98c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Multiplying matrix G by vector r results again in vector r
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why does it happen? Is it just a coincidence? Remember that the *i*-th row
+    of matrix *G* contains weights of all input links to the page *i*. When we multiply
+    the *j*-th element of the *i*-th row by *r[j]*, we actually get the component
+    r*j* / *d[j]out* — the importance which flows from node *j* to *i*. If there is
+    no link between nodes *i* and *j*, then the respective component is set to 0\.
+    Logically, the final result of the multiplication of the *i*-th row by the vector
+    *r* will be equal to the sum of all importances which flow from any connected
+    node of the graph to node *i*. By definition, this value equals the rank of the
+    node *i*. In general, we can write the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/09e121829ca20698156b8b0901a4f767.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PageRank equation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Therefore, our goal is to find such a vector *r* which being multiplied by the
+    input matrix *G* will remain the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eigenvectors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'We can find the solution to the equation above by revising the theory on eigenvectors
+    from linear algebra. Given a matrix *A*, the vector *v* is called the **eigenvector**
+    if there exists such a number *α* which satisfies the following equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62c0e1f08ded53fccaca33f4a76c573b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Eigenvalue definition
+  prefs: []
+  type: TYPE_NORMAL
+- en: The number *α* is called the **eigenvalue**. We can notice that the PageRank
+    equation corresponds to the eigenvalue equation where *A = G, v = r* and *α =
+    1*. Normally, any square matrix has several eigenvalues and eigenvectors but since
+    our matrix *G* is stochastic, the theory claims that its largest eigenvalue is
+    equal to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Power iteration
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of the most popular ways of finding matrix eigenvectors is the **Power iteration**
+    method. It consists of initializing an initial vector *r* with some values (we
+    will use *1 / n* where *n* is the number of web pages), then constantly computing
+    the value of *G * r* and assigning this value to *r* again. If on any iteration
+    the distance between vectors *r* and *G * r* is less than a certain threshold
+    *ε*, we stop the algorithm as it has converged successfully.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/759a280818414db10f3f899d86d1f64c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PageRank algorithm
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the example above we can see that by setting *ε* to0.0005 the algorithm
+    correctly converges just in 9 iterations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd71e8506a7bbf15834355e5b082ada6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Obviously, this is only a toy example but in practice, this method works very
+    well for a larger number of variables as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random walk
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Imagine a surfer (walker) being at any node of the graph at time *t*. Let us
+    denote by *p(t)* the vector whose *i*-th component equals the probability that
+    at time *t* the surfer is present at node *i*. Then the surfer randomly (with
+    equal probabilities) chooses another linked node to the current one and moves
+    there at time *t + 1*. Ultimately, we want to find the distribution vector *p(t
+    + 1)* at the moment *t + 1*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/786184a62c210f59cf091bfa695db6e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Random walk of the surfer
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can notice that the probability of the surfer appearing at a node *i* at
+    the moment *t + 1* is the sum of probabilities (over all linked nodes to *i*)
+    that the surfer was previously at an adjacent node *j* multiplied by the probability
+    of moving from node *j* to *i*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We already know the probability of the surfer appearing at node *j* at moment
+    t: *p(t)[j]*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The probability of moving from node *j* to *i* is equal to *G[j][i]*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'By summing up these probabilities, we get the value for *p(t + 1)[i]*. For
+    finding the value of *p(t + 1)* for all the graph nodes, we can write the same
+    equation in the matrix form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/73dc64949c2dc43287b0bc7bbf53b979.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This equation has absolutely the same form as what we have obtained for the
+    PageRank before! *This means these two problems have the same solution and interpretation.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At some point, the distribution vector *p(t)* will converge: *p(t + 1) = M
+    * p(t) = p(t)*. The converged vector *p(t)* in such case is called the **stationary
+    distribution.** At all the following moments of time, the probability of residing
+    at any given node does not change.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The PageRank score of a node equals the probability that the surfer will be
+    located at this node in the future by randomly walking through the graph.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Convergence
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The described process of walking throughout the graph is often referred to
+    as “**Markov chains**”. There exists a theorem in Markov chains theory which states
+    that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Under certain conditions on the graph structure, the stationary distribution
+    is unique and can be reached with any initial probability distribution at the
+    moment t = 0.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the following section, we will go more in-depth into the conditions that
+    need to be satisfied for the unique convergence. It turns out that for not all
+    the graphs the unique convergence can be achieved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Principally, there exist 2 kinds of cases that we want to avoid at all costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dead ends
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Nodes that do not have out links are called **dead ends**. The problem with
+    such kind of nodes is that because of them the total importance leaks out of the
+    network. Here is an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4dbf32d49a466b74634e3bf3058fc73c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dead end problem. At the moment t = 2, the importance leaks out. At the moment
+    t = 3, the rank vector converges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spider trap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A group of nodes form a **spider trap** if they do not have out links to other
+    nodes outside of this group. Basically, once there, it is impossible to get outside
+    of this group of nodes. Spider traps lead to the two following problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm never converges.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The group of nodes forming a spider trap absorbs all the graph importance. As
+    a result, these nodes have very high importance while other nodes have importance
+    being equal to 0.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The first problem is illustrated in the figure below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62a0855f44eea35bcf6a46157cbf815b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Spider trap problem. Starting from the moment t = 0, the ranks of 1 and 0 infinitely
+    alternate between two nodes. As a result, the algorithm never converges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The absorption of importance is demonstrated in the next figure. Though it might
+    not look like a serious problem in the toy example below, imagine a web network
+    with millions of web pages where several of them form a spider trap. As a consequence,
+    these several pages will distribute all of the available importance while the
+    importance of all other web pages will be set to 0\. Obviously, this is not what
+    we normally want in real life.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6fc95ec057ad88ff91ebadbccbad3894.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Nodes b and d form a spider trap. As a result, at the moment t = 18 they already
+    absorb all of the importance while other nodes are left with zero importance.
+    Starting from this moment, the importance alternates between nodes b and d making
+    the algorithm divergent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Teleports
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the solutions proposed by Google is to add the following condition before
+    each move of the surfer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With probability *β*, move to another linked node.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With probability *(1 — β)*, move to a random node (through a **teleport**).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The parameter *β* is called the **dumping factor**. Authors of the original
+    PageRank algorithm recommend choosing the value for *β = 0.85* meaning that on
+    average after 5 transitions the surfer will randomly jump to another node. The
+    idea is that if the surfer falls into a spider trap, then after some time it will
+    eventually get out of there through a teleport.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The diagram below shows how teleports can help to deal with the spider trap
+    problem. If the surfer walks into the node *c*, then it will stay there forever.
+    Introducing teleports (blue lines) helps eliminating this problem guaranteeing
+    that after some time the surfer will have to walk to another random node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/035f46ce60ec11406c0dbf59520388b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Teleports (blue lines) eliminate the spider trap problem
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, for dead-end nodes, we need to slightly modify the approach. From
+    one of the examples above, we know that dead ends lead to importance leakage in
+    a graph. This phenomenon can be observed during the power iteration method, when
+    the rank vector becomes full of zeros because of a corresponding zero column in
+    the initial matrix *G*. Ultimately, what we can do is the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whenever the surfer lands on a dead-end node, then it should immediately jump
+    to a random node (with an equal probability) of the graph.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In fact, we can modify the initial matrix *G* to satisfy this statement: we
+    just need to replace zeros to *1 / n* in place of all the elements of the columns
+    of all dead-end nodes of matrix *G*. The example below demonstrates this principle.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32aeee48af04e636380c61882d60595f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The node *c* is a dead-end node with a corresponding column of zeros in the
+    matrix *G*. Adding *n = 3* teleports from *c* to all of the nodes of the graph
+    imposes equal probability *p = 1 / 3* of moving from *c* to any node. To account
+    for this, we fill the column of the matrix *G* corresponding to node c with values
+    of *1 / 3*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can notice that after adding teleports the sum of all matrix columns is now
+    equal to 1\. In other words, the matrix *G* becomes stochastic. This is an essential
+    property which we will be used later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Convergence condition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There exists a crucial theorem from the theory of Markov chains that defines
+    the convergence condition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For any start vector, the transition matrix G converges to a unique positive
+    stationary distribution vector r if the chain corresponding to G is stochastic,
+    aperiodic and irreducible.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let us remind the last three properties in this theorem and check if introduced
+    teleports solve the problems above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A chain G is called stochastic if sum of its each column equals to 1.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As we observed above, adding teleports to dead-end nodes eliminates zero columns
+    in the matrix and makes the sum of all its columns equal to 1\. The condition
+    is already satisfied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A chain G is called periodic if there exists a number k > 1 that the path length
+    between any pair of nodes is always a multiple of k. Otherwise, the chain is called
+    aperiodic.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This condition means that any return to the same state must occur in multiple
+    of *k* times. In the case of aperiodicity, the return occurs at irregular times.
+    Basically, the condition refers to the spider trap problem. Since we have already
+    dealt with spider traps by adding teleports, the chain *G* is aperiodic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A chain G is called irreducible if the probability of transitioning from any
+    one node to any another node is always greater than 0.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This condition implies that there always exists a link between any two nodes,
+    so it is impossible to stuck at any node. In other words, the matrix *G* needs
+    to consist of all non-zero elements. We are going to see in the next section below
+    how this condition will be satisfied by connecting all the nodes of the graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modifying the algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'PageRank algorithm proposed by Google takes the initial matrix *G* and adjusts
+    it by adding teleports from dead ends to other nodes. This ensures stochasticity.
+    To guarantee aperiodicity and irreducibility it then adds the condition described
+    before to each node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With probability *β*, move to another linked node.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With probability *(1 — β)*, move to a random node.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Mathematically, it results in the following rank equation for every node:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2dd62e416efb0bbbef6f097444b6cfd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vector equation of PageRank
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can transform this equation into the matrix form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cc102c6449df56ea5d1ecf82966beb14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Matrix equation of PageRank from Google
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/854a444ae13eff395a48cdd56c6e1ae9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The matrix R must satisfy the necessary conditions for existence of unique stationary
+    distribution r which needs to be found.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us draw the modified graph and the corresponding transition matrix R from
+    on of the examples above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b3ccbea245e7b847d45dd6ecd242bae4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Matrix R composed from the original link matrix G and the teleport matrix. In
+    this example *β = 0.9.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increasing efficiency
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The only problem left for us is how to store the transition matrix *R.* Remember
+    that *R* is a square matrix of size *n x n* where *n* is the number of web pages.
+    Currently, Google has more than 25 billion web pages! The matrix R does not have
+    any zeros, so it is dense which means we have to fully store it. Let us assume
+    that every matrix element requires 4 bytes to be stored. The total memory size
+    required to store the matrix *R* equals *(25 * 10⁹)² * 4* (bytes) *~ 3 * 10²¹*
+    (bytes). This is a gigantic memory size! We need to come up with another approach
+    to reduce at least by several orders.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Firstly, we can simply notice that adding teleports is equivalent to reducing
+    initial matrix *G* elements by *(1 — β)*% and distributing them evenly across
+    every node. Keeping this in mind we can transform the matrix equation of PageRank
+    into another format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ccb97176c8743f80c2300dace06e54f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Transforming PageRank equation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us look at the last obtained equation. *G* is the initial link matrix with
+    most of the elements being equal to 0\. Why is it so? In reality, if you take
+    any web page, it will probably contain at most a few dozen links to other web
+    pages. Keeping in mind that are more than 25 billion web pages we get that the
+    relative number of total links compared to the number of web pages is extremely
+    small. Therefore, there are a lot of zeros in *G*, so *G* is sparse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Storing sparse matrices requires much less memory than dense ones. Let us assume
+    that each web page links on average to other 40 pages. The total number of bytes
+    required to store the matrix G now becomes *25 * 10⁹ * 40* (bytes) *= 10¹²* (bytes)
+    *= 1* (TB). It turns out we only need 1 terabyte to store *G*. Compared to what
+    we had previously, this is a fabulous improvement!
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, at each iteration, we only need to compute the multiplication of matrix
+    *G* by vector *r*, multiply it by *β* and add a constant *(1 — β) / n* to each
+    element of the resulting vector.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ca378c1728b589b1fc29c52ed89c394.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Resulting PageRank equation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also keep in mind that if the initial chain *G* contains dead-end nodes, then
+    the sum of vector *r* at each iteration will be less than 1\. To deal with this,
+    it is enough to renormalise it, so all the vector components sum up to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Complete algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the figure below we can see the full version of the PageRank algorithm. At
+    each iteration, the update of ranks proceeds in 2 stages. The first stage includes
+    only update according to the initial matrix *G*. Then we sum up the components
+    of the rank vector into the variable *s*. This way, the value of *(1 — s)* is
+    the value by which the total input rank of a single node was reduced. To compensate
+    for this, in the second stage, we account for teleports and add them from a node
+    to all the nodes with the equal value of *(1 — s) / n*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0773d09b8c550ebf9178f9f12bc7710a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Complete PageRank algorithm
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, we have looked through different formulations of the PageRank
+    algorithm to ultimately come up with its optimised version. Despite the existence
+    and evolution of other methods for ranking search results, PageRank remains the
+    most efficient algorithm among others which works under the hood of Google’s search
+    engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The logical structure of this article is based on the lecture from Stanford
+    University on [large graphs](http://snap.stanford.edu/class/cs246-2022/slides/09-pagerank.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Analysis of Large Graphs: Link Analysis, PageRank](http://snap.stanford.edu/class/cs246-2022/slides/09-pagerank.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Mining of Massive Datasets | Jure Leskovec, Anand Rajaraman, Jeff Ullman](http://www.mmds.org)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PageRank: Standing on the shoulders of giants](https://arxiv.org/pdf/1002.2858.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author*'
+  prefs: []
+  type: TYPE_NORMAL

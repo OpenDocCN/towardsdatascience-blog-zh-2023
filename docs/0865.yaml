@@ -1,0 +1,318 @@
+- en: Recursive Chemical Reactions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/recursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0?source=collection_archive---------11-----------------------#2023-03-07](https://towardsdatascience.com/recursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0?source=collection_archive---------11-----------------------#2023-03-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Algorithmic analysis of chemical structures using RDKit
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)[![Pan
+    Cretan](../Images/8b3fbab70c0e61f7ca516d2f54b646e5.png)](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------)
+    [Pan Cretan](https://medium.com/@cretanpan?source=post_page-----c6a0fab95fa0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff990ba57425&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&user=Pan+Cretan&userId=ff990ba57425&source=post_page-ff990ba57425----c6a0fab95fa0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6a0fab95fa0--------------------------------)
+    ·8 min read·Mar 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6a0fab95fa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&user=Pan+Cretan&userId=ff990ba57425&source=-----c6a0fab95fa0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6a0fab95fa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frecursive-chemical-reactions-how-to-algorithmicallyanalyze-chemical-structures-c6a0fab95fa0&source=-----c6a0fab95fa0---------------------bookmark_footer-----------)![](../Images/951ad44edad54a113202aefa02971f67.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by [Manuel Darío Fuentes Hernández](https://pixabay.com/users/drfuenteshernandez-7757554/?utm_source=link-attribution&amp%3Butm_medium=referral&amp%3Butm_campaign=image&amp%3Butm_content=4897327)
+    from [Pixabay](https://pixabay.com)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[RDKit](https://www.rdkit.org/docs/Overview.html) is an open-source cheminformatics
+    toolkit written in C++ that can also be used in Java, Python, and [KNIME](https://www.knime.com/rdkit).
+    It provides a wide collection of cheminformatics functionality, such as reading
+    and writing molecules, working with atoms, bonds and rings, generating 2D or 3D
+    coordinates, searching for substructures, applying chemical transformations, and
+    computing fingerprints and descriptors. RDKit also offers a high-performance database
+    [cartridge](https://www.rdkit.org/docs/Cartridge.html) for PostgreSQL. RDKit understands
+    [SMARTS](https://www.daylight.com/dayhtml/doc/theory/theory.smarts.html), the
+    language for describing molecular patterns, and SMIRKS, the language for applying
+    reaction transformations, both of which use as a basis SMILES, the famous line
+    notation for entering and representing molecules and reactions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RDKit can apply reaction transformations and combined with the recursion possibilities
+    of Python it can support niche use cases such as the one described in this article.
+    In particular, we will apply chemical reactions recursively to examine if an input
+    molecular structure is a peptide, i.e. a linear sequence of amino acids. I have
+    found that applying reactions recursively is a good way to algorithmically analyse
+    chemical structures, e.g. by iteratively fragmenting the structure, cleaving off
+    well defined fragments and categorising left-over moieties when no more transformations
+    can be applied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Introduction](#ec4e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '· [The building blocks: amino acids](#21e4)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Identifying the peptide bonds](#4c4d)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Breaking the peptide bonds](#af75)
+  prefs: []
+  type: TYPE_NORMAL
+- en: · [Conclusions](#391a)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The image below is a linear oligopeptide with four amino acids, namely arginine,
+    alanine, threonine and methionine and it was found in a recent dataset I was analysing.
+    I work with industrial chemicals and I was surprised to see such structures in
+    our database as we have nothing to do with biomolecules and peptides are not so
+    commonly encountered. Digging further I discovered that we have erroneously generated
+    a number of such structures by interpreting chemical names with chemical name
+    to structure algorithms. In addition to their full name, amino acids can also
+    be represented with one or three characters that sometimes occur in text and are
+    wrongly interpreted as chemical structures. This data quality issue may affect
+    publicly available datasets too and hence I thought that it may be useful to find
+    a way to detect them and eliminate them if they occurred unintentionally.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6fbc4e6171d073c2ba83cfe24c0d64c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A small peptide with four amino acids. Image by the Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many ways to do this and I imagine that all linear peptide sequences
+    could be matched by a complex SMARTS query. Developing this seemed intimidating
+    to me and hence I thought that it may be more viable to solve this problem by
+    breaking it up in smaller ones. In chemistry terms, this means that we have to
+    break the initial molecule in smaller fragments by hydrolysing the peptide bonds
+    one by one until there are no more bonds to break. If all fragments obtained are
+    amino acids then the starting structure must be a peptide. Doing so also allows
+    determining the exact amino acid sequence. What we need is a way to apply a chemical
+    reaction recursively. If you are interested in learning how this can be done with
+    RDKit and discovering some of the functionality of this rich cheminformatics library
+    along the way, please keep reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for this article can be found in my GitHub blog [repository](https://github.com/karpanGit/myBlogs/tree/master/RecursiveChemicalReactions).
+    We will be using RDKit version 2022.9.4 with Python 3.9.13\. The repository also
+    includes all dependencies in the provided requirements [file](https://github.com/karpanGit/myBlogs/blob/4dcc6f3b3a983b9be4b75fd97737ba44f2a42b5a/RecursiveChemicalReactions/requirements.txt).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The building blocks: amino acids'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are 20 common amino acids that make up proteins. There are also two more
+    additional amino acids that are in some species coded for codons that are usually
+    interpreted as stop codons. All these are alpha-amino acids, i.e. the amino group
+    is directly bonded to the α-carbon, i.e. the carbon atom next to the carboxyl
+    group. For convenience I have created the SMILES for these 22 amino acids that
+    can be found in the [repository](https://github.com/karpanGit/myBlogs/blob/4dcc6f3b3a983b9be4b75fd97737ba44f2a42b5a/RecursiveChemicalReactions/input/amino_acids.smiles).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is to read in the 22 amino acids, and at the same time import
+    all necessary RDKit modules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The smiles are converted to native RDKit Mol [objects](https://www.rdkit.org/docs/source/rdkit.Chem.rdchem.html#rdkit.Chem.rdchem.Mol)
+    in the penultimate line. The last line may seem a bit cryptic, but all it does
+    is to include the amino acid name within the molecule as can be verified with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: that prints
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/560281a1121086646ae141019a20361d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: L-Alanine [Mol](https://docs.chemaxon.com/display/docs/mdl-molfiles-rgfiles-sdfiles-rxnfiles-rdfiles-formats.md#src-1806565-safe-id-turmtu9mzmlszxmsukdmawxlcyxtrgzpbgvzlfj4bmzpbgvzlfjezmlszxnmb3jtyxrzlw1vbe1ptfyymdawzmlszxm)
+    block with chemical name included. Image by the Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The amino acids can be visualised in a tailor made grid using [matplotlib](https://matplotlib.org/stable)
+    as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last line saves the image below as a PNG file, that you can find in the
+    repository together with all other [images](https://github.com/karpanGit/myBlogs/tree/master/RecursiveChemicalReactions/images)
+    in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/355a5a5455085fe091df86896064e40a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The 22 amino acids that appear in the genetic code. Image by the Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RDKit can be seamlessly used within jupyter notebooks, where the Draw module
+    allows the effortless visualisation of molecular structures in a grid using the
+    `Draw.MolsToGridImage()` [function](https://www.rdkit.org/docs/source/rdkit.Chem.Draw.html).
+    Nevertheless, I find that using matplotlib allows more flexibility, especially
+    if one follows these excellent [suggestions](https://medium.com/towards-data-science/advanced-tutorial-how-to-master-matplotlib-like-an-absolute-boss-aae2d4936734)
+    on how to tweak the plot components. All of the amino acids share the following
+    enantiomeric backbone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f5bdda861783ccccdd395fc911ac256d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Alpha amino acid backbone. Image by the Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A first useful RDKit functionality that we can introduce at this stage is the
+    so-called [R-group decomposition](https://greglandrum.github.io/rdkit-blog/posts/2023-01-09-rgd-tutorial.html).
+    In the code below we define the amino acid backbone core with the smiles [*:1][C@H](N[*:2])C(O)=O
+    that has two explicit R group labels. The reason for using two R group labels
+    is the presence of the pyrrolidine ring in L-Proline. By explicitly providing
+    the settings of the R-group decomposition, we constrained it to match only the
+    explicitly specified R groups.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The rest of the code creates the necessary input arrays with molecules and legends
+    to generate the image using the same utility function as earlier. If you look
+    carefully you will notice that glycine failed to be decomposed into R-groups.
+    The reason is that it is not chiral, whilst the core structure used for the decomposition
+    is. The decomposition of glycine would have succeeded if we had removed the chiral
+    centre from the core, but then the R-group decomposition would have been less
+    specific that may be undesired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d41e8c7140d58eeeff466049e98aac47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Amino acid R-group decomposition. Image by the Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: R-group decomposition is useful in case the amino acid backbones were needed
+    for further processing. We will not pursue this further in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identifying the peptide bonds
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we attempt to break the peptide bonds we can check whether we can identify
+    them. We use an example linear tri-peptide formed by threonine, methionine and
+    arginine. The peptide bond is defined as a structural pattern that is then used
+    to locate the matching atoms and bonds in the original molecule.
+  prefs: []
+  type: TYPE_NORMAL
+- en: that produces the image below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90e85a8b1b46b85a6410be26f9df649d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Threonine, arginine, methionine tri-peptide with the two peptide bonds highlighted.
+    Image by the Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the `rdkit.Chem.Draw.rdMolDraw2D` the peptide bonds were nicely orientated.
+    The substructure search returned a tuple of tuples with atomic indices that was
+    flattened and used to find all bond indices between all atom pairs in the flattened
+    list. The indices of the atoms and bonds in the peptide chain were highlighted
+    using a light grey color, before the molecular structure was saved as the PNG
+    image. The key message here is that by using RDKit one can have control down to
+    the level of atoms and bonds that essentially form a graph amenable to any imaginable
+    algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Breaking the peptide bonds
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Breaking the peptide bond requires the definition of a reaction using SMIRKS.
+    The previously defined peptide pattern used in the substructure matching becomes
+    the reactants part of the SMIRKS reaction. The products are nothing more than
+    the hydrolysed product with the two amino acids separated using the dot notation.
+    The threonine, arginine, methionine tri-peptide has two peptide bonds and hence
+    the reaction can be applied twice leading to two reaction outcomes, both of which
+    comprise an amino acid and a di-peptide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code above produces the following PNG image with the two reaction possibilities
+    in the two rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bfb7a940699838858362f2fce95ee56b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Hydrolysis of the threonine, arginine, methionine tri-peptide. Image by the
+    Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we want to break down fully a peptide into its constituent amino acids we
+    will need to apply the reaction repeatedly, until no more peptide bonds can be
+    broken. It is not necessary to enumerate all possible reactions at each stage.
+    We can simply apply the reaction once, take the two reactants and hydrolyse them
+    separately. RDKit allows controlling the number of products by setting the `maxProducts`
+    [argument](https://www.rdkit.org/docs/source/rdkit.Chem.rdChemReactions.html#rdkit.Chem.rdChemReactions.ChemicalReaction.RunReactants)
+    to one. What makes the starting structure a peptide? If after applying all possible
+    peptide hydrolysis reactions we have only produced one or more of the known amino
+    acids then the starting structure is a peptide. Conversely, if at some point no
+    peptide hydrolysis reaction can be applied and the structure is not one of the
+    known amino acids, then the starting structure is not a peptide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code above uses two utility functions, one to examine if two structures
+    are chemically equivalent by being a substructure of each other, and another to
+    examine if a structure can be found in a list of structures. The [recursive](https://realpython.com/python-recursion/)
+    hydrolysis of peptide bonds is implemented in the third and last function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using this recursive function we examine if a set of nine example molecules
+    are peptides.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm correctly classifies the first 8 structures as peptides and the
+    last two as non-peptides. Notably, we used the convention that the amino acids
+    themselves are a peptide, that strictly speaking may not be true, but this was
+    convenient for applying the recursion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11a0e42b9ff86840c1aec7c6a9e0dc31.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Examining if structure is a peptide through recursive hydrolysis. Image by the
+    Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm could be enhanced by adding the reactant results to a graph, using
+    for example [NetworkX](https://networkx.org/) and visualising the reaction progress
+    by drawing the structure at each node. The leaves would then be the amino acids
+    that can be analysed further to obtain the exact sequence of amino acids in the
+    peptide. The possibilities are endless; RDKit has done its part and one can then
+    rely on the expressiveness of Python for the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: RDKit is a rich cheminformatics library. It can nowadays be easily deployed
+    using pip and opens up the possibility of using Python and its data analysis and
+    data science ecosystem in chemistry applications. RDKit’s [documentation](https://www.rdkit.org/docs/GettingStartedInPython.html)
+    is admittedly not the best, but there are now many tutorials and [blogs](https://greglandrum.github.io/rdkit-blog/)
+    available. The library keeps evolving and new functionality is being added. I
+    hope this article is useful for illustrating some of RDKit’s functionality and
+    demonstrating its potential.
+  prefs: []
+  type: TYPE_NORMAL

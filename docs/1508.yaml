@@ -1,0 +1,414 @@
+- en: Summarize Podcast Transcripts and Long Texts Better with NLP and AI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/summarize-podcast-transcripts-and-long-texts-better-with-nlp-and-ai-e04c89d3b2cb?source=collection_archive---------0-----------------------#2023-05-03](https://towardsdatascience.com/summarize-podcast-transcripts-and-long-texts-better-with-nlp-and-ai-e04c89d3b2cb?source=collection_archive---------0-----------------------#2023-05-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why the existing summarization approach is flawed, and a walkthrough of how
+    to do better
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://iztham.medium.com/?source=post_page-----e04c89d3b2cb--------------------------------)[![Isaac
+    Tham](../Images/57f44f34adc534dbf09791a8cd54e7f3.png)](https://iztham.medium.com/?source=post_page-----e04c89d3b2cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e04c89d3b2cb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e04c89d3b2cb--------------------------------)
+    [Isaac Tham](https://iztham.medium.com/?source=post_page-----e04c89d3b2cb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8177b59b4815&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarize-podcast-transcripts-and-long-texts-better-with-nlp-and-ai-e04c89d3b2cb&user=Isaac+Tham&userId=8177b59b4815&source=post_page-8177b59b4815----e04c89d3b2cb---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e04c89d3b2cb--------------------------------)
+    ·11 min read·May 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe04c89d3b2cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarize-podcast-transcripts-and-long-texts-better-with-nlp-and-ai-e04c89d3b2cb&user=Isaac+Tham&userId=8177b59b4815&source=-----e04c89d3b2cb---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe04c89d3b2cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsummarize-podcast-transcripts-and-long-texts-better-with-nlp-and-ai-e04c89d3b2cb&source=-----e04c89d3b2cb---------------------bookmark_footer-----------)![](../Images/27bac9eb1dfda2b1e95e33debfc9c121.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image from Unsplash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLMs like GPT-4 have taken the world by storm, and one of the tasks that generative
+    text models are particularly good at is summarization of long texts such as books
+    or podcast transcripts. However, the conventional method of getting LLMs to summarize
+    long texts is actually fundamentally flawed. In this post, I will tell you about
+    the problems with existing summarization methods, and present a better summarization
+    method that actually takes into account the structure of the text! Even better,
+    this method will also give us the text’s main topics — killing two birds with
+    one stone!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will walk you through how you can easily implement this in Python, with just
+    several tweaks of the existing method. This is the method that we use at [Podsmart](http://podsmartai.com),
+    our newly-launched AI-powered podcast summarizer app that helps busy intellectuals
+    save hours of listening.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Problems with existing solutions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The canonical method to summarize long texts is by **recursive summarization**,
+    in which the long text is split equally into shorter chunks which can fit inside
+    the LLM’s context window. Each chunk is summarized, and the summaries are concatenated
+    together to and then passed through GPT-3 to be further summarized. This process
+    is repeated until one obtains a final summary of desired length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the major downside is that existing implementations e.g. LangChain’s
+    [summarize chain using map_reduce](https://python.langchain.com/en/latest/modules/chains/index_examples/summarize.html),
+    split the text into chunks with no regard for the logical and structural flow
+    of the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, if the article is 1000 words long, a chunk size of 200 would mean
+    that we would get 5 chunks. What if the author has several main points, the first
+    of which takes up the first 250 words? The last 50 words would be placed into
+    the second chunk with text from the author’s next point, and passing this chunk
+    through GPT-3’s summarizer would lead to potentially important information from
+    the first point being omitted. Also, some key points may be longer than others,
+    and there is no way of knowing this a priori.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another method is the ‘refine’ method, which passes every chunk of text, along
+    with a summary from previous chunks, through the LLM, which progressively refines
+    the summary as it sees more of the text (see the prompt [here](https://github.com/hwchase17/langchain/blob/master/langchain/chains/summarize/refine_prompts.py)).
+    However, the sequential nature of the process means that it cannot be parallelized
+    and takes linear time, far longer than a recursive method which takes logarithmic
+    time. Additionally, intuition suggests that the meaning from the initial parts
+    will be overrepresented in the final summary. For podcast transcripts where the
+    first minutes are advertisements completely irrelevant to the rest of the podcast,
+    this is a stumbling block. Hence, this method is hence not widely used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even if more advanced language models come out with longer context windows,
+    it will still be woefully inadequate for many summarization use cases (entire
+    books), and some chunking and recursive summarization is inevitably necessary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In essence, if the summarization process doesn’t recognize the text’s hierarchy
+    of meaning and isn’t compatible with it, it’s not likely that the resulting summary
+    will be good enough to accurately convey the author’s intended meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Better Way Forward**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A better solution is to tackle the summarization and topic modelling process
+    together in the same algorithm. Here, we split the summary outputs from one step
+    of the recursive summarization into chunks to be fed into the next step. We can
+    achieve this through by clustering chunks semantically into topics and passing
+    topics into the next iteration of the summarization. Let’s walk you through how
+    we can implement this in Python!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Requirements**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Python packages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: scipy — for cosine distance metric
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: networkx — for the Louvain community detection algorithm
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: langchain — package with utility functions allowing you to call LLMs like OpenAI’s
+    GPT-3
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data and Preprocessing**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The GitHub repository with the Jupyter notebook and data can be found here:
+    [https://github.com/thamsuppp/llm_summary_medium](https://github.com/thamsuppp/llm_summary_medium)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The text we are summarizing today is the 2023 State of the Union speech by US
+    President Joe Biden. The text file is in the GitHub repository, and [here](https://www.whitehouse.gov/briefing-room/speeches-remarks/2023/02/07/remarks-of-president-joe-biden-state-of-the-union-address-as-prepared-for-delivery/#:~:text=We%20are%20the%20only%20country,ever%20created%20in%20four%20years.)
+    is the original source. The speech, as are all US government publications, are
+    in [public domain](https://www.copyrightlaws.com/copyright-laws-in-u-s-government-works/).
+    Do note that it is important to make sure that that you are allowed to use the
+    source text — Towards Data Science has published [some helpful tips](/writers-faq-462571b65b35#1b06)
+    about checking for dataset copyrights and licenses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We split the raw text it into sentences, restricting sentences to have a minimum
+    length of 20 words and maximum length of 80.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Creating Chunks**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of creating chunks large enough to fit into a context window, I propose
+    that the chunk size should be the number of sentences it generally takes to express
+    a discrete idea. This is because we will later embed this chunk of text, essentially
+    distilling its semantic meaning into a vector. I currently use 5 sentences (but
+    you can experiment with other numbers). I tend to have a 1-sentence overlap between
+    chunks, just to ensure continuity so that each chunk has some contextual information
+    about the previous chunk. For the given text file, there are 65 chunks, with an
+    average chunk length is 148 words, with a range from 46–197 words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Getting Titles and Summaries for Each Chunk**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, this is where I start deviating from LangChain’s summarize chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Getting two for the price of 1 LLM call: title + summary**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wanted to get both an informative title as well as a summary of each chunk
+    (the importance of the title will become clearer later). So I created a custom
+    prompt, adapting Langchain’s [default summarize chain prompt](https://github.com/hwchase17/langchain/blob/master/langchain/chains/summarize/map_reduce_prompt.py).
+    As you can see in `map_prompt_template` - `text` is a parameter that will be inserted
+    into the prompt - this will be the original text of each chunk. I create a LLM,
+    which is currently GPT-3, and create an LLMChain, which combines an LLM with the
+    prompt template. Then, `map_llm_chain.apply()` calls GPT-3 with the prompt template
+    with the text inputs inserted in, returning titles and summaries for each chunk,
+    which I parse into a dictionary output. Note that all chunks can be processed
+    in parallel as they are independent of each other, hence leading to immense speed
+    benefits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use ChatGPT for 10x cheaper price and similar performance, however when
+    I tried it, only the GPT-3 LLM runs the query in parallel, whereas using ChatGPT
+    runs it one-by-one, which was painfully slow as I normally pass in ~100 chunks
+    at the same time. Running ChatGPT in parallel requires an async implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Embedding Chunks and Clustering into Topics**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After obtaining the summaries for each chunk, I will embed them using OpenAI’s
+    embeddings into 1536-dimension vectors. The conventional recursive summarization
+    method does not require embedding as they split texts arbitrarily by even length.
+    For us, we aim to improve on that by grouping semantically-similar chunks together
+    into topics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Grouping texts into topics is a well-studied problem in NLP, with many traditional
+    methods such as [Latent Dirichlet Allocation](/topic-modeling-and-latent-dirichlet-allocation-in-python-9bf156893c24)
+    which predates the age of deep learning. I remember using LDA in 2017 to cluster
+    newspaper articles for my college’s newspaper — it was very slow to estimate,
+    and only used word frequency which does not capture semantic meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we can leverage OpenAI’s embeddings-as-a-service API to obtain embeddings
+    that capture the semantic meaning of sentences in one second. There are many other
+    possible embedding models that can be used here e.g. HuggingFace’s `sentence-transformers`
+    , which reportedly has better performance than OpenAI’s embeddings, but that involves
+    downloading the model and running it on your own server.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After obtaining embedding vectors from the chunks, we group similar vectors
+    together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I create a chunk similarity matrix, where the `(i,j)th` entry denotes the cosine
+    similarity between the embedding vectors of the ith and jth chunk, i.e. the semantic
+    similarity between the chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/00f32224a5ea1b3512ef8d67c774bd57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The chunk similarity matrix for the State of the Union speech. You can see certain
+    groups of chunks are similar to collectively similar to each other — this is what
+    the topic detection algorithm later on will uncover. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can view this as a similarity graph between nodes which are chunks, with
+    edge weight being the similarity between two chunks. We use the [Louvain community
+    detection algorithm](/louvain-algorithm-93fde589f58c) to detect topics from the
+    chunks. This is because communities are defined in graph analysis as having dense
+    intra-community connections, and sparse inter-community connections, which is
+    what we want: chunks within a topic to be very semantically-similar to each other,
+    while each chunk being less semantically-similar to chunks in other detected topics.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Louvain community detection algorithm has a hyperparameter called resolution
+    — small resolutions lead to smaller clusters. Additionally, I add a hyperparameter
+    `proximity_bonus` - which bumps up the similarity score of chunks if their position
+    in the original text is closer to each other. You can interpret this as treating
+    the temporal structure of the text as a prior (i.e. chunks closer to each other
+    are more likely to be semantically similar). I put this in to discouraging the
+    detected topics from having chunks from all over the text which is less plausible.
+    The function also tries to minimize the variance in cluster sizes, preventing
+    situations when one cluster has 1 chunk while another has 13 chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the State of the Union speech, the output are 10 clusters, which are nicely
+    continuous.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9487630608c51b3d01d1b5ec957f06ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Detected topic clusters for the State of the Union speech. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbf397fe7ecb2acec32aee0c908b6283.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Detected topic clusters for a Bloomberg Surveillance podcast transcript. The
+    purple and orange topics picked up advertisements. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second image is the topic clustering for another podcast episode. As you
+    can see, the beginning and end is detected to the same topic, which is common
+    for podcasts with ads at the start and end of the episode. Some topics, like the
+    purple one, are also discontinuous — it’s nice that our method allows for this,
+    as a text can cycle back to an earlier-mentioned topic, and this another possibility
+    that the conventional text-splitting fails to account for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Topic Titles and Summaries**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, we have topics that are semantically coherent that we can pass into the
+    next step of the recursive summarization. For this example, this will be the last
+    step, but for much longer texts like books, you can imagine repeating the process
+    several times until there are ~10 topics left whose topic summaries can fit into
+    the context window.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step involves three different parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Topic Titles**: For each topic, we have generated a list of titles for the
+    chunks in that topic. We pass all topics’ list of titles into GPT-3 and ask it
+    to aggregate the titles to arrive at one title for each topic. We do this concurrently
+    for all topics to prevent the topics’ titles from being too similar with one another.
+    Previously, when I generated topic titles individually, GPT-3 does not have context
+    of the other topic titles, hence there were cases where 4 out of 7 titles were
+    ‘Federal Reserve’s Monetary Policy’. This is why we wanted to generate chunk titles
+    — trying to fit all chunk summaries into the context window here may not be possible
+    for very long texts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see below, the titles look good! Descriptive, yet unique from each
+    other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Topic Summary:** Nothing new here, this involves combining the chunk summaries
+    of each topic together and asking GPT-3 to summarize them into a topic summary.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Final Summary:** To arrive at the overall summary of the text, we once again
+    concatenate the topic summaries together and prompt GPT-3 to summarize them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eed826bec998107a4e309a67481f4b3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The final summary of the State of the Union address. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**To summarize**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are the benefits of our method?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The text is split hierarchically into topics, chunks, and sentences. As we progress
+    down the hierarchy, we get progressively detailed and specific summaries, from
+    the final summary, to each topic’s summary, to each chunk’s summary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As I mentioned above, the summary hence accurately captures the semantic structure
+    of the text — where there is an overarching theme which is split into several
+    main topics, each of which comprises several key ideas (chunks), ensuring that
+    the essential information is retained through the various layers of summarization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This also offers greater flexibility than merely an overall summary. Different
+    people are more interested in different parts of the text and would hence choose
+    the appropriate level of detail they want for each part of the text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, this requires pairing the generated summaries with an intuitive and
+    coherent interface that visualizes this hierarchical nature of the text. An example
+    of such a visualization is on Podsmart— [click here](https://www.podsmartai.com/examples/26e50d5d)
+    for an interactive summary of the speech.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/985553239a363da0687b3d8e45a8120e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A visualization of the extracted topics and the timeline of the transcript.
+    Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that this does not drastically increase the LLM costs — we are still passing
+    just as much input as the conventional method into the LLM, yet we get a much
+    richer summarization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TLDR** — here are the secret sauces to produce superior summaries of your
+    texts'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Semantically-coherent topics — by doing semantic embeddings on small chunks
+    of the text and splitting the text by semantic similarity
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Obtaining titles and summaries from chunks — which required customizing the
+    prompt instead of using the default LangChain summarize chain
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calibrating the Louvain community-detection algorithm — hyperparameters like
+    resolution and proximity bonus ensure the generated topic clusters are plausible
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Distinct topic titles — concurrently generating all topic titles which required
+    chunk titles
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Once again, you can check out the entire source code on the [GitHub repo](https://github.com/thamsuppp/llm_summary_medium).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you found this post helpful:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'do check out my other Medium articles: [technical tips on how to build an AI
+    app as a data scientist](/from-data-scientist-to-ai-developer-lessons-building-an-generative-ai-web-app-in-2023-95959a00a474),
+    [generating music using deep learning](https://medium.com/towards-data-science/generating-music-using-deep-learning-cb5843a9d55e)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: try out my [app](http://podsmartai.com) — [Podsmart](http://podsmartai.com)
+    transcribes and summarizes podcasts and YouTube videos, saving busy intellectuals
+    hours of listening
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: follow me on [LinkedIn](https://www.linkedin.com/in/isaacthamhy/) or [Twitter/X](https://twitter.com/thamsuppp),
+    and reach out via messages or comments! I’ve love to bounce ideas about all things
+    data science and AI
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL

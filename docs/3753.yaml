@@ -1,0 +1,790 @@
+- en: LLM+RAG-Based Question Answering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/llm-rag-based-question-answering-6a405c8ad38a?source=collection_archive---------0-----------------------#2023-12-25](https://towardsdatascience.com/llm-rag-based-question-answering-6a405c8ad38a?source=collection_archive---------0-----------------------#2023-12-25)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to do poorly on Kaggle, and learn about RAG+LLM from it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)[![Teemu
+    Kanstrén](../Images/8ad278d60d1fa3f794fccb4c61d607ce.png)](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------)
+    [Teemu Kanstrén](https://teemukanstren.medium.com/?source=post_page-----6a405c8ad38a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9fc0679190dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&user=Teemu+Kanstr%C3%A9n&userId=9fc0679190dc&source=post_page-9fc0679190dc----6a405c8ad38a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a405c8ad38a--------------------------------)
+    ·23 min read·Dec 25, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a405c8ad38a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&user=Teemu+Kanstr%C3%A9n&userId=9fc0679190dc&source=-----6a405c8ad38a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a405c8ad38a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-rag-based-question-answering-6a405c8ad38a&source=-----6a405c8ad38a---------------------bookmark_footer-----------)![](../Images/f497014da435709dae04a493366a7919.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image generated with ChatGPT+/DALL-E3, asking for an illustrative image for
+    an article about RAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieval Augmented Generation (RAG) seems to be quite popular these days. Along
+    the wave of Large Language Models (LLM’s), it is one of the popular techniques
+    to get LLM’s to perform better on specific tasks such as question answering on
+    in-house documents. Some time ago, I played on a [Kaggle competition](https://www.kaggle.com/competitions/kaggle-llm-science-exam)
+    that allowed me to try it out and learn a bit better than random experiments on
+    my own. Here are a few learnings from that and the following experiments while
+    writing this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images, unless otherwise noted, are by the author. Generated with the help
+    of ChatGPT+/DALL-E3 (where noted), or taken from my personal Jupyter notebooks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAG Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: RAG has two main parts, retrieval and generation. In the first part, retrieval
+    is used to fetch (chunks of) documents related to the query of interest. Generation
+    uses those fetched chunks as added input, called *context*, to the answer generation
+    model in the second part. This added context is intended to give the generator
+    more up-to-date, hopefully better, information to base its generated answer on
+    than just its base training data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the RAG Input, or Chunking Text
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: LLM’s have a maximum context or sequence window length they can handle, and
+    the generated input context for RAG needs to be short enough to fit into this
+    sequence window. We want to fit as much relevant information into this context
+    as possible, so getting the best “chunks” of text from the potential input documents
+    is important. These chunks should optimally be the most relevant ones for generating
+    the correct answer to the question posed to the RAG system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a first step, the input text is typically chunked into smaller pieces. A
+    basic pre-processing step in RAG is converting these chunks into embeddings using
+    a specific embedding model. A typical sequence window for an embedding model is
+    512 tokens, which also makes a practical target for chunk size. Once the documents
+    are chunked and encoded into embeddings, a similarity search using the embeddings
+    can be performed to build the context for generating the answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I have found [Langchain](https://github.com/langchain-ai/langchain) to provide
+    useful tools for input loading and chunking. For example, chunking a document
+    with Langchain (in this case, using tokenizer for [Flan-T5-Large](https://huggingface.co/google/flan-t5-large)
+    model) is as simple as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This produces the following two chunks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In the above code, *chunk_size* 12 tells LangChain to aim for a maximum of
+    12 tokens per chunk. Depending on the text structure, [this may not always be
+    100% exact](https://stackoverflow.com/questions/76633836/what-does-langchain-charactertextsplitters-chunk-size-param-even-do).
+    However, in my experience it works generally well. Something to keep in mind is
+    the difference between tokens vs words. Here is an example of tokenizing the above
+    *section_text*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Resulting output tokens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Most words in the *section_text* form a token on their own, as they are [common
+    words in texts](https://huggingface.co/docs/transformers/tokenizer_summary). However,
+    for special forms of words, or domain words this can be a bit more complicated.
+    For example, here the word “uncharacteristic” becomes three tokens [“ *un*”, “
+    *character*”, “ *istic*”]. This is because the model tokenizer knows those 3 partial
+    sub-words but not the entire word (“ *uncharacteristic* “). Each model comes with
+    its own tokenizer to match these rules in input and model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In chunking, the [RecursiveCharacterTextSplitter](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/recursive_text_splitter)
+    from Langchain used in above code counts these tokens, and looks for given separators
+    to split the text into chunks as requested. Trials with different chunk sizes
+    may be useful. In my Kaggle experiment I started with the maximum size for the
+    embedding model, which was 512 tokens. Then proceeded to try chunk sizes of 256,
+    128, and 64 tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example RAG Query
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The [Kaggle competition](https://www.kaggle.com/competitions/kaggle-llm-science-exam)
+    I mentioned was about multiple-choice question answering based on Wikipedia data.
+    The task was to select the correct answer option from the multiple options for
+    each question. The obvious approach was to use RAG to find required information
+    from a Wikipedia dump, and use it to generate the correct. Here is the first question
+    from competition data, and its answer options to illustrate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/35ff5c28169adc2755e25364da4b542b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example question and answer options A-E.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The multiple-choice questions were an interesting topic to try out RAG. But
+    the most common RAG use case is, I believe, answering questions based on source
+    documents. Kind of like a chatbot, but typically question answering over domain
+    specific or (company) internal documents. I use this basic question answering
+    use case to demonstrate RAG in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example RAG question for this article, I needed something the LLM would
+    not know the answer to directly based on its training data alone. I used Wikipedia
+    data, and since it is likely used as part of training data for LLM’s, I needed
+    a question related to something after the model was trained. The model I used
+    for this article was [Zephyr 7B beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta),
+    trained in early 2023\. Finally, I settled on asking about the [Google Bard AI
+    chatbot](https://bard.google.com/). It has had many developments over the past
+    year, after the Zephyr training date. I also have a decent knowledge of Bard to
+    evaluate the LLM’s answers. Thus I used “*what is google bard?* “ as an example
+    question for this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embedding Vectors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first phase of retrieval in RAG is based on the embedding vectors, which
+    are really just points in a multidimensional space. They look something like this
+    (only the first 10 values here):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'These embedding vectors can be used to compare the words/sentences, and their
+    relations, against each other. These vectors can be built using embedding models.
+    A nice set of those models with various stats per model can be found on the [MTEB
+    leaderboard](https://huggingface.co/spaces/mteb/leaderboard). Using one of those
+    models is as simple as this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The model page on HuggingFace typically shows the example code. The above loads
+    the model “ [bge-small-en](https://huggingface.co/BAAI/bge-small-en-v1.5) “ from
+    local disk. To create the embeddings using this model is just:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this case, the embedding model is used to encode the given question into
+    an embedding vector. The vector is the same as the example above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The shape (, 384) tells me *q_embeddings* is a single vector (as opposed to
+    embedding a list of multiple texts at once) of length 384 floats. The slice above
+    shows the first 10 values out of those 384\. Some models use longer vectors for
+    more accurate relations, others, like this one, shorter (here 384). Again, [MTEB
+    leaderboard](https://huggingface.co/spaces/mteb/leaderboard) has good examples.
+    The small ones require less space and computation, larger ones give some improvements
+    in representing the relations between chunks, and sometimes sequence length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For my RAG similarity search, I first needed embeddings for the question. This
+    is the *q_embeddings* above. This needed to be compared against embedding vectors
+    of all the searched articles (or their chunks). In this case all the chunked Wikipedia
+    articles. To build embedding for all of those:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here *article_chunks* is a list of all chunks for all articles from the English
+    Wikipedia dump. This way they can be batch-encoded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vector Databases
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Implementing similarity search over a large set of documents / document chunks
+    is not too complicated at a basic level. A common way is to calculate [cosine
+    similarity](https://www.geeksforgeeks.org/how-to-calculate-cosine-similarity-in-python/)
+    between the query and document vectors, and sort accordingly. However, at large
+    scale, this sometimes gets a bit complicated to manage. Vector databases are tools
+    that make this management and search easier / more efficient at scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, [Weaviate](https://weaviate.io/) is a vector database that was
+    used in [StackOverflow’s AI-based search](https://resources.stackoverflow.co/topic/thought-leadership/stack-overflows-ai-journey-webinar).
+    In its latest versions, it can also be used in an [embedded mode](https://weaviate.io/developers/weaviate/installation/embedded),
+    which should have made it usable even in a Kaggle notebook. It is also used in
+    some [Deeplearning.AI LLM short courses](https://learn.deeplearning.ai/vector-databases-embeddings-applications/lesson/1/introduction),
+    so at least seems somewhat popular. Of course, there are many others and it is
+    good to make comparisons, this field also evolves fast.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my trials, I used [FAISS](https://github.com/facebookresearch/faiss) from
+    Facebook/Meta research as the vector database. FAISS is more of a library than
+    a client-server database, and was thus simple to use in a Kaggle notebook. And
+    it worked quite nicely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Chunked Data and Embeddings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Once the chunking and embedding of all the articles was all done, I built a
+    Pandas DataFrame with all the relevant information. Here is an example with the
+    first 5 chunks of the Wikipedia dump I used, for a document titled *Anarchism*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b0cad38abdd821b3e885baf39e3bcafb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First 5 chunks from the first article in the Wikipedia dump I used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Each row in this table (a Pandas DataFrame) contains data for a single chunk
+    after the chunking process. It has 5 columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*chunk_id*: allows me to map chunk embeddings to the chunk text later.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*doc_id*: allows mapping the chunks back to their document.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*doc_title*: for trialing approaches such as adding the doc title to each chunk.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*chunk_title*: article subsection title for the chunk, same purpose as doc_title'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*chunk*: the actual chunk text'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here are the embeddings for the first five Anarchism chunks, same order as
+    the DataFrame above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Each row is partially only shown here, but illustrates the idea.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seach for Similar Query Embeddings vs Chunk Embeddings
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Earlier I encoded the query vector for query “ *what is google bard?* “‘, followed
+    by encoding all the article chunks. With these two sets of embeddings, the first
+    part of RAG search is simple: finding the documents “semantically” closest to
+    the query. In practice just calculating a measure such as cosine similarity between
+    the query embedding vector and all the chunk vectors, and sorting by the similarity
+    score.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are the top 10 “semantically” closest chunks to the *q_embeddings*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa786f4b953c673500fa0eeb4ed0bf31.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 10 chunks sorted by their cosine similarity with the question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each row in this table (DataFrame) represents a chunk. The *sim_score* here
+    is the calculated cosine similarity score, and the rows are sorted from highest
+    cosine similarity to lowest. The table shows the top 10 highest *sim_score* rows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Re-ranking
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A pure embeddings based similarity search is very fast and low-cost in terms
+    of computation. However, it is not quite as accurate as some other approaches.
+    *Re-ranking* is a term used to describe the process of using another model to
+    more accurately sort this initial list of top documents, with a more computationally
+    expensive model. This model is usually too expensive to run against all documents
+    and chunks, but running it on the set of top chunks after the initial similarity
+    search is much more feasible. Re-ranking helps to get a better list of final chunks
+    to build the input context for the generation part of RAG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The same [MTEB leaderboard](https://huggingface.co/spaces/mteb/leaderboard)
+    that hosts metrics for the embedding models also has re-ranking scores for many
+    models. In this case I used the [bge-reranker-base](https://huggingface.co/BAAI/bge-reranker-base)
+    model for re-ranking:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After adding *rerank_score* to the chunk DataFrame, and sorting with it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4fe80155ef3b8e0c33a065708d942c8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 10 chunks sorted by their re-rank score with the question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Comparing the two tables above (first sorted by *sim_score* vs now by *rerank_score*),
+    there are some clear differences. Sorting by the plain similarity score ( *sim_score*)
+    from embeddings, the [Tenor page](https://en.wikipedia.org/wiki/Tenor_(website))
+    is the 5th most similar chunk. Since Tenor appears to be a GIF search engine hosted
+    by Google, I guess it makes some sense to see its embeddings close to the question
+    “ *what is google bard?* “. But it has nothing really to do with Bard itself,
+    except that Tenor is a Google product in a similar domain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, after sorting by the *rerank_score*, the results make much more sense.
+    Tenor is gone from the top 10, and only the last two chunks from the top 10 list
+    appear to be unrelated. These are about the names “Bard” and “Bård”. Possibly
+    because the best source of information on Google Bard appears to be the [page
+    on Google Bard](https://en.wikipedia.org/wiki/Bard_(chatbot)), which in the above
+    tables is document with id 6026776\. After that I guess RAG runs out of good article
+    matches and goes a bit off-road (Bård). Which is also seen in the negative re-rank
+    scores for those two last rows/chunks of the table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically there would likely be many relevant documents and chunks across those
+    documents, not just the 1 document and 8 chunks as above. But in this case this
+    limitation helps illustrate the difference in basic embeddings-based similarity
+    search and re-ranking, and how re-ranking can positively affect the end result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building the Context
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What do we do once we have collected the top chunks for RAG input? We need to
+    build the context for the generator model from these chunks. At its simplest,
+    this is just a concatenation of the selected top chunks into a long text sequence.
+    The maximum length of this sequence in constrained by the used model. As I used
+    the [Zephyr 7B model](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta), I
+    used 4096 tokens as the maximum length. The [Zephyr page](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta)
+    gives this as a flexible sequence limit (with sliding attention window). Longer
+    context seems better, but it appears [this is not always the case](https://www-cs.stanford.edu/~nfliu/papers/lost-in-the-middle.arxiv2023.pdf).
+    Better try it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the base code I used to generate the answer with this context:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: As noted, in this case the context was just a concatenation of the top ranked
+    chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating the Answer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For comparison, first lets try what the model answers without any added context,
+    i.e. based on its training data alone:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This gives (one of many runs, slight variations but generally similar):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Generally accurate, but missing much of the latest developments. In comparison,
+    lets try with providing the generated context to the question:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following is an example answer with the top *sim_score* sorted chunks as
+    context (includes the Tenor and Bård page chunks):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is not a very good answer since it starts talking about completely non-related
+    topics here, *Tenor* and *Bård*. Partly because in this case the Tenor chunk is
+    included in the context, and chunk order also generally less optimal as it is
+    not re-ranked.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In comparison, with *rerank_score* sorted context chunks (better chunk ordering
+    and Tenor gone):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now the unrelated topics are gone and the answer in general is better and more
+    to the point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This highlights that it is not only important to find proper context to give
+    to the model, but also to trim out the unrelated context. At least in this case,
+    the Zephyr model was not able to directly identify which part of the context was
+    relevant, but rather seems to have summarized the it all. Cannot really fault
+    the model, as I gave it that context and asked to use it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looking at the re-rank scores for the chunks, a general filtering approach based
+    on metrics such as negative re-rank scores would have solved this issue also in
+    the above case, as the “bad” chunks in this case have a negative re-rank score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Something to note is that Google released a new and much improved *Gemini* family
+    of models for Bard, around the time I was writing this article. It is not mentioned
+    in the generated answers here since the Wikipedia dumps are generated with a slight
+    delay. So as one might imagine, it is important to try to have up-to-date information
+    in the context, and to keep it relevant and focused.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visual Embedding Check
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Embeddings are a great tool, but sometimes it is a bit difficult to really grasp
+    how they are working, and what is happening with the similarity search. A basic
+    approach is to plot the embeddings against each other to get some insight into
+    their relations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Building such a visualization is quite simple with [PCA](https://en.wikipedia.org/wiki/Principal_component_analysis)
+    and visualization libraries. It involves mapping the embedding vectors to 2 or
+    3 dimensions, and plotting the results. Here I map from those 384 dimensions to
+    2, and plot the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'For the top 10 articles in the “ *what is google bard?* “ question, this gives
+    the following visualization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/67b91c3adabe96243a9d5e60010483b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PCA-based 2D plot of question embeddings vs article 1st chunk embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this plot, the red dot is the embedding for the question “ *what is google
+    bard?*”. The blue dots are the closest Wikipedia article matches, according to
+    *sim_score*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [Bard article](https://en.wikipedia.org/wiki/Bard_(chatbot)) is obviously
+    the closest one to the question, while the rest are a bit further off. The [Tenor
+    article](https://en.wikipedia.org/wiki/Tenor_(website)) seems to be about second
+    closest, while the [Bård one](https://en.wikipedia.org/wiki/B%C3%A5rd) is a bit
+    further away, possibly due to the loss of information in mapping from 384 dimensions
+    to 2\. Due to this, the visualization is not perfectly accurate but helpful for
+    quick human overview.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following figure illustrates an actual error finding from my Kaggle code
+    using a similar PCA plot. Looking for a bit of insights, I tried a simple question
+    about the first article in the Wikipedia dump (“ *Anarchism*”). With the question
+    “ *what is the definition of anarchism?* “ . The following is what the PCA visualization
+    looked like for the closest articles, the marked outliers are perhaps the most
+    interesting part:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/200d00bcdabbf0f98d58bdd7cf0f5802.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: My fail shown in PCA-based 2D plot of Kaggle embeddings for selected top documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The red dot in the bottom left corner is again the question. The cluster of
+    blue dots next to it are all related articles about anarchism. And then there
+    are the two outlier dots on the top right. I removed the titles from the plot
+    to keep it readable. The two outlier articles seemed to have nothing to do with
+    the question when looking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why is this? As I indexed the articles with various chunk sizes of 512, 256,
+    128, and 64, I had some issues in processing all the articles for 256 chunk size,
+    and restarted the chunking in the middle. This resulted in some differences in
+    indices of some of those embeddings vs the chunk texts I had stored. After noticing
+    these strange looking results, I re-calculated the embeddings with the 256 token
+    chunk size, and compared the results vs size 512, noted this difference. Too bad
+    the competition was done at that time 🙂
+  prefs: []
+  type: TYPE_NORMAL
+- en: More Advanced Context Selection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the above I discussed chunking the documents and using similarity search
+    + re-ranking as a method to find relevant chunks and build a context for the question
+    answering. I found sometimes it is also useful to consider how the initial documents
+    to chunk are selected vs just the chunks themselves.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As example methods, the [advanced RAG](https://www.deeplearning.ai/short-courses/building-evaluating-advanced-rag/)
+    course on [DeepLearning.AI](https://www.deeplearning.ai/) , presents two approaches:
+    sentence windowing, and hierarchical chunk merging. In summary this looks at nearby-chunks
+    and if multiple are ranked high by their scores, takes them as a single large
+    chunk. The “hierarchy” coming from considering larger and larger chunk combinations
+    for joint relevance. Aiming for more cohesive context vs random ordered small
+    chunks, giving the generator LLM better input to work with.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a simple example of this, here is the re-ranked set of top chunks for my
+    above Bard example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa17b950e30b9f3b12c8cb936393317c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Top 10 chunks for my Bard example, sorted by rerank_score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The leftmost column here is the index of the chunk. In my generation, I just
+    took the top chunks in this sorted order as in the table. If we wanted to make
+    the context a bit more coherent, we could sort the final selected chunks by their
+    order within a document. If there is a small piece missing between highly ranked
+    chunks, adding the missing one (e.g., here chunk id 7) could help in missing gaps,
+    similar to the hierarchical merging. This could be something to try as a final
+    step for final gains.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my Kaggle experiments, I performed initial document selection based on the
+    first chunk only. In part due to Kaggle’s resource limits, but it appeared to
+    have some other advantages as well. Typically, an article’s beginning acts as
+    a summary (introduction or abstract). Initial chunk selection from such ranked
+    articles may help select chunks with more relevant overall context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is visible in my Bard example above, where both the *rerank_score* and
+    *sim_score* are highest for the first chunk of the best article. To try to improve
+    this, I also tried using a larger chunk size for this initial document selection,
+    to include more of the introduction for better relevance. Then chunked the top
+    selected documents with smaller chunk sizes for experimenting on how good the
+    context is with each size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While I could not run the initial search on all chunks of all documents on Kaggle
+    due to resource limitations, I tried it outside of Kaggle. In these trials, I
+    noticed that sometimes single chunks of unrelated articles get ranked high, while
+    in reality misleading for the answer generation. For example, actor biography
+    in a related movie. Initial document relevance selection may help avoid this.
+    Unfortunately, I did not have time to study this further with different configurations,
+    and good re-ranking may already help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, repeating the same information in multiple chunks in the context is
+    not very useful. Top ranking of the chunks does not guarantee that they best complement
+    each other, or best chunk diversity. For example, LangChain has a special chunk
+    selector for [Maximum Marginal Relevance](https://python.langchain.com/docs/modules/model_io/prompts/example_selectors/mmr).
+    It does this by penalizing new chunks by how close they are to the already added
+    chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extending the RAG Query
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'I used a very simple question / query for my RAG example here (“ *what is google
+    bard?*”), and simple is good to illustrate the basic RAG concept. This is a pretty
+    short query input considering that the embedding model I used had a 512 token
+    maximum sequence length. If I encode this question into tokens using the tokenizer
+    for the embedding model ( *bge-small-en*), I get the following tokens:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which amounts to a total of 7 tokens. With a maximum sequence length of 512,
+    this leaves plenty of room if I want to use a longer query sentence. Sometimes
+    this can be useful, especially if the information we want to retrieve is not such
+    a simple query, or if the domain is more complex. For a very small query, the
+    semantic search may not work best, as noted also in the [Stack Overflows AI Journey
+    posting](https://stackoverflow.blog/2023/07/31/ask-like-a-human-implementing-semantic-search-on-stack-overflow/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, the Kaggle competition had a set of questions, each with 5 answer
+    options to pick from. I initially tried RAG with just the question as the input
+    for the embedding model. The search results were not too great, so I tried again
+    with the question + all the answer options as the query. This produced much better
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example, the first question in the training dataset of the competition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is 32 tokens for the *bge-small-en* model. So about 480 still left to fit
+    into the maximum 512 token sequence length.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the first question along with the 5 answer options given for it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52216d4403a7ac4827efa1264b76eb88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example question and answer options A-E. Concatenating all these texts formed
+    the query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concatenating the question and the given options into one RAG query gives this
+    a length 235 tokens, with still more than 50% of embedding model sequence length
+    left. In my case, this approach produced much better results. Both from manual
+    inspection, and for the competition score. Thus, experimenting with different
+    ways to make the RAG query itself more expressive is worth a try.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hallucinations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Finally, there is the topic of [hallucinations](https://machinelearningmastery.com/a-gentle-introduction-to-hallucinations-in-large-language-models/),
+    where the model produces text that is incorrect or fabricated. The Tenor example
+    from my *sim_score* sorting is one kind of an example, even if the generator did
+    base it on the actual given context. So better keep the context good I guess :).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To address hallucinations, the chatbots from the big AI companies ( [Google
+    Bard](https://bard.google.com/chat), [ChatGPT](https://chat.openai.com/), [Bing
+    Chat](https://www.bing.com/chat)) all provide means to link parts of their generated
+    answers to verifiable sources. [Bard](https://bard.google.com/chat) has a specific
+    “G” button that performs a Google search and highlights parts of the generated
+    answer that match the search results. Too bad we do not always have a world-class
+    search-engine for our data to help.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Bing Chat](https://www.bing.com/chat) has a similar approach, highlighting
+    parts of the answer and adding a reference to the source websites. [ChatGPT](https://chat.openai.com/)
+    has a slightly different approach; I had to explicitly ask it to verify its answer
+    and update with latest developments, telling it to use its browser tool. After
+    this, it did an internet search and linked to specific websites as sources. The
+    source quality seemed to vary quite a bit as in any internet search. Of course,
+    for internal documents this type of web search is not possible. However, linking
+    to the source should always be possible even internally.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I also asked Bard, ChatGPT+, and Bing for ideas on detecting hallucinations.
+    The results included an LLM hallucination [ranking index](https://www.rungalileo.io/blog/hallucination-index),
+    including [RAG hallucination](https://www.rungalileo.io/hallucinationindex). When
+    tuning LLM’s, it might also help to set the [temperature parameter to zero](https://txt.cohere.com/llm-parameters-best-outputs-language-ai/)
+    for the LLM to generate deterministic, most probable output tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, as this is a very common problem, there seem to be various approaches
+    being built to address this challenge a bit better. For example, specific [LLM’s
+    to help detect halluciations](https://huggingface.co/blog/dhuynh95/automatic-hallucination-detection)
+    seem to be a promising area. I did not have time to try them, but certainly relevant
+    in bigger projects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Besides implementing a working RAG solution, it is also nice to be able to tell
+    something about how well it works. In the Kaggle competition this was quite simple.
+    I just ran the solution to try to answer the given questions in the training dataset,
+    comparing to the correct answers given in the training data. Or submitted the
+    model for scoring on the Kaggle competition test set. The better the answer score,
+    the better one could call the RAG solution, even if there was more to the score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In many cases, a suitable evaluation dataset for domain specific RAG may not
+    be available. For this scenario, one might want to start with some generic NLP
+    evaluation datasets, such as [this list](https://paperswithcode.com/task/question-answering#:~:text=Popular%20benchmark%20datasets%20for%20evaluation%20question%20answering%20systems%20include%20SQuAD,models%20are%20T5%20and%20XLNet.).
+    Tools such as LangChain also come with [support for auto-generating questions
+    and answers](https://blog.langchain.dev/auto-eval-of-question-answering-tasks/),
+    and evaluating them. In this case, an LLM is used to create example questions
+    and answers for a given set of documents, and another LLM is used to evaluate
+    whether the RAG can provide the correct answer to these questions. This is perhaps
+    better explained in this [tutorial on RAG evaluation with LangChain](https://learn.deeplearning.ai/langchain/lesson/6/evaluation).
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the generic solutions are likely good to start with, in a real project
+    I would try to collect a real dataset of questions and answers from the domain
+    experts and the intended users of the RAG solution. As the LLM is typically expected
+    to generate a natural language response, this can vary a lot while still being
+    correct. For this reason, evaluating if the answer was correct or not is not as
+    straightforward as a regular expression or similar pattern matching. Here, I find
+    the idea of using another LLM to evaluate whether the given response matches a
+    reference response a very useful tool. These models can deal with the text variation
+    much better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: RAG is a very nice tool, and is quite a popular topic these days with the high
+    interest in LLM’s in general. While RAG and embeddings have been around for a
+    good while, the latest powerful LLM’s and their fast evolution have perhaps made
+    them more interesting for many advanced use cases. I expect the field to keep
+    evolving at a good pace, and it is sometimes a bit difficult to keep up to date
+    on everything. For this, summaries such as reviews on [RAG developments](https://arxiv.org/pdf/2312.10997.pdf)
+    can give points to at least keep the main developments in sight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The RAG approach in general is quite simple: find a set of chunks of text similar
+    to the given query, concatenate them into a context, and ask the LLM for an answer.
+    However, as I tried to show here, there can be various issues to consider in how
+    to make this work well and efficiently for different needs. From good context
+    retrieval, to ranking and selecting the best results, and finally being able to
+    link the results back to actual source documents. And evaluating the resulting
+    query contexts and answers. And as [Stack Overflow people noted](https://stackoverflow.blog/2023/07/31/ask-like-a-human-implementing-semantic-search-on-stack-overflow/),
+    sometimes the more traditional lexical or hybrid search is very useful as well,
+    even if semantic search is cool.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That’s all for today. RAG on…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/852104944e2f6138ecb58522d8e91819.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ChatGPT+/DALL-E3 vision of what it means to RAG on..
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*http://teemukanstren.com*](https://teemukanstren.com/2023/12/25/llmrag-based-question-answering/)
+    *on December 25, 2023.*'
+  prefs: []
+  type: TYPE_NORMAL

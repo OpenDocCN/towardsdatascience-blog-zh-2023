@@ -1,0 +1,543 @@
+- en: 'The Guide To LLM Evals: How To Build and Benchmark Your Evals'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/llm-evals-setup-and-the-metrics-that-matter-2cc27e8e35f3?source=collection_archive---------0-----------------------#2023-10-13](https://towardsdatascience.com/llm-evals-setup-and-the-metrics-that-matter-2cc27e8e35f3?source=collection_archive---------0-----------------------#2023-10-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/0141ad936d35fc1e8736f72b7ec61ce8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image created by author using Dalle-3 via Bing Chat
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to build and run LLM evals — and why you should use precision and recall
+    when benchmarking your LLM prompt template
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://aparnadhinak.medium.com/?source=post_page-----2cc27e8e35f3--------------------------------)[![Aparna
+    Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----2cc27e8e35f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----2cc27e8e35f3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----2cc27e8e35f3--------------------------------)
+    [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----2cc27e8e35f3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-evals-setup-and-the-metrics-that-matter-2cc27e8e35f3&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----2cc27e8e35f3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----2cc27e8e35f3--------------------------------)
+    ·12 min read·Oct 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F2cc27e8e35f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-evals-setup-and-the-metrics-that-matter-2cc27e8e35f3&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----2cc27e8e35f3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F2cc27e8e35f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fllm-evals-setup-and-the-metrics-that-matter-2cc27e8e35f3&source=-----2cc27e8e35f3---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This piece is co-authored by* [*Ilya Reznik*](https://ibreznik.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language models (LLMs) are an incredible tool for developers and business
+    leaders to create new value for consumers. They make personal recommendations,
+    translate between unstructured and structured data, summarize large amounts of
+    information, and do so much more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As the applications multiply, so does the importance of measuring the performance
+    of LLM-based applications. This is a nontrivial problem for several reasons: user
+    feedback or any other **“source of truth” is extremely limited and often nonexistent**;
+    even when possible, **human labeling is still expensive;** and it is easy to make
+    these applications **complex**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This complexity is often hidden by the abstraction layers of code and only becomes
+    apparent when things go wrong. One line of code can initiate a cascade of calls
+    (spans). **Different evaluations are required for each span**, thus multiplying
+    your problems. For example, the simple code snippet below triggers multiple sub-LLM
+    calls.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5300072b0e27ee545a3c0ded1c702754.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, we can use the power of LLMs to automate the evaluation. In this
+    article, we will delve into how to set this up and make sure it is reliable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The core of LLM evals is AI evaluating AI.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this may sound circular, we have always had human intelligence evaluate
+    human intelligence (for example, at a job interview or your college finals). Now
+    AI systems can finally do the same for other AI systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The process here is for LLMs to generate synthetic ground truth that can be
+    used to evaluate another system. Which begs a question: why not use human feedback
+    directly? Put simply, because you will never have enough of it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting human feedback on even one percent of your input/output pairs is a gigantic
+    feat. Most teams don’t even get that. But in order for this process to be truly
+    useful, it is important to have evals on every LLM sub-call, of which we have
+    already seen there can be many.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s explore how to do this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLM Model Evaluation vs. LLM System Evaluation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: LLM Model Evals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: You might have heard of LLM evals. This term gets used in many different ways
+    that all sound very similar but actually are very different. One of the more common
+    ways it gets used is in what we will call **LLM model evals**. LLM model evals
+    are focused on the overall performance of the foundational models. The companies
+    launching the original customer-facing LLMs needed a way to quantify their effectiveness
+    across an array of different tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ecfd3204dba3144c65b2e87736695bc1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author | In this case, we are evaluating two different open source
+    foundation models. We are testing the same dataset across the twomodels and seeing
+    how their metrics, like hellaswag or mmlu, stack up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One popular library that has LLM model evals is the [OpenAI Eval library](/how-to-best-leverage-openais-evals-framework-c38bcef0ec47),
+    which was originally focused on the model evaluation use case. There are many
+    metrics out there, like [HellaSwag](https://arxiv.org/abs/1905.07830) (which evaluates
+    how well an LLM can complete a sentence), [TruthfulQA](https://arxiv.org/abs/2109.07958)
+    (measuring truthfulness of model responses), and [MMLU](https://arxiv.org/abs/2009.03300)
+    (which measures how well the LLM can multitask). There are even [LLM leaderboards](https://arize.com/blog-course/llm-leaderboards-benchmarks/)
+    that looks at how well the open-source LLMs stack up against each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLM System Evals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Up to this point, we have discussed LLM model evaluation. In contrast, **LLM
+    system evaluation** is the complete evaluation of components that you have control
+    of in your system. The most important of these components are the prompt (or [prompt
+    template](https://arize.com/blog/prompt-templates-functions-and-prompt-window-management/))
+    and context. LLM system evals assess how well your inputs can determine your outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLM system evals may, for example, hold the LLM constant and change the prompt
+    template. Since prompts are more dynamic parts of your system, this evaluation
+    makes a lot of sense throughout the lifetime of the project. For example, an LLM
+    can evaluate your chatbot responses for usefulness or politeness, and the same
+    eval can give you information about performance changes over time in production.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f45a254033d1cb9a594b71670cd7f58d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author | *In this case, we are evaluating two different prompt templates
+    on a single foundation model. We are testing the same dataset across the two templates
+    and seeing how their metrics like precision and recall stack up.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which To Use? It Depends On Your Role
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are distinct personas who make use of LLM evals. One is the model developer
+    or an engineer tasked with fine-tuning the core LLM, and the other is the practitioner
+    assembling the user-facing system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are very few LLM model developers, and they tend to work for places like
+    OpenAI, Anthropic, Google, Meta, and elsewhere. **Model developers care about
+    LLM model evals,** as their job is to deliver a model that caters to a wide variety
+    of use cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For ML practitioners, the task also starts with model evaluation. One of the
+    first steps in developing an LLM system is picking a model (i.e. GPT 3.5 vs 4
+    vs Palm, etc.). The LLM model eval for this group, however, is often a one-time
+    step. Once the question of which model performs best in your use case is settled,
+    the majority of the rest of the application’s lifecycle will be defined by LLM
+    system evals. Thus, **ML practitioners care about both LLM model evals and LLM
+    system evals but likely spend much more time on the latter**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLM System Eval Metrics Vary By Use Case
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Having worked with other ML systems, your first question is likely this: “What
+    should the outcome metric be?” The answer depends on what you are trying to evaluate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Extracting structured information**: You can look at how well the LLM extracts
+    information. For example, you can look at completeness (is there information in
+    the input that is not in the output?).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Question answering**: How well does the system answer the user’s question?
+    You can look at the accuracy, politeness, or brevity of the answer — or all of
+    the above.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Retrieval Augmented Generation (RAG)**: Are the retrieved documents and final
+    answer relevant?'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a system designer, you are ultimately responsible for system performance,
+    and so it is up to you to understand which aspects of the system need to be evaluated.
+    For example, If you have an LLM interacting with children, like a tutoring app,
+    you would want to make sure that the responses are age-appropriate and are not
+    toxic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some common evaluations being employed today are relevance, hallucinations,
+    question-answering accuracy, and toxicity. Each one of these evals will have different
+    templates based on what you are trying to evaluate. Here is an example with relevance:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This example uses the open-source [Phoenix tool](https://github.com/Arize-ai/phoenix)
+    for simplicity (full disclosure: I am on the team that developed Phoenix). Within
+    the Phoenix tool, there exist default templates for most common use cases. Here
+    is the one we will use for this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will also use OpenAI’s GPT-4 model and scikitlearn’s precision/recall metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we will import all necessary dependencies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let’s bring in the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now let’s conduct our evaluation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Evaluating LLM-Based Systems with LLMs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There are two distinct steps to the process of evaluating your LLM-based system
+    with an LLM. First, establish a benchmark for your LLM evaluation metric. To do
+    this, you put together a dedicated LLM-based eval whose only task is to label
+    data as effectively as a human labeled your “golden dataset.” You then benchmark
+    your metric against that eval. Then, run this LLM evaluation metric against results
+    of your LLM application (more on this below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: How To Build An LLM Eval
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first step, as we covered above, is to build a benchmark for your evaluations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do that, you must begin with a **metric best suited for your use case**.
+    Then, you need the **golden dataset**. This should be representative of the type
+    of data you expect the LLM eval to see. The golden dataset should have the “ground
+    truth” label so that we can measure performance of the LLM eval template. Often
+    such labels come from human feedback. Building such a dataset is laborious, but
+    you can often find a standardized one for the most common use cases (as we did
+    in the code above).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e8d4068cf295bc602a23ab7d4d565b6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then you need to decide **which LLM** you want to use for evaluation. This could
+    be a different LLM from the one you are using for your application. For example,
+    you may be using Llama for your application and GPT-4 for your eval. Often this
+    choice is influenced by questions of cost and accuracy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/747ecc27cf13c132829bcb912ceabb24.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now comes the core component that we are trying to benchmark and improve: the
+    **eval template**. If you’re using an existing library like OpenAI or Phoenix,
+    you should start with an existing template and see how that prompt performs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there’s a specific nuance you want to incorporate, adjust the template accordingly
+    or build your own from scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Keep in mind that the template should have a clear structure, like the one
+    we used in prior section. Be explicit about the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What is the input?** In our example, it is the documents/context that was
+    retrieved and the query from the user.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**What are we asking?** In our example, we’re asking the LLM to tell us if
+    the document was relevant to the query'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**What are the possible output formats?** In our example, it is binary relevant/irrelevant,
+    but it can also be multi-class (e.g., fully relevant, partially relevant, not
+    relevant).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/bebbe4a5ea7985283fb654af5381d1a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: You now need to run the eval across your golden dataset. Then you can **generate
+    metrics** (overall accuracy, precision, recall, F1, etc.) to determine the benchmark.
+    It is important to look at more than just overall accuracy. We’ll discuss that
+    below in more detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are not satisfied with the performance of your LLM evaluation template,
+    you need to change the prompt to make it perform better. This is an iterative
+    process informed by hard metrics. As is always the case, it is important to avoid
+    overfitting the template to the golden dataset. Make sure to have a representative
+    holdout set or run a k-fold cross-validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e160e9a9dee0af2ad439b7df0361e42c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, you arrive at your **benchmark**. The optimized performance on the
+    golden dataset represents how confident you can be on your LLM eval. It will not
+    be as accurate as your ground truth, but it will be accurate enough, and it will
+    cost much less than having a human labeler in the loop on every example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preparing and customizing your prompt templates allows you to set up test cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why You Should Use Precision and Recall When Benchmarking Your LLM Prompt Template
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The industry has not fully standardized best practices on LLM evals. Teams commonly
+    do not know how to establish the right benchmark metrics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall accuracy is used often, but it is not enough.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is one of the most common problems in data science in action: very significant
+    class imbalance makes accuracy an impractical metric.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thinking about it in terms of the relevance metric is helpful. Say you go through
+    all the trouble and expense of putting together the most relevant chatbot you
+    can. You pick an LLM and a template that are right for the use case. This should
+    mean that significantly more of your examples should be evaluated as “relevant.”
+    Let’s pick an extreme number to illustrate the point: 99.99% of all queries return
+    relevant results. Hooray!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now look at it from the point of view of the LLM eval template. If the output
+    was “relevant” in all cases, without even looking at the data, it would be right
+    99.99% of the time. But it would simultaneously miss all of the (arguably most)
+    important cases — ones where the model returns irrelevant results, which are the
+    very ones we must catch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, accuracy would be high, but [precision and recall](https://arize.com/blog-course/precision-vs-recall/)
+    (or a combination of the two, like the [F1 score](https://arize.com/blog-course/f1-score/))
+    would be very low. Precision and recall are a better measure of your model’s performance
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The other useful visualization is the confusion matrix, which basically lets
+    you see correctly and incorrectly predicted percentages of relevant and irrelevant
+    examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e0713aae1a956a4766d5a56b2b5e8d2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Diagram by author | *In this example, we see that the highest percentage of
+    predictions are correct: a relevant example in the golden dataset has an 88% chance
+    of being labeled as such by our eval. However, we see that the eval performs significantly
+    worse on “irrelevant” examples, mislabeling them more than 27% of the time.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How To Run LLM Evals On Your Application
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At this point you should have both your model and your tested LLM eval. You
+    have proven to yourself that the eval works and have a quantifiable understanding
+    of its performance against the ground truth. Time to build more trust!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can actually use our eval on our application. This will help us measure
+    how well our LLM application is doing and figure out how to improve it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f86ea814b4142eb391e3b536b290bfb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The LLM system eval runs your entire system with one extra step. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You retrieve your input docs and add them to your prompt template, together
+    with sample user input.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You provide that prompt to the LLM and receive the answer.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You provide the prompt and the answer to your eval, asking it if the answer
+    is relevant to the prompt.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It is a best practice not to do LLM evals with one-off code but rather a library
+    that has built-in prompt templates. This increases reproducibility and allows
+    for more flexible evaluation where you can swap out different pieces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These evals need to work in three different environments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pre-production
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When you’re doing the benchmarking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pre-production
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When you’re testing your application. This is somewhat similar to the offline
+    evaluation concept in traditional ML. The idea is to understand the performance
+    of your system before you ship it to customers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Production
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When it’s deployed. Life is messy. Data drifts, users drift, models drift, all
+    in unpredictable ways. Just because your system worked well once doesn’t mean
+    it will do so on Tuesday at 7 p.m. Evals help you continuously understand your
+    system’s performance after deployment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98b24eb1c65e16c0d7245e4643e68083.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Questions To Consider
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**How many rows should you sample?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The LLM-evaluating-LLM paradigm is not magic. You cannot evaluate every example
+    you have ever run across — that would be prohibitively expensive. However, you
+    already have to sample data during human labeling, and having more automation
+    only makes this easier and cheaper. So you can sample more rows than you would
+    with human labeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What evals should you use?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This depends largely on your use case. For search and retrieval, relevancy-type
+    evals work best. Toxicity and hallucinations have specific eval patterns (more
+    on that above).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some of these evals are important in the troubleshooting flow. Question-answering
+    accuracy might be a good overall metric, but if you dig into why this metric is
+    underperforming in your system, you may discover it is because of bad retrieval,
+    for example. There are often many possible reasons, and you might need multiple
+    metrics to get to the bottom of it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What model should you use?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is impossible to say that one model works best for all cases. Instead, you
+    should run model evaluations to understand which model is right for your application.
+    You may also need to consider tradeoffs of recall vs. precision, depending on
+    what makes sense for your application. In other words, do some data science to
+    understand this for your particular case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3fcd84c78cd24147d2effdb88b6893e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Diagram by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Being able to evaluate the performance of your application is very important
+    when it comes to production code. In the era of LLMs, the problems have gotten
+    harder, but luckily we can use the very technology of LLMs to help us in running
+    evaluations. [LLM evaluation](https://arize.com/blog-course/llm-evaluation-the-definitive-guide/)
+    should test the whole system and not just the underlying LLM model — think about
+    how much a prompt template matters to user experience. Best practices, standardized
+    tooling, and curated datasets simplify the job of developing LLM systems.
+  prefs: []
+  type: TYPE_NORMAL

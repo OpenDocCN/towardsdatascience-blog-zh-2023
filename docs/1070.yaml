@@ -1,0 +1,684 @@
+- en: 'XAI for Forecasting: Basis Expansion'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/xai-for-forecasting-basis-expansion-17a16655b6e4?source=collection_archive---------6-----------------------#2023-03-24](https://towardsdatascience.com/xai-for-forecasting-basis-expansion-17a16655b6e4?source=collection_archive---------6-----------------------#2023-03-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/fba0ad0a63160f4102e075123ef170a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Richard Horvath](https://unsplash.com/@orwhat?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: NBEATS and other Interpretable Deep Forecasting Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)[![Nakul
+    Upadhya](../Images/336cb21272e9b1f098177adbde50e92e.png)](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------)
+    [Nakul Upadhya](https://medium.com/@upadhyan?source=post_page-----17a16655b6e4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4d9dddc62a80&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxai-for-forecasting-basis-expansion-17a16655b6e4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=post_page-4d9dddc62a80----17a16655b6e4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----17a16655b6e4--------------------------------)
+    ·15 min read·Mar 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F17a16655b6e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxai-for-forecasting-basis-expansion-17a16655b6e4&user=Nakul+Upadhya&userId=4d9dddc62a80&source=-----17a16655b6e4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F17a16655b6e4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fxai-for-forecasting-basis-expansion-17a16655b6e4&source=-----17a16655b6e4---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forecasting is a critical aspect of many industries, from finance to supply
+    chain management. Over the years, researchers have explored various techniques
+    for forecasting, ranging from traditional time-series methods to machine learning-based
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In recent years, forecasters have turned to deep learning and have gotten promising
+    results with models such as Long Short-Term Memory (LSTM) networks and Temporal
+    Convolution Networks (CNNs) showing great potential. Before 2019, the primary
+    approach to the forecasting problem was combining traditional statistical methods
+    (like ARIMA) with deep learning [1]. However, the forecasting literature broke
+    away from this in 2020 and diverged in two different directions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first direction involves developing means of using the attention mechanism
+    and the transformer architecture for forecasting. This approach was pioneered
+    with the introduction of the LogSparse Transformer by Li et. al [5] which adjusted
+    the traditional self-attention mechanism used in NLP tasks to be more sensitive
+    to locality and use less memory [5]. This work was then later extended and improved
+    by models such as Autoformer [6], Informer [7], FEDFormer [8], and more. This
+    is a thriving field, but recent work has put this approach into question. Zeng
+    et. al has recently questioned the effectiveness of the self-attention mechanism
+    for the forecasting task and did a slew of experiments to show that the attention
+    mechanisms may not be useful for temporal representations [9] (a summary of these
+    experiments can be found in [this article](https://medium.com/towards-data-science/transformers-lose-to-linear-models-902164ca5974)).
+    Additionally, this approach also falls a bit short from an Explainable AI (XAI)
+    perspective. While these models all have attention mechanisms that can be visualized,
+    many academics have argued that this may not be explainable and this is an active
+    field of debate. Denis Vorotyntsev has made a [great article summarizing the debate](/is-attention-explanation-b609a7b0925c)
+    and I highly encourage checking his article out as well [10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast to the attention-based approach of transformers, the other primary
+    direction of tackling the forecasting problem is the neural basis expansion analysis
+    approach first proposed by Oreshkin et. al [1] in 2020 with the N-BEATS architecture.
+    This methodology involves using multiple stacks of deep fully-connected networks
+    to iteratively build the forecast. Instead of directly predicting the time series,
+    the networks in each stack instead predict the weights of a basis. This architecture
+    allows users to specify the components of the time series they want to extract
+    and the reconstructive nature of the forecast adds an extra layer of interpretability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, I aim to summarize the full mechanisms behind the basis analysis
+    architecture and also showcase the improvements to the basis expansion approach
+    since the original N-BEATS paper. Specifically, I aim to cover how N-BEATS works
+    [1] and the two improvements to NBEATS: N-HiTS [2] and DEPTS [4].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: N-BEATS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/28208184fe703ee750bb312da4c19fdc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: N-BEATS Architecture from Oreshkin et. al 2020 [1]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: N-BEATS stands for **N**eural **B**asis **E**xpansion **A**nalysis for **T**ime
+    **S**eries and is the origin model for the basis expansion architecture. Because
+    of this, we will spend a bit more time explaining this architecture compared to
+    the others.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When developing N-BEATS, the author’s goal was to showcase the power of deep
+    learning by creating a forecasting model that did not leverage any statistical
+    concepts such as maximum likelihood estimation or traditional autoregressive models
+    (ex. ARIMA) but still provided some level of interpretability that the traditional
+    time-series approaches provided [1]. In striving for these qualities, Oreshkin
+    et. al not only met their goals but also proved that their model could do better
+    than the state-of-the-art at the time. Some qualities of N-BEATS that make it
+    a strong model are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Great performance: On the M4 dataset (a dataset containing 100,000 different
+    time series), N-BEATS was able to beat the top performer at the time, ES-RNN [11],
+    by an average of 3%.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Large and Multi-Horizon forecasting: The methods N-BEATS uses to generate its
+    forecasts can perform direct multi-step forecasting avoiding the forecast drift
+    issues brought about by iterative forecast generation (passing predictions back
+    into the model)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Relatively Fast Training: Compared to its Transformer counterparts, N-BEATS
+    only contains MLP stacks and does not have any recurrent networks in its architecture,
+    making the training much simpler.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Interpretability: When using the interpretable version of N-BEATS (N-BEATSi),
+    users can see a clear breakdown of time series components such as trend and seasonality.
+    other time-series datasets with astounding success.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To achieve all these goals, N-BEATS uses a few clever architectural components
+    and tricks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Blocks & Basis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The block is probably the most important piece of the N-BEATS architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As showcased in blue in Figure 1 above, the block contains 1 fully-connected
+    network stack which passes its output into 2 different linear layers. We can think
+    of the fully connected layers as generating an encoding of the input. The two
+    linear layers then take in this encoding and project it into 2 sets of weights:
+    one set for the forecast basis and one for the backcast basis. Mathematically,
+    the set of operations can be described as follows (this has a 4-layer fully connected
+    network):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a7851cca3f7db3cc8771c5b63cb1f937.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Oreshkin et. al 2022
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this, *x_l* is the input into the *l-th* block and the thetas are the basis
+    weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Basis**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now it's important to note that when we say basis, we mean in the linear algebra
+    sense. In other words, a basis is a set of linearly independent vectors that we
+    can linearly combine to form any other vector in a vector space. In the case of
+    N-BEATS, the weights of the linear combination are defined by the neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The generic architecture follows this exact definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b15bb2d679bc5ccfb89d3fd4c5cf4398.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Oreshkin et. al 2022
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where y is the piece of the time series predicted by block 1\. The end output
+    is just the weighted sum of a set of basis vectors defined by the user or set
+    as a trainable parameter. However, this version of the basis is not interpretable
+    and doesn’t attempt to explicitly capture specific components of a time series.
+    However, it is really easy to modify N-BEATS into a more interpretable version
+    by changing the basis equations used. The authors call this new configuration
+    N-BEATSi [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first interpretable basis is the trend basis. This changes the basis to
+    be a series of low-power polynomials (ex. at+bt²+ct³) and our network is predicting
+    the weights for each polynomial term.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0dbc76c64300d01a08c880344e5d9b0f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Oreshkin et. al 2022
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second interpretable basis is the seasonality basis. Similar to the trend
+    basis, the network predicts the weights for a set of equations, but this time
+    it is predicting the weights for a Fourier series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ba2adb957fea254d43eee653c464e89.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Oreshkin et. al 2022
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the end, the network is effectively providing us with a regression equation
+    for our time series, allowing the user to understand the exact workings of the
+    time series [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Backcasts & Forecasts**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Each block does not only produce a forecast, but it also produces “backcasts”
+    — a prediction of the input window. The backcast can be thought of as a filtering
+    mechanism. When a block produces a forecast, the backcast it produces is the component
+    of the time series that has already been analyzed and should not be captured by
+    subsequent blocks as the current block has already captured that information [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the generic architecture, the forecast and backcasts will have different
+    sets of weights produced by different networks and we rely on the training process
+    to make them align with each other. This is unavoidable since the dimensions of
+    the basis vectors for the forecast and backcast are different. However, since
+    the interpretable version uses equations that are dependent on time steps, it
+    is highly recommended to have the backcast and forecast share basis weights when
+    using the interpretable basis [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Doubly Residual Stacking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'N-BEATS is not just made up of 1 block, but rather multiple blocks chained
+    together that each interpret a signal of the time series. The key mechanism that
+    allows for this behavior is doubly residual stacking. **Simply put: the input
+    of the current block is equivalent to the input to the previous block minus the
+    backcast of the previous block. Additionally, the final forecast is the sum of
+    all the forecasts from all the blocks [1].**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fecd120caa6fe309e5261a7b0044995a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Oreshkin et. al 2022
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the generic case, this doubly residual stacking mechanism allows for smoother
+    gradient flows and faster training. Additionally “the aggregation of meaningful
+    partial forecasts” also provides a large degree of interpretability as it helps
+    users identify the key signals present in the time series they are trying to forecast[1]
+    Additionally, by examining the backcasts of all the blocks, the users can see
+    if any signals or patterns were ignored or if any were overfit, helping the debugging
+    process greatly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stacks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To provide more organization to the network, the architecture also organizes
+    the individual blocks into stacks. In each stack, the blocks all share the same
+    type of basis (generic, trend, or seasonal). This organization not only helps
+    the signal decomposition procedure but also allows for more interpretability as
+    now we can simply view the stack-level output instead of examining each block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For how these interpretations look, check out [the great example found in the
+    PyTorch Forecasting documentation](https://pytorch-forecasting.readthedocs.io/en/stable/tutorials/ar.html#Interpret-model).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Covariates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While the original N-BEATS architecture only worked with univariate time series,
+    Challu et. al [3] introduced methods to allow for covariates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first way was to simply flatten and append the covariates to the inputs
+    of the fully connected stack in each block. Each backcast and forecast would still
+    only be for the target time series, and the residual stacking mechanism would
+    only apply to the target, not the covariates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second method was to generate an encoding of the covariates first, and
+    then use that as a basis for a block:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e86dde1aab893c7c647b9f329b525bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Challu et. al 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: DEPTS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/f7eccce5889922e30d548f5445b6bdfb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DEPTS Architecture from Fan et. al 2022[4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'DEPTS stands for **D**eep **E**xpansion **L**earning for **P**eriodic **T**ime
+    **S**eries **F**orecasting and as the name suggests, this is an improvement to
+    NBEATS that focuses on upgrading the periodic/seasonality forecasting capabilities
+    of the original model [4]. Specifically, DEPTS changes the functionalities of
+    NBEATS in two ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While NBEATS/NBEATSi could handle periodicity via the Fourier basis, this method
+    struggles to take larger periodic behaviors that stretch beyond our lookback window
+    into account, something that DEPTS is better equipped to handle [4].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: NBEATS/NBEATSi only can take additive seasonality into account (since it builds
+    the forecasts additively. DEPTS can handle multiplicative seasonalities as well
+    [4].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Periodicity Module & Periodic Context
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first mechanism DEPTS uses to achieve the two features above is its dedicated
+    periodicity module that takes in the timesteps for both the lookback window and
+    the forecast horizon and generates a seasonality context vector defined by a cosine
+    series [4]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26df5a1df036784e47802810236fa19e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Fan et. al 2022 [4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this module, *A*, *F*, and *P* are all trainable parameters. **By allowing
+    the network to learn these parameters and share them across predictions, the model
+    can directly learn global periodic patterns instead of having to re-infer the
+    patterns based on the input data as an NBEATS model has to do** [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One tricky piece of this learning process however is that while attempting
+    to learn *A*, *F*, and *P*, the model can easily get stuck in local minima. To
+    get around this, a pre-learning optimization is performed to initialize the parameter
+    values. Note: in this equation, *phi* represents the set of learnable parameters
+    and *M* is a binary vector that gets multiplied with every term in the generator
+    function (1 if the term is chosen, 0 else) [4]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b00eb1396b0f913808f26b915e971ace.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image from Fan et. al 2022 [4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: To put this simply, before training the network do a pre-fit of parameters on
+    a training set, then choose the *J* best frequencies (the user chooses *J*). To
+    avoid solving a whole optimization problem, the authors suggest performing a discrete
+    cosine transform and choosing the *J* terms with the highest amplitudes [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Periodicity Block and Periodicity Residuals
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The whole purpose of the periodicity module is to generate the initial periodic
+    context vector *z*. These context vectors are passed into periodic blocks [4]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30e265fb31cfea590f09e645433525b3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DEPTS Periodic Block Architecture from Fan et. al 2022[4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simply put, the periodic block takes in the periodic context vector (which is
+    effectively the seasonal components of the time series) and passes it through
+    a very small sub-network producing a backcast and a forecast like in the traditional
+    NBEATS block. **This takes the additive seasonalities that the periodicity module
+    handles and processes them to deal with non-linear seasonalities** [4]**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How are these periodic backcasts and forecasts used? Diving closer into a layer
+    of DEPTS gives us more insights into what''s happening. Note in this figure *x*
+    is the target series [4]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a6325dca35ace00df886ec9ec3216812.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DEPTS Layer Architecture from Fan et. al 2022[4]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the model generates the forecast vector backcast and forecast, the backcast
+    is then subtracted from the input of the local block, and the forecast is added
+    to the overall model forecast. The local block is the same as the block in NBEATS,
+    performs the same operations, and uses the same doubly residual stacking mechanism.
+    DEPTS also uses the doubly residual stacking mechanism for the context vector
+    and we remove the explained seasonalities from the periodic context vector and
+    both the local block output and periodic context vector as passed on to the next
+    layer [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: All of these mechanisms put together make DEPTS a periodic forecasting beast
+    [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpretability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Like NBEATS, DEPTS maintains many of the interpretation benefits of NBEATS,
+    namely the aggregation of forecasts. However, DEPTS also offers a look into global
+    periodic patterns, something NBEATS does not have. It is easy to visualize the
+    global periodic patterns by just running the periodicity module. Additionally,
+    one can examine the final periodic context vector to see how a local prediction
+    may deviate from global patterns by looking at the “leftover” patterns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: N-HiTS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/e19bf2949152a6fdb6359ca12abb44cc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: N-HiTS Architecture from Challu et. al 2022 [2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second major improvement from NBEATS is N-HiTS or **N**eural **H**ierarchical
+    **I**nterpolation for **T**ime Series **F**orecasting [2]. While DEPTS introduced
+    dedicated periodic forecasting mechanisms, N-HiTS focuses on better structuring
+    the forecast aggregation process and offers two main benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Through a hierarchical method of forecast aggregation, N-HiTS is better at identifying
+    and extracting signals than N-BEATS is in most cases [2].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Through interpolation mechanisms, N-HiTS’s memory usage is magnitudes smaller
+    than NBEATS’s, making it even easier to train [2].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'All of this is possible due to the Hierarchical Interpolation mechanism which
+    is made up of 2 parts: Multi-Rate Signal sampling and Interpolation [2].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-Rate Signal Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/8304f5648b9160236c9d42ce723cad26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: N-HiTS Block Architecture from Challu et. al 2022 [2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first primary mechanism is Multi-Rate signal sampling. This is extremely
+    simple (which makes it even more beautiful): Add a MaxPool layer at the start
+    of each block that pre-processes the block input and effectively smooths it [2].
+    Why is this useful? Well, w**e can vary the kernel size of the MaxPool layers
+    across each of the blocks and effectively capture different magnitudes of signal
+    sizes [2].** Additionally, the MaxPool also makes the model less susceptible to
+    noise due to the smoothing it provides and by itself is a powerful, but simple
+    tool [2].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpolation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The multi-rate sampling is powerful, but it works even better when combined
+    with an interpolation mechanism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Going back to the original generic N-BEATS block architecture, each block generates
+    2 sets of weights, a backcast set, and a forecast set. Normally, the number of
+    weights generated is equal to the length of the window *L* (for the backcast)
+    or the length of the horizon *H* (for the forecast) [1]. However, this approach
+    has a few problems. For one, predicting all the weights can cause the generated
+    forecasts to be more volatile and noisy [2]. Additionally, for larger horizons,
+    this can cause extremely high memory usage [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: N-HiTS instead chose to apply interpolation where the number of predicted parameters
+    was instead equal to *r*H* (and *r*L* for the backcast) where r is the expressiveness
+    ratio [2]. A higher expressiveness ratio results in more parameters predicted.
+    Then one can fill in the missing weights through any interpolation method. The
+    authors test linear interpolation, nearest neighbor interpolation, and cubic interpolation,
+    but any custom methods can also be used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By predicting only a few of the weights, the memory usage of N-HiTS is extremely
+    small when compared to N-BEATS, making it a much more lightweight model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'NOTE: To my knowledge, the authors have not provided interpolation mechanisms
+    for the interpretable basis functions, so N-HiTS is limited to the generic basis.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Hierarchical Interpolation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The authors then combine this weight interpolation as well as the multi-rate
+    signal sampling mentioned above to create the hierarchical interpolation mechanism.
+    I**n hierarchical interpolation, both the expressiveness ratio and the MaxPool
+    kernel size of the blocks are inversely varied across the blocks** [2]**.** Any
+    block with a high expressiveness ratio also uses a small kernel size. Any block
+    with a low expressiveness ratio uses a large kernel size. The synchronization
+    of these two parameters is really what allows N-HiTS to capture different magnitude
+    signals as shown in the figure below [2]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2433c91bab87ade4a1f294f5f3708dcc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Linear Interpolation (Left) vs. No Interpolation (Right). Figure from Challu
+    et. al 2022 [2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Intuitively this also makes sense: if aggressive smoothing is applied to a
+    function (AKA a large kernel size MaxPool), fewer parameters are needed to capture
+    the behavior of the input and vice versa.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hierarchical interpolation also provides more interpretability to the generic
+    form of NBEATS. Users can look at a stack output and understand which one is modeling
+    larger patterns, and which ones are trying to capture small noise. While N-HiTS
+    cannot use the interpretable basis equations, one can make the argument that N-HiTS
+    does not need those to still be interpretable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When N-BEATS came out, it changed the deep forecasting space and spawned a new
+    branch of forecasting. Suddenly we could get highly accurate forecasts from a
+    relatively simple model that could be trained end-to-end. N-HiTS and DEPTS were
+    then able to build on NBEATS and add even more functionalities that enhance specific
+    aspects of basis expansion methods. It's important to note that the hierarchical
+    interpolation of N-HiTS and the periodicity modules/blocks/context vectors of
+    DEPTS can be used together as well, creating an even more powerful model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is also some work in applying attention to these basis expansion methods,
+    mainly the DeepFS model by Jiang et. al [12] which uses an attention layer (adapted
+    from [7]) to generate an encoding, and then pass that encoding into a module that
+    resembles a periodic N-BEATS block as well as into a feed-forward stack. While
+    this can be considered an improvement, I did not include a full detailed description
+    of this model in this article as the benefit of attention in time-series forecasting
+    is still up for debate as shown by [9].
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is also some debate on whether or not basis expansion is interpretable.
+    If in the end, our models produce 40 different equations, is it interpretable?
+    Additionally, while we can identify what signals all of these models are identifying,
+    the mechanisms for determining these are still relatively black box and we may
+    not know why a model chooses to pick up or ignore a given signal. The interpretability
+    also reduces when adapting these to use covariate time series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite these flaws, however, all the models discussed here have consistently
+    shown strong performance and have paved the way for more innovation in the forecasting
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources and References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Resources and References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: N-BEATS and N-HiTS can be used through [Darts](https://unit8co.github.io/darts/index.html)
+    and [Pytorch Forecasting](https://pytorch-forecasting.readthedocs.io/en/stable/models.html),
+    two high-quality forecasting packages for Python.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Source code for DEPTS](https://github.com/weifantt/DEPTS)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Source code for N-HiTS](https://github.com/cchallu/n-hits)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Source code for NBEATSx](https://github.com/cchallu/nbeatsx)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Source code for NBEATS](https://github.com/ServiceNow/N-BEATS)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] B.N. Oreshkin, D.Carpov, N. Chapados, Y. Bengio. [N-BEATS: Neural basis
+    expansion analysis for interpretable time series forecasting](https://arxiv.org/abs/1905.10437)
+    (2020). Eighth International Conference on Learning Representations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] C. Challu, K.G. Olivares, B.N. Oreshkin, F. Garza, M. Mergenthaler-Canseco,
+    A. Dubrawski. [N-HiTS: Neural Hierarchical Interpolation for Time Series Forecasting](https://arxiv.org/abs/2201.12886)
+    (2022). Thirty-Seventh AAAI Conference on Artificial Intelligence'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] K.G. Olivares, C. Challu, G. Marcjasz, R. Weron, A. Dubrawski. [Neural
+    basis expansion analysis with exogenous variables: Forecasting electricity prices
+    with NBEATSx](https://www.sciencedirect.com/science/article/pii/S0169207022000413)
+    (2023). International Journal of Forecasting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] W. Fan, S. Zheng, X. Yi, W. Cao, Y. Fu, J. Bian, T-Y. Liu. [DEPTS: Deep
+    Expansion Learning for Periodic Time Series Forecasting](https://arxiv.org/abs/2203.07681)
+    (2022). Tenth International Conference on Learning Representations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] S. Li, X. Jin, Y. Xuan, X. Zhou, W. Chen, Y. Wang, X. Yan. [Enhancing the
+    Locality and Breaking the Memory Bottleneck of Transformer on Time Series Forecasting](https://proceedings.neurips.cc/paper/2019/hash/6775a0635c302542da2c32aa19d86be0-Abstract.html)
+    (2019). Advances in Neural Information Processing systems 32.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] H. Wu, J. Xu, J. Wang, M. Long. [Autoformer: Decomposition Transformers
+    with Auto-Correlation for Long-Term Series Forecasting](https://arxiv.org/abs/2106.13008)
+    (2021). Advances in Neural Information Processing Systems 34.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] H. Zhou, S. Zhang, J. Peng, S. Zhang, J. Li, H. Xiong, W. Zhang. [Informer:
+    Beyond Efficient Transformer for Long Sequence Time-Series Forecasting](https://arxiv.org/abs/2012.07436)
+    (2021). The Thirty-Fifth AAAI Conference on Artificial Intelligence, Virtual Conference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] T. Zhou, Z. Ma, Q. Wen, X. Wang, L. Sun, R. Jin. F[EDformer: Frequency
+    Enhanced Decomposed Transformer for Long-term Series Forecasting](https://arxiv.org/abs/2201.12740)
+    (2022). 39th International Conference on Machine Learning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] A. Zeng, M. Chen, L. Zhang, Q. Xu. [Are Transformers Effective for Time
+    Series Forecasting?](https://arxiv.org/abs/2205.13504) (2022). Thirty-Seventh
+    AAAI Conference on Artificial Intelligence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] D. Vorotyntsev. [Is Attention Explanation?](/is-attention-explanation-b609a7b0925c)
+    (2022). Towards Data Science.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] S. Jiang, T. Syed, X. Zhy, J. Levy, B. Aronchik, Y. Sun. [Bridging self-attention
+    and time series decomposition for periodic forecasting](https://www.amazon.science/publications/bridging-self-attention-and-time-series-decomposition-for-periodic-forecasting)
+    (2022). 31st ACM International Conference on Information and Knowledge Management'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11]S. Smyl, J. Ranganathan, A Pasqua. [M4 Forecasting Competition: Introducing
+    a New Hybrid ES-RNN Model](https://eng.uber.com/m4-forecasting-competition/) (2018).
+    Uber Research'
+  prefs: []
+  type: TYPE_NORMAL

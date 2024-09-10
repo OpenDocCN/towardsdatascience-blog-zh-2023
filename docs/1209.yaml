@@ -1,0 +1,786 @@
+- en: Data Pipeline with Airflow and AWS Tools (S3, Lambda & Glue)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/data-pipeline-with-airflow-and-aws-tools-s3-lambda-glue-18585d269761?source=collection_archive---------1-----------------------#2023-04-06](https://towardsdatascience.com/data-pipeline-with-airflow-and-aws-tools-s3-lambda-glue-18585d269761?source=collection_archive---------1-----------------------#2023-04-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learning a little about these tools and how to integrate them
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://joaopedro214.medium.com/?source=post_page-----18585d269761--------------------------------)[![João
+    Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----18585d269761--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18585d269761--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----18585d269761--------------------------------)
+    [João Pedro](https://joaopedro214.medium.com/?source=post_page-----18585d269761--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-pipeline-with-airflow-and-aws-tools-s3-lambda-glue-18585d269761&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----18585d269761---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18585d269761--------------------------------)
+    ·17 min read·Apr 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18585d269761&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-pipeline-with-airflow-and-aws-tools-s3-lambda-glue-18585d269761&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----18585d269761---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F18585d269761&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-pipeline-with-airflow-and-aws-tools-s3-lambda-glue-18585d269761&source=-----18585d269761---------------------bookmark_footer-----------)![](../Images/259261d786f73ae03003d560d0121b55.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Nolan Krattinger](https://unsplash.com/fr/@odes?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A few weeks ago, while doing my mental stretch to think about new post ideas,
+    I thought: *Well, I need to learn (and talk) more about cloud and these things,
+    I’ve practiced a lot on on-premise ambients, using open-source tools, and running
+    away from proprietary solutions… But the world is cloud and I don’t think that
+    this is gonna change any time soon…*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I then wrote a post about creating a [data pipeline with local Spark and GCP](/creating-a-data-pipeline-with-spark-google-cloud-storage-and-big-query-a72ede294f4c),
+    my first one using cloud infrastructure. Today’s post follows the same philosophy:
+    fitting local and cloud pieces together to build a data pipeline. But, instead
+    of GCP, we’ll be using AWS.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'AWS is, by far, the most popular cloud computing platform, it has an absurd
+    number of products to solve every type of specific problem you imagine. And, when
+    it comes to data engineering solutions, it’s no different: They have databases,
+    ETL tools, streaming platforms, and so on — a set of tools that makes our life
+    easier (as long as you pay for them).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, join me on this post to develop a full data pipeline from scratch using
+    some pieces from the AWS toolset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: not sponsored.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The tools — TLDR
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Lambda functions** are AWS’s most famous serverless computing solution. ‘Serverless’
+    means the application is not attached to a particular server. Instead, whenever
+    a request is made, a new computing instance is quickly initiated, the application
+    responds, and the instance is terminated. Because of this, these applications
+    are meant to be small and stateless.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Glue** is a simple serverless ETL solution in AWS. Create Python or Spark
+    processing jobs using the visual interface, code editor, or Jupyter notebooks.
+    Run the jobs on-demand and pay only for the execution time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**S3** is AWS’ blob storage. The idea is simple: create a bucket and store
+    files in it. Read them later using their “path”. Folders are a lie and the objects
+    are immutable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Airflow** is a ‘workflow orchestrator’. It’s a tool to develop, organize,
+    order, schedule, and monitor tasks using a structure called DAG — Direct Acyclic
+    Graph, defined with Python code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To properly explore the functionalities of all these tools, I’ve chosen to
+    work with data from the Brazillian ENEM (National Exam of High School, on literal
+    translation). This exam occurs yearly and is the main entrance door to most public
+    and private Brazilian universities; it evaluates the student in 4 great areas
+    of knowledge: Human Sciences; Natural Sciences; Math and Languages (45 questions
+    each).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c792ed23c90d56e4acf68021de8528eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ENEM 2010, Human sciences and its technologies. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our task will be to extract these questions from the actual exams, which are
+    available as PDFs on the MEC (Ministry of Education) website [CC BY-ND 3.0].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dadf3b7f6d9327341e0b796818df1eb9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Extract questions from PDF. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After reading one line or two about the available data processing tools in AWS,
+    I chose to build a data pipeline with Lambda and Glue as data processing components,
+    S3 as storage, and a local Airflow to orchestrate everything.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simple idea, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, sort of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you will note through this post, the problem is that there are a lot of configurations,
+    authorizations, roles, users, connections, and keys that need to be created to
+    make these tools work together nicely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I promise that I’ll try to cover the steps as most as I can, but I’ll need to
+    cut off some details to make a shorter post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that said, let’s have a look at each tool’s function, see the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/10aab5419d146cdb392c5c4987fb3f26.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Proposed pipeline. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The local Airflow instance will orchestrate everything, downloading the PDFs
+    from the MEC website and uploading them to S3\. This process should automatically
+    trigger a Lambda Function execution, which will read the PDF, extract its text,
+    and save the result in ‘another place’ of S3\. Airflow should then trigger a Glue
+    Job that will read these texts, extract the questions, and save the results in
+    CSV to S3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (**Airflow**) Download the PDF and upload it to S3
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: (**Lambda**) Extract the text from the PDF, writing the result in JSON to S3
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: (**Airflow->Glue**) Read the text, split the questions, add the proper metadata,
+    and save the results in CSV
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 0\. Setting up the environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All the code used in this project is available in this [GitHub repository](https://github.com/jaumpedro214/posts).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step is to configure the local environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will need Docker installed on your local machine to create the Airflow cluster.
+    The docker images are already configured to automatically create a new environment
+    from scratch, so we can focus more on the implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the same folder of the **docker-compose.yaml** file, start the environment
+    with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: After the initial configuration, the airflow web service should start at localhost:8080\.
+    The default user and password are both ‘airflow’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you run into problems while starting Airflow, try to give read and write
+    permissions to the newly created volumes, ex: chmod 777 <foldername>.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Moving on to the cloud environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You’ll need an AWS account, and here is a warning — watch out for the bills.
+    The S3 storage and Lambda functions uses will be under the free quota (if you
+    have not already spent it), but the Glue executions will charge you a few USD
+    cents. **Always remember to shut down everything when the work is finished.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you have created the account, follow the steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new Bucket in S3 called **enem-bucket**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create a new **IAM** user with authorization to read and write to S3 and run
+    Glue Jobs, store the access key pair generated.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the airflow UI (localhost:8080), under the **admin->connections** tab, create
+    a new AWS connection, named **AWSConnection**, using the previously created access
+    key pair**.**
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/8f865b4bd5b0d5e8e60a39ee0f095c6b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Create AWS Connection. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some other minor tweaks may be needed, AWS is a crazy place, but the list above
+    should cover the overall process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once a man ate an entire airplane. The secret is that the process took 2 years
+    and he ate it piece by piece. Take this philosophy with you along this post. The
+    next sections will detail the implementation of each pipeline piece and, one by
+    one, we will build the full project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Uploading files to AWS using Airflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, create a Python file inside the **/dags** folder, I named mine **process_enem_pdf.py**.
+    This is the default folder where Airflow searches for dags definitions. Inside
+    the script, import the following dependencies:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In a real scenario, a web scraping application would search the PDFs’ download
+    links on the MEC page but, for simplicity, I collected the links manually (there
+    are not so many) and hard-coded them in a dictionary.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Always be responsible when planning to create a web scraper: check the site’s
+    terms of use and the hosted content copyright.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To better simulate the behavior of a scraping application, I’ve also created
+    a ‘year’ variable in the Airflow UI (admin->variables). This variable simulates
+    the ‘year’ when the scraping script should execute, starting in 2010 and being
+    automatically incremented (+1) by the end of the task execution. This way, each
+    task run will only process data from one year.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/759a496d93ab3539112d1e9b4762eada.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Variables list. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Airflow variables and connections are referenced inside the code using their
+    ID (name). I usually put their names as constants:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The most common way of executing Python code inside Airflow DAGs is using the
+    PythonOperator, which creates a task based on a Python function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because of this, the process of downloading the PDF and uploading it to the
+    S3 bucket needs to be wrapped inside a function. See below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, it’s just a matter of instantiating the DAG object itself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And writing the tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The DAG will be visible in the Airflow UI, where we can activate it and trigger
+    executions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08776e16d257a34808249f987312a49f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DAGs list. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And here is (the first) moment of truth, trigger the dag and watch the S3 Bucket.
+    If all goes well, the PDFs should appear in the S3 bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c2563e5c5f86cd50d8dca5ca5cf97ac5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: S3 Bucket with the PDFs uploaded. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If not (which is likely, as things tend to go wrong in the technology field),
+    start debugging the DAG logs and search for misconfiguration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/45da3fdc5a6aff6b8bc5ada8631b9b5a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Errors in the DAG runs. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Extracting the PDF’s text using Lambda Functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With the PDFs already being uploaded to S3, it’s time for the next step: extracting
+    their texts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is a perfect task to implement using AWS Lambda Functions: A stateless,
+    small, and quick process.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just a recap of how this serverless thing works. In usual ‘server’ applications,
+    we buy a particular server (machine), with a proper IP, where our application
+    gets installed, and it stays up 24/7 (or something like that) to serve our needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem with using this approach to things like this simple text-extraction
+    preprocessing task is that we need to build a full robust server from scratch,
+    which takes time and may not be so cost-effective in the long run. Serverless
+    technology has arrived to solve this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In serverless, whenever a request is made, a new small server instance is quickly
+    initiated, the application responds, and the instance is terminated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s like renting a car *vs* taking a Uber to make a small 5 min trip.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get back to coding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Search for Lambda in your AWS account and create a new lambda function **in
+    the same region as the S3 bucket used earlier**, otherwise, it will not be able
+    to interact with it usingtriggers (more on that later).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1e4279c2f8e65d464c67eafceba829e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Search for AWS Lambda. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new function from scratch, name it **process-enem-pdf**, choose Python
+    3.9 runtime and we’re good to go. AWS will probably instruct you on creating a
+    new IAM role for Lambda Functions, make sure that this role has the read and write
+    permissions in the **enem-bucket** S3 bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may also need to increase the function max execution time to around 3min,
+    the default value is 3 seconds (or something close to it), which is insufficient
+    for our purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Lambda functions in AWS take the form of a simple Python file called
+    **lambda_function.py** with a function **lambda_handler(event, context)** inside,
+    where ‘event’ is a JSON object representing the event that triggered the execution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can edit the Python file directly on the AWS built-in IDE or upload a local
+    file using a compressed zip folder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/675520c750dfaa7fae0ff4bbd020c15e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example code in the Lambda Functions code editor. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And here things get a bit tricky.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To extract the text from the PDFs, we’re going to use the PyPDF2 package. However,
+    installing this dependency in the AWS Lambda function environment is not as easy
+    as running ‘pip install’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to install the packages locally and send the code + dependencies **compressed
+    (zip)** together.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this, make the following procedure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a Python virtual env with *venv:* **python3 -m venv pdfextractor**
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Activate the environment and install the dependencies
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Create a local **lambda_function.py** file with the **lambda_handler** function
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. Copy the **lambda_function.py** to the **pdfextractor/lib/python3/site-packages/**
+    path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Compress the contents of the **pdfextractor/lib/python3/site-packages/**
+    folder in a .zip file
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Upload this file in the Lambda Functions UI
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that you (probably) understand this process, we can move on to developing
+    the code itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea is simple: every time a new PDF object is added to the S3 bucket,
+    the Lambda function should be triggered, extract its text, and write the result
+    to S3.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Luckily, we don’t need to code this trigger rule *by hand*, because AWS provides
+    built-in triggers that interact with different parts of its infrastructure. In
+    the **process-enem-pdf** page**,** click on *add trigger*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b52048230b0a40f6c6663ec67ad3d29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adding a Trigger. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, configure a new rule based on S3 …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/641c69c50af8ac98bedbaebdfea39c75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Configuring the trigger. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bucket**: enem-bucket; **Event types:** All object create events; **Suffix**:
+    .pdf'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**IT IS VERY IMPORTANT TO PROPERLY ADD THE SUFFIX.** We’re going to use this
+    function to write new files to this same bucket, if the suffix filter is not correctly
+    configured, **it may cause an infinite recursive loop that will cost you an infinite
+    amount of money**.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Now, every time a new object is created in the S3 bucket, it will trigger a
+    new execution. The parameter *event* will store a JSON describing this newly created
+    object, which looks something like that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this information, the function can read the PDF from S3, extract its text,
+    and save the results. See the code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Create this function and reproduce the deploy steps explained earlier (venv,
+    zip and upload) and everything should work fine (probably). As soon as our airflow
+    pipeline saves a new PDF to the bucket, its text should be extracted and saved
+    as a JSON in the **/content** “folder” (remember, folders are a lie).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/236b8f59e1f175ee26bf6ffcc569986c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: JSON with the extracted texts. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Processing the text using Glue
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: And we finally get to the final piece of our pipeline. The texts are already
+    extracted and stored in a format that can be easily handled (JSON) by most of
+    the data processing engines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final task is to process these texts to isolate the individual questions,
+    and that’s where AWS Glue comes in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Glue is a pair of solutions: a data catalog, with crawlers to find and catalog
+    data and map schemas, and the serverless ETL engine, responsible for the data
+    processing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Search for Glue in the AWS console and select it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/52eb3505035d1d156299995c0c2d8671.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Search for Glue. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before writing a job, we’re going to create a new **dataset** in the **data
+    catalog** using **crawlers.** Too many new concepts, I know, but the process is
+    simple.On Glue’s main page, go to crawlers on the left menu.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/346fb29e1cb7cb6c0c993f0301de5ebf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: AWS Glue sidebar. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new crawler, give it a name in step 1, and move to step 2\. Here, add
+    a new **data source** pointing to the **s3://enem-bucket/content**, our ‘folder’
+    where all the texts are stored.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9acce3d0c38dccdf931ea46c7955a5b0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Configuring the crawler. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Move to step 3, creating a new **IAM** role if needed. Step 4 will ask you for
+    a database, click on **Add database** and create a new one called **enem_pdf_project**.
+    Review the info on step 5 and save the crawler.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You will be redirected to the crawler page. Now the **danger** zone (it will
+    cost you a few cents ;-;), click on **run crawler** and it will start to map the
+    data in the specified sources (**s3://enem-bucket/content)**.A few seconds later,
+    the process finishes and, if everything goes well, a new table called **content**
+    should appear in the **enem_pdf_project** database**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, the Glue job will be able to read the S3 JSON files referencing this table
+    from the catalog.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think this is actually not *needed*, as you can query S3 directly, but the
+    lesson stays.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Now, we’re ready to code our job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inside the Jobs task, you can choose many ways to develop a new job: visually
+    connecting blocks, using interactive pyspark notebooks sessions, or coding directly
+    on a script editor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a822b66824ba676c3fd98bca721458f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Glue jobs interface. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I suggest that you explore the options yourself (watch out for the notebook
+    sessions, you pay for them). Regardless of your choice, name the created job **Spark_EnemExtractQuestionsJSON**.I
+    choose to use Spark because I’m more familiar with it. See the code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Besides some extra bits of code needed to interact with the AWS infrastructure
+    (on the readings and writings), all the processing logic is written using standard
+    pyspark operations. If you are interested in understanding a little more about
+    Spark, check out [one of my previous posts](https://medium.com/towards-data-science/a-fast-look-at-spark-structured-streaming-kafka-f0ff64107325).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By default, Glue jobs are configured to run on-demand, which means that we have
+    to trigger its execution manually, using the AWS interface, or through API calls.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, we only need a new task in the Airflow DAG to trigger the job and finish
+    the pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Luckily, the code needed to do this is very simple, so let’s go back to the
+    **process_enem_pdf.py** file and create a new function
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: And add this function as a task in the DAG …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: And, *voilá*, the pipeline is finished.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8fc72b537811e018da9c429a31cf93fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: DAG’s Graph representation. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, on every run, the pipeline should download the newest PDFs available, and
+    upload them to S3, which triggers a Lambda Function that extracts their texts
+    and saves them in the **/content** path. This path was mapped by a crawler and
+    is available in the data catalog. When the pipeline triggers the Glue job, it
+    reads these texts, extracts each question, and saves the results as CSV in the
+    **/processed** path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/879f3029d9b1232197781f3cfbadf91e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ‘processed’ path in S3\. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See the results below…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bbf62ecd97c36ec247b62af02ca76b06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: CSV files created in S3\. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*This was a long adventure.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we built an entire data pipeline from scratch mixing the power
+    of various famous data-related tools, both from the AWS cloud (Lambda, Glue, and
+    S3) and the local environment (Airflow+Docker).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We explored the functionalities of Lambda and Glue in the context of data processing,
+    discussing their advantages and use cases. We also learned a little about Airflow,
+    the most famous orchestration tool for data pipelines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each one of these tools is a world by itself. I tried to compress all the information
+    learned during the project’s development period into the smallest post possible
+    so, unavoidably, some information was lost. Let me know in the comments if you
+    have problems or doubts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I know that the data pipeline proposed is probably not *optimal*, especially
+    in terms of cost *vs* efficiency, but the main point of this post (for me, and
+    I expect that it worked this way for you as well) is to learn the overall process
+    of developing data products with the tools addressed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, the majority of the data available today, especially on the internet,
+    is in the so-called unstructured format, such as PDFs, videos, images, and so
+    on. Processing this kind of data is a crucial skill that involves knowing a broader
+    set of tools that go beyond the usual Pandas/Spark/SQL group. The pipeline we
+    built today addresses exactly this kind of problem by transforming raw PDFs stored
+    on a website into semi-structured CSV files stored in our cloud infrastructure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For me, a *highlight* of this pipeline was the text extraction step deployed
+    with AWS Lambda, because this task would probably be impossible or very difficult
+    (as far as I know) to implement using only Spark.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And this is what I hope you took away from this post: Developing a good data
+    infrastructure requires not only some theoretical knowledge of data architectures,
+    data modeling, or streaming but also a good understanding of the available tools
+    that can help materialize your vision.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always, I am not an expert in any of the subjects discussed, and I strongly
+    recommend further reading and discussion (see some references below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*It cost me 36 cents + taxes ;-;*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading! ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: All the code is available in [this GitHub repository](https://github.com/jaumpedro214/posts).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Data used —[ENEM PDFs](https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos),
+    [CC BY-ND 3.0], MEC-Brazilian Gov.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[1] Amazon Web Services Latin America. (2021, December 6). *Transforme e catalogue
+    dados com o AWS Glue Parte 1 — Português* [Video]. YouTube. [Link](https://www.youtube.com/watch?v=HFFiAy2J2OQ).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Bakshi, U. (2023, February 9). *How to Upload File to S3 using Python AWS
+    Lambda — Geek Culture — Medium*. Medium. [Link](https://medium.com/geekculture/how-to-upload-file-to-s3-using-python-aws-lambda-9aa03bb2c752).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Cairocoders. (2020, March 5). *How to Import Custom Python Packages on
+    AWS Lambda Function* [Video]. YouTube. [Link](https://www.youtube.com/watch?v=yyBSeGkuPqk).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] *How to extract, transform, and load data for analytic processing using
+    AWS Glue (Part 2) | Amazon Web Services*. (2022, April 4). Amazon Web Services.
+    [Link](https://aws.amazon.com/pt/blogs/database/how-to-extract-transform-and-load-data-for-analytic-processing-using-aws-glue-part-2/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] *How to write a file or data to an S3 object using boto3*. (n.d.). Stack
+    Overflow. [Link](https://stackoverflow.com/questions/40336918/how-to-write-a-file-or-data-to-an-s3-object-using-boto3).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] *Tutorial: Using an Amazon S3 trigger to invoke a Lambda function — AWS
+    Lambda*. (n.d.). [Link](https://docs.aws.amazon.com/lambda/latest/dg/with-s3-example.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Um Inventor Qualquer. (2022, January 10). *Aprenda AWS Lambda neste Curso
+    Prático GRATUITO! | Aula 17 — #70* [Video]. YouTube. [Link](https://www.youtube.com/watch?v=RCK9fBwrZeY).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Chambers, B., & Zaharia, M. (2018). Spark: The definitive guide: Big data
+    processing made simple. “ O’Reilly Media, Inc.”.'
+  prefs: []
+  type: TYPE_NORMAL

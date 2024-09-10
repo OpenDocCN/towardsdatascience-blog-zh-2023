@@ -1,0 +1,205 @@
+- en: Neural Networks with Multiple Data Sources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/neural-networks-with-multiple-data-sources-ef91d7b4ad5a?source=collection_archive---------4-----------------------#2023-01-06](https://towardsdatascience.com/neural-networks-with-multiple-data-sources-ef91d7b4ad5a?source=collection_archive---------4-----------------------#2023-01-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to design a neural network with inputs from multiple data sources using
+    Tensorflow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)[![Morgan
+    Lynch](../Images/731f65c99b8bedc3e07ca6f281596f09.png)](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------)
+    [Morgan Lynch](https://medium.com/@morgan_lynch?source=post_page-----ef91d7b4ad5a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4b5483121384&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&user=Morgan+Lynch&userId=4b5483121384&source=post_page-4b5483121384----ef91d7b4ad5a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ef91d7b4ad5a--------------------------------)
+    ·5 min read·Jan 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fef91d7b4ad5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&user=Morgan+Lynch&userId=4b5483121384&source=-----ef91d7b4ad5a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fef91d7b4ad5a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fneural-networks-with-multiple-data-sources-ef91d7b4ad5a&source=-----ef91d7b4ad5a---------------------bookmark_footer-----------)![](../Images/b642d0d8398604490bcb3b4dd45695fc.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CNN with multiple datasources. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many use cases where a neural network needs to be trained on multiple
+    data sources in parallel. These include medical use cases where there may be once
+    or more images together with structured patient data or multi-image use cases
+    where images of different objects contribute to a single output. e.g. Using separate
+    photos of a persons house and car to predict their income.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The collective data cannot be processed as-one as each will have it’s own attributes
+    and shape. To successfully design a network, each input stream needs to be processed
+    and trained separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using CNNs with multiple separate inputs has been shown to increase accuracy
+    over a single image input. In one study [1], 3 different image input branches
+    were processed and them merged to give an 8% improvement in accuracy over individual
+    image processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to this, it has also been shown that merging the network branches
+    late in the CNN design also produces better accuracy [2]. This late merging means
+    in practice that the input branches should be almost fully processed as individual
+    networks before they are merged into the final model and a prediction generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will look in detail at how a CNN of this type can be designed using a theoretical
+    example of patient data where we have a CSV file of data together with an image.
+    We will only look at one image input but this approach can be equally used with
+    multiple images per patient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To begin, the source file must be loaded and processed into a Pandas dataframe.
+    In the example shown below, a simple dataset is loaded with patient ID, patient
+    age and a flag to indicate if cancer has been diagnosed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s important to note the shape of the dataframe as this will influence the
+    design of the network to follow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next we must load an image for each of the patients. This is done by iterating
+    on the patient dataframe so that the sequence of records is maintained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The image data is also converted to a numpy array to maintain consistency with
+    the patient data loaded from file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/973fb21675363cb370788210ba1674fd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Shape of loaded data. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We now need to consider the shape of the data that has been loaded. For the
+    images, if each individual image is 512,512 pixels and we have *n* images then
+    the shape of this data is (n, 512, 512). For images with multiple channels a further
+    dimension may be added, but we will keep this example simple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the structured patient data, we have three columns in the file and *n* records.
+    This will result in a shape of (n, 3). The patient ID column is not needed for
+    training so this will likely be dropped later giving us a final training shape
+    of (n, 2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further pre-processsing of the data such as scaling is outside the scope of
+    this discussion. For this example we will accept the data as-is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before we design the neural network there is however one further step needed.
+    This is to split the data into training and test datasets. This needs to be done
+    in one single step to preserve the sequencing & split of the two datasets. The
+    example below demonstrates doing this with scikit-learn:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once the split is done, we can then extract the target feature from both datasets
+    as our ‘y’ dataset. Checking the shape of the two resulting training datasets
+    should produce an output similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(1200, 512, 512)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: (1200, 3)*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where the number of records is 1,200\. Both datasets are required to have the
+    same number of records so that they can be merged in the output of the neural
+    network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can now begin to design the neural network itself using the Keras functional
+    API. Firstly we will start with the structured patient data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The design of the network can vary, but it is good practice to include a normalization
+    layer. The normalization layer is adapted to the training data only.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importantly, the shape of the input layer is set to the number of columns in
+    the data (in this example; 3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The shape of the output layer is also critical as this is the shape that will
+    be merged with the image processing branch. This is determined by the final dense
+    layer. In this example the shape of the output layer will be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(None, 64)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where ‘None’ is Keras’ interpretation of the number of records and is unspecified.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data branch is now complete and we can now look at the image processing
+    branch. While it is possible to design your own network, in practice is is easier
+    to use a pre-designed model. In this example we will use Resnet-50 from Keras
+    Applications.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen above, the input shape is the size of each image together with
+    a further dimension for the image channel (in this case 1).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A fully-connected Dense layer is added to the end of the Resnet model to give
+    the output the same shape as the data branch:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(None, 64)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because we have taken care with the shape of the data throughout, we are now
+    able to merge the output of the two branches:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The two branches are concatenated and a final fully-connected Dense layer is
+    then added to reduce the model down to a final prediction. The activation used
+    here can vary. In this example, linear is used to output the actual class probabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final design of the CNN is summarized below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dd2da001a98f1ee9fd06d02b4297ad05.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Design of final CNN. Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As can be seen above, if the shape of the data being processed is carefully
+    considered, multiple branches can be successfully merged. This merged model can
+    then be used to generate a single prediction from the multiple data sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Yu Sun, Lin Zhu, Guan Wang, Fang Zhao, “Multi-Input Convolutional Neural
+    Network for Flower Grading”, *Journal of Electrical and Computer Engineering*,
+    vol. 2017, Article ID 9240407, 8 pages, 2017\. [https://doi.org/10.1155/2017/9240407](https://doi.org/10.1155/2017/9240407)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Seeland M, Mäder P (2021) Multi-view classification with convolutional
+    neural networks. PLoS ONE 16(1): e0245230\. [https://doi.org/10.1371/journal.pone.0245230](https://doi.org/10.1371/journal.pone.0245230)'
+  prefs: []
+  type: TYPE_NORMAL

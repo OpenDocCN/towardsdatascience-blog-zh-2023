@@ -1,0 +1,379 @@
+- en: More on Road Network Matching
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/more-on-road-network-matching-c2ea0728c415?source=collection_archive---------16-----------------------#2023-02-10](https://towardsdatascience.com/more-on-road-network-matching-c2ea0728c415?source=collection_archive---------16-----------------------#2023-02-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Road network matching shenanigans
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)[![João
+    Paulo Figueira](../Images/54e4176f66e4ab0324d86ec71d8b033d.png)](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------)
+    [João Paulo Figueira](https://medium.com/@joao.figueira?source=post_page-----c2ea0728c415--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64bc009cedeb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=post_page-64bc009cedeb----c2ea0728c415---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c2ea0728c415--------------------------------)
+    ·9 min read·Feb 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc2ea0728c415&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=-----c2ea0728c415---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc2ea0728c415&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmore-on-road-network-matching-c2ea0728c415&source=-----c2ea0728c415---------------------bookmark_footer-----------)![](../Images/c573f363fdc89bade23f26c4bc50e04e.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Denys Nevozhai](https://unsplash.com/de/@dnevozhai?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of this article is to complement and correct the [previous one on
+    the same subject](/road-network-edge-matching-with-triangles-5dc989a77edf). In
+    that article, I presented an approach to reconstructing missing map-matched data
+    from the [Extended Vehicle Energy Dataset](https://arxiv.org/abs/2203.08630)¹
+    (EVED) [1]. My technique explored the mathematical properties of triangles to
+    find the lost data on a road network database quickly. Unfortunately, a subtle
+    error in the code made it fail under some circumstances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, I present a correction to the code and discuss the results of applying
+    these techniques to reconstruct more than thirty-two thousand trajectories on
+    the EVED.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/road-network-edge-matching-with-triangles-5dc989a77edf?source=post_page-----c2ea0728c415--------------------------------)
+    [## Road Network Edge Matching With Triangles'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Triangles have mighty properties for geospatial queries
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/road-network-edge-matching-with-triangles-5dc989a77edf?source=post_page-----c2ea0728c415--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Subtleties of Networks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous article, I illustrated two methods to fit map-matched locations
+    to road network segments using triangular properties. The geometrical concepts
+    that support the idea are adequate, but the code needs to be corrected. The issue
+    occurs on the node filtering part and affects both matching methods, the ratio-based
+    and the distance-based. Let''s look at the original code again using the ratio-based
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function uses a set to store all the processed adjacent nodes to avoid repetitions.
+    And it does avoid repetitions, unfortunately. This is where the error lies because
+    by excluding a node, the function is also preventing all other adjacent edges
+    from being tested. This situation is especially prevalent for nodes with multiple
+    links. Correcting the code requires a conceptual change, removing processed road
+    network *edges* instead of processed *nodes*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But another issue surfaced after using the code with a few different trajectories,
+    a black swan. What happens when the input GPS location is close to one of the
+    nodes? In some rare situations, the sampled GPS locations match one of the road
+    network nodes very closely, which induces very subtle floating point instabilities.
+    The result is the selection of a nonsensical edge, ruining the path reconstruction.
+    To solve this issue, I added a default parameter with the minimum distance from
+    the input GPS location to the closest node. When this distance is below one meter
+    (three feet), the function refuses to select an edge and returns an empty value.
+    This solution is moderate as this will happen relatively infrequently, and the
+    ensuing reconstruction mechanism compensates for that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can see the corrected code below, featuring the set of tested road network
+    edges and the minimum distance check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that I also changed the rate formula so that it ranges between zero and
+    one, with larger values corresponding to a better fit. Interestingly, the rate-based
+    function works better and faster than the distance-based one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reconstructing Trips
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first part of the path reconstruction implies applying the function above
+    to every point of the input trajectory and keeping only the unique road network
+    edges. The code below shows a Python function that does that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function assigns a road network edge to each unique trajectory location.
+    **Figure 1** below shows a sample of such matching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d764592ef9b23ed84cd8f059317b0a86.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1** — The map above shows the input trajectory locations in red and
+    the matched road network edges in blue. (Image source: Author using Folium and
+    OpenStreetMap imagery)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, there are some gaps between the matched links due to the GPS
+    sampling frequency. Reconstructing the path requires us to fill in these gaps,
+    and we do so by finding the shortest way between the road network edges. The code
+    below does that by keeping together the connected links and filling in the gaps
+    for all the others using OSMnx's services [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: After calling this function on the previous matches, we should have the trajectory
+    fully reconstructed as a sequence of road network edges. We see a continuous result
+    by superimposing the trajectory locations to the patched road network edges, as
+    depicted in **Figure 2** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56b1a9dfacfdf059db7364b05c4ec5ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2** — The map above shows the reconstructed link sequence with the
+    original trajectory locations superimposed. (Image source: Author using Folium
+    and OpenStreetMap imagery)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Case for a Minimum Distance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While reviewing this solution, I found an issue when iterating through the individual
+    trajectories. **Figure 3** below details the problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e03eb82f3222d1dc3d7142ff6ad95ca3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3** — The image above shows a corner case where this road network
+    edge matching system breaks down. One of the trajectory''s locations falls right
+    over one of the nodes, fooling the matching process. (Image source: Author using
+    Folium and OpenStreetMap imagery)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A spurious cycle in the route arises from an unexpected value in the input data
+    for the patching process. We can dig deeper into what is happening by reverting
+    to the view showing which road network edges the algorithm matches to these GPS
+    locations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 4** below illustrates the situation at the fork, where the matched
+    GPS location coincides (or is extremely close) to one of the road network nodes.
+    This will likely cause some numeric instability yielding a wrong result. A robust
+    algorithm should avoid these situations, but how?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d8e93483a483ccf1bd37d0294400eefb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4** — The matching problem becomes evident once we see the location
+    assignments. Clearly, in the above case, the very close proximity of the GPS location
+    to one of the road network nodes induced instability in the edge selection process.
+    (Image source: Author using Folium and OpenStreetMap imagery)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After considering it, I decided to change both matching algorithms and use the
+    distance to the closest road network node as a criterion to include or exclude
+    the input location. If this distance is smaller than a given threshold (one meter
+    or three feet as default), the match function returns an empty value signaling
+    the calling code that it cannot safely assign a link. This is fine for the following
+    step as it should infer the missing links because that algorithm depends only
+    on road network edges and not the input locations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have sanitized the whole algorithm, let us see how it performs on
+    the entire dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance Assessment
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To assess how the algorithm behaves on the whole EVED, I created a new standalone
+    [script](https://github.com/joaofig/eved-explore/blob/main/calculate-matches.py)
+    that iterates through all trajectories, matches the edges, generates a path, and
+    compares the original trajectory's length to the reconstructed path. The Python
+    script records all the differences so we can later analyze them using a standard
+    statistical toolset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The script core lies in its main loop, detailed in the code below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function starts by downloading and preprocessing the road network data from
+    OpenStreetMap. Because this is a long-running script, I added a persistent state
+    serialized as a JSON-formatted text file and saved every 100 trajectories. This
+    feature allows the user to interrupt the Python script without losing all the
+    data from already-processed trajectories. The function that calculates the length
+    difference between the original input trajectory and the reconstructed path is
+    displayed below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code converts both inputs into sequences of geolocations, computes their
+    cumulative lengths, and finally computes their difference. When the script finishes,
+    we can load the state data and analyze it using Pandas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We see how the difference between both distances distributes in **Figure 5**
+    below (named "*error*").
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/930d63837c65b13b0933007d02a7c6c3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 5** — The histogram above shows the distribution of the distance differences
+    between the original input trajectories and the reconstructed paths. The horizontal
+    axis displays distances in meters. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To see more detail around zero, I clipped the histogram and created the one
+    in **Figure 6** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0283303813be15f3d81659363e2037da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 6** — The histogram above details the difference distribution, highlighting
+    the negative and majority positive differences. Most differences are minor, hinting
+    at a good performance of the matching algorithm. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, there are some differences in the negative part of the spectrum.
+    Still, it is primarily positive, meaning that the reconstructed path lengths are
+    usually longer than trajectories, which is expectable. Remember that trajectory
+    points seldom match road network nodes, meaning that the most common scenario
+    should be a match midway through a segment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also inspect where the mid-fifty percent of differences is by drawing
+    a box-and-whiskers plot, as depicted below in **Figure 7**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4bb17c27c5477ac28a5f10c27367ab2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 7** — The box-and-whiskers plot above shows where the middle 50% of
+    the distribution lies. The 25%, 50%, and 75% percentiles are 13.0, 50.2, and 156.5
+    meters, respectively. We can also see that the inliers band is relatively narrow,
+    ranging from -202.3 to 371.8 meters. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The image above contains essential information on the distribution of differences
+    and the number of outliers. Using [Tukey's fences](https://en.wikipedia.org/wiki/Outlier#Tukey's_fences)
+    method, we can classify as outliers 5,332² trajectories out of 32,528\. This proportion
+    represents a relatively high percentage value of 16.4%, meaning there are probably
+    better reconstruction methods than this or that there is a sizable amount of poorly
+    processed trajectories. We can look into some of the most dramatic distance difference
+    outliers to try and understand these results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Outlier Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As previously noted, there are over five-thousand trajectories with poor matching.
+    We can quickly inspect a few to determine why the difference between the sampled
+    trajectory and the reconstruction is so significant. We start with a revealing
+    case, trajectory number 59, depicted below in **Figure 8**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf48d4ed1c398976fcdff8eb5f292408.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 8** — The trajectory displayed above illustrates a map-matching error
+    that led the reconstruction process to build a longer than necessary path. (Image
+    source: Author using Folium and OpenStreetMap imagery)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The case above shows that the map-matching process incorrectly placed three
+    GPS samples on a parallel road, forcing the reconstruction process to find a spurious
+    detour. This type of error might result from the inadequate parameterization of
+    the map-matching process, something to research in a later article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we can see a very radical case in **Figure 9** below. The sampled GPS
+    locations are so far away from the road that the map-matching process gave up.
+    As you can see, the reconstruction process assigns road network links that bear
+    no relation to the intended trajectory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4a3f7d4817474b1d51dec756747a11f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 9** — The trajectory pictured above contains numerous errors, and
+    the initial map-matching procedure could not eliminate them. (Image source: Author
+    using Folium and OpenStreetMap imagery)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I corrected previously published code on road network edge
+    matching and assessed its performance using the EVED dataset. I collected the
+    performance assessment data using a specialized Python script that revealed a
+    relatively high number of matched trajectories with seemingly abnormal deviations
+    in the measured distances. To understand why this result could be better, I will
+    turn next to the original map-matching software, [Valhalla](https://github.com/valhalla/valhalla),
+    to try and fix the issues above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The original paper authors licensed the dataset under the Apache 2.0 License
+    (see the [VED](https://github.com/gsoh/VED) and [EVED](https://github.com/zhangsl2013/eVED)
+    GitHub repositories). Note that this also applies to derivative work.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The source of all images and calculations is in a [Jupyter notebook](https://github.com/joaofig/eved-explore/blob/main/08-road-network-analysis.ipynb),
+    available from the public [GitHub repository](https://github.com/joaofig/eved-explore).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Zhang, S., Fatih, D., Abdulqadir, F., Schwarz, T., & Ma, X. (2022). Extended
+    vehicle energy dataset (eVED): An enhanced large-scale dataset for deep learning
+    on vehicle trip energy consumption. *ArXiv*. [https://doi.org/10.48550/arXiv.2203.08630](https://doi.org/10.48550/arXiv.2203.08630)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Boeing, G. 2017\. [OSMnx: New Methods for Acquiring, Constructing, Analyzing,
+    and Visualizing Complex Street Networks](https://geoffboeing.com/publications/osmnx-complex-street-networks/).
+    *Computers, Environment and Urban Systems* 65, 126–139\. doi:10.1016/j.compenvurbsys.2017.05.004'
+  prefs: []
+  type: TYPE_NORMAL
+- en: João Paulo Figueira works as a Data Scientist at [tb.lx by Daimler Trucks and
+    Buses](https://tblx.io/) in Lisbon, Portugal.
+  prefs: []
+  type: TYPE_NORMAL

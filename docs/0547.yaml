@@ -1,0 +1,239 @@
+- en: The Subtleties of Converting a Model from TensorFlow to PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb?source=collection_archive---------10-----------------------#2023-02-07](https://towardsdatascience.com/the-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb?source=collection_archive---------10-----------------------#2023-02-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Advice and techniques to ensure success
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)[![Gil
+    Shomron](../Images/4cd9c4770757a863f477a381d119de32.png)](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------)
+    [Gil Shomron](https://medium.com/@gil.shomron?source=post_page-----e9acc199b8bb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f73b54221a8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&user=Gil+Shomron&userId=6f73b54221a8&source=post_page-6f73b54221a8----e9acc199b8bb---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e9acc199b8bb--------------------------------)
+    ·5 min read·Feb 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe9acc199b8bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&user=Gil+Shomron&userId=6f73b54221a8&source=-----e9acc199b8bb---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe9acc199b8bb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-subtleties-of-converting-a-model-from-tensorflow-to-pytorch-e9acc199b8bb&source=-----e9acc199b8bb---------------------bookmark_footer-----------)![](../Images/33e5c81524956775a1c3ab84475d8eb7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Jan Böttinger](https://unsplash.com/@bttngr?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The conversion of a model checkpoint from one framework to another could be
+    a complex process if you want to maintain the same level of performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the past, I was asked to evaluate [my work](https://arxiv.org/abs/2004.09309)
+    on the [MLPerf inference benchmark suite](https://arxiv.org/abs/1911.02549). MLPerf
+    is an industry benchmark for measuring the performance of machine learning (ML)
+    models in deployment scenarios. The benchmark provides a standardized framework
+    for comparing the performance of different ML systems, making it a valuable tool
+    for evaluating the hardware performance of ML models. In my work, the use of models
+    and checkpoints from the MLPerf inference benchmark suite allowed me to present
+    results that were compliant with widely accepted industry standards, which increased
+    the confidence of readers in my work. However, my entire simulation framework
+    was built on top of PyTorch, whereas the model weights I needed were coded in
+    TensorFlow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this blog post, I would like to share the process of migrating a TensorFlow
+    model to PyTorch, highlighting the nuances involved. It's important to note that,
+    in general, small differences may exist between *any* two different frameworks;
+    therefore, consider the tips here when converting between any two frameworks.
+    The end results, which is MLPerf ResNet-50 and MobileNet-v1 PyTorch checkpoints,
+    can be obtained from my [GitHub repository](https://github.com/gilshm/mlperf-pytorch).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the PB File
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'A TensorFlow `pb` (protobuf) file comprises a description of the model graph
+    as well as the layer weights and parameters. The first stage is, therefore, parsing
+    the model pb file. MLPerf checkpoint files can be download from [here](https://github.com/mlperf/inference/tree/master/vision/classification_and_detection).
+    Inspired by [this](https://leimao.github.io/blog/Save-Load-Inference-From-TF2-Frozen-Graph/)
+    blog post, I used this class to extract all the necessary data from the pb file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the NeuralNetPB class has been created, it will contain all the weights
+    in its “weights” attribute. With the weight tensors at hand, it’s time to assign
+    them to the appropriate layers in the PyTorch model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Layer Mapping
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, it’s important to note that we don’t have the model definition as a TensorFlow
+    Python file. Nevertheless, since we are working with well-known model architectures,
+    the layers are largely similar.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Tip #1:** Use [Netron](https://lutzroeder.github.io/netron/) to visualize
+    your model graph. This will be helpful in understanding the model structure within
+    the `pb` file, as well as mapping the layers from the pb file to PyTorch.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Now, let’s start mapping. I will give a couple of examples from MobileNet-v1:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`MobilenetV1/Conv2d_0/weights` (3-3-3-32) — This is the first convolution layer.
+    We map it to `model.0.1.weight`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`MobilenetV1/Conv2d_0/BatchNorm/gamma` (32) — This is the first batch normalization
+    layer. gamma corresponds to the layer weights in PyTorch, so we map it to `model.0.2.weight`.
+    The same BatchNorm layer consists a `beta`, `moving_mean`, and `moving_variance`
+    fields, which corresponds to PyTorch `bias`, `running_mean`, and `running_var`,
+    respectively.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`MobilenetV1/Conv2d_1_depthwise/depthwise_weights` (3, 3, 32, 1) — This is
+    the second convolution layer (or the first depthwise convolution layer), and it
+    is mapped to `model.1.weight`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: DNN model structures are usually repetitive, so once you get the idea, you’ll
+    be able to write parts in `for` loops.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the `NeuralNetPB` attributes are not PyTorch tensors, cast them with `torch.FloatTensor(...)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nuance** **#1: Permute.** TensorFlow convolution layers’ weight tensors are
+    ordered differently. According to TensorFlow [documentation](https://www.tensorflow.org/api_docs/python/tf/nn/conv2d)
+    the weight tensor shape is `[H, W, IN_C, OUT_C]`, whereas PyTorch weight tensor
+    shape is `[OUT_C, IN_C, H, W]`. Therefore, rearrange the tensor: `torch.FloatTensor(...).permute(3,
+    2, 0, 1)`. Having said that, the depthwise convolution should be rearranged with
+    `.permute(2, 3, 0, 1)`.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Once you are done here, you should probably save everything with `torch.save(...)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Modifications
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Upon completing the previous section, your PyTorch model should match the TensorFlow
+    reference model in terms of layer composition. However, there are some additional
+    nuances to keep in mind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Nuance #2: Params.** Weights are not the only parameters. For example, the
+    batch normalization layer consists of an `epsilon` attribute (for numerical stability).
+    `epsilon` default value is different in TensorFlow and PyTorch. But even if it
+    was equal, TensorFlow ResNet-50 model modifies epsilon, so be aware. Another example
+    is Dropout layers, if exist.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Nuance #3: Padding.** The padding argument in TensorFlow consists an option
+    that does not exist in PyTorch: `SAME`. `SAME` means that the input feature map
+    will be padded so the output feature map (i.e., the convolution operation result)
+    spatial dimensions will be equal to the input dimensions. However, what happens
+    if padding is asymmetric? will TensorFlow pad more on the left or on the right?
+    **TensorFlow pads on right, whereas PyTorch pads on the left.** The same logic
+    applies vertically, that is, **there may be an extra row of zeros at the bottom,
+    whereas with PyTorch the extra row will come at the top.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You can check out my slightly modified [ResNet-50](https://github.com/gilshm/mlperf-pytorch/blob/master/models/resnet.py)
+    and [MobileNet-v1](https://github.com/gilshm/mlperf-pytorch/blob/master/models/mobilenet_v1.py)
+    models and see how I modified them accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Preprocessing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you want to reproduce the exact same result as the reference model (in this
+    case, the MLPerf models) then you have to reproduce the exact same preprocessing
+    stages. The common preprocessing stages when dealing with the ImageNet dataset
+    are (1) resizing to 256; (2) center cropping to 224; (3) normalization to values
+    between [0, 1] (that is, division by 255); and (4) mean and std correction of
+    each of the RGB channels. However, with MLPerf, the std is not normalized, and
+    the bias is normalized differently (see [here](https://github.com/mlperf/inference/blob/master/vision/classification_and_detection/python/dataset.py)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, even after doing the exact same preprocessing, I found that the same
+    interpolation algorithm is implemented differently in MLPerf, which uses OpenCV,
+    and PyTorch, which uses PIL. Since MLPerf preprocesses the entire ImageNet validation
+    set and saves it as NumPy arrays, I decided to avoid PyTorch preprocessing and
+    just load the NumPy arrays directly. At this point, I also achieved the exact
+    same performance as MLPerf reports — 76.456% and 71.676% top-1 accuracies for
+    ResNet-50 and MobileNet-v1, respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Debugging
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So you mapped the weights, and (you think) you have fine-tuned all the parameters
+    and pre-processing stages according to your reference model. You start inference
+    and nothing happens — 0% accuracy. What’s next? there’s no easy answer, you’ll
+    have to debug it. What I did is going layer-by-layer and comparing the tensor
+    values. Things should be almost identical (with some floating-point accepted differences).
+    Use NeuralNetPB test function, for example, with `nn_pb.test(input, 'import/MobilenetV1/MobilenetV1/Conv2d_1_depthwise/Relu6:0')`
+    you’ll get one of the ReLU result. You should know all layer names by now from
+    the mapping stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Be patient, that’s the most important thing. Migrating any model between frameworks
+    requires attention to all the fine details. There might be some tools out there
+    that help with automatic conversions, but even if you manage to get them working,
+    they still may ignore the subtle differences I mentioned here, thus not creating
+    a one-to-one copy, which means a model that performs differently — this is what
+    happened to me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find my MLPerf ResNet-50 and MobileNet-v1 PyTorch checkpoints and models
+    at [my GitHub repository](https://github.com/gilshm/mlperf-pytorch).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feel free to connect on [LinkedIn](https://www.linkedin.com/in/gilsho/) and/or
+    follow me here on Medium.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Shomron, Gil, and Uri Weiser. “Non-Blocking Simultaneous Multithreading:
+    Embracing the Resiliency of Deep Neural Networks.” I*nternational Symposium on
+    Microarchitecture (MICRO)*. IEEE, 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Reddi, Vijay Janapa, et al. “MLPerf Inference Benchmark.” *International
+    Symposium on Computer Architecture (ISCA)*. IEEE, 2020.'
+  prefs: []
+  type: TYPE_NORMAL

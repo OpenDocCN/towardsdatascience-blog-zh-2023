@@ -1,0 +1,431 @@
+- en: How to Increase GPU Utilization in Kubernetes with NVIDIA MPS
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181?source=collection_archive---------1-----------------------#2023-02-02](https://towardsdatascience.com/how-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181?source=collection_archive---------1-----------------------#2023-02-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Integrating NVIDIA Multi-Process Service (MPS) in Kubernetes to share GPUs among
+    workloads for maximizing utilization and reducing infrastructure costs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)[![Michele
+    Zanotti](../Images/6350ad98e5f057991b2e6f1a86a5c350.png)](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e680d20c3181--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e680d20c3181--------------------------------)
+    [Michele Zanotti](https://medium.com/@telemaco019?source=post_page-----e680d20c3181--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9b7af839d7e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181&user=Michele+Zanotti&userId=9b7af839d7e&source=post_page-9b7af839d7e----e680d20c3181---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e680d20c3181--------------------------------)
+    ·10 min read·Feb 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe680d20c3181&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181&user=Michele+Zanotti&userId=9b7af839d7e&source=-----e680d20c3181---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe680d20c3181&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-increase-gpu-utilization-in-kubernetes-with-nvidia-mps-e680d20c3181&source=-----e680d20c3181---------------------bookmark_footer-----------)![](../Images/b62ec1e0ca0e76162ec896ccec566e06.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Growtika](https://unsplash.com/@growtika?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most workloads do not require the full memory and computing resources of each
+    GPU. Therefore, sharing a GPU among multiple processes is essential to increase
+    GPU utilization and reduce infrastructure costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Kubernetes, this can be achieved by exposing a single GPU as multiple resources
+    (i.e. slices) of a specific memory and compute size that can be requested by individual
+    containers. By creating GPU slices of the size strictly needed by each container,
+    you can free up resources in the cluster. These resources can be used to schedule
+    additional Pods, or can allow you to reduce the number of nodes of the cluster.
+    In either case, sharing GPUs among processes enables you to reduce infrastructure
+    costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GPU support in Kubernetes is provided by the [NVIDIA Kubernetes Device Plugin](https://github.com/NVIDIA/k8s-device-plugin),
+    which at the moment supports only two sharing strategies: time-slicing and Multi-Instance
+    GPU (MIG). However, there is a third GPU sharing strategy that balances the advantages
+    and disadvantages of time-slicing and MIG: [**Multi-Process Service (MPS)**](https://docs.nvidia.com/deploy/mps/index.html).
+    Although MPS is not supported by NVIDIA Device Plugin, there is a way to use it
+    in Kubernetes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we will first examine the benefits and drawbacks of all the
+    three GPU sharing technologies, and then provide a step-by-step guide on how to
+    use MPS in Kubernetes. Additionally, we present a solution for automating management
+    of MPS resources for optimizing utilization and reducing operational costs: **Dynamic
+    MPS Partitioning**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPU sharing technologies overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'There are three approaches for sharing GPUs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Time slicing**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Multi-instance GPU (MIG)**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Multi-Process Service (MPS)**'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s take an overview of these technologies before diving into the demo of
+    Dynamic MPS Partitioning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time-slicing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Time-slicing is a mechanism that allows workloads that land on oversubscribed
+    GPUs to interleave with one another. Time-slicing leverages the GPU time-slicing
+    scheduler, which executes multiple CUDA processes concurrently via *temporal sharing*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When time-slicing is activated, the GPU shares its compute resources among the
+    different processes in a fair-sharing manner by switching between processes at
+    regular intervals of time. This generates a computing time overhead related to
+    the continuous context switching, which translates into jitter and higher latency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time-slicing is supported by basically every GPU architecture and is the simplest
+    solution for sharing a GPU in a Kubernetes cluster. However, constant switching
+    among processes creates a computation time overhead. Also, time-slicing does not
+    provide any level of memory isolation among the processes sharing a GPU, nor any
+    memory allocation limits, which can lead to frequent Out-Of-Memory (OOM) errors.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If you want to use time-slicing in Kubernetes, all you have to do is edit the
+    NVIDIA Device Plugin configuration. For example, you can apply the configuration
+    below to a node with 2 GPUs. The device plugin running on that node will advertise
+    8 `nvidia.com/gpu` resources to Kubernetes, rather than 2\. This allows each GPU
+    to be shared by a maximum of 4 containers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: For more information about time-slicing partitioning in Kubernetes refer to
+    the [NVIDIA GPU Operator documentation](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/gpu-sharing.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-Instance GPU (MIG)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Multi-Instance GPU (MIG) is a technology available on NVIDIA [Ampere](https://www.nvidia.com/en-us/data-center/ampere-architecture/)
+    and [Hopper](https://www.nvidia.com/en-us/data-center/technologies/hopper-architecture/)
+    architectures that allows to securely partition a GPU into up to seven separate
+    GPU instances, each fully isolated with its own high-bandwidth memory, cache,
+    and compute cores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The isolated GPU slices are called MIG devices, and they are named adopting
+    a format that indicates the compute and memory resources of the device. For example,
+    2g.20gb corresponds to a GPU slice with 20 GB of memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MIG does not allow to create GPU slices of custom sizes and quantity, as each
+    GPU model only supports a [specific set of MIG profiles](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/#supported-profiles).
+    This reduces the degree of granularity with which you can partition the GPUs.
+    Additionally, the MIG devices must be created respecting certain [placement rules](https://docs.nvidia.com/datacenter/tesla/mig-user-guide/#partitioning),
+    which further limits flexibility of use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MIG is the GPU sharing approach that offers the highest level of isolation among
+    processes. However, it lacks flexibility and it is compatible only with few GPU
+    architectures (Ampere and Hopper).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You can create and delete MIG devices manually with the [nvidia-smi](https://developer.nvidia.com/nvidia-system-management-interface)
+    CLI or programmatically with [NVML](https://developer.nvidia.com/nvidia-management-library-nvml).
+    The devices are then exposed as Kubernetes resources by the NVIDIA Device Plugin
+    using [different naming strategies](https://docs.google.com/document/d/1mdgMQ8g7WmaI_XVVRrCvHPFPOMCm5LQD5JefgAh6N8g/edit#bookmark=id.vj44q8ogvavv).
+    For instance, using the `mixed` strategy, the device `1g.10gb` is exposed as `nvidia.com/mig-1g.10gb`.
+    Instead the strategy `single` exposes the device as a generic `nvidia.com/gpu`
+    resource.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Managing MIG devices manually with the nvidia-smi CLI or with NVML is rather
+    impractical: in Kubernetes the NVIDIA GPU Operator offers an easier way to use
+    MIG, though still with limitations. The operator uses a [ConfigMap](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/gpu-operator-mig.html#configuring-mig-profiles)
+    defining a set of allowed MIG configurations that you can apply to each node by
+    tagging it with a label.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can edit this ConfigMap to define your own custom MIG configurations, as
+    in the example shown below. In this example, a node is labeled with `nvidia.com/mig.config=all-1g.5gb`.
+    Therefore, the GPU Operator will partition each GPU of that node into seven 1g.5gb
+    MIG devices, which are then exposed to Kubernetes as `nvidia.com/mig-1g.5gb` resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: To make efficient use of the resources in the cluster with NVIDIA GPU Operator,
+    the cluster admin would have to continuously modify the ConfigMap to adapt the
+    MIG size to the ever-changing workload compute requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is very impractical. Although this approach is certainly better than SSH-ing
+    to nodes and manually creating/deleting of MIG devices, it is very labor and time-consuming
+    for the cluster admin. Therefore, it is often the case that the configuration
+    of MIG devices is rarely changed over time or not applied at all, and in both
+    cases this results in large inefficiencies in GPU utilization and thus higher
+    infrastructure costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This challenge can be overcome with [Dynamic GPU Partitioning](https://docs.nebuly.com/nos/dynamic-gpu-partitioning/overview/).
+    Later in this article we will see how to dynamically partition a GPU with MPS
+    using the open source module `nos`, following an approach that also works with
+    MIG.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-Process Service (MPS)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Multi-Process Service (MPS) is a client-server implementation of the CUDA Application
+    Programming Interface (API) for running multiple processes concurrently on the
+    same GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The server manages GPU access providing concurrency between clients. Clients
+    connect to it through the client runtime, which is built into the CUDA Driver
+    library and may be used transparently by any CUDA application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MPS is compatible with basically every modern GPU and provides the highest flexibility,
+    allowing to create GPU slices with arbitrary limits on both the amount of allocatable
+    memory and the available compute. However, it does not enforce full memory isolation
+    between processes. In most cases, MPS represents a good compromise between MIG
+    and time-slicing.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Compared to time-slicing, MPS eliminates the overhead of context-switching by
+    running processes in parallel through *spatial sharing*, and therefore leads to
+    better compute performance. Moreover, MPS provides each process with its own GPU
+    memory address space. This allows to enforce memory limits on the processes overcoming
+    the limitations of time-slicing sharing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In MPS, however, client processes are not fully isolated from each other. Indeed,
+    even though MPS allows to limit clients’ compute and memory resources, it does
+    not provide error isolation and memory protection. This means that a client process
+    can crash and cause the entire GPU to reset, impacting all other processes running
+    on the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The NVIDIA Kubernetes Device Plugin does not offer support for MPS partitioning,
+    making it not straightforward to use it in Kubernetes. In the following section,
+    we explore alternative methods for taking advantage of MPS for GPU sharing by
+    leveraging `nos` and a different Kubernetes device plugin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-Process Service (MPS) in Kubernetes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You can enable MPS partitioning in a Kubernetes cluster by installing [this
+    fork](https://github.com/nebuly-ai/k8s-device-plugin) of the NVIDIA Device Plugin
+    with Helm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: By default, the Helm chart deploys the device plugin with MPS mode enabled on
+    all nodes labeled `nos.nebuly.com/gpu-partitioning=mps`. To enable MPS partitioning
+    on the GPUs of a specific node, you need to simply apply the label `nos.nebuly.com/gpu-partitioning=mps`
+    to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is likely that a version of the NVIDIA Device Plugin is already installed
+    on your cluster. If you don’t want to remove it, you can choose to install this
+    forked plugin alongside the original NVIDIA Device Plugin and run it only on specific
+    nodes. To do so, it is important to ensure that only one of the two plugins is
+    running on a node at a time. As described in the [installation guide](https://github.com/nebuly-ai/k8s-device-plugin#installation),
+    this can be achieved by editing the specification of the **original** NVIDIA Device
+    Plugin and adding an anti-affinity rule in its `spec.template.spec`, so that it
+    does not run on the same nodes targeted by the forked plugin:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After installing the device plugin, you can configure it to expose GPUs as
+    multiple MPS resources by editing the `sharing.mps` section of its configuration.
+    For example, the configuration below tells the plugin to expose to Kubernetes
+    the GPU with index `0` as two GPU resources (named `nvidia.com/gpu-4gb`) with
+    4GB of memory each:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The resource name advertised to Kubernetes, the partition size and the number
+    of replicas can be configured as needed. Going back to the example given above,
+    a container can request a fraction of 4 GB of GPU memory as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that there are a few constraints for Pods with containers requesting MPS
+    resources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Containers must run with the same user ID as the MPS server deployed with the
+    device plugin, which is 1000 by default. You can change it by editing the value
+    of `mps.userID` of the Device Plugin installation chart.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The pod specification must include `hostIPC: true`. Since MPS requires the
+    clients and the server to share the same memory space, we need to allow the pods
+    to access the IPC namespace of the host node so that it can communicate with the
+    MPS server running on it.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In this example, the container can allocate only up to 2 GB of memory on the
+    shared GPU. If it tries to allocate more memory, it will crash with an Out-Of-Memory
+    (OOM) error without affecting the other Pods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, it is important to point out that `nvidia-smi` accesses the NVIDIA
+    drivers bypassing the MPS client runtime. As a result, running `nvidia-smi` within
+    the container will display the entire GPU resources in its output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e71cd8b16606e92a4a45eb526a387fe3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dynamic MPS Partitioning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overall, it is complex and time-consuming to manage MPS resources through Device
+    Plugin configuration. Instead, it would be better just to create Pods requesting
+    MPS resources and let someone else automatically provision and manage them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Dynamic MPS Partitioning exactly does that: it automates the creation and deletion
+    of MPS resources based on real-time requirements of the workloads in the cluster,
+    ensuring the optimal sharing configuration is always applied to the available
+    GPUs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To apply dynamic partitioning, we need to use `[nos](https://github.com/nebuly-ai/nos)`,
+    an open-source module to efficiently run GPU workloads on Kubernetes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have already covered how to use `nos` for dynamic GPU partitioning based on
+    Multi-Instance GPU (MIG). We therefore won’t delve into details here, as `nos`
+    manages MPS partitioning in the same way. For more information, you can refer
+    to the article [Dynamic MIG Partitioning in Kubernetes](https://medium.com/towards-data-science/dynamic-mig-partitioning-in-kubernetes-89db6cdde7a3),
+    or check `nos` [documentation](https://docs.nebuly.com/nos/overview/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The only difference between MPS and MIG dynamic partitioning is the value of
+    the label used for telling `nos` for which nodes it should manage GPU partitioning.
+    In the case of MPS, you need to label the nodes as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The possibility of requesting GPU slices is crucial for improving GPU utilization
+    and cutting down infrastructure costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are three ways to achieve that: time-slicing, Multi-Instance GPU (MIG)
+    and Multi-Process Server (MPS). Time-slicing is the simplest technology for sharing
+    a GPU, but it lacks memory isolation and introduces overhead that degrades workloads
+    performance. On the other hand, MIG offers the highest level of isolation, but
+    its limited set of supported configurations and “slice” sizes makes it not flexible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MPS is a valid compromise between MIG and time-slicing. Unlike MIG, it allows
+    for creating GPU slices of arbitrary sizes. Unlike time-slicing, it allows to
+    enforce memory allocation limits and reduce Out-Of-Memory (OOM) errors that may
+    occur when multiple containers compete for shared GPU resources.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Currently, the NVIDIA Device Plugin does not support MPS. Nevertheless, MPS
+    can be enabled by simply installing another Device Plugin that supports it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: MPS static configurations however do not automatically adjust to the changing
+    demands of workloads and thus are inadequate to provide every Pod with the GPU
+    resources it requires, especially in scenarios with workloads demanding a variety
+    of slices in terms of memory and computing that change over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`nos` overcomes MPS static configurations limitations through Dynamic GPU Partitioning,
+    which increases GPU utilization and reduces the operational burden of manually
+    defining and applying MPS configurations on the Device Plugin instances running
+    on cluster’s nodes.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In conclusion, we have to point out that there are situations where the flexibility
+    of MPS is not necessary, while the full isolation provided by MIG is crucial.
+    In these cases however, it is still possible to take advantage of Dynamic GPU
+    Partitioning through `nos`, since it supports both the partitioning modes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Dynamic GPU Partitioning documentation](https://docs.nebuly.ai/nos/dynamic-gpu-partitioning/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Nos source code](https://github.com/nebuly-ai/nos)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[NVIDIA Kubernetes Device Plugin](https://github.com/NVIDIA/k8s-device-plugin)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[NVIDIA Kubernetes Device Plugin (Forked)](https://github.com/nebuly-ai/k8s-device-plugin)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[NVIDIA GPU Operator documentation](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/getting-started.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Credits
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Special thanks to [Emile Courthoud](https://medium.com/u/2c53981c8a83) for their
+    review and contributions to this article.
+  prefs: []
+  type: TYPE_NORMAL

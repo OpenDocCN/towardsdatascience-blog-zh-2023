@@ -1,0 +1,205 @@
+- en: Model-Free Reinforcement Learning for Chemical Process Development
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/model-free-reinforcement-learning-for-chemical-process-development-67318da35861?source=collection_archive---------12-----------------------#2023-07-11](https://towardsdatascience.com/model-free-reinforcement-learning-for-chemical-process-development-67318da35861?source=collection_archive---------12-----------------------#2023-07-11)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Smart Chemical Systems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Moving towards chemical process agents.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)[![Georgi
+    Tancev](../Images/4529168ec26d51265185189298c81677.png)](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)[](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------)
+    [Georgi Tancev](https://gtancev.medium.com/?source=post_page-----67318da35861--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F54224776d918&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&user=Georgi+Tancev&userId=54224776d918&source=post_page-54224776d918----67318da35861---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----67318da35861--------------------------------)
+    ·5 min read·Jul 11, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F67318da35861&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&user=Georgi+Tancev&userId=54224776d918&source=-----67318da35861---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F67318da35861&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodel-free-reinforcement-learning-for-chemical-process-development-67318da35861&source=-----67318da35861---------------------bookmark_footer-----------)![](../Images/05ed0b66f8d084c815e741a76805469b.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Alex Kondratiev](https://unsplash.com/@alexkondratiev?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Process development**, **design**, **optimization**, and **control** are
+    some of the main duties within **chemical engineering**. In concrete terms, the
+    scope is finding an optimal recipe or suitable configuration of equipment or process
+    parameters (via laboratory experiments) so that certain objectives (e.g., yield
+    or throughput) are maximized while potential constraints (e.g., input concentrations,
+    flow rates, reactor volumes, or boiling points of solvents) are respected. By
+    **automating** these tasks, e.g., through laboratory **robots**, a great deal
+    of manual labor could be saved.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The recent progress in **reinforcement learning (RL)** made it clear that agents
+    can [master complex tasks](https://www.nature.com/articles/nature14236) and [play
+    a variety of games](https://www.nature.com/articles/s41586-020-03051-4), or even
+    discover more efficient (mathematical) procedures, e.g., for [matrix operations](https://www.nature.com/articles/s41586-022-05172-4)
+    or [sorting](https://www.nature.com/articles/d41586-023-01883-4). With the availability
+    of kinetic parameters, either from experiments or quantum simulations, agents
+    may find optimal configurations and synthesis recipes in **virtual environments**.
+    In contrast to convex optimization, however, the algorithm/model yields dynamic
+    operating conditions and it can be directly used for process control. Depending
+    on the **sample efficiency** of the method, i.e., the number of interactions required
+    for convergence, this can also be done directly in the laboratory through robots.
+    Evidently, this may lead to the automation of process development in the long
+    run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The foundations of RL, the benefits and limitations of such methods applied
+    to chemical processes, as well as open problems have been recently [reviewed](https://www.sciencedirect.com/science/article/abs/pii/S0098135419300754?via%3Dihub=).
+    Meanwhile, several interesting applications in process engineering have been found.
+    [One of these studies](https://www.sciencedirect.com/science/article/abs/pii/S0098135419304168?via%3Dihub=)
+    attempted to optimize a batch bio-process with a recurrent neural network using
+    **REINFORCE**. [Another study](https://www.sciencedirect.com/science/article/abs/pii/S0098135421002404?via%3Dihub=)
+    made use of **Q-learning** for process optimization while also trying to enforce
+    constraints. [Others](https://www.sciencedirect.com/science/article/pii/S0098135420301599?via%3Dihub=)
+    tried to schedule chemical production by means of **advantage actor-critic**.
+    The scope of the following article is to illustrate this on the synthesis of **paracetamol**
+    using [**proximal policy optimization (PPO)**](https://arxiv.org/abs/1707.06347).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem Definition
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have a piece of software, a so-called **agent**. This agent finds itself
+    in an environment with many different **states** (such as concentrations of components,
+    volume, temperature) in which it can perform certain chemical operations, i.e.,
+    **actions**. Such actions include dosing component A, increasing/decreasing input/output
+    flow, increasing/decreasing temperature, and so on. As the agent performs these
+    actions, it transitions into new states.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, **paracetamol (PC)** is synthesized from ***p*-aminophenol (AP)**
+    and **acetic anhydride (AA)**, shown in Fig. 1a. Under known [**kinetics**](https://jurnal.ugm.ac.id/jrekpros/article/view/64551),
+    this process can be modeled and represents the environment, e.g., in a **continuous
+    stirred-tank reactor (CSTR)** as shown in Fig. 1b.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a8c2fb8e45c9edb1eb5f75c92ca932bf.png)![](../Images/bc9e3ddf35302c03a14ae2768baba5f0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 1: (a)** Reaction of interest (©Georgi Tancev). **(b)** Schema of a
+    continuous stirred-tank reactor, with input/output flow, input concentrations,
+    reactor concentrations, and volume (©Georgi Tancev).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In each state, the agent picks a set of actions and a system of **differential
+    equations** (representing the virtual environment) is numerically integrated for
+    a fixed time interval, resulting in a new state. The agent then receives a **reward**
+    proportional to the amount of paracetamol synthesized. In other words, the agent
+    plays a game and has to produce as much paracetamol as possible in a given period
+    of time (here roughly 2000 transitions or 170 hours).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following study, the reactor is essentially a [laboratory-scale CSTR](https://pubs.rsc.org/en/content/articlelanding/2023/re/d2re00476c)
+    with a maximum volume of 0.45 L. The maximum possible flow rates are 2.5 mL/min,
+    and the maximum possible input concentrations are 3.3 mol/L. If the volume is
+    exceeded, the agent receives a penalty proportional to the excess volume; if it
+    exceeds a critical threshold, the episode ends immediately. The temperature is
+    kept constant at 105 °C.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Methods
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In **(deep) RL**, the scope is to learn a **policy** (i.e., a mapping from states
+    to actions) that maximizes the **cumulative** **(discounted) sum of rewards**.
+    In each state, an action is performed, which then leads to a specific reward.
+    PPO is a heuristic variant of [**trust region policy optimization (TRPO)**](http://proceedings.mlr.press/v37/schulman15.html).
+    Both are so-called [**actor-critic** **methods**](https://proceedings.neurips.cc/paper/1999/hash/6449f44a102fde848669bdd9eb6b76fa-Abstract.html)that
+    make use of[**function approximation**](https://papers.nips.cc/paper_files/paper/1999/hash/464d828b85b0bed98e80ade0a5c43b0f-Abstract.html).
+    An actor-critic approach consists of two components; the actor is essentially
+    a mapping from states to actions, parametrized by a (deep) **neural network**.
+    It takes as input a state (i.e., an observation) and provides the best action
+    to be played that state. In the following, the action distribution is represented
+    by a [**continuous Bernoulli distribution**](https://papers.nips.cc/paper_files/paper/2019/hash/f82798ec8909d23e55679ee26bb26437-Abstract.html).
+    This distribution provides values in the range of [0, 1], which then need to be
+    multiplied by the maximum possible setting of each action. Such a stochastic policy
+    allows a trade-off between [exploration and exploitation](https://arxiv.org/abs/2305.08624).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This choice of the “best” action is guided by the critic, which estimates the
+    value (or the [**advantage**](https://arxiv.org/abs/1506.02438)) of each action
+    in each state by means of another neural network, and it updates those estimates
+    over the course of the training. Actions that lead to high rewards are encouraged,
+    with the opposite being true for action leading to low rewards or even penalties.
+    Suitable **architectures** and **hyperparameters** (e.g., for [optimization](https://ui.adsabs.harvard.edu/abs/2018arXiv181002525H/abstract))
+    are taken from the [literature](https://ojs.aaai.org/index.php/AAAI/article/view/11694).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results and Discussion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Fig. 2 illustrates the average reward as a function of the number of epochs
+    for different hyperparameters, the basecase being *γ* = 0.995, *λ* = 0.97, as
+    well as *ε* = 0.20\. The average reward in this plot is directly related to the
+    manufactured amount of paracetamol.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3ec724f05c73f715df85e8e91dfc618b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 2:** Learning curve (©Georgi Tancev).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The optimal policy, i.e., the one after convergence, is shown in Fig. 3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/90075d764efb604b4bd079133be516e1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Fig. 3:** States and actions as a function of time (after 2000 epochs). Plot
+    shows concentrations, volume, inlet concentrations, and flows as a function of
+    operation time (©Georgi Tancev).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It can be seen how the agent fills up the CSTR by keeping the output flow (Q₂)
+    lower than the input flow (Q₁). As for the input concentrations, those are kept
+    at the maximum from the beginning. In other words, the agent has learned how best
+    to synthesize PA from interaction with the environment. This policy was elaborated
+    on the computer because model-free RL schemes are sample inefficient. With more
+    efficient (i.e., **off-policy**) schemes from **model-based** RL, chemical robots
+    could develop syntheses independently in the laboratory in the future. However,
+    this also requires [**safe exploration**](https://dl.acm.org/doi/10.5555/3454287.3454547).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion and Outlook
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This brief study indicates that RL certainly has potential for chemical process
+    development and deserves further exploration. The potential is great, because
+    laborious laboratory work could thus be handled by robots. However, many questions
+    remain unanswered here. Model-free RL is sample-inefficient and model-based and/or
+    off-policy methods (e.g., [**soft actor-critic**](https://arxiv.org/abs/1801.01290))
+    would be preferred. Furthermore, PPO is frequently reported to suffer from [instabilities](https://arxiv.org/abs/2009.10897).
+    Finally, there is hardly any reaction taking place at low temperatures and thus
+    no feedback in the form of rewards (i.e., sparse rewards), so suitable solutions
+    must be found for this as well.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,395 @@
+- en: Column Generation in Linear Programming and the Cutting Stock Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/column-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b?source=collection_archive---------4-----------------------#2023-06-13](https://towardsdatascience.com/column-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b?source=collection_archive---------4-----------------------#2023-06-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to solve linear problems with a large number of decision variables illustrated
+    with a Python example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bruscalia12?source=post_page-----3c697caf4e2b--------------------------------)[![Bruno
+    Scalia C. F. Leite](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----3c697caf4e2b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c697caf4e2b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c697caf4e2b--------------------------------)
+    [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----3c697caf4e2b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcolumn-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----3c697caf4e2b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c697caf4e2b--------------------------------)
+    ·9 min read·Jun 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c697caf4e2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcolumn-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----3c697caf4e2b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3c697caf4e2b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcolumn-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b&source=-----3c697caf4e2b---------------------bookmark_footer-----------)![](../Images/c271e798cf42ece6246598a86e5cd1d7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Jean Vella](https://unsplash.com/es/@jean_vella?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some Linear Programming (LP) problems arising from combinatorial problems become
+    untractable because of the large number of variables involved (Gilmore & Gomory,
+    1961). In such problems, *delayed column generation* is a potential solution alternative
+    as it does not include all possible decision variables in the problem from the
+    start. A classical application is to the cutting stock problem, in which one must
+    decide how to cut a roll of a given width into smaller pieces to meet demands
+    for determined cut sizes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout this article, some of the main theoretical aspects of column generation
+    will be presented and illustrated with the one-dimensional cutting stock problem.
+    In the solution, the Python library *scipy* will be used. Those interested can
+    also find the complete code in this [git repository](https://github.com/bruscalia/optimization-demo-files/blob/c711c97e7bea736c23d0fa39500000fd52366117/mip/cutting_stock/cutting_stock.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In case you are not yet familiar with *Linear Programming*, you might have a
+    better understanding of this article after reading my previous introduction on
+    the subject.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/linear-programming-theory-and-applications-c67600591612?source=post_page-----3c697caf4e2b--------------------------------)
+    [## Linear programming: Theory and applications'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linear optimization main concepts and implementation in Python
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/linear-programming-theory-and-applications-c67600591612?source=post_page-----3c697caf4e2b--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are ready for deeper concepts together with a hands-on example, welcome
+    aboard.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Column generation: an overview'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When using *delayed column generation* to solve an LP, at every iteration, a
+    problem with only a subset of columns is considered. It is called the *Restricted
+    Master Problem* (RMP). In each iteration, the RMP is solved and its corresponding
+    vector of optimal dual decision variables ***π*** is obtained. The algorithm then
+    uses this result to solve the *subproblem* or *pricing problem*, which aims to
+    find new decision variables with negative reduced costs. Let us recall a definition
+    of reduced costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For any nonbasic variable, the reduced cost for the variable is the amount by
+    which the nonbasic variable’s objective function coefficient must be improved
+    before that variable will become a basic variable in some optimal solution to
+    the LP. *Winston & Goldberg (2004)*
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Therefore, by including variables with negative reduced costs, we might expect
+    marginal contributions to improving the objective value. Recall the economic interpretation
+    of dual variables as *shadow costs*. A new variable might potentially result in
+    savings proportional to its contribution to fulfilling constraints given their
+    corresponding duals while increasing the overall cost by its cost coefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By solving the *subproblem*, we identify a set *S* of columns with the lowest
+    reduced cost given the dual costs. If no column with negative reduced costs is
+    identified, we stop since ***π*** is an optimal dual solution to the original
+    problem, and together with the optimal primal solution to the RMP, we have an
+    optimal primal/dual pair. Otherwise, we append columns in *S* to the RMP and iterate
+    (Klabjan, 2005). This process is represented by the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f446c98abcfd621c6c59de78cdfc6fe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Column generation scheme. (Image by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the *subproblem* is problem-specific, and in some situations can
+    be quite computationally expensive to be formulated as a *mixed-integer-programming*
+    problem. It might be useful then to consider heuristics and/or dynamic programming
+    approaches that might return, in each iteration, more than one negative reduced-cost
+    column. In the case of vehicle routing problems, often the *subproblem* is a constrained
+    shortest path problem. Those interested in a deeper dive can refer to Irnich &
+    Desaulniers (2005) to gain insight into solution techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now remember the *delayed column generation* approach presented solves a *Linear
+    Programming* problem with real-valued decision variables. With the aim of solving
+    large *integer* or *mixed-integer* programs, one could resort to either some heuristics
+    after solving the relaxation or Branch & Price to impose integrality constraints.
+    In the latter approach, one should consider not only those columns that have been
+    generated in the solution of the initial LP but also generate new columns during
+    the solution of LPs throughout the tree. A deeper discussion about Branch & Price
+    is presented by Barnhart et al. (1998). The authors examine common issues, case
+    studies, and interesting insights on branching rules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Cutting Stock Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Consider we have a set of demands *I*, each for an amount *d* of pieces of width
+    *w*. Also, consider we have a roll of width *W* from which the cuts will be produced.
+    The set of known cutting patterns will be denoted *P*. Each piece of a cutting
+    pattern *p* consumes one unit of the roll (*c* = 1) and produces *aᵢₚ* units of
+    width *wᵢ*. Our goal is to determine the amount of cuts *x* of each pattern *p*
+    that should be used to fulfill the demands while minimizing the number of units
+    consumed. We can formulate this problem as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3af0dd7faeea650353a2239b4d46270d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutting stock problem as a set cover problem. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dual decision variables associated with demand constraints ***π*** are then
+    used in the pricing problem (*subproblem*) to find new patterns with negative
+    *reduced costs*. In the case of the cutting stock problem, we must find a new
+    pattern combining pieces of different widths that fit in the total width *W* and,
+    by helping to fulfill material demands, it would lead to more savings than new
+    costs. This is a knapsack problem, that can be formulated as the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ce6af7ab79f39bc3d161ea9a9629dc4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutting stock pricing problem. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In which *yᵢ* corresponds to the number of pieces of width *wᵢ* produced in
+    the new cutting pattern.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As we know each new pattern would have a unitary cost *c* of 1, we can calculate
+    the reduced cost of the new pattern by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c9a984f0498c83e5087d2e687380da2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reduced cost of new cutting pattern. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which, in the case of non-negative values, should stop the column generation
+    algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To obtain integer solutions to the cutting stock problem, a simple heuristic
+    method is to simply round up fractional values obtained in the linear relaxation.
+    Alternatively, one could also solve the linear problem with the set of patterns
+    produced in the linear relaxation imposing integrality constraints. We will use
+    both strategies in this article. For instances in which the linear relaxation
+    is close to the complete integer model, these strategies can be very successful.
+    Some differences might arise in other instances in which the number of demands
+    for each pattern is relatively small.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If one aims to obtain the exact integer solutions, Branch & Price can be a good
+    alternative. In this approach, after branching on some of the initial variables,
+    new columns with reduced costs in the current node might be included. Those interested
+    in more details can refer to Carvalho (1998) and to Vance (1998).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let us put some hands-on!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us start the Python implementation of the cutting stock problem, in which
+    the LP relaxation is solved to optimality, and an integer model with the patterns
+    produced so far is solved. We will use *numpy* to do linear algebra operations,
+    *pandas* to work with dataframes, *scipy* to the optimization algorithms, and
+    *matplotlib* to visualize the cutting patterns in a plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us import a dataset that is a modified version of the problem proposed in
+    the [JuMP documentation](https://jump.dev/JuMP.jl/stable/tutorials/algorithms/cutting_stock_column_generation/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: And let us instantiate the problem parameters
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that to initialize the *A* matrix, I introduced cutting simple patterns
+    that produce the maximum feasible number of rolls for each width from the demands.
+    Suppose there is some demand for rolls of width 24\. It would lead to an initial
+    cutting pattern with a coefficient of 4 given the total width *W* of 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let us define a function to solve the *subproblem* given the total width
+    *W*, a vector of widths associated with each demand *w*, and the current vector
+    of dual variables *duals*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the main loop, for each solution to the restricted master problem, we will
+    use the *linprog* function from *scipy*. The *A* matrix as well as the demands
+    vector are both passed as their negative as by convention *scipy* considers only
+    “lesser than or equal to” inequalities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The solution should have the negative of the dual variables associated with
+    demands stored in the *ineqlin.marginals* attribute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exploring duality concepts, one could also obtain dual variables by solving
+    the following *LP*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: And let us put it all together in the main loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the end, let us try both rounding up the solution of the linear relaxation
+    and obtaining the integer solution considering only columns produced in the LP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which should return:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rounding solution 339.0
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Integer solution: 334.0'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In this case, we could improve the result by almost 2% just by imposing integrality
+    constraints to the LP rather than just rounding up the relaxation. Just a spoiler
+    for those willing to try Branch & Price: 334 is the exact solution for this instance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At last, let us try and visualize the new cutting patterns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/50fa613b0812545f63da84c1c033e1f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Cutting patterns produced in cutting stock problem. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we solved the cutting stock problem using column generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The capacitated vehicle routing problem (CVRP) was first proposed by Dantzig
+    & Ramser (1959) and is particularly challenging due to its combinatorial nature.
+    The authors show in their original paper that even for small problems the number
+    of possible routes is incredibly large. For instance, a symmetrical problem with
+    15 demand points has more than 6 × 10¹¹ possible routes. I find it particularly
+    interesting to see how column generation was explored over time in this and related
+    problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although for the vehicle routing problem with tightly constrained time windows,
+    column generation had been well established since the work of Desrochers et al.
+    (1992), Branch & Price would often fail on less constrained instances. Therefore,
+    pure column generation has not been regarded as a promising approach for the CVRP.
+    However, Fukasawa et al. (2006) combined column generation into a Branch & Cut
+    algorithm, proving the optimality of several instances from the literature. Branch-cut-and-Price
+    for the CVRP was further improved by other authors and I believe the work of Pecin
+    et al. (2017) can be particularly fascinating for the interested reader.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, *delayed column generation* was introduced as a strategy for
+    solving linear programs with a large number of decision variables without considering
+    all the variables explicitly. The classical one-dimensional cutting stock problem
+    was presented to illustrate the method and a solution alternative was implemented
+    in Python. The complete code is available in this [git repository](https://github.com/bruscalia/optimization-demo-files/blob/c711c97e7bea736c23d0fa39500000fd52366117/mip/cutting_stock/cutting_stock.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Barnhart, C., Johnson, E. L., Nemhauser, G. L., Savelsbergh, M. W., & Vance,
+    P. H., 1998\. Branch-and-price: Column generation for solving huge integer programs.
+    *Operations research*, *46*(3), 316–329.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: de Carvalho, J. V., 1998\. Exact solution of cutting stock problems using column
+    generation and branch-and-bound. *International Transactions in Operational Research*,
+    *5*(1), 35–44.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dantzig, G. B., & Ramser, J. H., 1959\. The truck dispatching problem. *Management
+    science*, *6*(1), 80–91.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Desrochers, M., Desrosiers, J., & Solomon, M., 1992\. A new optimization algorithm
+    for the vehicle routing problem with time windows. *Operations research*, *40*(2),
+    342–354.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fukasawa, R., Longo, H., Lysgaard, J., Aragão, M. P. D., Reis, M., Uchoa, E.,
+    & Werneck, R. F., 2006\. Robust branch-and-cut-and-price for the capacitated vehicle
+    routing problem. *Mathematical programming*, *106*, 491–511.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gilmore, P. C., & Gomory, R. E., 1961\. A linear programming approach to the
+    cutting-stock problem. *Operations research*, *9*(6), 849–859.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Irnich, S., & Desaulniers, G., 2005\. *Shortest path problems with resource
+    constraints* (pp. 33–65). Springer US.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Klabjan, D., 2005\. Large-scale models in the airline industry. *Column generation*,
+    163–195.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pecin, D., Pessoa, A., Poggi, M., & Uchoa, E., 2017\. Improved branch-cut-and-price
+    for capacitated vehicle routing. *Mathematical Programming Computation*, *9*,
+    61–100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vance, P. H., 1998\. Branch-and-price algorithms for the one-dimensional cutting
+    stock problem. *Computational optimization and applications*, *9*, 211–228.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Winston, W. L. & Goldberg, J. B., 2004\. *Operations research: applications
+    and algorithms.* 4th ed. Belmont, CA: Thomson Brooks/Cole Belmont.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,875 @@
+- en: Modeling Variable Seasonal Features with the Fourier Transform
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/modeling-variable-seasonal-features-with-the-fourier-transform-18c792102047?source=collection_archive---------2-----------------------#2023-10-12](https://towardsdatascience.com/modeling-variable-seasonal-features-with-the-fourier-transform-18c792102047?source=collection_archive---------2-----------------------#2023-10-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Improve time series forecast performance with a technique from signal processing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://florin-andrei.medium.com/?source=post_page-----18c792102047--------------------------------)[![Florin
+    Andrei](../Images/372ac3e80dbc03cbd20295ec1df5fa6f.png)](https://florin-andrei.medium.com/?source=post_page-----18c792102047--------------------------------)[](https://towardsdatascience.com/?source=post_page-----18c792102047--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----18c792102047--------------------------------)
+    [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----18c792102047--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-variable-seasonal-features-with-the-fourier-transform-18c792102047&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----18c792102047---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----18c792102047--------------------------------)
+    ·21 min read·Oct 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F18c792102047&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-variable-seasonal-features-with-the-fourier-transform-18c792102047&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----18c792102047---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F18c792102047&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmodeling-variable-seasonal-features-with-the-fourier-transform-18c792102047&source=-----18c792102047---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modeling time series data and forecasting it are complex topics. There are many
+    techniques that could be used to improve model performance for a forecasting job.
+    We will discuss here a technique that may improve the way ML forecasting models
+    learn from time features, and generalize from them. The main focus will be the
+    creation of the seasonal features that feed the time series forecasting model
+    in training — there are easy gains to be made here if you include the Fourier
+    transform in the feature creation process. I took inspiration from work I’ve done
+    in the past with digital electronics and signal processing, and applied some of
+    those concepts to feature engineering for time series forecasting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article assumes you are familiar with the basic aspects of time series
+    forecasting — we will not discuss this topic in general, but only a refinement
+    of one aspect of it. This is not about time series analysis or modeling. This
+    is not about financial time series (stock prices). This is about machine learning
+    forecasting of general time series. For an introduction to ML time series forecasting,
+    see [the Kaggle course](https://www.kaggle.com/learn/time-series) on this topic
+    — the technique discussed here builds on top of their lesson on seasonality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also compare some prominent time series models like Facebook Prophet
+    and ARIMA, and learn from the techniques they use, which can definitely be used
+    in a custom ML forecasting model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: ETS methods and autoregressive models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'ETS methods (error, trend, seasonality) decompose the time series signal in
+    several components:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1447c8cb87b11303d6c4a94edfc26642.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ETS model
+  prefs: []
+  type: TYPE_NORMAL
+- en: y(t) is the signal (time series) you’re trying to predict
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: g(t) is the trend, a function that captures the non-periodic changes
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: s(t) is the seasonality, or the changes with strict periodicity
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: epsilon is the noise that cannot be predicted by the model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: By correctly learning y(t) and g(t), the model should be able to make predictions,
+    except for the random variations represented by epsilon (which are not actually
+    part of the model). Facebook Prophet takes a similar approach, while adding other
+    features as well (holidays, exogenous features).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Autoregressive models essentially do linear regression, where the features
+    are past data points in the series (the lags of the time series). One example
+    is the AR(p) model, or the autoregressive part of ARIMA (which is essentially
+    just a GLM — generalized linear model with only linear terms):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57a2f1f80fbaa75ddc9044b57daf7792.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: AR(p) model
+  prefs: []
+  type: TYPE_NORMAL
+- en: y(t) is the future value of the signal you’re trying to predict
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: b is the bias term
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: y(t-1) is the last known value (lag 1)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: y(t-2) is the value before that (lag 2), etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the phi coefficients are the model weights
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the noise term (epsilon) is not actually part of the AR(p) model, since it cannot
+    be predicted
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So the AR(p) model tries to predict future values from multiple lags of the
+    past values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Various blends of ETS and autoregressive models are possible in machine learning
+    forecasting. Exogenous variables can also be included — variables that are not
+    part of the time series, but have an influence over it (like promotions may influence
+    sales). SARIMAX is an example of a model that uses seasonal components, auto-regressive
+    components, moving average components (of the error term), and exogenous features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’re modeling a general time series (e.g. store sales), the random walk
+    hypothesis is not dominant, you do not care much about building a rigorous mathematical
+    model, and the main focus is strictly the RMSE performance of the time series
+    value forecast, you could build a model using a general-purpose machine learning
+    model (it could be some variation on the random forest concept, it could be as
+    simple as linear regression, or as complex as an ensemble of various ML models,
+    or even neural networks), and then you could engineer all the features you need,
+    and provide them to the model in training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Think of a data frame containing the Xtrain features that will be used to fit
+    the model. The target Ytrain is the time series itself, perhaps transformed in
+    some ways (scaled, log, etc). The Xtrain data frame may have columns including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'trend features, representing the broad variations of the time series; these
+    could be: a constant term (the value 1 repeated for each row), a function linear
+    in time (literally the enumeration: 0, 1, 2, 3, …), a quadratic function (0, 1,
+    4, 9, …), a cubic, or may have other shapes. Prophet uses linear trend with inflection
+    points computed from data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: seasonality, representing up-and-down variations that maintain the same shape
+    and happen on a strict time schedule
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: autoregressive features, or the lags of the time series itself (the time series
+    column from the target Ytrain, but shifted 1 or more rows down)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: exogenous features, such as promotions, holidays, geolocation grouping, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When you run `model.fit(Xtrain, Ytrain)` the model will then learn from these
+    features, with the target Ytrain being the time series itself. This is a fairly
+    general form of time series forecasting with machine learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seasonal features in detail
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Facebook Prophet represents seasonal features as a Fourier series. In general,
+    a periodic function can be represented as a series of sine/cosine pairs, where
+    the period of each sine/cosine is a submultiple of some base period:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b5725cfbea7e99562f2ae55cc9b7498b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fourier series
+  prefs: []
+  type: TYPE_NORMAL
+- en: t is time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: P is the base period of a seasonal feature — the period of the sine/cosine pair
+    with the largest period
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: n, the index in the series, is a period demultiplier (frequency multiplier)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sine and cosine terms are weighted by the a(n) and b(n) parameters
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In Pandas form, here are two sine/cosine pairs, the second pair has twice the
+    frequency of the first pair:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Fourier theorem states that (loosely speaking) when representing a well-behaved
+    periodic function this way, by adjusting the weights a(n) and b(n), the series
+    can be made to converge to the function. So a finite Fourier sum might be a good
+    way to approximate periodic signals (seasonal components of time series) — we’re
+    only looking for an approximation, not full convergence, so we use a finite sum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another way to model seasonality is via one-hot-encoded variables. If P is
+    the base period of a seasonal feature, then P columns in a data frame, each containing
+    either 0 or 1, with 1 occurring only once in each column for the entire period
+    P, and the values 1 never overlapping in any row between the P columns, could
+    be learned by a linear model as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bb890a27c7b861ec53cc752183289540.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: one-hot encoding
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cp is each column that encodes time
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the beta parameters are the weights applied to each column — their relative
+    values literally model the shape of the wave
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In Pandas form, here is a seasonal feature one-hot encoded with a period of
+    4 observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: If the model you use is pure linear regression (no penalty), and there is a
+    bias term, one-hot encoding may run into the so-called dummy variable trap. You
+    may also hear the term collinearity problem. In a nutshell, the Cp columns can
+    be linearly combined to generate a constant “trend” for the bias term.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If that’s the case, dummy encoding (K-1 encoding) is the solution — it is literally
+    the same thing as one-hot encoding, but with P-1 columns instead (drop one column):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72e313f8e517ee2faf054b38cc877c45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: dummy encoding
+  prefs: []
+  type: TYPE_NORMAL
+- en: You could also try to remove the bias term, or use a regularized model, or use
+    gradient descent. In practice, test the model’s performance and make the right
+    decision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fourier series vs one-hot/dummy encoding
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One-hot/dummy encoding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s say you create a group of one-hot encoded columns, with P columns in the
+    group. This group will be able to model any seasonality with a period of P. It
+    will also be able to model seasonalities with submultiple periods of P, such as
+    P/2, etc, so you do not need to explicitly model them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This succession (P, P/2, P/4, etc.) is simply another way of describing Fourier
+    series, which model any complex periodic signal as a sum of a base component and
+    all its frequency-multiples / period-submultiples. This is key to understanding
+    why **the one-hot/dummy encoded time features perform the same task as Fourier
+    series time features**. They are different implementations of the same basic idea.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The low limit for the periods modeled by one-hot/dummy time features is twice
+    the sampling period of your time series: if the time series has daily observations,
+    the shortest period modeled by your time dummies will be 2 days. This is literally
+    [the Nyquist-Shannon theorem](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem)
+    stated in time series terms.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What one-hot/dummy encoding really does is — it models the waveform of the P-days
+    component, like a scatterplot with P points. In doing so, because of how the Fourier
+    transform works, it also captures all the P-submultiple components (P/2, etc).
+  prefs: []
+  type: TYPE_NORMAL
+- en: One-hot encoded time features can learn arbitrarily complex waveforms very well.
+    On the other hand, if P is large then the number of one-hot encoded columns is
+    also large, and then you run into the curse of dimensionality problem. It’s best
+    to use one-hot/dummy encoding for short periods of time, but this is not a strict
+    rule — if you don’t have many features to begin with, then a large group of time
+    dummies will be fine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fourier series encoding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Fourier series are concise and can express arbitrarily large periods P — they
+    are well-suited for large-period seasonality. On the other hand, if the waveform
+    is very complex, it may not be learned well without creating many sine/cosine
+    pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The clue that you should probably use Fourier series is in the periodogram (described
+    below). If you notice your series has a strong and sharp P days seasonal component,
+    along with a strong and sharp P/2 component, and not much else in terms of a clear
+    pattern, that indicates that two sine/cosine pairs, one with a period of P, the
+    other with a period of P/2, may work well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Keep in mind that the P/2 component and the P component model the same phenomenon:
+    it’s not two different phenomena, but the same thing, with a base period of P.
+    The P/2, P/4, etc components are just its Fourier harmonics scattered across the
+    spectrum. This is simply because the base P seasonality does not have a perfect
+    sine shape — if it did, then only the P component would show in the periodogram.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Never create Fourier components with a period shorter than twice the sampling
+    period of your time series. If your time series has a daily sampling period, then
+    the shortest seasonality you will ever be able to model is 2 days. The Nyquist-Shannon
+    theorem places a hard limit there, like a brick wall. That’s all the data you
+    have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perhaps even leave some safety margin to the [Nyquist limit](https://en.wikipedia.org/wiki/Nyquist_frequency).
+    The music you listen to in audio CD format has signal frequencies up to 20 kHz.
+    The sampling frequency of audio CD is 44.1 kHz, so the Nyquist limit is 22.05
+    kHz, a little higher than the maximum recorded frequency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additive vs. multiplicative seasonality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Consider [the Quarterly Australian Portland Cement production dataset](https://www.key2stats.com/data-set/view/776),
+    showing the total quarterly production of Portland cement in Australia (in millions
+    of tonnes) from 1956:Q1 to 2014:Q1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a8aa12d72e5434504be90ed92245e8a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is time series data with a trend, seasonal components, and other attributes.
+    The observations are made quarterly, spanning an interval of several decades.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trend g(t) is nearly linear, with a few inflection points. The seasonal
+    component s(t) has a simple waveform, repeated over and over to the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A linear model trying to represent this dataset only from trend and seasonality
+    may combine these two groups of features additively (we ignore all other components
+    in the model). This is called additive seasonality:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f458c4466636ecd4ac810729c775164.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: additive seasonality
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I will anticipate a result obtained later, and I will show you here the output
+    of combining a quadratic trend (which happens to look nearly linear here) with
+    an additive seasonality model, applied to the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9f30673cf9dd7deb5ac4d7a12219b7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: trend with additive seasonality
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The problem with additive seasonality here is obvious: the model has learned
+    a fixed-amplitude seasonality, and it’s simply adding it to the trend. The model
+    generates a pattern of waves with fixed amplitude, dictated by the weights of
+    the time features.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One improvement is multiplicative seasonality. This is an option in Facebook
+    Prophet. The assumption is that the amplitude of the seasonality is proportional
+    to the trend. No doubt this is close to true for some datasets. The multiplicative
+    trend formula is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f0af5c6d9b85acf3e0c281aacef7e5ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: multiplicative seasonality
+  prefs: []
+  type: TYPE_NORMAL
+- en: That would model seasonality well, as long as the seasonal amplitude is indeed
+    proportional to the overall trend. In that case, the trend itself models the envelope
+    of the seasonal component. We will not demo that case here, but we will show later
+    that this is not a great fit either.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what if all that is not the case? Can we do better than simple addition
+    or multiplication, when neither is a great fit? Can we have a model that learns
+    a more general variation of the seasonal features, one that’s not constant, and
+    is not bound by strict proportionality to the trend?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fourier analysis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s take a look at the seasonal components in the Australian Portland cement
+    dataset, using the periodogram plot. This involves using the `periodogram()`function
+    from `scipy.signal` (all code is included in the companion notebook, linked at
+    the end).
+  prefs: []
+  type: TYPE_NORMAL
+- en: What `scipy.signal.periodogram()` does is — it looks at a periodic signal, and
+    it tries to estimate the coefficients in a Fourier series (one somewhat more complex
+    than the series formula shown above) that would approximate the signal well. It
+    then returns the weights in the series, which can be visualized in a plot.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the result of plotting the output of `scipy.signal.periodogram()` applied
+    to the dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/146c755adc1f2e874cd3ea1d62d5ab2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: periodogram
+  prefs: []
+  type: TYPE_NORMAL
+- en: The periodogram shows the power density of spectral components (seasonal components).
+    The strongest seasonal component in the dataset is the one with a period equal
+    to 4 quarters, or 1 year. This confirms the visual impression that the strongest
+    up-and-down variations in the graph happen about 10 times per decade. There is
+    also a component with a period of 2 quarters — that’s the same seasonal phenomenon,
+    and it simply means the 4-quarter periodicity is not a simple sine wave, but has
+    a more complex shape. There are other components, too, with periods of 10 or more
+    quarters, but we will ignore them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Fourier spectrogram
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The periodogram will highlight all spectral components in the signal (all seasonal
+    components in the data), and will provide an overview of their overall “strength”,
+    but it’s an aggregate of the “strength” of any component over the whole time interval.
+    It says nothing about how the “strength” of each seasonal component may vary in
+    time across the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To capture that variation, you have to use the Fourier spectrogram instead.
+    It’s like the periodogram, but performed repeatedly over many time windows across
+    the entire data set. The spectrogram is also available as a method in the scipy
+    library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s plot the spectrogram for the seasonal components with periods of 2 and
+    4 quarters, mentioned above. As always, the full code is in the companion notebook
+    linked at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8e0e35905302dd64188aef1190298448.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: spectrogram
+  prefs: []
+  type: TYPE_NORMAL
+- en: What this diagram shows is the “strength” of the 2-quarter and 4-quarter components
+    over time, the maximum amplitude of their variation at different moments in time
+    (in sound synthesis for digital music instruments this is called the **envelope**).
+    They are pretty weak initially, but become very strong around 2010, which matches
+    the variations you can see in the data set plot at the top of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beyond multiplicative seasonality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The envelope, as we will see below, will model the amplitude of seasonal components
+    in a way that’s definitely better than simply adding a fixed-amplitude seasonality
+    to the trend. It can also be more general than simply tying the amplitude of seasonality
+    to the overall trend (like with multiplicative seasonality) — **it fully decouples
+    seasonality from trend**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In other words, with the envelope you can keep using the basic additive seasonality
+    model, but the seasonal component itself has changed. It is no longer a linear
+    combination of fixed-amplitude components. Instead, it follows the trends (the
+    envelopes) of the various seasonal components detected in the signal. The overall
+    model is additive w.r.t. seasonality, but seasonality is multiplied by the various
+    envelopes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s say you take the envelopes F of the seasonal components from the Fourier
+    spectrogram, and you smooth them — the smoothed versions are denoted by F-tilde.
+    Then one-hot encoding, dummy encoding, and Fourier encoding for the seasonal component
+    become:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bac6e75545bc7ef7ac32a0a8f9cb0277.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: one-hot encoding with component envelopes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cb25cba86fc13f3b43b4be85d223873f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: dummy encoding with component envelopes
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/32b6aee543ea5efb5f9bf9982f5f685a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fourier series with component envelopes
+  prefs: []
+  type: TYPE_NORMAL
+- en: The beta(p), a(n) and b(n) will be the weights that your model will learn while
+    fitting the time features. The F-tilde coefficients (which themselves are time
+    series) are the component envelopes, and they will be multiplied into the time
+    features before model training, as shown below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For one-hot and dummy encoding, the formulae shown above use a single envelope
+    — that of the base component with period P. For the Fourier sum, the formula suggests
+    extracting a separate envelope for each component. There may be deviations from
+    this pattern in practice, but that’s a separate discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If the overall model that learns from all the features is linear, then you
+    can still say that you’re using a form of “additive seasonality” (adjusted with
+    the envelope):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f458c4466636ecd4ac810729c775164.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: additive seasonality
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the overall model is a random forest, or some other non-linear model, then
+    the simple formula shown above does not apply.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Seasonal features in code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s create a few sample data frames containing seasonal features that could
+    be used to model seasonality in a dataset, using methods from `statsmodels.tsa.deterministic`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One-hot encoded features, one for each quarter, with a period of 1 year:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you want to use dummy encoding instead, simply drop one column. Also explore
+    the `drop=True` option in `DeterministicProcess()`, which will check for perfect
+    collinearity and will try to make the right decision (drop / no drop).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Yearly sine-cosine pairs of features:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the rest of this article, we will use one-hot encoding, despite the fact
+    that the model we fit is `LinearRegression()`. For this data set, `statsmodels`
+    checks the collinearity of the time series target with `DeterministicProcess(drop=True)`,
+    and does not deem it necessary to drop one column (does not switch to dummy encoding).
+    Of course, feel free and compare one-hot encoding with dummy encoding for your
+    data set and model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see what happens when we fit a linear model on these seasonal features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fit a linear model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s create trend features (the columns called const, trend, and trend_squared)
+    and then join them with the `seasonal_year` features generated above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is the X data frame (features) that will be used to train/validate the
+    model. We’re modeling the data with quadratic trend features, plus the 4 time
+    features needed for the yearly seasonality. The y data frame (target) will be
+    just the cement production numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s carve a validation set out of the data, containing the year 2010 observations.
+    We will fit a linear model on the X features shown above and the y target represented
+    by cement production (the train portion of the dataset, what remains after carving
+    out the validation data), and then we will evaluate model performance in validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will also do all of the above with another, trend-only model, that will only
+    fit the trend features but will ignore seasonality — just to show what the overall
+    trend is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c9f30673cf9dd7deb5ac4d7a12219b7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: model validation
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ve seen this before. Blue is train, red is validation. The full model is
+    the sharp, thin line. The trend-only model is the wide, fuzzy line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is not bad for a trivial model, but there is one glaring issue: the model
+    has learned a constant-amplitude yearly seasonality. Even though the yearly variation
+    actually increases in time, the model can only stick to fixed-amplitude variations.
+    Obviously, this is because we gave the model only fixed-amplitude seasonal features,
+    and there are no other features (target lags, etc) to help it overcome this issue
+    (this is by design, to highlight the importance of the technique described here).
+    Additive seasonality with a fixed amplitude does not work well here.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perhaps information about the amplitude of seasonal components obtained via
+    Fourier analysis (envelopes) would improve performance?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adjust the seasonal components
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s pick the 4-quarter seasonal component. As seen in the spectrogram above,
+    its envelope is very noisy, so we could fit a linear model (let’s call it the
+    envelope model) on the order=2 trend of the envelope, on the train data with `model.fit()`,
+    to smooth the envelope, and then we will extend that trend into validation / testing
+    with `model.predict()`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8b3b8f7be82c7ca1ccd8c084117683aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: envelope fit
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gray line is the envelope itself — it’s very noisy. The blue line is the
+    envelope, the strength of the variation of the 4-quarter seasonal component in
+    the train data, fitted (smoothed) as a quadratic trend (order=2). The red line
+    is the same thing, extended (predicted) over the validation data. This is smoothing
+    via regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may notice that, while the general trend was modeled as being nearly linear
+    by a quadratic model, this envelope is clearly non-linear. Multiplicative seasonality
+    will likely not be the best fit for this data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We have modeled the variation in time of the 4-quarter seasonal component.
+    Let’s take the output from the envelope model (F-tilde in the envelope-adjusted
+    Fourier series formula) and multiply it by the time features corresponding to
+    the 4-quarter seasonal component:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The four time features are not either 0 or 1 anymore. They’ve been multiplied
+    by the component envelope (F-tilde in the formula), and now their amplitude varies
+    in time, just like the envelope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrain the model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s train the main model again, now using the modified time features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/33b99d03366714606c52d8a6bc062063.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: model validation, adjusted time dummies
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’re not aiming for a perfect fit here, since this is just a toy model built
+    to demo a technique, but it’s obvious the model performs better, it is more closely
+    following the 4-quarter variations in the target. The performance metric has improved
+    also, by 51%, which is not bad at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clearly the overall trend is not modeled well. Higher order trends may work
+    better. Or adding inflection points, a la Facebook Prophet, may work better. Feel
+    free to try it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even further improvements are definitely possible (e.g. an autoregressive model
+    with plenty of time lags would fit much better) but that’s not the topic of this
+    article — we’re only focusing here on one aspect of seasonality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final comments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Improving forecasting performance is a vast topic. The behavior of any model
+    does not depend on a single feature, or on a single technique. However, if you’re
+    looking to extract all you can out of a given model, you should probably feed
+    it meaningful features. One-hot encoding or dummy encoding, or sine/cosine Fourier
+    pairs, are more meaningful when they reflect the variation in time of the seasonality
+    they are modeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adjusting the seasonal feature’s envelope via the Fourier transform is particularly
+    effective for linear models. Boosted trees do not benefit as much, but you can
+    still see improvements almost no matter what model you use. If you’re using ensemble
+    models, you may have a simpler model such as linear regression at the bottom of
+    the stack, and you probably want to improve its performance before other models
+    learn from its residuals (assuming the ensemble is configured that way).
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also important that the envelope models you use to adjust seasonal features
+    are only trained on the train data, and they do not see any testing data while
+    in training, just like any other model. Once you adjust the envelope, the time
+    features contain information from the target — they are not purely deterministic
+    features anymore, that can be computed ahead of time over any arbitrary forecast
+    horizon. So at this point information could leak from validation/testing back
+    into training data via time features if you’re not careful (purely deterministic
+    time features do not suffer from this issue).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, the envelopes themselves are time series which might be subject to
+    forecasting, since they model a real-world process or phenomenon. That’s a separate
+    discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Links
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The data set used in this article is available here under the Public Domain
+    (CC0) license:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[## KEY2STATS'
+  prefs: []
+  type: TYPE_NORMAL
+- en: © 2023 KEY2STATS - RStudio® is a registered trademark of RStudio, Inc. AP® is
+    a registered trademark of the College…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.key2stats.com](https://www.key2stats.com/data-set/view/776?source=post_page-----18c792102047--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code used in this article can be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/FlorinAndrei/misc/blob/master/seasonal_features_fourier_article/cement.ipynb?source=post_page-----18c792102047--------------------------------)
+    [## misc/seasonal_features_fourier_article/cement.ipynb at master · FlorinAndrei/misc'
+  prefs: []
+  type: TYPE_NORMAL
+- en: random stuff. Contribute to FlorinAndrei/misc development by creating an account
+    on GitHub.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/FlorinAndrei/misc/blob/master/seasonal_features_fourier_article/cement.ipynb?source=post_page-----18c792102047--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A notebook submitted to the Store Sales — Time Series Forecasting competition
+    on Kaggle, using ideas described in this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.kaggle.com/code/florinandrei/fourier-spectrogram-ensemble-models?source=post_page-----18c792102047--------------------------------)
+    [## Fourier spectrogram, ensemble models'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Explore and run machine learning code with Kaggle Notebooks | Using data from
+    Store Sales - Time Series Forecasting
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.kaggle.com](https://www.kaggle.com/code/florinandrei/fourier-spectrogram-ensemble-models?source=post_page-----18c792102047--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A GitHub repo containing the development version of the notebook submitted
+    to Kaggle is here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/FlorinAndrei/timeseries-forecasting-fourier-time-dummies?source=post_page-----18c792102047--------------------------------)
+    [## GitHub - FlorinAndrei/timeseries-forecasting-fourier-time-dummies: Time series
+    forecasting with…'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time series forecasting with Fourier-adjusted time dummies - GitHub …
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/FlorinAndrei/timeseries-forecasting-fourier-time-dummies?source=post_page-----18c792102047--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Facebook Prophet paper — Forecasting at Scale:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://peerj.com/preprints/3190.pdf](https://peerj.com/preprints/3190.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images and code used in this article are created by the author.
+  prefs: []
+  type: TYPE_NORMAL

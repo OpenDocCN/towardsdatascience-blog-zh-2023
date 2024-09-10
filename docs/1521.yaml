@@ -1,0 +1,387 @@
+- en: Change Point Detection — A Bayesian Approach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/change-point-detection-a-bayesian-approach-8eb3cfca4a6e?source=collection_archive---------3-----------------------#2023-05-04](https://towardsdatascience.com/change-point-detection-a-bayesian-approach-8eb3cfca4a6e?source=collection_archive---------3-----------------------#2023-05-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Identifying a change point in time series analysis could provide you much more
+    information about the series than you previously thought
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@almeida.eas?source=post_page-----8eb3cfca4a6e--------------------------------)[![Everton
+    Almeida](../Images/926e5a571a461022a882c50dd352c9cb.png)](https://medium.com/@almeida.eas?source=post_page-----8eb3cfca4a6e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8eb3cfca4a6e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8eb3cfca4a6e--------------------------------)
+    [Everton Almeida](https://medium.com/@almeida.eas?source=post_page-----8eb3cfca4a6e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7060488ff9e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchange-point-detection-a-bayesian-approach-8eb3cfca4a6e&user=Everton+Almeida&userId=7060488ff9e&source=post_page-7060488ff9e----8eb3cfca4a6e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8eb3cfca4a6e--------------------------------)
+    ·13 min read·May 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8eb3cfca4a6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchange-point-detection-a-bayesian-approach-8eb3cfca4a6e&user=Everton+Almeida&userId=7060488ff9e&source=-----8eb3cfca4a6e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8eb3cfca4a6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fchange-point-detection-a-bayesian-approach-8eb3cfca4a6e&source=-----8eb3cfca4a6e---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Change point analysis has become a field of interest in many areas of study.
+    This kind of analysis refers to the problem of finding abrupt or sudden changes
+    in a given time series. According to the definition made by Iwata *et al.* (2018),
+    change point analysis is “the method for identifying change points, which are
+    the moments when the probability distribution of a time series changes.” According
+    to Van den Burg and Williams (2020), “moments of abrupt change in the behavior
+    of a time series are often the cause of alarm, as they can suggest a significant
+    change in the data-generating process.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: As demonstrated by Aminikhanghahi and Cook (2017) and Iwata et al. (2018), the
+    increasing attention paid to this kind of analysis is due to recent technological
+    developments. These developments generate large amounts of data that often need
+    to be closely monitored, such as robotics, medicine, meteorology, voice and image
+    recognition, etc. There is a wide variety of models and methodologies to deal
+    with such a problems. But since it is not the goal of this article to make a descriptive
+    analysis of these models, I would like to suggest the work of Van den Burg and
+    Williams (2020) to you to get a better overview of those methodologies. There
+    you can find the differences between online and offline change point detection;
+    univariate and multivariate approaches, which could be parametric or nonparametric;
+    and supervised or unsupervised models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1512724c7a33c1671165ca882e470972.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Tech Daily](https://unsplash.com/@techdailyca?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    — [Unsplash](https://unsplash.com/pt-br/fotografias/ztYmIQecyH4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'From the beginning, a time series, according to Ehlers (2007), “is a collection
+    of observations made sequentially over time,” whose main characteristic is the
+    dependence that a given observation has on the neighboring observations. A time
+    series can be continuous or discrete, and in the first case, according to Ehlers
+    (2007), having the set *T={t∶ t1< t < t2},* the series is denoted by *{X(t):t
+    ∈ T}*. Therefore, taking an observation window of the time series T with n observations,
+    we have a time series denoted by *{Xm, X(m+1),…, Xn }*. According to Aminikhanghahi
+    and Cook (2017, p. 3), “the detection of the change point can be defined as a
+    problem of hypothesis testing, between two alternatives”, namely “the null hypothesis
+    *H0*: ‘no change occurs’ ‘ and the alternative hypothesis *H1*: ‘a change occurs’”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: From the Beginning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'So if you like to code, it’s time to run Jupyter Notebook and start making
+    some simulations and analysis as we take a “random walk” throughout this approach.
+    Let’s import the following packages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will start with a time series *y(t)* consisting of two-time series, which
+    are *y(t1)* with mean *μ=1* plus some noise and *y(t2)* with mean *μ=2* plus some
+    noise, both with 30 observations. As you might think, the proposed time series
+    will have a considerable change point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2eb2df4fb8ebc098b9217bc59a771927.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A time series with two differing averages — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you know Bayesian statistics, you know that the construction of any model
+    is fundamentally composed of 3 distributions. The prior distribution *h(*θ), reflects
+    our prior knowledge about the problem. The likelihood *f(x|*θ) reflects the data
+    obtained and has to be incorporated into the prior distribution. And that will
+    result in a posterior distribution *h(*θ|x), which we are interested in. That’s
+    how we use Bayes’ theorem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fuzzy Clustering
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'At this point, the first (and most important?) problem we have, is to obtain
+    a prior distribution from the time series we built — that’s the first piece of
+    the model. **The problem is: We do not have one!** And if you are dealing with
+    a time series, once we get a prior distribution, most of the tasks are already
+    done.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: D’Angelo *et al.* (2011) took an interesting approach to get around this problem.
+    He used a Kohonen Network to clusterize the time series. Unlike hard clustering,
+    the Kohonen Network is a fuzzy clustering algorithm, which means that any given
+    point X is associated with group A with probability *p*. This association is given
+    by the function *fA(X)* which associates with each point in A a real number in
+    the interval *[0, 1]*, representing the grade of membership of X in A.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a complete and better explanation of the Kohonen Network, you can refer
+    to Kohonen (1990) and Haykin (2007). Using Python, I built such a network using
+    two functions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you call both functions with our time series sequentially, you may plot
+    the results and get something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4ee3386460982257b8757c13419ed68f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The fuzzy clusterization for the time series y(t) using Kohonen Network — Image
+    by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s pretty interesting! With the Kohonen Network, we are able to split
+    the time series *y(t)*. This chart shows we have two clusters since we set *K=2\.*
+    In the *xlabel,* we have each point of the time series, while the *ylabel* shows
+    the probability that a given point is associated with one of the two clusters.
+    As you might see, the blue line shows us that until we reach point 30 all the
+    points are more likely (around ~99%) to belong to the first group or the set *μ1(t)*.
+    The red line shows the opposite since it represents the associations to the second
+    group, namely the set *μ2(t)*. That’s reasonable since we built a time series
+    with two different averages, and illustratively this plot is related to the first
+    one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although interesting we did not really find a change point until now (we have
+    some clues) and **there’s nothing Bayesian here.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the way, most of the time, the distinction between the points of a time series
+    will not be that simple. For instance, if we built the time series *y(t)* with
+    *y(t1)* with mean *μ=1* plus some noise and *y(t2)* with mean *μ=1.3* (instead
+    of 2)plus some noise, would that split be that good? I will let you try this exercise…
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Metropolis-Hastings Algorithm comes to the Game
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you tried the exercise above, you found yourself in trouble using just the
+    Kohonen Network to find any indication of a change point in an alternative time
+    series. That is because the Kohonen network does not provide us with a change
+    point, but two sets of continuous variables, representing the association of each
+    point to a given cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But recall that the sets *μ1(t)* and *μ2(t)* have its values within the interval
+    [0,1]. This implies saying that *μ1(t)* and *μ2(t)* are approximations of Beta
+    distributions with different parameters (Have you ever heard about Kullback–Leibler?).
+    According to D’Angelo *et al.* (2011), assuming that the change point is denoted
+    by *m*, then for *t≤m*, we will have a *Beta(a,b)* distribution and a *Beta(c,d)*
+    distribution for *t>m*. Given the properties of a Beta distribution, if there’s
+    any change point in the time series, *parameter a* will be greater than *parameter
+    b* in *Beta(a,b)* and *parameter c* will be smaller than *parameter d* in *Beta(c,d).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The problem is:** How do you build those two Beta Distributions? The Metropolis-Hastings
+    Algorithm is a form of a Markov Chain Monte Carlo initially proposed by Metropolis
+    *et al.* (1953) and then generalized by Hastings (1970). According to Gelman *et
+    al.* (2003), the goal of any Markov chain simulation “is to create a Markov process
+    whose stationary distribution is specified by *p(θ | x).*” Running the simulation
+    enough allows us to obtain a distribution close enough to the stationary and posterior
+    distribution. The posterior could be resumed in terms of expectations of particular
+    functions of a parameter θ, that is, *∫g(θ)p(θ | x)dθ = E [g(θ) | x].* Such integral
+    is not trivial and that’s why the MCMC methods are good to approximate the posterior
+    distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Metropolis-Hastings’ algorithm uses the idea of rejection, which means it generates
+    a value from an auxiliary distribution and accepts it with a given probability.
+    If you are unfamiliar with MCMC methods, you might be questioning how the algorithm
+    may reject a drawn value. We use the transition rule given by Hastings (1970):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2cc9ea9952a4f329b163b20d4c24abf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Putting it in order words, we can use the two sets of continuous variables,
+    given by the fuzzy clustering to reject randomly drawn values from a given prior
+    distribution for the change point detection. If you want to learn more about MCMC
+    methods, I suggest Gamerman and Lopes (2018).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get back to the Jupyter Notebook. The function below is an implementation
+    of the Metropolis-Hastings Algorithm for this problem. Although powerfoul, this
+    algorithm requires some things. The first is to set a prior distribution for every
+    parameter that needs to be found. For the parameter *m*, we are using a uniform
+    distribution between 1 and 60, which means the algorithm randomly selects a change
+    point candidate in the time series. For the parameters *a, b, c* and *d,* I selected
+    weakly information gamma distributions. The function also needs the arguments,
+    which are a set of random variables (*μ1(t)* or *μ2(t))* and the number of simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Call that function with the two required parameters: here, I sent ***center_1***
+    given by the function *Fuzzy_Set* and ***n_sims=1000***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1d13f30e616dfe0d2ef69737988ce446.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The Metropolis-Hastings Algorithm Simulations — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: You finally found the change point now. This chart is interesting because it
+    shows us how the drawing process was made. The first value drawn given by the
+    uniform distribution was *m=55*. The algorithm rejected it and then tried another
+    until it get a satisfactory and stationary result. After ~150 additional runs
+    the value of *m=30* could not be rejected by the algorithm anymore.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Since the function returns the sampled values for every parameter, we may plot
+    their values as well. Starting with the parameter *m*, which is all the change
+    points drawn. To see the density plot, you may discard the first 200 simulations
+    as “burn-in”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/dc7910e8207a36aea9c384e0ad8e96ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Density Plot for the Change Point Candidates — Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We may also create Beta distributions using the mean of the four other parameters,
+    namely the parameters *a, b, c,* and *d.* As we discussed previously these parameters
+    are essential for the Metropolis-Hastings algorithm once the reject rule must
+    assert that for *t≤m*, we will have a *Beta(a,b)* distribution and a *Beta(c,d)*
+    distribution for *t>m*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s go ahead and build a representation of that using the variables *a_params,
+    b_params, c_params* and *d_params*, which contains the sampled values for *a,
+    b, c* and *d*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first Beta Distribution built with the mean of the parameters *a* and *b*
+    is in red and the second with the mean of the parameters *c* and *d* is the blue
+    one. In the middle, where both are less dense, we found the change point. Undoubtedly
+    one of the great advantages of using such an approach is the availability of such
+    distributions, since we can use them to make Bayesian inferences, enrich a predictive
+    model or even use other types of Monte Carlo simulations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d5bf808c5b18cb1b49dbdd5783a44c7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Representations of Two Beta Distribuitions for the A, B, and D parameters —
+    Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Finding change points in time series could prevent systems from getting into
+    serious trouble. Just imagine a machine whose temperature has to be controlled.
+    Any abrupt changes must be recognized as soon as possible in order for an engineer
+    to inspect them. Or the energy consumption in various production facilities. Any
+    excessive consumption has to be analyzed because it may indicate some deviation
+    in production or even energy leakage, significantly impacting production costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, the approach developed by D’Angelo (2011) and implemented here in
+    Python proved to be of great value for detecting change points in a given time
+    series. In addition, as previously pointed out, another great aspect of this approach
+    is precisely the fact we obtain two beta distributions as outputs, which can be
+    really useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: AMINIKHANGHAHI, Samaneh e COOK, J. Diane. **A Survey of Methods for Time Series
+    Change Point Detection.** Knowledge and Information Systems, 51, 2017.
+  prefs: []
+  type: TYPE_NORMAL
+- en: D’ANGELO, Marcos Flávio *et al.* A Fuzzy/Bayesian Approach for the Time Series
+    Change Point Detection Problem. Pesquisa Operacional, 31(2), 2011.
+  prefs: []
+  type: TYPE_NORMAL
+- en: EHLERS, Ricardo S. **Inferência Bayesiana**. 5ª Ed. Departamento de Estatística
+    da Universidade Federal do Paraná, 2007.
+  prefs: []
+  type: TYPE_NORMAL
+- en: FAMA, Eugene. **Random Walks in Stock Market Prices**. Financial Analysts, 21,
+    1965.
+  prefs: []
+  type: TYPE_NORMAL
+- en: _____________ **Efficient Capital Markets:** A Review of Theory and Empirical
+    Work. The Journal of Finance, 25, 1970.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GAMERMAN, Dani. LOPES, Hedibert Freitas. **Markov Chain Monte Carlo:** Stochastic
+    Simulation for Bayesian Inference. 2º Ed. Florida : Chapman & Hall/CRC, 2006\.
+    315p.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GELMAN, Andrew *et al.* **Bayesian Data Analysis.** 2ª Ed. Florida : Chapman
+    & Hall/CRC, 2003\. 668p.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: HASTINGS, W. K. **Monte Carlo Sampling Methods Using Markov Chains and their
+    Applications.** Biometrika, 57, 1970.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'HAYKIN, Simon. **Redes Neurais**: Princípios e Práticas. 2ª Ed. Porto Alegre
+    : Bookman, 2007\. 900p.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'IWATA, Takuma *et al.* **Accelerating Online Change-Point Detection Algorithm
+    using 10GbE FPGA NIC**. Trabalho apresentado na 24ª Conferência Internacional
+    de Computação Paralela e Distribuída. Turim : 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'KOHONEN, Teuvo. **Self-Organizing Maps**. Nova Iorque : Springer, 1990, 501p.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: METROPOLIS, Nicholas *et al.* **Equation of State Calculations by Fast Computing
+    Machines**. Journal of Chemical Physics, 21, 1953.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'OH KJ, *et al*. **Developing Time-Based Clustering Neural Networks To Use Change-Point
+    Detection: Application To Financial Time Series.** Asia-Pacific Journal of Operational
+    Research, 22(1), 2005.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'PAULINO, Carlos Daniel *et al.* **Estatística Bayesiana**.2º Edição. Lisboa
+    : Fundação Calouste Gulbenkian, 2018, 601p.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: VAN DEN BURG, Gerrit J. J., WILLIAMS, Christopher K. I. **An Evaluation of Change
+    Point Detection Algorithms**. stat.ML, arXiv:2003.06222, 2020
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,332 @@
+- en: 'Advanced RAG 01: Small-to-Big Retrieval'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/advanced-rag-01-small-to-big-retrieval-172181b396d4?source=collection_archive---------0-----------------------#2023-11-04](https://towardsdatascience.com/advanced-rag-01-small-to-big-retrieval-172181b396d4?source=collection_archive---------0-----------------------#2023-11-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Child-Parent RecursiveRetriever and Sentence Window Retrieval with LlamaIndex
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)[![Sophia
+    Yang, Ph.D.](../Images/c133f918245ea4857dc46df3a07fc2b1.png)](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------)
+    [Sophia Yang, Ph.D.](https://sophiamyang.medium.com/?source=post_page-----172181b396d4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fae9cae9cbcd2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-rag-01-small-to-big-retrieval-172181b396d4&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=post_page-ae9cae9cbcd2----172181b396d4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----172181b396d4--------------------------------)
+    ·7 min read·Nov 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F172181b396d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-rag-01-small-to-big-retrieval-172181b396d4&user=Sophia+Yang%2C+Ph.D.&userId=ae9cae9cbcd2&source=-----172181b396d4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F172181b396d4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fadvanced-rag-01-small-to-big-retrieval-172181b396d4&source=-----172181b396d4---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAG (Retrieval-Augmented Generation) systems retrieve relevant information from
+    a given knowledge base, thereby allowing it to generate factual, contextually
+    relevant, and domain-specific information. However, RAG faces a lot of challenges
+    when it comes to effectively retrieving relevant information and generating high-quality
+    responses. In this series of blog posts/videos, I will walk through advanced RAG
+    techniques aiming at optimizing the RAG workflow and addressing the challenges
+    in naive RAG systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first technique is called **small-to-big retrieval**. In basic RAG pipelines,
+    we embed a big text chunk for retrieval, and this exact same text chunk is used
+    for synthesis. But sometimes embedding/retrieving big text chunks can feel suboptimal.
+    There might be a lot of filler text in a big text chunk that hides the semantic
+    representation, leading to worse retrieval. What if we could embed/retrieve based
+    on smaller, more targeted chunks, but still have enough context for the LLM to
+    synthesize a response? Specifically, decoupling text chunks used for retrieval
+    vs. the text chunks used for synthesis could be advantageous. Using smaller text
+    chunks enhances the accuracy of retrieval, while larger text chunks offer more
+    contextual information. The concept behind small-to-big retrieval is to use smaller
+    text chunks during the retrieval process and subsequently provide the larger text
+    chunk to which the retrieved text belongs to the large language model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two primary techniques:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Smaller Child Chunks Referring to Bigger Parent Chunks**: Fetch smaller chunks
+    during retrieval first, then reference the parent IDs, and return the bigger chunks.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Sentence Window Retrieval:** Fetch a single sentence during retrieval and
+    return a window of text around the sentence.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In this blog post, we will dive into the implementations of these two methods
+    in LlamaIndex. Why am I not doing it in LangChain? Because there are already lots
+    of resources out there on advanced RAG with LangChain. I’d rather not duplicate
+    the effort. Also, I use both LangChain and LlamaIndex. It’s best to understand
+    more tools and use them flexibly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find all the code in this [notebook](https://colab.research.google.com/github/sophiamyang/demos/blob/main/advanced_rag_small_to_big.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Basic RAG Review
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s start with a basic RAG implementation with 4 simple steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1\. Loading Documents**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We use a PDFReader to load a PDF file, and combine each page of the document
+    into one Document object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 2\. Parsing Documents into Text Chunks (Nodes)**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we split the document into text chunks, which are called “Nodes” in LlamaIndex,
+    where we define the chuck size as 1024\. The default node IDs are random text
+    strings, we can then format our node ID to follow a certain format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 3\. Select Embedding Model and LLM**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need to define two models:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The embedding model is used to create vector embeddings for each of the text
+    chunks. Here we are calling the [FlagEmbedding](https://huggingface.co/BAAI/bge-small-en)
+    model from Hugging Face.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'LLM: user query and the relevant text chunks are fed into the LLM so that it
+    can generate answers with relevant context.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We can bundle these two models together in the ServiceContext and use them later
+    in the indexing and querying steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 4\. Create Index, retriever, and query engine**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Index, retriever, and query engine are three basic components for asking questions
+    about your data or documents:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Index is a data structure that allows us to retrieve relevant information quickly
+    for a user query from external documents. The Vector Store Index takes the text
+    chunks/Nodes and then creates vector embeddings of the text of every node, ready
+    to be queried by an LLM.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Retriever is used for fetching and retrieving relevant information given user
+    query.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Query engine is built on top of the index and retriever providing a generic
+    interface to ask questions about your data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/9b2a0ffe21724a1924606ac62e2c7e20.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Advanced Method 1: Smaller Child Chunks Referring to Bigger Parent Chunks'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the previous section, we used a fixed chunk size of 1024 for both retrieval
+    and synthesis. In this section, we are going to explore how to use smaller child
+    chunks for retrieval and refer to bigger parent chunks for synthesis. The first
+    step is to create smaller child chunks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1: Create Smaller Child Chunks**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For each of the text chunks with chunk size 1024, we create even smaller text
+    chunks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8 text chunks of size 128
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 4 text chunks of size 256
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2 text chunks of size 512
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We append the original text chunk of size 1024 to the list of text chunks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we take a look at all the text chunks `all_nodes_dict`, we can see many
+    smaller chunks are associated with each of the original text chunks for example
+    `node-0`. In fact, all of the smaller chunks reference to the large chunk in the
+    metadata with index_id pointing to the index ID of the larger chunk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ecafaa8666c5f4d709895e6509f251af.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Step 2: Create Index, retriever, and query engine**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Index: Create vector embeddings of all the text chunks.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Retriever: the key here is to use a **RecursiveRetriever** to traverse node
+    relationships and fetch nodes based on “references”. This retriever will recursively
+    explore links from nodes to other retrievers/query engines. For any retrieved
+    nodes, if any of the nodes are IndexNodes, then it will explore the linked retriever/query
+    engine and query that.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: When we ask a question and retrieve the most relevant text chunks, it will actually
+    retrieve the text chunk with the node id pointing to the parent chunk and thus
+    retrieve the parent chunk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/745e9d631b07b5bcb9c452f36573e737.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now with the same steps as before, we can create a query engine as a generic
+    interface to ask questions about our data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b650da5b25213cf97602caf2808e003a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Advanced Method 2: Sentence Window Retrieval'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To achieve an even more fine-grained retrieval, instead of using smaller child
+    chunks, we can parse the documents into a single sentence per chunk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, single sentences will be similar to the “child” chunk concept
+    we mentioned in method 1\. The sentence “window” (5 sentences on either side of
+    the original sentence) will be similar to the “parent” chunk concept. In other
+    words, we use the single sentences during retrieval and pass the retrieved sentence
+    with the sentence window to the LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1: Create sentence window node parser**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 2: Create query engine**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we create the query engine, we can replace the sentence with the sentence
+    window using the MetadataReplacementPostProcessor, so that the window of the sentences
+    get sent to the LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The Sentence Window Retrieval was able to answer the question “Can you tell
+    me about the key concepts for safety finetuning”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4ab8ad213fe4335b4aa98bcea6f7159f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here you can see the actual sentence retrieved and the window of the sentence,
+    which provides more context and details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a837434f74e6571a46044db2ca09ac23.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this blog, we explored how to use small-to-big retrieval to improve RAG,
+    focusing on the Child-Parent RecursiveRetriever and Sentence Window Retrieval
+    with LlamaIndex. In future blog posts, we will dive deeper into other tricks and
+    tips. Stay tuned for more on this exciting journey into advanced RAG techniques!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://docs.llamaindex.ai/en/latest/examples/node_postprocessor/MetadataReplacementDemo.html](https://docs.llamaindex.ai/en/latest/examples/node_postprocessor/MetadataReplacementDemo.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://docs.llamaindex.ai/en/stable/examples/retrievers/recursive_retriever_nodes.html](https://docs.llamaindex.ai/en/stable/examples/retrievers/recursive_retriever_nodes.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/5deefebaf7043e111b40052de0e361dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: . . .
+  prefs: []
+  type: TYPE_NORMAL
+- en: By [Sophia Yang](https://www.linkedin.com/in/sophiamyang/) on November 4, 2023
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connect with me on [LinkedIn](https://www.linkedin.com/in/sophiamyang/), [Twitter](https://twitter.com/sophiamyang),
+    and [YouTube](https://www.youtube.com/SophiaYangDS) and join the DS/ML [Book Club](https://dsbookclub.github.io/)
+    ❤️
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,381 @@
+- en: Using Quantum Annealing for Feature Selection in scikit-learn
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673?source=collection_archive---------7-----------------------#2023-04-10](https://towardsdatascience.com/using-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673?source=collection_archive---------7-----------------------#2023-04-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Feature selection for scikit-learn models, for datasets with many features,
+    using quantum processing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)[![Florin
+    Andrei](../Images/372ac3e80dbc03cbd20295ec1df5fa6f.png)](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)[](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------)
+    [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----e747d056f673--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----e747d056f673---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----e747d056f673--------------------------------)
+    ·11 min read·Apr 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fe747d056f673&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----e747d056f673---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fe747d056f673&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-quantum-annealing-for-feature-selection-in-scikit-learn-e747d056f673&source=-----e747d056f673---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature selection is a vast topic in machine learning. When done correctly,
+    it can help reduce overfitting, increase interpretability, reduce the computational
+    burden, etc. Numerous techniques are used to perform feature selection. What they
+    all have in common is that they look at the set of features and try to separate
+    features that lead to good outcomes (accurate predictions, interpretable models,
+    etc) from features that do not help with this goal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Particularly difficult are cases where the number of features is very large.
+    An exhaustive exploration of all combinations of features is often computationally
+    prohibitive. Algorithms such as the stepwise search by the `regsubsets()` function
+    in R may try to infer promising combinations of features by adding / removing
+    features and comparing the results. But ultimately, when the number of features
+    is large, a trade-off remains between the degree of success of the search and
+    the effort spent finding the best combination of features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a rule of thumb, when the best solution to a problem involves searching over
+    a large number of combinations, quantum annealing might be worth investigating.
+    I will show an example of feature selection for a dataset with hundreds of features
+    using a scikit-learn plugin recently published by D-Wave.
+  prefs: []
+  type: TYPE_NORMAL
+- en: D-Wave and scikit-learn
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Keep in mind, this is not general-purpose, gate-model quantum computing. This
+    is an algorithm that, in essence, is similar to simulated annealing, in that there
+    is an objective function, and something like simulated annealing is used to find
+    a combination of values that minimizes the objective. Except the annealing is
+    not simulated — instead, a real system is programmed such that the physical energy
+    of the system matches the objective function. The energy of the system is lowered
+    until it reaches a minimum (annealing), and then the solution is simply the state
+    of the system, which is read and returned to the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[D-Wave](https://www.dwavesys.com/) builds quantum annealers that can efficiently
+    solve many problems where the combinatorial complexity is high. As long as you
+    can reduce the problem to a binary quadratic model (BQM), or a BQM with constraints
+    (CQM), or some discrete generalization of the above (DQM), the problem can be
+    submitted to the quantum solvers. More details are in [the documentation](https://docs.dwavesys.com/docs/latest/doc_getting_started.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In theory, you could formulate the feature selection algorithm in terms of a
+    BQM, where the presence of a feature is a binary variable of value 1, and the
+    absence of a feature is a variable equal to 0, but that takes some effort. D-Wave
+    provides [a scikit-learn plugin](https://github.com/dwavesystems/dwave-scikit-learn-plugin)
+    that can be plugged directly into scikit-learn pipelines and simplifies the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will first show the entire process of explicitly formulating a
+    BQM, then a CQM, sending the model out to the quantum solver, then parsing the
+    results. This is the general method of solving optimization processes on the quantum
+    annealer, and can be used for many problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But if all you want is to select the best features in a dataset, a simple `SelectFromQuadraticModel()`
+    method call is enough. This collapses the whole algorithm into a single line of
+    code. We will show that at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem and method
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Consider the [Scene Recognition Dataset](https://www.openml.org/d/312) downloaded
+    from OpenML, originally created by [Boutell, M., Luo, J., Shen, X., Brown, C.
+    (2004)](https://www.sciencedirect.com/science/article/abs/pii/S0031320304001074)
+    and distributed under a CC BY license by its authors. It is a binary classification
+    dataset with one dependent variable (Urban), and has nearly 300 features. The
+    value of the response variable (binary: urban or not urban) needs to be predicted
+    based on a combination of features. A simple classification model such as `RandomForestClassifier()`
+    should perform well, assuming the features are chosen properly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A method for choosing the features, described in [a paper by Milne, Rounds,
+    and Goddard (2018)](https://1qbit.com/whitepaper/optimal-feature-selection-in-credit-scoring-classification-using-quantum-annealer/)
+    is a good fit for the quantum annealers and can be summarized this way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split the dataset into the matrix of features, and the response vector — the
+    (X, y) tuple familiar from scikit-learn. Using these, construct a correlation
+    matrix C, where Cii represent the correlations of features with the response,
+    and Cij are the mutual correlations of the features. Of the features that are
+    highly correlated with the response, we want to capture as many as possible. Of
+    the features that are correlated with each other, we want to capture as few as
+    possible, but without affecting features that are strongly correlated with the
+    response. Obviously, we want to strike a balance between all these criteria.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let Xi be binary variables that indicate whether feature i is chosen for the
+    final dataset. If feature i is chosen, then Xi = 1, otherwise Xi = 0\. The problem
+    then becomes equivalent to finding the extreme of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ed33a2a33134634f69b8ea136b01c8f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: objective function
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first sum of term represents the individual contributions from features
+    — let’s call them linear terms. The second sum of terms could be said to contain
+    quadratic interaction terms. alpha is a bias coefficient that controls the amount
+    of interaction between features that we allow in the objective function; its values
+    will have to be explored to find the best outcome. Finding the set of Xi that
+    minimizes the objective function is equivalent to feature selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The objective function is literally a binary quadratic model — BQM. It is binary
+    because Xi can be either 0 or 1\. It is quadratic because the highest order terms
+    are the quadratic interactions. This can be easily solved on a quantum annealer.
+    The only constraint we will need to apply is that the number of variables Xi that
+    are equal to 1 cannot be greater than the total number of features we are willing
+    to accept.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature selection the hard way
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s solve the problem. The code block below imports all the libraries we need,
+    downloads the dataset, and instantiates a classifier model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We are interested in two things:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the “relevance” of each feature, which is the strength of its correlation with
+    the response
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the “redundancy” of features, which is just the set of non-diagonal items in
+    the correlation matrix (weights of quadratic interaction terms)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let’s build a couple of functions to visualize relevance and redundancy, apply
+    them to the entire dataset without feature selection, and then cross-validate
+    (5 folds) the performance of the model on the entire dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is the result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d404dc2909d215a51faa41f8e31b8544.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: baseline performance
+  prefs: []
+  type: TYPE_NORMAL
+- en: The accuracy of the model is 0.9082\. Features vary significantly in terms of
+    relevance. There are pockets of redundancy where there seems to be strong correlation
+    between features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To minimize the objective function, let’s create a quadratic model with constraints,
+    and send it to the quantum annealer. The code will be explained below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: There’s a lot going on there. Let’s explain each step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We limit the number of features to k=30\. This is the main constraint for the
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We deviate slightly from the objective function described in the paper. Instead
+    of defining alpha directly, we use an equivalent parameter beta, which serves
+    the same purpose. And then we define alpha in a way that keeps the contribution
+    of interaction terms under control — if the number of features is extremely large,
+    this will make sure the interaction terms do not overwhelm the linear terms in
+    the objective function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We shape the correlation matrix in a way that can be used to build a BQM directly.
+    We constrain the BQM with the condition that no more than k=30 features can be
+    used, and so we obtain a constrained quadratic model (CQM). We send the CQM to
+    the quantum annealer and collect the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It should be noted that the run time of the quantum part of the code is about
+    10 seconds. For many problems, this is a typical baseline duration, even when
+    the number of variables is large. The run time tends to increase with the complexity
+    of the problem, but the increase may not be as abrupt as you’d expect from classical
+    solvers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’re not done yet. The D-Wave hardware typically samples the solution space,
+    and returns a large number of potentially feasible solutions. This is due to the
+    way the hardware works: one annealing event is quick and easy to run, so it makes
+    sense to run annealing repeatedly, which is what happens here automatically. If
+    enough samples are generated, some of them will be the best solution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So we need to sort the solutions and pick the best one. “Best” means — it has
+    the lowest value for the objective function, which D-Wave calls “energy” because
+    it really is the physical energy of the quantum processor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`features` is the array with the indices of the features picked by the quantum
+    annealer. It is the solution to the feature selection process. Obviously, its
+    length will be k=30.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s measure the accuracy of the model after feature selection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1bdf597311e331f7e012d682fb9a9c3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: explicit optimization
+  prefs: []
+  type: TYPE_NORMAL
+- en: The accuracy of the model after feature selection is 0.9381\. We got exactly
+    the number of features we want. Most of them have high relevance. And the correlation
+    values between features are generally low. The model performs better, chances
+    are it’s easier to interpret, and the time it took to select the right features
+    was not too long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But the process is long and tedious, if all you want is to select some features.
+    Fortunately there is a much easier way now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Feature selection the easy way
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'If you have the D-Wave scikit-learn plugin installed, all you have to do is
+    this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That’s literally it. Behind the scenes, the code creates the quadratic model,
+    constrains it, sends it out to the quantum solver, gets the results back, parses
+    them, and selects the best result to be returned in NumPy array format, the way
+    scikit-learn likes it. The run time is about the same. But let’s see what the
+    results look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a40d30fc00a2ef4480f93234552d20a2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: plugin optimization
+  prefs: []
+  type: TYPE_NORMAL
+- en: The accuracy of the model is 0.9369, essentially the same as the performance
+    we got from the explicit optimization (well within the typical fluctuation of
+    various random components).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The set of features that got selected is slightly different. This may be accounted
+    for by slight differences between my manual process and the automated implementation
+    in the library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In either case, we moved the performance of the model up from good to great,
+    with an algorithm that does not guess heuristically, but takes into account the
+    totality of the features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further topics to explore
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The alpha parameter will bias the feature selection algorithm towards either
+    less redundancy but potentially less quality (alpha=0) or towards higher quality
+    but at the price of increased redundancy (alpha=1). Which is the best value depends
+    on the problem you’re trying to solve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `SelectFromQuadraticModel()` method has a parameter called `time_limit`
+    which is exactly what the name says: it controls the maximum time spent on the
+    solver. You pay for the time you use, so high values here might be expensive.
+    On the other hand, if the quantum annealing does not seem to converge towards
+    good enough solutions, higher values here might be worth exploring. The problem
+    shown here is rather trivial for the quantum processor, so we just used the default
+    value.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep in mind the data exchange between your computer and the quantum solver
+    in the cloud may be non-trivial, so the latency of your connection might be important
+    in time-critical applications such as finance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: D-Wave webinar introducing the scikit-learn plugin. [https://www.youtube.com/watch?v=VHEpe00AXPI](https://www.youtube.com/watch?v=VHEpe00AXPI)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Milne, A., Rounds, M., & Goddard, P. (2018). *Optimal Feature Selection in Credit
+    Scoring and Classification Using a Quantum Annealer*. 1QBit.com. [https://1qbit.com/whitepaper/optimal-feature-selection-in-credit-scoring-classification-using-quantum-annealer/](https://1qbit.com/whitepaper/optimal-feature-selection-in-credit-scoring-classification-using-quantum-annealer/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boutell, M., Luo, J., Shen, X., Brown, C. (2004). Learning multi-label scene
+    classification. The Pattern Recognition journal on ScienceDirect. [https://www.sciencedirect.com/science/article/abs/pii/S0031320304001074](https://www.sciencedirect.com/science/article/abs/pii/S0031320304001074)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting Started with D-Wave Solvers [https://docs.dwavesys.com/docs/latest/doc_getting_started.html](https://docs.dwavesys.com/docs/latest/doc_getting_started.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: D-Wave scikit-learn Plugin [https://github.com/dwavesystems/dwave-scikit-learn-plugin](https://github.com/dwavesystems/dwave-scikit-learn-plugin)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'D-Wave Examples: Feature Selection for CQM [https://github.com/dwave-examples/feature-selection-cqm](https://github.com/dwave-examples/feature-selection-cqm)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenML Scene Recognition Dataset [https://www.openml.org/d/312](https://www.openml.org/d/312)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code and artifacts created for this article [https://github.com/FlorinAndrei/misc/tree/master/dwave-scikit-learn-feature-selection](https://github.com/FlorinAndrei/misc/tree/master/dwave-scikit-learn-feature-selection)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to Dr. Matthew Boutell of the Rose-Hulman Institute of Technology for
+    granting me access to the Scene Features dataset under a Creative Commons license.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images were created by the author.
+  prefs: []
+  type: TYPE_NORMAL

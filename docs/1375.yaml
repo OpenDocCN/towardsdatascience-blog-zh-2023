@@ -1,0 +1,309 @@
+- en: How to Build Graph Transformers with O(N) Complexity
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-build-graph-transformers-with-o-n-complexity-d507e103d30a?source=collection_archive---------6-----------------------#2023-04-19](https://towardsdatascience.com/how-to-build-graph-transformers-with-o-n-complexity-d507e103d30a?source=collection_archive---------6-----------------------#2023-04-19)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tutorial on Large-Graph Transformers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@qitianwu228?source=post_page-----d507e103d30a--------------------------------)[![Qitian
+    Wu](../Images/363e62ead857be0af76f9654c19f2b8c.png)](https://medium.com/@qitianwu228?source=post_page-----d507e103d30a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d507e103d30a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d507e103d30a--------------------------------)
+    [Qitian Wu](https://medium.com/@qitianwu228?source=post_page-----d507e103d30a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F268302525672&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-graph-transformers-with-o-n-complexity-d507e103d30a&user=Qitian+Wu&userId=268302525672&source=post_page-268302525672----d507e103d30a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d507e103d30a--------------------------------)
+    ·7 min read·Apr 19, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd507e103d30a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-graph-transformers-with-o-n-complexity-d507e103d30a&user=Qitian+Wu&userId=268302525672&source=-----d507e103d30a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd507e103d30a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-build-graph-transformers-with-o-n-complexity-d507e103d30a&source=-----d507e103d30a---------------------bookmark_footer-----------)![](../Images/d7dd98f0eb38aa61ae00d1bff995fd15.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Image: [Unsplash](https://unsplash.com/photos/OgvqXGL7XO4).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building powerful graph Transformers has become a trending topic in the graph
+    machine learning community, as a surge of recent efforts have shown that pure
+    Transformer-based models can perform competitively or even superiorly on quite
+    a few GNN benchmarks (see some typical works along this direction [1, 2, 3]).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The challenge, however, is that the key design of Transformers [4], i.e., attention
+    mechanism, often requires **quadratic complexity w.r.t. the input tokens**. In
+    the context of graph learning, the input tokens for Transformers are nodes in
+    a graph, and the global attention aimed at capturing long-range interactions among
+    nodes is hard to scale for graphs with arbitrary numbers of nodes. For example,
+    on the common node classification dataset Pubmed (with ~10K nodes), *running a
+    one-layer single-head Transformer with all-pair attention in a GPU with 16GB memory
+    is infeasible.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This tutorial will introduce two recent scalable graph Transformers [5, 6]
+    that design special global attention mechanisms with **linear complexity w.r.t.
+    the number of tokens (nodes)**. The goal of this tutorial is to provide hands-on
+    guidance on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*how the linear complexity is achieved when preserving the all-pair attention;*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*how the new attention functions are implemented using Pytorch codes.*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These are complementary to the published scientific papers that focus on the
+    high-level idea description.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where does the O(N²) Comes From?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Transformers can be seen as a generalization of graph neural networks (GNNs)
+    where the fixed adjacency matrix in GNNs is extended to a variable attention matrix
+    in Transformers. From a graph view, GNNs operate message passing over a fixed
+    observed graph (that often has sparse connection), while the message passing of
+    Transformers is anchored on a densely connected latent graph (whose edge weights
+    are generated by pairwise attention scores.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e48812660c4b49eb9f84766eb3ab1fa1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Comparison of GNNs and Transformers in terms of message passing over different
+    structures: GNNs propagate signals over a sparse observed graph, while Transformers
+    can be seen as propagating signals over a densely connected graph with layer-wise
+    edge weights. The latter requires estimation for the N*N attention matrix and
+    feature propagation over such a dense matrix.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We next recapsulate the standard attention computation in original Transformer
+    [4]. The embeddings at the current layer are first mapped into query, key and
+    value vectors, and then calculate the all-pair attention for feature aggregation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58e7b1ec741a5407b2d29a53b9dcaea8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We use z to denote the node embeddings, and q, k and v to denote the query,
+    key and value vectors, respectively. The W_Q, W_K and W_V are learnable weights
+    at the k-th layer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the computation of the above updating requires O(N), the total complexity
+    for updating N nodes in one layer would require O(N²). A more intuitive way to
+    see the O(N²) complexity can be from a matrix view which is practically considered
+    for implementation using the deep learning tools (e.g., Pytorch, Tensorflow, etc.).
+    In specific, we can illustrate the computation flow of one attention layer below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/470e3679b67218fc975a88df51c142ac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The left part illustrates the global attention layer from a matrix view, and
+    the right part presents the corresponding data flow where the matrix product marked
+    by red color introduces O(N²) complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The attention layer above can be easily implemented with PyTorch (here we use
+    the “einsum” function that is a generalized matrix product implementation, see
+    [here](https://pytorch.org/docs/stable/generated/torch.einsum.html?highlight=einsum#torch.einsum)
+    for its detailed information):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: While the quadratic complexity is cumbersome, we next introduce two effective
+    ways that can *strictly* reduce the O(N²) to O(N) and more importantly, *still
+    preserve the expressivity for explicitly modeling the all-pair influence.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'NodeFormer: Kernelized Softmax Message Passing'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The recent work NodeFormer [5] ([a scalable graph structure learning Transformer
+    for node classification](https://openreview.net/pdf?id=sMezXGG5So)) leverages
+    the random Fourier features [8, 9] to convert the *dot-then-exponential* operation
+    into a *map-then-dot* alternative by kernel approximation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cf60cac345f332ce426bf7402f541f02.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The \phi function here is a non-parametric random feature map where the feature
+    dimension m controls the approximation power for the original exponential term.
+    See reference [8] for more introduction on the random feature map and theoretical
+    its properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this way, the original Softmax attention can be transformed into an efficient
+    version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ef1d90bf4789fadd08cf503977c2bf2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The derivation from the LHS to the RHS is according the basic association rule
+    of matrix product that changes the order of matrix product
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that in the RHS, the two summation terms over N nodes are independent
+    from node u, which means they can be re-used by all the nodes after once computation.
+    Thereby, for updating N nodes in each layer, one can first spend O(N) to compute
+    the two summation terms and based on this, the computation for the next-layer
+    embeddings of all the N nodes would only require O(N) which induce the total complexity
+    O(N).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To better understand how the linear complexity is achieved, we can write the
+    matrix-form computation flow as follows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c10a094a5b8298f27f107d560600a551.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The left part illustrates the global attention layer of NodeFormer from a matrix
+    view, and the right part presents the corresponding data flow where the matrix
+    products marked by red color are the computation bottleneck which requires O(Nmd).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that the order of matrix product plays an important role in reducing
+    the complexity. In the above computation, the N*N attention matrix is avoided
+    though we successfully achieve all-pair attentive aggregation. The exact complexity
+    of one layer is O(Nmd). Since for large graphs, N is often orders-of-magnitude
+    larger than m and d, the computational efficiency can be significantly improved
+    in practice. For example, NodeFormer with three Transformer layers only requires
+    4GB GPU memory for computing the all-pair attention among 0.1M nodes. Below is
+    the Pytorch codes for implementing the above efficient all-pair attention. The
+    complete open-source model implementation is publicly available at [GitHub](https://github.com/qitianwu/NodeFormer/blob/main/nodeformer.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'DIFFormer: Simplified Attention Computation'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The lesson we can learn from NodeFormer is that the crux of complexity reduction
+    lies in the order of matrix product w.r.t. attentive aggregation. We can next
+    leverage this idea to design another efficient attention function without any
+    stochastic approximation, i.e., the simple attention in [DIFFormer](https://arxiv.org/abs/2301.09474)
+    [6] (a. k. a. simple diffusivity model in the original paper motivated from the
+    diffusion over latent structures).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our observation is from the Taylor expansion of the exponential function that
+    can be used to motivate a new attention function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/051c6b20ac205f0926d02bafb714e690.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Notice that though the new attention function is motivated from the first-order
+    Taylor expansion of e^x, it is not required to be a well-posed approximation for
+    the original Softmax attention. That being said, we found it works stably well
+    and in practice through extensive experiments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This new attention layer can be efficiently computed using linear complexity
+    due to that we can inherit the trick to re-order the matrix product:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4508eadbc004b0dd8432b338e1bc5e92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, the two summation terms in the RHS are shared by all the nodes and thereby
+    only need once computation. To clearly see the O(N) complexity, we can write down
+    the computation flow with a matrix view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/af63ca103e8a4fb2d611e1b2cf22fcc7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The computation bottleneck of matrix products is marked by red color in the
+    right part, inducing O(Nd²) complexity. Notice again that d is orders-of-magnitude
+    smaller than N in practice: for example, d could range from 32 to 256, while N
+    could be up to million or even billion.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following shows the Pytorch implementation of one-layer DIFFormer’s simple
+    attention, and the complete model implementation is publicly avaialble at [GitHub](https://github.com/qitianwu/DIFFormer/blob/main/node%20classification/difformer.py).
+    In particular, when equipped with the simple attention, DIFFormer (a. k. a. DIFFormer-s
+    in the original paper) can scale to large-scale graphs with millions of nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: References
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] *Chengxuan Ying et al.,* [*Do Transformers Really Perform Bad for Graph
+    Representation?*](https://arxiv.org/abs/2106.05234), NeurIPS 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] *Ladislav Rampášek et al.,* [*Recipe for a General, Powerful, Scalable
+    Graph Transformer*](https://arxiv.org/abs/2205.12454), NeurIPS 2022.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] *Jinwoo Kim et al.,* [*Pure Transformers are Powerful Graph Learners*](https://arxiv.org/abs/2207.02505),
+    NeurIPS 2022.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] *Ashish Vaswani et al., Attention is All you Need, NeurIPS 2017.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] *Qitian Wu et al.,* [*NodeFormer: A Scalable Graph Structure Learning Transformer
+    for Node Classification*](https://openreview.net/pdf?id=sMezXGG5So)*, NeurIPS
+    2022\.* This paper proposes an efficient Transformer for large node classification
+    graphs. The key design is the kernelized Softmax message passing that achieves
+    linear complexity w.r.t. number of nodes, and furthermore, the authors extend
+    the kernel trick to Gumbel-Softmax that can learn sparse latent structures from
+    a potentially all-pair connected graph.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] *Qitian Wu et al.,* [*DIFFormer: Scalable (Graph) Transformers Induced
+    by Energy Constrained Diffusion*](https://arxiv.org/abs/2301.09474#)*, ICLR 2023.*
+    This work designs a scalable graph Transformer whose attention functions are motivated
+    from diffusivity estimates for diffusion over latent structures. In terms of the
+    model architecture, DIFFormer generalizes the key idea used in NodeFormer for
+    achieving O(N) complexity, and therefore, can be seen as the 2.0 version of NodeFormer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] [*A round-up of linear transformers*](https://desh2608.github.io/2021-07-11-linear-transformers/)
+    This blog introduces several typical strategies in recent efficient Transformers
+    that successfully reduce the attention complexity to O(N), e.g., low-rank approximation,
+    local-global attention and using softmax as a kernel.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] *Ali Rahimi and Benjamin Recht.* [*Random features for large-scale kernel
+    machines*](https://papers.nips.cc/paper_files/paper/2007/file/013a006f03dbc5392effeb8f18fda755-Paper.pdf)*,
+    NeurIPS 2007\.* This early work introduces random feature map as an effective
+    approximation technique for computation over large numbers of data points, along
+    with its theoretical properties.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] *Fanghui Liu et al.,* [*Random Features for Kernel Approximation- A Survey
+    on Algorithms, Theory, and Beyond*](https://arxiv.org/abs/2004.11154)*, IEEE TPAMI
+    2022\.* This survey summarizes an exhaustive set of different random features
+    for kernel approximation and discusses their different properties and applicability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

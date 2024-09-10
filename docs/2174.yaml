@@ -1,0 +1,411 @@
+- en: Working with Geospatial Data at the Postcode Level
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/working-with-geospatial-data-at-the-postcode-level-3c9f79d866b3?source=collection_archive---------9-----------------------#2023-07-06](https://towardsdatascience.com/working-with-geospatial-data-at-the-postcode-level-3c9f79d866b3?source=collection_archive---------9-----------------------#2023-07-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to associate “point” postcodes with area census data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)[![Lak
+    Lakshmanan](../Images/9faaaf72d600f592cbaf3e9089cbb913.png)](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------)
+    [Lak Lakshmanan](https://lakshmanok.medium.com/?source=post_page-----3c9f79d866b3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F247b0630b5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&user=Lak+Lakshmanan&userId=247b0630b5d6&source=post_page-247b0630b5d6----3c9f79d866b3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3c9f79d866b3--------------------------------)
+    ·9 min read·Jul 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3c9f79d866b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&user=Lak+Lakshmanan&userId=247b0630b5d6&source=-----3c9f79d866b3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3c9f79d866b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fworking-with-geospatial-data-at-the-postcode-level-3c9f79d866b3&source=-----3c9f79d866b3---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some countries, postcodes are points or routes and not areas. For example,
+    the last three digits of a Canadian postcode correspond to the local delivery
+    unit which may correspond to houses on one side of a street or rural route. Similarly,
+    UK postcodes have a postcode of the form “YO8 9UR”. This could be as small as
+    a single building in London. In a 5+4 US zipcode, the last four numbers determine
+    a postal delivery route (so, a set of addresses) and not an area. Contrary to
+    common belief, US 5-digit zipcodes are not areas either — they are simply a collection
+    of the 5+4 postal routes, typically served from a single post office.
+  prefs: []
+  type: TYPE_NORMAL
+- en: France, as befits the originator of the metric system, is very logical. In France,
+    postcodes correspond to an area — the last two digits correspond to the arrondissement,
+    thus 75008 corresponds to the 8th arrondissement of Paris and is truly an area.
+    Mail delivery routes are probably suboptimal, though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because people and stores have addresses, which have associated postcodes, most
+    consumer data is reported at a postcode level. In order to carry out computations
+    such as areal coverage, market share, etc. it is necessary to determine the areal
+    extent of a postcode. This is easy in France, but will be difficult in any country
+    where postcodes are postal routes and not areas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/55b0a9e4ec5886def068a563d03fa27b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: UK postcodes are Royal Mail delivery addresses, not areas. This is true of Canada
+    and the United States also. Photo by [Monty Allen](https://unsplash.com/@monty_a?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/vOPhBFg4Ldw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because their postcodes are mail delivery addresses, there are infinitely many
+    polygons that can be drawn to partition the UK/Canada/US into valid postcode “regions”.
+    This is why UK demographic data is published by their Office of National Statistics
+    (ONS) on administrative areas (such as counties), not postcodes. The US census
+    publishes data at a “Zip code tabulation area” (ZCTA) level, and US voting data
+    is published at the county level. When working with UK/Canada/US data, you’ll
+    often have a similar mixture of addresses (which are points) and spatial data
+    collected over an area. How do you associate these together?
+  prefs: []
+  type: TYPE_NORMAL
+- en: To illustrate, I’ll tie together UK postcode data and census data in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Download link
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you are in a hurry, you can download the results of my analysis from [https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode](https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode)
+    — there are a couple of CSV files there, and they contain the data you may need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[ukpopulation.csv.gz](https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/ukpopulation.csv.gz)
+    has the following columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[ukpostcodes.csv.gz](https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/ukpostcodes.csv.gz)
+    has one extra column — the polygon for each postcode in WKT format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Please note that use of the data or code is at your own risk — it is distributed
+    on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+    or implied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I’ll step through how I created the dataset in that GitHub
+    repo. You can follow along with me using the notebook [uk_postcodes.ipynb](https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/uk_postcodes.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Raw data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We start from three sources of raw data released under the [UK Open Government
+    License](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Free Map Tools has a [downloadable file](https://www.freemaptools.com/download-uk-postcode-lat-lng.htm)
+    that has the centroid lat and lon for each postcode. This is not enough for spatial
+    analysis since you can not do things like ST_INTERSECTS with just a point. But
+    it’s a good start.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The ONS has published [census data](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/populationandhouseholdestimatesenglandandwalescensus2021)
+    for areas such as “County Durham”. These are not postcodes, though. They are typically
+    at the ward, county, or region level.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The UK statistics office has helpfully identified the [areas associated with
+    each postcode](https://geoportal.statistics.gov.uk/datasets/ons-postcode-directory-february-2023-version-2/about).
+    Every postcode lives in different areas defined for different purposes and resolutions.
+    This includes, but is not limited to the parish, ward, county, and region that
+    the region is in. For completeness, here are all the other associations available
+    (depending on your spatial dataset, you may need the other columns):'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'My notebook downloads the data files using wget:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Reading data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Reading CSV directly into Pandas is straightforward:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This gives me the centroid lat-lon of every postcode:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d556ab2c8fdffdc20bea403a145851e6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Centroid lat-lon for every postcode
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are many packages that allow you to read Excel files into Pandas, but
+    I decided to use DuckDB because I’ll be using it later in the notebook to join
+    the three datasets using SQL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This Excel file has 7 rows of header info that I can drop. I also rename the
+    columns to meaningful variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: That was the sheet named P01\. Note that the P04 sheet has a population density
+    information, but it is not useful because population is not distributed evenly
+    over the area code. We’ll derive the population of each postcode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I write this out to a CSV file so that I can easily read it from DuckDB.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Similarly, I extract the necessary columns from the UK statistics office file
+    and write it to a CSV file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Associating data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now, we can use DuckDB to join the three prepared datasets to get the population
+    density at every postcode. Why DuckDB? Even though I can do the join in Pandas,
+    I find SQL to be much more readable. Besides, this gave me an excuse to use the
+    new hot thing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I join the datasets by first reading them into DuckB using read_csv_auto. Then,
+    I look up the ward, parish, county that the postcode is in and find the area (parish,
+    ward, or county) that the population density data is reported at:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the spatial quantities are scalars that correspond to the whole area
+    and not the postcode. They have to be split among the postcodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split area quantities among the postcodes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The all_persons, females, males above correspond to the whole area, not to the
+    specific postcode. We could do it proportionally based on area of the postcode,
+    but there are infinitely many polygons that can fit the postcodes, and as we will
+    see later, the areal extent of postcodes near parks and lakes are a bit iffy.
+    So we’ll do something simple that gives us a single, unique answer — we’ll split
+    the scalar value evenly among all the postcodes in the area! This is not as strange
+    as it sounds — in higher density neighborhoods, there are more postcodes, so dividing
+    equally among the postcodes is akin to distributing the scalar quantity proportional
+    to the population density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'At this point, we have the quantity for each postcode — this is the association
+    that we needed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5d6d8463c1d7ede6394a5582f05452b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'So, write it out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Areal extent of postcodes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For many analyses, we’ll want the postcodes to be not points but areas. Even
+    though there are infinitely many polygons that we can use to divide the UK such
+    that there is only postcode centroid in each polygon, there does exist a notion
+    of the “best” polygon. That is the [Voronoi partition](https://en.wikipedia.org/wiki/Voronoi_diagram),
+    which splits the area such that any point belongs to the postcode closest to it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b96a1b8d8dcf021a26844d2c2bc70ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Voronoi analysis of 20 points, from Wikipedia
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To compute this, we can use scipy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: I’m assuming here that the area is small enough that there isn’t much of a difference
+    between the geodesic distance and Euclidean distance computed from the latitude
+    and longitude. UK postcodes are small enough that this is the case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The result is organized such that, for every point, there is a region consisting
+    of a set of vertices. We can create a WKT polygon string for each point using:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here’s an example result:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can create a GeoDataFrame and plot a subset of postcodes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/868480570d8fce494971efd3c3def988.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Postcode spatial extent for St. Albans. Image generated by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s Birmingham:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f4d207c37815f65293336b580442b1ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Postcode spatial extent for Birmingham. Image generated by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unpopulated areas
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Note the horn at the top and the large area of blue in the middle. What’s going
+    on? Let’s look at Birmingham in Google Maps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/df427ee197d0fa38368486ed2960472d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Birmingham, screenshot of Google Maps by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice the park areas? The Royal Mail doesn’t have to deliver to anyone there.
+    So there are no postcodes there. Therefore, the nearby postcodes get “extended”
+    into those areas. This will cause problems in spatial calculations as those postcodes
+    will appear to be much larger than they are.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To fix this, I’ll take a rather heuristic approach. I’ll grid the UK into 0.01x0.01
+    (approximately 1 sq km) resolution grid cells and find grid cells that have no
+    postcodes in them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We’ll create fake postcodes in the center of such unpopulated grid cells, and
+    assign a zero population density to those. Add these fake postcodes to the actual
+    postcodes, and repeat the Voronoi analysis:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, when we plot Birmingham, we get something much nicer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7d356fbe0032c8050dd8de72e477ae85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Postcode polygons of Birmingham. Image generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is this dataframe that I saved as the second csv file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Optional] Loading into BigQuery'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We can load the CSV file into BigQuery and do some spatial analysis with it,
+    but it is better to have BigQuery parse the last string column as a geometry first
+    and have the data clustered by postcode:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, we can easily query it. For example, we can use ST_AREA for the postcodes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: Summary
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spatial analysis often requires areal extent, not just point locations. In countries
+    where postcodes are points/routes, there are infinitely many ways to generate
+    a polygonal spatial extent for the postcodes. A reasonable approach is to use
+    Voronoi regions to create polygons that contain those postcodes. However, if you
+    do so, you will get unnaturally large polygons near lakes or parks where the post
+    office does not deliver mail. To fix this, also grid the country and create artificial
+    postcodes at unpopulated grid cells. In this article, I demonstrated how to do
+    this for the UK. The associated notebook can be adapted to other places.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next steps
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Check out the complete code at [https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/uk_postcodes.ipynb](https://github.com/lakshmanok/lakblogs/blob/main/uk_postcode/uk_postcodes.ipynb)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Download the data from [https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode](https://github.com/lakshmanok/lakblogs/tree/main/uk_postcode)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

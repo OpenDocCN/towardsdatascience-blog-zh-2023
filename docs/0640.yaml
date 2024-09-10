@@ -1,0 +1,504 @@
+- en: Hands-On Introduction to Delta Lake with (py)Spark
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/hands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae?source=collection_archive---------0-----------------------#2023-02-16](https://towardsdatascience.com/hands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae?source=collection_archive---------0-----------------------#2023-02-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Concepts, theory, and functionalities of this modern data storage framework
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)[![João
+    Pedro](../Images/64a0e14527be213e5fde0a02439fbfa7.png)](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------)
+    [João Pedro](https://joaopedro214.medium.com/?source=post_page-----b39460a4b1ae--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb111eee95c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=post_page-b111eee95c----b39460a4b1ae---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b39460a4b1ae--------------------------------)
+    ·10 min read·Feb 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb39460a4b1ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&user=Jo%C3%A3o+Pedro&userId=b111eee95c&source=-----b39460a4b1ae---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb39460a4b1ae&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhands-on-introduction-to-delta-lake-with-py-spark-b39460a4b1ae&source=-----b39460a4b1ae---------------------bookmark_footer-----------)![](../Images/303f0065d94538660d3d2564a8209807.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Nick Fewings](https://unsplash.com/@jannerboy62?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I think it’s now perfectly clear to everybody the value data can have. To use
+    a hyped example, models like ChatGPT could only be built on a huge mountain of
+    data, produced and collected over years.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I would like to emphasize the word “can” because there is a phrase in the world
+    of programming that still holds, and probably ever will: garbage in, garbage out.
+    Data by itself has no value, it needs to be organized, standardized, and clean.
+    Governance is needed. In this context, data management in an organization is a
+    key point for the success of its projects involving data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the main aspects of correct data management is the definition of a data
+    architecture. Data architecture is the set of practices, technologies, and services
+    that meet the data demand of a given organization, both technical (speed, volume,
+    frequency, availability) and non-technical (business rules, compliance with data
+    legislation) needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nowadays, almost by default, organizations will have to deal with data in different
+    formats (CSV, pdf, video, parquet, etc), hence the success of blob storage like
+    amazon’s S3\. However, this type of approach can bring some problems due to the
+    absence of management tools on raw files (especially in tabular data), such as
+    schema enforcement, versioning, and data lineage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that in mind (and a bunch of other things), Delta Lake was developed, an
+    open-source data storage framework that implements/materializes the Lakehouse
+    architecture and the topic of today’s post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is Delta Lake?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before going into further details on Delta Lake, we need to remember the concept
+    of Data Lake, so let’s travel through some history.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Data Lake architecture was proposed in a period of great growth in the data
+    volume, especially in non-structured and semi-structured data, when traditional
+    Data Warehouse systems start to become incapable of dealing with this demand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The proposal is simple — “Trow everything you have here inside and worry later”.
+    The main player in the context of the first data lakes was Hadoop, a distributed
+    file system, with MapReduce, a processing paradigm built over the idea of minimal
+    data movement and high parallelism. In theory, was just throwing everything inside
+    Hadoop and later on writing jobs to process the data into the expected results,
+    getting rid of complex data warehousing systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Legend says, that this didn’t go well. The files were thrown with no quality
+    worries, no versioning, and no management. The data became useless. The problem
+    was so big that the terms “data swamp”, a joke on very messy data lakes, and “WORN
+    paradigm”, Write Once Read Never, were created. In practice, the guarantees imposed
+    by traditional Data Warehouse systems, especially RDBMS were still needed to assure
+    data quality. (I was a child at the time, I read all this history recently from
+    modern literature)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time has passed and, based on the hits and misses of the past, new architectures
+    were proposed. The Lakehouse architecture was one of them. In a nutshell, it tries
+    to mix the advantages of both Data Lakes (flexibility) and Data Warehouses (guarantees).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Delta Lake is nothing more than a practical implementation of a storage framework/solution
+    with a Lakehouse vision.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s go to it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A table in Delta Lake (aka Delta Table) is nothing more than a *parquet* file
+    with a transaction log in JSON that stores all the change history on that file.
+    In that way, even with data stored in files, it is possible to have total control
+    over all that happened to it, including reading previous versions and reverting
+    operations. Delta Lake also works with the concept of ACID transactions, that
+    is, no partial writing caused by job failures or inconsistent readings. Delta
+    Lake also refuses writes with wrongly formatted data (schema enforcement) and
+    allows for schema evolution. Finally, it also provides the usual CRUD functionalities
+    (insert, update, merge, and delete), usually not available in raw files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post will tackle these functionalities in a hands-on approach with pyspark
+    in the following sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The data**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The data used in this post is the list of traffic accidents that occurred on
+    Brazillian highways, collected by the PRF (Polícia Rodoviária Federal, our highway
+    police) and publicly available in the Brazillian Open Data Portal [[Link](https://www.gov.br/prf/pt-br/acesso-a-informacao/dados-abertos/dados-abertos-acidentes)][[License
+    — CC BY-ND 3.0].](https://creativecommons.org/licenses/by-nd/3.0/deed.pt_BR)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data covers the period from 2007 up to 2021 and contains various information
+    about the accidents: place, highway, km, latitude and longitude, number of people
+    involved, accident type, and so on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 0\. Setting Up the environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As always, the project is developed using docker containers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: All the code is available in this [GitHub repository](https://github.com/jaumpedro214/posts).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Creating a Delta Table
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first thing to do is instantiate a Spark Session and configure it with the
+    Delta-Lake dependencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Creating a Delta Table is very simple, it’s just like writing a new file in
+    a specific format. The code below reads the CSV with the 2020’s accidents and
+    writes the data as a delta table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d72cfddfa1e866eeb230fbc31680a2a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First 5 rows of 2020.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Writing the delta table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that’s all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned, a Delta-Lake table (in terms of files) is just the traditional
+    *parquet* file with a transaction log in JSON that stores all the changes made.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c877b178787f54d87ff170643be3325.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Delta Table with the JSON Transaction Log.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Read from a Delta Table
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Again, there is nothing (yet) special about reading a Delta Table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1681c30993e3e05d2b8ee361a767d1db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s count the number of rows
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Add new data to the Delta Table
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Delta Tables support the “append” write mode, so it’s possible to add new data
+    to the already existing table. Let’s add the readings from 2019.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Appending to the Delta Table
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It’s important to empathize: Delta Tables will perform schema enforcement,
+    so it’s only possible to write data that have the same schema as the already existing
+    table, otherwise, Spark will throw an error.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s check the number of rows in the Delta Table
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. View the history (logs) of the Delta Table
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Log of the Delta Table is a record of all the operations that have been
+    performed on the table. It contains a detailed description of each operation performed,
+    including all the metadata about the operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To read the log, we need to use a special python object called `DeltaTable`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/be4e3d84b827c8be00d4a2507942ae17.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The history object is a Spark Data Frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/281f55740f79b0a5d92674832c0b3550.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'As we can see, there are currently two table versions, one for each operation
+    performed: the overwrite write when the table was created and the append write
+    made previously.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Read a specific version of the Delta Table
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If nothing is specified, Spark will read the latest version of the Delta Table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But it’s also possible to read from a specific version by just adding a single
+    line of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The counts dropped because we’re reading from version 0, before the 2019’s data
+    was inserted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Revert to a previous version
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s possible to revert to a previous version of a table. This is very useful
+    to quickly solve errors made by a pipeline. This operation is also performed via
+    the DeltaTable object created earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s restore the table to version 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, the latest counts will be =63576 again, because we reverted to a version
+    when the data from 2019’s have yet not been included.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The **RESTORE** operation is also stored in the log. So, in practice, no information
+    is lost:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/91cd2dbd7153e9e98eb26a74c366d2b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s restore back to version 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 7\. Update
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The update operation can also be done by the `DeltaTable` object, but we will
+    perform it with the SQL syntax, just to try a new approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s write the data from 2016 to the delta table. This data contains
+    the “data_inversa” (date) column wrongly formatted: dd/MM/yy instead of yyyy-MM-dd'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/01ea716ec1c9fa6aef3faddbfe900d64.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s save the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: But, because our data_inversa field is of type string, no errors occur. Now,
+    we have bad data inserted on our table that we need to fix. Of course, we could
+    just REVERT this last operation and insert the data again correctly, but let’s
+    use the UPDATE operation instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The SQL code below fixes the data formatting just for the year = 2016.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the number of rows with wrongly formatted data is 0:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 8\. Merge
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last operation that’ll be covered is the MERGE (a.k.a UPSERT) operation.
+    It’s a mix of INSERT and UPDATE,
+  prefs: []
+  type: TYPE_NORMAL
+- en: It will try to insert new rows to a target table considering some columns as
+    keys. If the row to be inserted already exists in the target table (i.e. the row
+    keys are already present in the target table), it will just update the row (with
+    some logic specified), other else, it will insert the new row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In a nutshell: if exists, then update, if not, then insert.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/653b122d4d312b4a778daf114b76f102.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Merge example. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To demonstrate this method let’s insert some data from 2018 with the number
+    of *people* = 0 (*pessoas —* number of people involved in the accident) for all
+    rows, simulating a partial report with incomplete data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we now want to update the table with the complete data from 2018, we must
+    assure that the already inserted rows have just the *people* column updated and
+    all the new rows are inserted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This can be performed with the following MERGE operation, which considers the
+    accident’s id and date as keys:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Defining a data architecture is extremely important to all organizations that
+    aim at creating data-driven products, like BI reports and Machine Learning applications.
+    A data architecture defines the tools, technologies, and practices that will ensure
+    that the technical and non-technical data needs of an organization are met.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In private companies, it can help to speed up the development of such products,
+    improve their quality and efficiency, and give commercial advantages that turn
+    into profit. In public organizations, the benefits of a data architecture turn
+    into better public policies, a better understanding of the current situation in
+    a specific area like transport, safety, budget, and improvement in transparency
+    and management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many architectures have been proposed in the last decades, each one with its
+    own benefits in each context. The Lakehouse paradigm tries to mix together the
+    benefits of Data Lakes and Data Warehouses. The Delta Lake is a framework for
+    storage based on the Lakehouse paradigm. In a nutshell, it brings many of the
+    guarantees usually only available in classical RDBMS (ACID transactions, logs,
+    revert operations, CRUD operations) on top of file-based storage (based on *parquet*).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we explored a few of these functionalities using data from traffic
+    accidents on Brazilian highways. I hope I helped you somehow, I am not an expert
+    in any of the subjects discussed, and I strongly recommend further reading (see
+    some references below) and discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading! ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '*All the code is available in* [*this GitHub repository*](https://github.com/jaumpedro214/posts)*.*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[1] Chambers, B., & Zaharia, M. (2018). *Spark: The definitive guide: Big data
+    processing made simple*. “ O’Reilly Media, Inc.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Databricks. (2020, March 26). *Tech Talk | Diving into Delta Lake Part
+    1: Unpacking the Transaction Log* [[Video](https://www.youtube.com/watch?v=F91G4RoA8is)].
+    YouTube.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] *How to Rollback a Delta Lake Table to a Previous Version with Restore*.
+    (2022, October 3). Delta Lake. [Link](https://delta.io/blog/2022-10-03-rollback-delta-lake-restore/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] *Delta Lake Official Page*. (n.d.). Delta Lake. [https://delta.io/](https://delta.io/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Databricks. (2020a, March 12). *Simplify and Scale Data Engineering Pipelines
+    with Delta Lake* [[Video](https://www.youtube.com/watch?v=qtCxNSmTejk)]. YouTube.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Databricks. (2020c, September 15). *Making Apache SparkTM Better with Delta
+    Lake* [[Video](https://www.youtube.com/watch?v=LJtShrQqYZY)]. YouTube.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Reis, J., & Housley, M. (2022c). *Fundamentals of Data Engineering: Plan
+    and Build Robust Data Systems* (1st ed.). O’Reilly Media.'
+  prefs: []
+  type: TYPE_NORMAL

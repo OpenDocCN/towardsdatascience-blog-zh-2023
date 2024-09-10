@@ -1,0 +1,337 @@
+- en: Creating 3D Videos from RGB Videos
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/creating-3d-videos-from-rgb-videos-491a09fa1e79?source=collection_archive---------3-----------------------#2023-08-03](https://towardsdatascience.com/creating-3d-videos-from-rgb-videos-491a09fa1e79?source=collection_archive---------3-----------------------#2023-08-03)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Instructions for generating consistent depthmap and point cloud videos from
+    any RGB videos
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)[![Berkan
+    Zorlubas](../Images/6d13c115064dfa1bf3918ef009a30797.png)](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------)
+    [Berkan Zorlubas](https://medium.com/@berkanzorlubas?source=post_page-----491a09fa1e79--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d74427941be&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&user=Berkan+Zorlubas&userId=7d74427941be&source=post_page-7d74427941be----491a09fa1e79---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----491a09fa1e79--------------------------------)
+    ·8 min read·Aug 3, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F491a09fa1e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&user=Berkan+Zorlubas&userId=7d74427941be&source=-----491a09fa1e79---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F491a09fa1e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fcreating-3d-videos-from-rgb-videos-491a09fa1e79&source=-----491a09fa1e79---------------------bookmark_footer-----------)![](../Images/c89b7361a6263a9248708884ab00f1d8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by the author (edited version of the video frame from [stock footage](https://www.videvo.net/video/businessman-and-businesswoman-finishing-meeting-with-handshake/1112997/)
+    provided by Videvo, downloaded from [www.videvo.net](http://www.videvo.net/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve always had discontentment with the fact that we archive our digital memories
+    in 2D formats — photographs and videos that, despite their clarity, lack the depth
+    and immersion of the experiences they capture. It’s a limitation that seems arbitrary
+    in an era where machine learning models can be powerful enough to understand the
+    3Dness of photos and videos.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3D data from images or videos not only lets us experience our memories more
+    vividly and interactively but also offers new possibilities for editing and post-processing.
+    Imagine being able to effortlessly remove objects from a scene, switch out backgrounds,
+    or even shift the perspective to see a moment from a new viewpoint. Depth-aware
+    processing also gives machine learning algorithms a richer context to understand
+    and manipulate visual data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While searching for methods to generate consistent depth of videos, I found
+    a [research paper](https://github.com/google/dynamic-video-depth) that suggested
+    a nice approach. This approach involves training two neural networks together
+    using the entire input video: a convolutional neural network (CNN) to predict
+    depth, and an MLP to predict the motion in the scene, or “scene flow”. This flow
+    prediction network is used in a special way where it’s applied repeatedly over
+    different periods of time. This allows it to figure out both small and large changes
+    in the scene. The small changes help to ensure that the motion from one moment
+    to the next is smooth in 3D, while the larger changes help to make sure that the
+    entire video is consistent when seen from different perspectives. This way, we
+    can create 3D videos that are both locally and globally accurate.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [code repo](https://github.com/google/dynamic-video-depth) of the paper
+    is publicly available, however, the pipeline for processing arbitrary videos is
+    not entirely explained, and at least for me, it was unclear how to process any
+    video with the proposed pipeline. In this blog post, I will try to fill that gap
+    and give a step-by-step tour of how to use the pipeline on your videos.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can check my version of the code on my [GitHub](https://github.com/berkanz/dynamic-video-depth)
+    page, which I will be referring to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Extract frames from the video'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The first thing we do in the pipeline is to extract frames from the chosen
+    video. I’ve added a script for this purpose, which you can find at `scripts/preprocess/custom/extract_frames_from_video.py`.
+    To run the code, simply use the following command in your terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the resize_factor argument, you can downsample or upsample your frames.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have selected [this](https://medium.com/r?url=https%3A%2F%2Fwww.videvo.net%2Fvideo%2Fbusinessman-and-businesswoman-finishing-meeting-with-handshake%2F1112997%2F)
+    video for my tests. Initially, it had a resolution of 1280x720, but to speed up
+    processing in subsequent steps, I downsized it to 640x360 using a resize_factor
+    of 0.5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Segment a foreground object in the video'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next step in our process requires segmenting or isolating one of the main
+    foreground objects in the video, which is crucial for estimating the camera’s
+    position and angle within the video. The reason? Objects closer to the camera
+    significantly influence pose estimation more than those farther away. To illustrate,
+    imagine an object one meter away moving 10 centimeters — this would translate
+    to a sizeable change in the image, perhaps dozens of pixels. But, if the same
+    object were 10 meters away and moved the same distance, the image change would
+    be far less noticeable. Consequently, we’re generating a ‘mask’ video to focus
+    on the relevant areas for pose estimation, simplifying our calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I preferred [Mask-RCNN](https://github.com/matterport/Mask_RCNN) for segmenting
+    the frames. You can use other segmentation models of your preference as well.
+    For my video, I decided to segment the person on the right as he stays in the
+    frame during the entire video and seems close enough to the camera.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To generate the mask video, some manual adjustments specific to your video
+    are necessary. Since my video contains two individuals, I began by segmenting
+    the masks for both persons. Afterward, I extracted the mask for the person on
+    the right through hardcoding. Your approach may vary depending on the foreground
+    object you’ve selected and its position within the video. The script responsible
+    for creating the mask can be found at `./render_mask_video.py`. The section of
+    the script where I specify the mask selection process is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The original video and the mask video are visualized side-by-side in the following
+    animation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5415b89d0edd7d56e8c8dfe2a6510436.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**(Left)** Stock footage provided by Videvo, downloaded from [www.videvo.net](http://www.videvo.net/)
+    | **(Right)** Masked video created by the author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: Estimate camera pose and intrinsic parameters'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After creating the mask frames, we now proceed with the computation of camera
+    pose and intrinsic estimation. For this, we use a tool called [Colmap](https://colmap.github.io/).
+    It is a multi-view stereovision tool that creates meshes from multiple images
+    and also estimates camera movements and intrinsic. It has a GUI as well as a command
+    line interface. You can download the tool from [this link](https://colmap.github.io/install.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once you start the tool, you will press “Reconstruction” on the top bar (see
+    figure below), then “Automatic reconstruction”. In the pop-up window,
+  prefs: []
+  type: TYPE_NORMAL
+- en: enter `./datafiles/custom/triangulation` to “Workspace folder”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: enter `./datafiles/custom/JPEGImages/640p/custom` to “Image folder”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: enter `./datafiles/custom/JPEGImages/640p/custom` to “Image folder”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: enter `./datafiles/custom/Annotations/640p/custom` to “Mask folder”
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: tick “Shared intrinsics” option
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: click “Run”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The computation can take a while depending on how many images you have and the
+    resolution of the images. Once the computation is over, click “Export model as
+    text” under “File” and save the output files in `./datafiles/custom/triangulation`.
+    It will create two text and one mesh (.ply) file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e8c3c0eadcfec9d044a8fea1d67cb91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Instructions for Colmap — Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This step is not over yet, we have to process the outputs of Colmap. I’ve written
+    a script to automate it. Simply, run the following command in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It will create “custom.intrinsics.txt”, “custom.matrices.txt” and “custom.obj”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42b639e07be8b2bbd996a698e0c04fe0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Output files of Colmap — Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we are ready to proceed with the dataset generation for the training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: Prepare the dataset for training'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The training requires a dataset that consists of depth estimations of each
+    frame by [MiDas](https://github.com/isl-org/MiDaS), corresponding cross-frame
+    flow estimations, and depth sequences. The scripts for creating these were provided
+    in the original repo, I only changed the input and output directories in them.
+    By running the command below, all the required files will be created and placed
+    in the appropriate directories:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before training, please check if you have .npz and .pt files in `datafiles/custom_processed/frames_midas/custom`
+    , `datafiles/custom_processed/flow_pairs/custom` and `datafiles/custom_processed/sequences_select_pairs_midas/custom`.
+    After the verification, we can proceed with the training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 5: Training'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The training part is straightforward. To train the neural network with your
+    custom dataset, simply run the following command in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After training the neural network for 10 epochs, I observed that the loss began
+    to saturate, and as a result, I decided not to continue training for additional
+    epochs. Below is the loss curve graph of my training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d9745795ce3b24a84d736bc6567cb44.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Loss vs. epoch curve — Image by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout the training, all checkpoints are stored in the directory `./logdir/nets/`.
+    Furthermore, after every epoch, the training script generates test visualizations
+    in the directory `./logdir/visualize`. These visualizations can be particularly
+    helpful in identifying any potential issues that might have occurred during training,
+    in addition to monitoring the loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 6: Create depthmaps of each frame using the trained model'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Using the latest checkpoint, we now generate the depth map of each frame with
+    `test.py` script. Simply run the following command in the terminal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will generate one .npz file for each frame(a dictionary file consisting
+    of RGB frame, depth, camera pose, flow to next image, and so on), and three depth
+    renders (ground truth, MiDaS, and trained network’s estimation) for each frame.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 7: Create point cloud videos'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the last step, we load the batched .npz files frame-by-frame and create colored
+    point clouds by using the depth and RGB information. I use the [open3d](http://www.open3d.org/docs/0.9.0/index.html)
+    library to create and render point clouds in Python. It is a powerful tool with
+    which you can create virtual cameras in 3D space and take captures of your point
+    clouds with them. You can also edit/manipulate your point clouds; I applied open3d’s
+    built-in outlier removal functions to remove flickery and noisy points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While I won’t delve into the specific details of my open3d usage to keep this
+    blog post succinct, I have included the script, `render_pointcloud_video.py`which
+    should be self-explanatory. If you have any questions or require further clarification,
+    please don’t hesitate to ask.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is what the point cloud and depth map videos look like for the video I
+    processed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9fa90df27e34da041b4929750695d159.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**(Left)** Stock footage provided by Videvo, downloaded from [www.videvo.net](http://www.videvo.net/)
+    | **(Right)** Depthmap video created by the author | **(Bottom)** Colorized point
+    cloud video created by the author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A higher-resolution version of this animation is uploaded to* [*YouTube*](https://youtu.be/0AOiY2Sn-4E)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, depth maps and point clouds are cool, but you might be wondering what
+    you can do with them. Depth-aware effects can be remarkably potent when compared
+    to traditional methods of adding effects. For instance, depth-aware processing
+    enables the creation of various cinematic effects that would otherwise be challenging
+    to achieve. With the estimated depth of a video, you can seamlessly incorporate
+    synthetic camera focus and defocus, resulting in a realistic and consistent bokeh
+    effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, depth-aware techniques offer the possibility of implementing dynamic
+    effects like the “dolly zoom”. By manipulating the position and intrinsics of
+    the virtual camera, this effect can be applied to generate stunning visual sequences.
+    Additionally, depth-aware object insertion ensures that virtual objects are realistically
+    fixed within videos, maintaining consistent positions throughout the scenes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The combination of depth maps and point clouds unleashes a world of possibilities
+    for captivating storytelling and imaginative visual effects, propelling the creative
+    potential of filmmakers and artists to new heights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Right after clicking the “publish” button of this article, I will roll up my
+    sleeves and work on making such effects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have a great day ahead!
+  prefs: []
+  type: TYPE_NORMAL

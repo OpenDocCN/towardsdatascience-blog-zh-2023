@@ -1,0 +1,596 @@
+- en: How I Turned My Company’s Docs into a Searchable Database with OpenAI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736?source=collection_archive---------0-----------------------#2023-04-25](https://towardsdatascience.com/how-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736?source=collection_archive---------0-----------------------#2023-04-25)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: And how you can do the same with your docs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)[![Jacob
+    Marks, Ph.D.](../Images/94d9832b8706d1044e3195386613bfab.png)](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------)
+    [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----4f2d34bd8736--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----4f2d34bd8736---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f2d34bd8736--------------------------------)
+    ·15 min read·Apr 25, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4f2d34bd8736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----4f2d34bd8736---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4f2d34bd8736&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-my-companys-docs-into-a-searchable-database-with-openai-4f2d34bd8736&source=-----4f2d34bd8736---------------------bookmark_footer-----------)![](../Images/a7959bea4e365ac7dd00c74aaa9d1aff.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image courtesy of Unsplash.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the past six months, I’ve been working at series A startup Voxel51, a and
+    creator of the [open source computer vision toolkit FiftyOne](https://github.com/voxel51/fiftyone).
+    As a machine learning engineer and developer evangelist, my job is to listen to
+    our open source community and bring them what they need — new features, integrations,
+    tutorials, workshops, you name it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A few weeks ago, we added native support for vector search engines and text
+    similarity queries to FiftyOne, so that users can find the most relevant images
+    in their (often massive — containing millions or tens of millions of samples)
+    datasets, via simple natural language queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This put us in a curious position: it was now possible for people using open
+    source FiftyOne to readily search datasets with natural language queries, but
+    using our documentation still required traditional keyword search.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have a lot of documentation, which has its pros and cons. As a user myself,
+    I sometimes find that given the sheer quantity of documentation, finding precisely
+    what I’m looking for requires more time than I’d like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I was not going to let this fly… so I built this in my spare time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a88b4645cde0b9861a7a24dcf2bf89e3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Semantically search your company’s docs from the command line. Image courtesy
+    of author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, here’s how I turned our docs into a semantically searchable vector database:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Converted all of the docs to a unified format](#eb87)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Split docs into blocks and added some automated cleanup](#8ed1)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Computed embeddings for each block](#1a17)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Generated a vector index from these embedding](#34d3)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Defined the index query](#87c5)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Wrapped it all in a user-friendly command line interface and Python API](#9d79)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You can find all the code for this post in the [voxel51/fiftyone-docs-search](https://github.com/voxel51/fiftyone-docs-search)
+    repo, and it’s easy to install the package locally in edit mode with `pip install
+    -e .`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Better yet, if you want to implement semantic search for your own website using
+    this method, you can follow along! Here are the ingredients you’ll need:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Install the* [*openai*](https://github.com/openai/openai-python) *Python package
+    and create an account:* you will use this account to send your docs and queries
+    to an inference endpoint, which will return an embedding vector for each piece
+    of text.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Install the* [*qdrant-client*](https://github.com/qdrant/qdrant_client) *Python
+    package and launch a* [*Qdrant server via Docker*](https://qdrant.tech/): you
+    will use [Qdrant](https://qdrant.tech/) to create a locally hosted vector index
+    for the docs, against which queries will be run. The Qdrant service will run inside
+    a Docker container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Converting the docs to a unified format
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: My company’s docs are all hosted as HTML documents at [https://docs.voxel51.com](https://docs.voxel51.com).
+    A natural starting point would have been to download these docs with Python’s
+    [requests](https://pypi.org/project/requests/) library and parse the document
+    with [Beautiful Soup](https://beautiful-soup-4.readthedocs.io/en/latest/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As a developer (and author of many of our docs), however, I thought I could
+    do better. I already had a working clone of the GitHub repository on my local
+    computer that contained all of the raw files used to generate the HTML docs. Some
+    of our docs are written in [Sphinx ReStructured Text (RST)](https://www.sphinx-doc.org/en/master/),
+    whereas others, like tutorials, are converted to HTML from Jupyter notebooks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I figured (mistakenly) that the closer I could get to the raw text of the RST
+    and Jupyter files, the simpler things would be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RST
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In RST documents, sections are delineated by lines consisting only of strings
+    of `=`, `-` or `_`. For example, here’s a document from the FiftyOne User Guide
+    which contains all three delineators:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3188d8c4ac25ff6414eabdf8675fbdd9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RST document from open source FiftyOne Docs. Image courtesy of author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I could then remove all of the RST keywords, such as `toctree`, `code-block`,
+    and `button_link` (there were many more), as well as the `:`, `::`, and `..` that
+    accompanied a keyword, the start of a new block, or block descriptors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Links were easy to take care of too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Things started to get dicey when I wanted to extract the section anchors from
+    RST files. Many of our sections had anchors specified explicitly, whereas others
+    were left to be inferred during the conversion to HTML.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the brain.rst file in our User Guide docs (a portion of which is reproduced
+    above), the *Visualizing embeddings* section has an anchor `#brain-embeddings-visualization`
+    specified by `.. _brain-embeddings-visualization:`. The *Embedding methods* subsection
+    which immediately follows, however, is given an auto-generated anchor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another difficulty that soon reared its head was how to deal with tables in
+    RST. [List tables](https://sublime-and-sphinx-guide.readthedocs.io/en/latest/tables.html#list-table-directive)
+    were fairly straightforward. For instance, here’s a list table from our View Stages
+    cheat sheet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Grid tables](https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#grid-tables),
+    on the other hand, can get messy fast. They give docs writers great flexibility,
+    but this same flexibility makes parsing them a pain. Take this table from our
+    Filtering cheat sheet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Within a table, rows can take up arbitrary numbers of lines, and columns can
+    vary in width. Code blocks within grid table cells are also difficult to parse,
+    as they occupy space on multiple lines, so their content is interspersed with
+    content from other columns. This means that code blocks in these tables need to
+    be effectively reconstructed during the parsing process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Not the end of the world. But also not ideal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jupyter
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Jupyter notebooks turned out to be relatively simple to parse. I was able to
+    read the contents of a Jupyter notebook into a list of strings, with one string
+    per cell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Furthermore, the sections were delineated by Markdown cells starting with `#`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nevertheless, given the challenges posed by RST, I decided to turn to HTML and
+    treat all of our docs on equal footing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: HTML
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I built the HTML docs from my local install with `bash generate_docs.bash`,
+    and began parsing them with Beautiful Soup. However, I soon realized that when
+    RST code blocks and tables with inline code were being converted to HTML, although
+    they were rendering correctly, the HTML itself was incredibly unwieldy. Take our
+    filtering cheat sheet for example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When rendered in a browser, the code block preceding the *Dates and times*
+    section of our filtering cheat sheet looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79ae2b0dd021cda1c5fd07f853789c0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot from cheat sheet in open source FiftyOne Docs. Image courtesy of
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The raw HTML, however, looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be7d519067dbbfc0ee85a947f7011790.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RST cheat sheet converted to HTML. Image courtesy of author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is not impossible to parse, but it is also far from ideal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Markdown
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Fortunately, I was able to overcome these issues by converting all of the HTML
+    files to Markdown with [markdownify](https://pypi.org/project/markdownify/). Markdown
+    had a few key advantages that made it the best fit for this job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Cleaner than HTML**: code formatting was simplified from the spaghetti strings
+    of `span` elements to inline code snippets marked with single `` ` `` before and
+    after, and blocks of code were marked by triple quotes [PRE5] [PRE6]'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: document = document.replace("\_", "_").replace("\*", "*")
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: text_and_code = page_md.split('[PRE8]
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then I identified the start of a new section with a `#` to start a line in
+    a text block. I extracted the section title and anchor from this line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: And assigned each block of text or code to the appropriate section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initially, I also tried splitting the text blocks into paragraphs, hypothesizing
+    that because a section may contain information about many different topics, the
+    embedding for that entire section may not be similar to an embedding for a text
+    prompt concerned with only one of those topics. This approach, however, resulted
+    in top matches for most search queries disproportionately being single line paragraphs,
+    which turned out to not be terribly informative as search results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Check out the accompanying* [*GitHub repo*](https://github.com/voxel51/fiftyone-docs-search)
+    *for the implementation of these methods that you can try out on your own docs!*'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Embedding text and code blocks with OpenAI
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With documents converted, processed, and split into strings, I generated an
+    embedding vector for each of these blocks. Because large language models are flexible
+    and generally capable by nature, I decided to treat both text blocks and code
+    blocks on the same footing as pieces of text, and to embed them with the same
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used OpenAI’s [text-embedding-ada-002 model](https://platform.openai.com/docs/guides/embeddings/embedding-models)
+    because it is easy to work with, achieves the highest performance out of all of
+    OpenAI’s embedding models (on the [BEIR benchmark](https://arxiv.org/pdf/2104.08663.pdf)),
+    and is also the cheapest. It’s so cheap in fact ($0.0004/1K tokens) that generating
+    all of the embeddings for the FiftyOne docs only cost a few cents! As OpenAI themselves
+    put it, “We recommend using text-embedding-ada-002 for nearly all use cases. It’s
+    better, cheaper, and simpler to use.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: With this embedding model, you can generate a 1536-dimensional vector representing
+    any input prompt, up to 8,191 tokens (approximately 30,000 characters).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get started, you need to create an OpenAI account, generate an API key at
+    [https://platform.openai.com/account/api-keys](https://platform.openai.com/account/api-keys),
+    export this API key as an environment variable with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You will also need to install the [openai Python library](https://github.com/openai/openai-python):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I wrote a wrapper around OpenAI’s API that takes in a text prompt and returns
+    an embedding vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: To generate embeddings for all of our docs, we just apply this function to each
+    of the subsections — text and code blocks — across all of our docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a Qdrant vector index
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'With embeddings in hand, I created a vector index to search against. I chose
+    to use Qdrant for the same reasons we chose to add native Qdrant support to FiftyOne:
+    it’s open source, free, and easy to use.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get started with Qdrant, you can pull a pre-built Docker image and run the
+    container:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Additionally, you will need to install the Qdrant Python client:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I created the Qdrant collection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I then created a vector for each subsection (text or code block):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: For each vector, you can provide additional context as part of the [payload](https://qdrant.tech/documentation/payload/).
+    In this case, I included the URL (and anchor) where the result can be found, the
+    *type* of document, so the user can specify if they want to search through all
+    of the docs, or just certain types of docs, and the contents of the string which
+    generated the embedding vector. I also added the block type (text or code), so
+    if the user is looking for a code snippet, they can tailor their search to that
+    purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then I added these vectors to the index, one page at a time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Querying the index
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Once the index has been created, running a search on the indexed documents can
+    be accomplished by embedding the query text with the same embedding model, and
+    then searching the index for similar embedding vectors. With a Qdrant vector index,
+    a basic query can be performed with the Qdrant client’s `search()` command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make my company’s docs searchable, I wanted to allow users to filter by section
+    of the docs, as well as by the type of block that was encoded. In the parlance
+    of vector search, filtering results while still ensuring that a predetermined
+    number of results (specified by the `top_k` argument) will be returned is referred
+    to as *pre-filtering*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To achieve this, I wrote a programmatic filter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: The internal `_parse_doc_types()` and `_parse_block_types()` functions handle
+    cases where the argument is string or list-valued, or is None.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then I wrote a function `query_index()` that takes the user’s text query, pre-filters,
+    searches the index, and extracts relevant information from the payload. The function
+    returns a list of tuples of the form `(url, contents, score)`, where the score
+    indicates how good of a match the result is to the query text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Writing the search wrapper
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The final step was providing a clean interface for the user to semantically
+    search against these “vectorized” docs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wrote a function `print_results()`, which takes the query, results from `query_index()`,
+    and a `score` argument (whether or not to print the similarity score), and prints
+    the results in an easy to interpret way. I used the [rich](https://rich.readthedocs.io/en/stable/introduction.html)
+    Python package to format hyperlinks in the terminal so that when working in a
+    terminal that supports hyperlinks, clicking on the hyperlink will open the page
+    in your default browser. I also used [webbrowser](https://docs.python.org/3/library/webbrowser.html)
+    to automatically open the link for the top result, if desired.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e615542c724d5d85be45aba81a7b73a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Display search results with rich hyperlinks. Image courtesy of author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For Python-based searches, I created a class `FiftyOneDocsSearch` to encapsulate
+    the document search behavior, so that once a `FiftyOneDocsSearch` object has been
+    instantiated (potentially with default settings for search arguments):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can search within Python by calling this object. To query the docs for
+    “How to load a dataset”, for instance, you just need to run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/3c701dc79f3dbded374c760c96741967.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Semantically search your company’s docs within a Python process. Image courtesy
+    of author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I also used [argparse](https://docs.python.org/3/library/argparse.html) to
+    make this docs search functionality available via the command line. When the package
+    is installed, the docs are CLI searchable with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Just for fun, because `fiftyone-docs-search query` is a bit cumbersome, I added
+    an alias to my `.zsrch` file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With this alias, the docs are searchable from the command line with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Coming into this, I already fashioned myself a power user of my company’s open
+    source Python library, FiftyOne. I had written many of the docs, and I had used
+    (and continue to use) the library on a daily basis. But the process of turning
+    our docs into a searchable database forced me to understand our docs on an even
+    deeper level. It’s always great when you’re building something for others, and
+    it ends up helping you as well!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s what I learned:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sphinx RST is cumbersome**: it makes beautiful docs, but it is a bit of a
+    pain to parse'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Don’t go crazy with preprocessing:** OpenAI’s text-embeddings-ada-002 model
+    is great at understanding the meaning behind a text string, even if it has slightly
+    atypical formatting. Gone are the days of stemming and painstakingly removing
+    stop words and miscellaneous characters.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Small semantically meaningful snippets are best**: break your documents up
+    into the smallest possible meaningful segments, and retain context. For longer
+    pieces of text, it is more likely that overlap between a search query and a part
+    of the text in your index will be obscured by less relevant text in the segment.
+    If you break the document up too small, you run the risk that many entries in
+    the index will contain very little semantic information.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Vector search is powerful**: with minimal lift, and without any fine-tuning,
+    I was able to dramatically enhance the searchability of our docs. From initial
+    estimates, it appears that this improved docs search is more than twice as likely
+    to return relevant results than the old keyword search approach. Furthermore,
+    the semantic nature of this vector search approach means that users can now search
+    with arbitrarily phrased, arbitrarily complex queries, and are guaranteed to get
+    the specified number of results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you find yourself (or others) constantly digging or sifting through treasure
+    troves of documentation for specific kernels of information, I encourage you to
+    adapt this process for your own use case. You can modify this to work for your
+    personal documents, or your company’s archives. And if you do, I guarantee you’ll
+    walk away from the experience seeing your documents in a new light!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here are a few ways you could extend this for your own docs!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Hybrid search](https://www.pinecone.io/learn/hybrid-search-intro/): combine
+    vector search with traditional keyword search'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Go global: Use [Qdrant Cloud](https://cloud.qdrant.io/) to store and query
+    the collection in the cloud'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Incorporate web data: use [requests](https://pypi.org/project/requests/) to
+    download HTML directly from the web'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Automate updates: use [Github Actions](https://docs.github.com/en/actions)
+    to trigger recomputation of embeddings whenever the underlying docs change'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Embed: wrap this in a Javascript element and drop it in as a replacement for
+    a traditional search bar'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All code used to build the package is open source, and can be found in the [voxel51/fiftyone-docs-search](https://github.com/voxel51/fiftyone-docs-search)
+    repo.
+  prefs: []
+  type: TYPE_NORMAL

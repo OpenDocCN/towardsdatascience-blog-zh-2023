@@ -1,0 +1,246 @@
+- en: Distributed Llama 2 on CPUs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/distributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d?source=collection_archive---------2-----------------------#2023-08-02](https://towardsdatascience.com/distributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d?source=collection_archive---------2-----------------------#2023-08-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*A toy example of bulk inference on commodity hardware using Python, via llama.cpp
+    and PySpark.*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)[![Jonathan
+    Apple](../Images/82095d4a9ffde8260eb679f76a2f162c.png)](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------)
+    [Jonathan Apple](https://jonathanapple.medium.com/?source=post_page-----65736e9f466d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7d68a0f98df3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&user=Jonathan+Apple&userId=7d68a0f98df3&source=post_page-7d68a0f98df3----65736e9f466d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----65736e9f466d--------------------------------)
+    ·6 min read·Aug 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F65736e9f466d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&user=Jonathan+Apple&userId=7d68a0f98df3&source=-----65736e9f466d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F65736e9f466d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdistributed-llama-2-on-cpus-via-llama-cpp-pyspark-65736e9f466d&source=-----65736e9f466d---------------------bookmark_footer-----------)![](../Images/875651a67a41a94af74d7dfb027b9fbc.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Image by author via DALL-E*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This exercise is about using [Llama 2](https://github.com/facebookresearch/llama),
+    an LLM (Large Language Model) from [Meta AI](https://ai.meta.com/llama/), to summarize
+    many documents at once. The scalable summarization of unstructured, semi-structured,
+    and structured text can exist as a [feature by itself,](https://medium.com/analytics-vidhya/text-summarization-using-nlp-3e85ad0c6349)
+    and also be part of data pipelines that feed into downstream machine learning
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Specifically, we want to prove the simultaneous feasibility of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running Llama 2 on **CPUs** (i.e., removing GPU capacity constraints)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Smooth integration of an LLM with [**Apache Spark**](https://spark.apache.org/)
+    (a key part of Big Data ecosystems)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No usage of third-party endpoints** (i.e., models must run locally due to
+    air-gapped infrastructure or confidentiality requirements)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**How?**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A lot of the hard work has already been done for us!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [llama.cpp project](https://github.com/ggerganov/llama.cpp) enables running
+    *simplified* LLMs on CPUs by reducing the resolution ([“quantization”](https://ggml.ai/))
+    of their numeric weights. These ready-to-use model files are [easily available](https://huggingface.co/TheBloke).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) bindings
+    provide simple access to using **llama.cpp** from within Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, Spark’s `applyInPandas()` ([docs](https://spark.apache.org/docs/3.1.2/api/python/reference/api/pyspark.sql.GroupedData.applyInPandas.html))
+    enables splitting giant data sources into [Pandas](https://pandas.pydata.org/)-sized
+    chunks and processing them independently. Note that this approach *can* be an
+    anti-pattern if vectorized Spark functions can accomplish the same result, but
+    in our case, we’re basically using Spark as a simple orchestrator to [scale out](/the-beginners-guide-to-distributed-computing-6d6833796318)
+    our **llama.cpp** usage. There’s likely more efficient ways to use **llama.cpp**
+    in batch processing, but this one is attractive given the simplicity and automatic
+    benefits of Spark’s fault tolerance and scalability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plan
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/9b9e891e959bf66a4db3f5e1fcbaeff5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creative Commons License ([CC BY-SA 3.0](https://commons.wikimedia.org/wiki/Category:War_and_Peace#/media/File:War_and_Peace_book.JPG))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a fun test, we’ll be using Llama 2 to summarize Leo Tolstoy’s [War and Peace](https://gutenberg.org/cache/epub/2600/pg2600.txt),
+    a 1200+ page novel with over 360 chapters. We’ll treat each chapter as a document.
+    Note that Llama 2 already “knows” about the novel; asking it about a key character
+    generates this output (using `llama-2–7b-chat.ggmlv3.q8_0.bin`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Steps:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Install the 7B quantized chat model and **llama-cpp-python**.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Download the novel, split by chapter, create a Spark `DataFrame`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Partition by chapter and generate summaries.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Installation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Configuring a Spark cluster is outside our scope; I’ll assume you have Spark
+    running locally, through a managed service (like [Synapse](https://learn.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-overview)
+    or [Elastic Map Reduce](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-spark.html)),
+    or a custom deployment like [Kubernetes](https://spark.apache.org/docs/3.1.1/running-on-kubernetes.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two artifacts that need installed on all *worker nodes*, whether
+    those nodes are physical machines, VMs, or pods in a serverless pool:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LLama 2 model in GGML format (located in `/models`)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **llama-cpp-python** module (installed via `pip`)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We’re using the 7B chat “Q8” version of Llama 2, found [here](https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGML/tree/main).
+    The download links might change, but a single-node, “bare metal” setup is similar
+    to below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ensure you can use the model via `python3` and [this example](https://github.com/abetlen/llama-cpp-python#high-level-api).
+    To recap, *every* Spark context must be able to read the model from `/models`
+    and access the **llama-cpp-python** module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Processing the Novel Text**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The Bash commands below download the novel and print word counts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we read the text file in Python, removing the Project Gutenberg header
+    and footer. We’ll split on the regex `CHAPTER .+` to create a list of chapter
+    strings and create a Spark `DataFrame` from them (this code assumes a `SparkSession`
+    named `spark`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code should produce the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Great! Now we have a `DataFrame` with 365 rows, each containing the full chapter
+    text and number. The final step is creating a new `DataFrame` with summaries of
+    each chapter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark Processing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Below is the Python code for generating a **single chapter summary** (see the
+    call to `limit(1)` to return a single row). Explanation below the snippet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `llama2_summarize()` function is the code that is applied *per-group* by
+    Spark. Since we’re grouping by the `chapter` column, the function is called on
+    each chapter row; the `df` argument is simply a **Pandas** `DataFrame` with a
+    single row. Note that we’re reading the model for *every call* of `llama2_summarize()`;
+    this is a shortcut we’re taking for simplicity, but not very efficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, using Spark we do the `groupby()` and call `applyInPandas()`, setting
+    the schema to include the chapter summary and number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The output (reformatted for readability) looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: (Note the use of *Napoleon* despite the fact it doesn’t occur in the chapter!
+    Again, this is a fun exercise rather than a realistic example using truly unseen
+    documents.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The runtime for this single chapter test is about **2 minutes** on a 64-core
+    VM. There are *many* choices we glossed over that affect runtime, such as model
+    size/quantization and model parameters. The key result is that by scaling out
+    our Spark cluster appropriately, we can summarize *all* chapters in a handful
+    of minutes. Processing hundreds of thousands (or even millions!) of documents
+    daily is thus possible using large Spark clusters comprised of cheap virtual machines.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We haven’t even mentioned adjusting the standard LLM parameters like `temperature`
+    and `top_p` which control the “creativity” and randomness of results, or *prompt
+    engineering*, which is practically a discipline of its own. We also chose the
+    Llama 2 7B model without justification; there might be smaller and more performant
+    models or model families more suited to our particular use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead, we’ve shown how to easily distribute (quantized) LLM workloads using
+    Spark with fairly minimal effort. Next steps might include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: More efficient load/caching of models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Parameter optimization for different use cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Custom prompts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

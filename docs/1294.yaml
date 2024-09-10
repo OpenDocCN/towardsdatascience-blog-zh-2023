@@ -1,0 +1,454 @@
+- en: 'Vectorisation: What is it and how does it work?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/vectorisation-what-is-it-and-how-does-it-work-1dd9cef48407?source=collection_archive---------6-----------------------#2023-04-13](https://towardsdatascience.com/vectorisation-what-is-it-and-how-does-it-work-1dd9cef48407?source=collection_archive---------6-----------------------#2023-04-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/6640ccc3787bc8c5c4bce0fd8d6a2bd4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Mariana Beltrán](https://unsplash.com/ja/@ostranenie?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/s/photos/greek-columns?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: O(n) is faster than O(1), cache lines, Pandas 2.0 and the consistent rise of
+    the column
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)[![Mark
+    Jamison](../Images/11b16af9d84585cff964b6e2b95089cd.png)](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1dd9cef48407--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1dd9cef48407--------------------------------)
+    [Mark Jamison](https://markjamison03.medium.com/?source=post_page-----1dd9cef48407--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F19b7fdef1d09&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorisation-what-is-it-and-how-does-it-work-1dd9cef48407&user=Mark+Jamison&userId=19b7fdef1d09&source=post_page-19b7fdef1d09----1dd9cef48407---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1dd9cef48407--------------------------------)
+    ·10 min read·Apr 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1dd9cef48407&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorisation-what-is-it-and-how-does-it-work-1dd9cef48407&user=Mark+Jamison&userId=19b7fdef1d09&source=-----1dd9cef48407---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1dd9cef48407&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorisation-what-is-it-and-how-does-it-work-1dd9cef48407&source=-----1dd9cef48407---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the 2nd iteration of this article. After finishing the 1st iteration,
+    I left it to stew and edit as the headlines didn’t look good — a 13 min ramble
+    about vectorisation with some loose links to database theory and historical trends.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While waiting to re-draft, I came across several [performance comparisons](/measuring-the-speed-of-new-pandas-2-0-against-polars-and-datatable-still-not-good-enough-e44dc78f6585)
+    of the new much hyped pandas 2.0 release — especially comparing it to Polars.
+    At this point I must come clean — Pandas is Ground Zero for me and I’m yet to
+    even `pip install` Polars for testing. I''m always hesitant to swap out a well
+    known and supported package for anything new or in vogue until either:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the existing tool is starting to fail (I’m not using large enough data post
+    SQL-aggregation)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: there is some other clear compelling evidence for stomaching the adoption
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: However the relatively below par performance of the new Pandas 2.0 release did
+    have me wondering — if Polars is so fast for in-memory operation, how is it achieving
+    this?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Polars author wrote my original article (but better)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Vectorisation. Polars is fast because the original author designed the whole
+    thing to be about vectorisation. In [this ‘hello world’ post](https://www.pola.rs/posts/i-wrote-one-of-the-fastest-dataframe-libraries/)
+    from Polars author Ritchie Vink he explains using a combination of clear concise
+    sentences and simple visuals how Polars achieves what it achieves — because it
+    is not just built with ideas of vectorisation in mind, but built *completely*
+    around those principles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The aim for the rest of this article isn’t necessarily to rehash what has been
+    said there, but instead to work back through some ideas and historical context
+    to shed light on how we have come to column (or array) based computing being more
+    ‘mainstream’ and how that has started to perforate the modern day data science
+    tool kit in python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “I don’t care what your fancy data structure is but I know that an array will
+    beat it”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The above is from [this talk](https://www.youtube.com/watch?v=WDIkqP4JbkE) by
+    Scott Meyers where he attributes the above quote to the CTO of an algorithmic
+    trading company championing an array. It’s also eluded to in the Polars article
+    but the idea is the same — when it comes to the actual practicalities, sometimes
+    you need to chuck your basic [time complexity analysis](https://en.wikipedia.org/wiki/Time_complexity)
+    out the window because an O(n) algorithm can trump an O(1) algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I come from a non computer science background, but the wealth of material that
+    universities (particularly American) make available online means I’ve been able
+    to take some of the basic ‘Algorithms’ and ‘Data Structures’ courses. From what
+    I can see, the joint aim could be (probably badly) summarised as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: use logic to come up with a process that involves the least amount of steps
+    (algorithms)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: organise your data to enable the selection of an algorithm with minimum steps
+    (data structures)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The importance of understanding the core concepts of both is underscored by
+    the legions of companies out there barraging their hopefuls with reams of [Leetcode](https://leetcode.com/)
+    questions on Dynamic Programming or Binary Search Trees or any other generally
+    day-to-day irrelevant topic. One such example is usually this — when it comes
+    to looking stuff up use a hash map rather than an array. This is because:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a hash map is O(1) to lookup
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: an (unsorted) array is O(n) as you potentially need to traverse the whole thing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Why doesn’t the above always hold? Because the statement *“an O(1) algorithm
+    is faster than an O(n) algorithm”* is incomplete. The true statement should be
+    more like *“an O(1) algorithm is faster than an O(n) algorithm,* ***conditional
+    on the same starting point****”*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Driving a Ferrari in New York
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Modern day CPUs have been described as similar to ‘driving a Ferrari in New
+    York’. Needless to say the analogy has clearly come from a computer scientist
+    who believes the only reason to drive a car is to get from A to B, but the point
+    remains. Why do you need such a fast car if all you’ll be doing is continuously
+    stopping and starting (although stopping and starting *really really* fast)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Substitute ‘car’ for ‘processor’ and we are looking at modern day CPUs. This
+    has come about due **to the relative speed improvements that have been and are
+    continuing to be made (although at a much slower rate these days) in processor
+    speeds vs memory speeds.** This is illustrated beautifully in this [C++ orientated
+    talk](https://www.youtube.com/watch?v=L7zSU9HI-6I) by Herb Sutter (start at 12:00
+    for around 20mins if you want to just strip the overview) and the below chart
+    shows it well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db368b943bd050b6f26d24c03505fa1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Opportunities and choice in a new vector era — Scientific Figure on ResearchGate.
+    Available from: [https://www.researchgate.net/figure/CPU-memory-performance-gap-Modelled-after-Computer-Architecture-Hennessy-John-L_fig1_273029990](https://www.researchgate.net/figure/CPU-memory-performance-gap-Modelled-after-Computer-Architecture-Hennessy-John-L_fig1_273029990)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In simple terms we have a “[Moore’s Law](https://en.wikipedia.org/wiki/Moore's_law)
+    induced” widening gap between how fast our processor can operate on stuff and
+    how fast we can get that stuff to our processor. **There’s no need to have such
+    a fast processor if it’s sitting idle most of the time waiting for new data to
+    operate on**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we circumvent this? Caching, caching and more caching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Below is the standard image that many people have of a computer’s architecture
+    ([skip to 22:30 of Herb Sutter’s talk for a comedic example of this](https://www.youtube.com/watch?v=L7zSU9HI-6I)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/885295d81bde4bb243ac8c198ef4fe31.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In other words — we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: our CPU that does stuff
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: our memory (or RAM) that is ‘quick’ to access
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: our disk which is slow to access
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Now as the above graph showed, memory might be fast *relative* to retrieving
+    data form disk — but retrieval certainly isn’t fast relative to the data we can
+    process with our current quantity and speed of processors. To solve this, hardware
+    developers decided to put memory *onto* the CPU (or ‘die’). **These are known
+    as caches and there are several per each processing core.** Each core consists
+    of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'an L1 cache: this is the fastest and is split into an instruction cache (storing
+    the instructions that your code boils down to) and a data cache (stores variables
+    that you are operating on)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'an L2 cache: larger than L1 but slower'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and then all cores on a machine share an L3 cache — again larger than both L1
+    and L2 but slower again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The below image, based on a blown up photo from an Intel white paper ([The
+    Basics of Intel Architecture (v.1, Jan. 2014)](https://www.intel.co.uk/content/www/uk/en/intelligent-systems/embedded-systems-training/ia-introduction-basics-paper.html?wapkw=white+paper+introduction+to+intel+architecture)),
+    shows how a 4 core CPU is laid out for Intel’s i7 processor — L1 and L2 caches
+    are *within* each ‘Core’ section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f2b8d6263ae9dc32c2145d118bfb975.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image by author — original image in this document: [The Basics of Intel Architecture
+    (v.1, Jan. 2014)](https://www.intel.co.uk/content/www/uk/en/intelligent-systems/embedded-systems-training/ia-introduction-basics-paper.html?wapkw=white+paper+introduction+to+intel+architecture)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But the same applies for more up to date PCs. I’m writing this on a Macbook
+    Air M2 and a [quick lookup on Wikipedia](https://en.wikipedia.org/wiki/Apple_M2)
+    indicates that the M2 chips contain L1, L2 and a shared ‘last level cache’ (L3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how much faster is retrieving data from cache than memory?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For this — a picture is worth a thousand words — or more specifically, an animation.
+    The following link from gaming software optimisation company Overbyte shows just
+    how drastic the relative performance is: [http://www.overbyte.com.au/misc/Lesson3/CacheFun.html](http://www.overbyte.com.au/misc/Lesson3/CacheFun.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Speeds vary between machines but — measuring time in the standard [‘clock cycle’](https://en.wikipedia.org/wiki/Clock_rate)
+    unit we have roughly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'L1: ~1–3x clock cycles'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'L2: ~10x clock cycles'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'L3: ~40x clock cycles'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Main memory: ~100–300x clock cycles'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In other words: if our data is in L1 memory our computer will process it between
+    30–300x faster than if we fetch it from main memory. Main memory being RAM, not
+    disk. When your CPU can’t find the data in the L1 cache, it searches L2, then
+    L3 and then it goes to main memory **with each of these failed searches labelled
+    a ‘cache miss’.** The fewer cache misses you have, the faster your code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how do I get my data into the caches? Cache Lines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Your CPU does this for you. Based on your code which is translated into the
+    instruction set (lowest level of commands — even assembly is assembled into [instructions](https://en.wikipedia.org/wiki/Instruction_set_architecture)),
+    your CPU loads data into the caches. It then operates on it and stores the result
+    in the cache.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In particular, if you define the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: your CPU doesn’t just load into the caches the integers `x`and `y` — **it actually
+    loads ‘cache lines’.** [Cache lines](https://en.algorithmica.org/hpc/cpu-cache/cache-lines/)
+    are the lowest level of data unit that a CPU works with. A cache line will include
+    the data you need, but also the data *around* that in memory that make up the
+    rest of the cache line — generally a 64 byte contiguous block of memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Not only that, but CPUs are built to do clever things to optimise this data
+    fetching from memory. Why? Because it’s slow — so the earlier we can load this
+    data into the cache to be operated on the sooner the bottleneck is fixed between:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the speed the processor can operate on the data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the time it takes to make that data available to the processor — in the caches
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To do this CPUs implement things like [pre-fetching](https://en.wikipedia.org/wiki/Cache_prefetching)
+    — which means identifying patterns in your program’s memory access and predicting
+    which memory you will use next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recap
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Probably the best way to recap is to answer (at last) our original question
+    — what is vectorisation?
+  prefs: []
+  type: TYPE_NORMAL
+- en: vectorisation is getting the most out of your super fast processor
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: it does this by organising your data into predictable contiguous chunks (arrays)
+    that can be loaded together (cache lines) and pre-fetched
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: this prevents your CPU twiddling its thumbs while you wait to load data from
+    L2/L3 cache [or worse](https://www.youtube.com/watch?v=HQ47glxcxr0) — main memory
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But why now? If this seems so obvious, why wasn’t this the foundation always?
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s changed? Relative historical advancement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'It’s not that the previous incarnation of computer scientists were stupid (quite
+    the opposite) and missed this glaringly obvious idea. But instead that we are
+    now developing the tool kit that best matches both:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: our current hardware landscape
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: our current use cases
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Due to historical advances (the above Moore’s Law chart) we are in a situation
+    where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: data storage is cheap and processors are rapid
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have widespread use cases for data analytics to drive decision making (either
+    automated or not)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a result, due to *relative* advances we now have a situation where there
+    is a bottleneck — getting all that data into our super fast processors. And for
+    clarity, this problem isn’t new. As the above graph shows it’s been a widening
+    problem for years but has been one that we’ve applied the sticking plasters of
+    L1/L2 caches to; because that meant most people didn’t have to care about this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However now the gap is *so* wide and the data sizes are growing that the problem
+    needs solved closer to source. **In other words, if you want your data to be operated
+    on at lightning speed, then don’t shove the work down to the CPU designers but
+    do it yourself and store your data in arrays.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kdb+, Dremel & BigQuery, PyArrow
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In general, when we work with data we work with it in 2 flavours:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: in memory
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: on disk
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For me that just means whether or not it’s generally in a data *base* or in
+    a data *frame*. Polars, and more recently Pandas 2.0, aren’t necessarily doing
+    something completely new, but more redesigning our in-memory representations of
+    data to be closer to how they are generally stored on disk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why? Because we’ve made significant advancements in how to store large swathes
+    of data in ways we can rapidly filter and aggregate on disk — so why not represent
+    our data in memory in such a way we can leverage those advancements? We might
+    as well take the ideas that have driven technologies like [Kdb+](https://code.kx.com/q/)
+    and implement them in the way we store our in memory data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moving toward a consistent approach
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Polars is based on PyArrow — a python implementation of the [Apache Arrow in-memory
+    columnar data format](https://arrow.apache.org/). So too is the [new Pandas 2.0](https://pandas.pydata.org/docs/user_guide/pyarrow.html#pyarrow-functionality).
+    PyArrow works especially well with loading in data from disk in [Apache Parquet](https://parquet.apache.org/)
+    format. Parquet is basically the column format described in the original [Dremel
+    paper](https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/36632.pdf).
+    [Dremel](http://www.goldsborough.me/distributed-systems/2019/05/18/21-09-00-a_look_at_dremel/)
+    is the analysis engine that underlies Google’s Big Query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The point being: these are all interlinked concepts with the latest iteration
+    of in-memory data science tools not necessarily a step change, but more a move
+    toward an increasingly consistent idea that underlies our data analysis tools.
+    We store data for numerical computation in arrays/columns — **both on disk *and*
+    in memory**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why? Because that’s the best way to do things given the hardware landscape that
+    has developed due to relative speed improvements between processing, cost of data
+    storage and speed of data retrieval from memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Conclusion: Wes McKinney’s CV'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It might seem like an odd topic to conclude with, but the above trajectory toward
+    a language agnostic consistent approach to data manipulation and modelling can
+    be viewed through the lens of the Pandas creator’s career. He started off at [AQR
+    Capital Management](https://www.aqr.com/) wrangling with data in spreadsheets,
+    then created and popularised Pandas (utilising NumPy’s vector-friendly [ndarray](https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html))
+    and now he is [heavily involved with Apache Arrow](https://www.youtube.com/watch?v=Hqi_Bw_0y8Q).
+  prefs: []
+  type: TYPE_NORMAL
+- en: His career has moved hand in hand with how the modern day ‘data science stack’
+    (at least in python) has started to move toward a more column orientated in memory
+    data representation. It seems like the championing of the array is set to continue
+    and I personally don’t see it slowing down. Pardon the pun.
+  prefs: []
+  type: TYPE_NORMAL

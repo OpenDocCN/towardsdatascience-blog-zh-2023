@@ -1,0 +1,372 @@
+- en: 'geotiff.js: How to Get Projected GeoTIFF Data for a Latitude-Longitude Coordinate'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/geotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0?source=collection_archive---------0-----------------------#2023-03-12](https://towardsdatascience.com/geotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0?source=collection_archive---------0-----------------------#2023-03-12)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/5196241c4e66b4b7d69b25384b8338d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reprojecting latitude and longitude coordinates into a GeoTIFF’s coordinate
+    system using Javascript, and querying data with geotiff.js
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)[![Thomas
+    Horner](../Images/9a50d463fb872d97f10f3ed454c08ac0.png)](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------)
+    [Thomas Horner](https://medium.com/@potion_cellar?source=post_page-----87ca437b5aa0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9e4260fa5487&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0&user=Thomas+Horner&userId=9e4260fa5487&source=post_page-9e4260fa5487----87ca437b5aa0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----87ca437b5aa0--------------------------------)
+    ·10 min read·Mar 12, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F87ca437b5aa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0&user=Thomas+Horner&userId=9e4260fa5487&source=-----87ca437b5aa0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F87ca437b5aa0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgeotiff-js-how-to-get-projected-data-for-a-latitude-longitude-coordinate-87ca437b5aa0&source=-----87ca437b5aa0---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Javascript has been used for many years to provide interactive webmaps that
+    are usually composed of vector data and RGB image tiles. These simplistic frontends
+    have historically required more capable languages and server technologies to actually
+    provide and render the geospatial data being visualized, in addition to mechanisms
+    for querying or analyze them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As the Javascript language and ecosystem has matured, what was once almost impossible
+    has become straightforward and even decently performant. Thanks to the work of
+    dedicated open source developers, it is now fairly easy to work directly with
+    geospatial raster data both in the frontend (browser) or backend (*NodeJS*). There
+    is even multithreading support!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at one piece of functionality that used to be quite difficult
+    to do in pure Javascript: querying geospatial raster data for a specific coordinate.
+    These datasets are most typically available in GeoTIFF format, and to work with
+    that we’ll use one of the more popular libraries for working with the file format:
+    *geotiff.js.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is easy to use this library to extract pixel data from a GeoTIFF. But, given
+    a latitude-longitude coordinate, how do you figure out what pixel to read from?
+    What if the GeoTIFF is in a projected coordinate system?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Unlike *GDAL* (a popular opensource geospatial library, which has bindings
+    for NodeJS), *geotiff.js* has no reprojection functionality: it merely parses
+    GeoTIFF files. This means our solution is going to be a little more involved than
+    the equivalent approach in *GDAL,* which, at its simplest, is a single command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We’ll just need to write some code to mirror the extra work that GDAL is doing
+    under the hood: extracting the projection information from the raster, reprojecting
+    the latitude-longitude coordinates into the raster’s coordinate system, and determining
+    which pixel of the raster that point applies to.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why Not Just Reproject the Entire GeoTIFF First?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This entire process can mostly be circumvented by reprojecting our GeoTIFF into
+    a latitude-longitude coordinate system like EPSG:4326\. But for many projected
+    coordinate systems, this introduces serious inaccuracies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, let’s consider querying the NBM weather model to get the forecasted
+    temperature for the summit of Little Bear Peak, Colorado:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a24cfc9e19b012557b65ffcd2903554.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This example was chosen as it is near the edge of a pixel in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now let’s reproject the dataset into EPSG:4326 using nearest-neighbor resampling.
+    The same coordinate now returns a different value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0844fda3e81165158fe1d5a000d53369.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can improve the reprojection slightly by using a different resampling method,
+    such as bilinear:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f51da4954cd2d1b19b3cb25bdf3b944.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: But clearly, we’ve lost some of the original weather model information. We can
+    reduce how much information is lost by making the reprojected raster much, much
+    larger, but even at massive sizes there will still be edge cases where locations
+    near the boundary of a pixel will not pull the original weather model data correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Whether or not this is a big deal depends on the purpose and resolution of your
+    data. If you’re using a high resolution digital elevation model to construct elevation
+    profile graphs for routes that are miles long, then it’s probably not much of
+    a concern if the elevation data is slightly off in places. Conversely, if you’re
+    using weather model data that has coarse resolution, then being in the wrong grid
+    cell could result in a significantly different forecast for an area.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Overall: it’s best to use the original projection for querying raw data
+    from a geospatial raster.***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reprojecting Latitude and Longitude to the Raster Coordinate System
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first step is to get the GeoTIFF’s projection information and use that to
+    reproject our desired coordinate(s) into the raster’s coordinate system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A large part of what makes a GeoTIFF a geospatial raster, instead of a regular
+    TIFF image, is the use of GeoKeys (per [the OGC GeoTIFF spec](https://docs.opengeospatial.org/is/19-008r4/19-008r4.html#_underlying_tiff_requirements)).
+    We can read the GeoKeys for a given raster using geotiff.js:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We will pass these GeoKeys to a projection library which will handle the heavy
+    lifting, as projections tend to be quite complicated!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For instance, weather model data for North America tends to be in a Lambert
+    conformal conic projection. If we start with a latitude-longitude coordinate derived
+    from an ellipsoidal datum (commonly WGS84), then we’re faced with a rather complicated
+    formula:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4619872ac569874dee5d248f682cbb47.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Snyder, John (1987). [“Map Projections:A Working Manual (USGS Professional
+    Paper: 1395)”](https://pubs.er.usgs.gov/publication/pp1395) — Public Domain'
+  prefs: []
+  type: TYPE_NORMAL
+- en: No need to reinvent the wheel, as the open source community has poured years
+    of works into comprehensive reprojection libraries which easily handle all sorts
+    of transformations between complicated map projections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For Javascript, one of the most robust, popular, and full-featured libraries
+    is [*Proj4js*](https://github.com/proj4js/proj4js), which is an offshoot of the
+    common [*proj*](https://proj.org/)library that powers *GDAL*. We’ll just need
+    to generate a *proj* string using our raster’s GeoKeys and pass the final string
+    to the library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, there are a lot of valid GeoKeys:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It may be worth using a helper library like [*geotiff-geokeys-to-proj4*](https://github.com/matafokka/geotiff-geokeys-to-proj4)
+    to handle the proper translation of *geotiff.js*’s geokeys object into a *proj*
+    string. In fact, the above comment block is from that library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With those two libraries installed, we don’t need much to code to set up our
+    reprojection functionality:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We’ve now created a proj projection object called “projection.” It’s very easy
+    to use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above code reprojects the latitude-longitude coordinates into the raster
+    coordinate system (likely meters or feet).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now we need to get the actual raster pixel associated with those new coordinates.
+    First, let’s get some information about the size of the raster and its bounding
+    box:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above code establishes a relationship between the size of the raster in
+    pixels and the actual coordinates/size of the raster in the projected coordinate
+    system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We then take our projected coordinate relative to the origin coordinates of
+    the raster and see where it falls in relation to the width and height of the raster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we have a pixel value for the original latitude-longitude coordinate!
+  prefs: []
+  type: TYPE_NORMAL
+- en: You’ll probably want to ensure this pixel is actually inside the raster. If
+    the original coordinate didn’t intersect the raster, then pixelX or pixelY could
+    be negative or greater than the width/height of the raster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting the GeoTIFF Data for the Pixel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If the pixel is inside the raster, then we have two methods of extracting the
+    data, considering a GeoTIFF with one single band.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first method is to pass a 1x1 pixel window to *geotiff.js*’s “readRasters”
+    function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This method is straightforward and obvious, but there is a small overhead to
+    calling “readRasters” which could add up if you are querying thousands of coordinates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In that case, there may be a slight performance benefit with a different approach
+    — at the cost of RAM, which could be considerable for very large GeoTIFFs. We
+    can read the entire raster into memory as an ArrayBuffer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Then we just need to grab the corresponding index:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: In practice, *geotiff.js* caches tiles and stripes internally, so the performance
+    gain is only slim at best, and generally unnoticeable for modest datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, this approach will only provide a (minor) speed benefit if querying a
+    lot of data that is spread across a majority of the stripes or tiles in the GeoTIFF.
+    Otherwise, the overhead of reading the entire image, including tiles or stripes
+    that are unused, will outweigh the potential performance gain, though this can
+    be mitigated by reading a window that is sized to the minimum and maximum x and
+    y or the coordinate collection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the above techniques, it is possible to implement the following features
+    in an interactive web map, either entirely in the browser or with a basic NodeJS
+    API:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clicking on a web map to get raster data for a specific point
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Labelling point features with underlying raster data (e.g. a weather map with
+    city names showing the forecast temperature)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performing basic geometry operations against raster data (such as an intersection
+    operation using a collection of points or a bounding box), and displaying that
+    information in a table or exporting it as a CSV
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Generating charts or lists of data for a 2d cross-section or line (for instance,
+    an elevation profile)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Performing statistical analysis and data transformations on raw GeoTIFF data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This sort of functionality (let alone actually rendering geospatial raster data
+    onto a map) has traditionally required specialized GIS server software and dedicated
+    infrastructure, with interactive web maps doing little more than sending requests
+    to the server and displaying the response. As the Javascript ecosystem evolves,
+    browsers are becoming more capable of parsing geospatial data and thus reducing
+    reliance on specialized backend technology.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Traditionally, a popular method to make GeoTIFF/geospatial raster data available
+    to web maps was having a GIS server application providing common Open Geospatial
+    Consortium interfaces — such as WMS (Web Map Service) or WMTS (Web Map Tile Service).
+    These interfaces would allow the browser to request image files or tiles of the
+    data, which would be rendered server-side and sent to the browser as RGB image
+    files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The server could also provide a WCS (Web Coverage Service) interface, which
+    would let the browser query the underlying geospatial raster data for specific
+    coordinates. If using proprietary GIS server technology (such as Esri’s ArcGIS
+    products), the endpoints and syntax may be a little different, but the end result
+    is the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the recent maturity of the cloud-optimized GeoTIFF standard plus the
+    ability to access and render the data directly in the browser using *openlayers*
+    + *geotiff.js* has removed the need for a GIS server providing WMS and WMTS endpoints,
+    at least for some scenarios. The querying techniques described in this article
+    show one method of removing the need for a WCS or query endpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead, one can merely host COGs using their existing cloud provider (for instance,
+    an S3 bucket) and make the web browser responsible for parsing and working with
+    the geospatial data. Organizations with NodeJS backends can consolidate GIS functionality
+    into these stacks and reduce the need for specialized software and additional
+    hardware.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, another huge benefit of being able to do more in the browser with geospatial
+    raster data is the reduction or elimination of the need for internet connectivity.
+    For smartphone mapping applications, particularly those intended for use in remote
+    areas, this provides an avenue to provide offline geospatial tools for apps that
+    are already written in Javascript.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Several of these apps are very popular and provide functionality such as slope
+    angle calculation, terrain profile charts, saved weather maps, etc. These apps
+    will let you save maps or areas for offline usage — but once the user is offline,
+    many features stop working as they rely on servers to actually parse and analyze
+    the geospatial data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These features don’t have to break once internet access is lost — the technique
+    mentioned in this article is one of many that can allow for the app to remain
+    functional while offline.
+  prefs: []
+  type: TYPE_NORMAL

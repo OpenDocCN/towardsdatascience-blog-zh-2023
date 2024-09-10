@@ -1,0 +1,440 @@
+- en: OCR-Free Document Data Extraction with Transformers (1/2)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/ocr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3?source=collection_archive---------3-----------------------#2023-04-28](https://towardsdatascience.com/ocr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3?source=collection_archive---------3-----------------------#2023-04-28)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Donut versus Pix2Struct *on custom data*
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)[![Toon
+    Beerten](../Images/f169eaa8cefa00f17176955596972d57.png)](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------)
+    [Toon Beerten](https://toon-beerten.medium.com/?source=post_page-----b5a826bc2ac3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3aef462e13b5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&user=Toon+Beerten&userId=3aef462e13b5&source=post_page-3aef462e13b5----b5a826bc2ac3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5a826bc2ac3--------------------------------)
+    ·10 min read·Apr 28, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5a826bc2ac3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&user=Toon+Beerten&userId=3aef462e13b5&source=-----b5a826bc2ac3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5a826bc2ac3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Focr-free-document-data-extraction-with-transformers-1-2-b5a826bc2ac3&source=-----b5a826bc2ac3---------------------bookmark_footer-----------)![](../Images/45dc7196c8f321f51a04bce1054c5709.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by author ([with](https://huggingface.co/spaces/albarji/mixture-of-diffusers))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Donut](https://arxiv.org/abs/2111.15664) and [Pix2Struct](https://arxiv.org/abs/2210.03347)
+    are image-to-text models that combine the simplicity of pure pixel inputs with
+    visual language understanding tasks. Simply put: an image goes in and extracted
+    indexes come out as JSON.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Recently I [released](https://huggingface.co/spaces/to-be/invoice_document_headers_extraction_with_donut)
+    a Donut model finetuned on invoices. Ever so often I get the question how to train
+    with a custom dataset. Also, a similar model was released: Pix2Struct, it claims
+    to be significantly better. But is that so?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Time to roll up my sleeves. I will show you:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: how to prepare your data for finetuning Donut and Pix2Struct
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the training procedure for both models
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: comparative results on an actual dataset
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Of course I’ll provide the colab notebooks as well, for easy experimentation
+    and/or replication from your end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dataset**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this comparison, I need a public dataset. I wanted to avoid the usual
+    ones for document understanding tasks such as [CORD](https://github.com/clovaai/cord),
+    had a look around and found the [Ghega dataset](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset).
+    It’s quite small (~250 documents) and consists out of 2 types of documents: patent
+    applications and datasheets. With the different types we can simulate a classification
+    problem. Per type we have multiple indexes to extract. These indexes are unique
+    for the type. Exactly what I need. Prof. [Medvet](https://medvet.inginf.units.it/)
+    from the machine learning lab at the university of Trieste graciously approved
+    the usage for these articles.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset seems to be quite old so it needs to be investigated if it still
+    suits our goal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**First exploration**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When you get a new set of data, you first need to get acquainted with how it
+    is structured. Luckily the website’s detailed description aides us. This is the
+    dataset file structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can see two main subfolders for the two doctypes: *datasheets* and *patents*.
+    One level lower we have subfolders that are not important by themselves, but they
+    contain files that start with a certain prefix. We can see a unique identifier,
+    e.g. *document-000–123542* . For each of these identifiers we have 4 kinds of
+    data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The *blocks.csv* file contains info about bounding boxes. As Donut or Pix2Struct
+    don’t use this info, we can ignore these files.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The *out.000.png* file is the postprocessed (deskewed) image file. As I would
+    rather test on unprocessed files, I will ignore these as well.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The raw, unprocessed document image has the *in.000.png* suffix. That’s what
+    we are interested in.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And finally the corresponding *groundtruth.csv* file. This contains indexes
+    for this image that we consider the ground truth.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is a sample groundtruth csv along with the column description:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So that means we are only interested in the first and last column. The first
+    being the *key* and the last being the *value*. In this case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: So that means that for this document we will finetune the models to look for
+    a ‘*Case*’ with value ‘*MELF CASE*’ and also to extract a ‘*StorageTemperature*’
+    that is ‘*-65 to +200*’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Indexes**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following indexes exist in the groundtruth metadata:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**data-sheets**: Model, Type, Case, Power Dissipation, Storage Temperature,
+    Voltage, Weight, Thermal Resistance'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**patents**: Title, Applicant, Inventor, Representative, Filing Date, Publication
+    Date, Application Number, Publication Number, Priority, Classification, Abstract
+    1st line'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Looking at the quality of the ground truth and feasibility I choose to retain
+    the following indexes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Quality**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the image conversion to text, [ocropus](http://code.google.com/p/ocropus/)
+    version 0.2 was used. Which means it dates to about the end of 2014\. This is
+    ancient in terms of data science, so does the groundtruth quality live up to our
+    task?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this I had a look at random images and compared the groundtruth with was
+    actually written on the document. Here are two examples where the OCR was incorrect:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/798c47d8cb3079a86d6cc8af74e49659.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: document-001–109381.in.000.png from Ghega dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key *Classification* is set as *BGSD 81/00* as ground truth. And it should
+    be *B65D 81/100.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/da972563105ade20c85a3167784b56a5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: document-003–112107.in.000.png from Ghega dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: The key *StorageTemperature* says *I -65 {O + 150* as ground truth, while we
+    can see it should be *-65 to + 150.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many such errors in the dataset. One approach is to correct these.
+    Another to ignore. Since I will use the same data just for comparing both models,
+    I choose the latter. Shall the data be used for production, you may want to choose
+    the former option to get the best results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (also note that these special characters could mess up the JSON format, I will
+    come back to that topic later)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Donut dataset structure**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does the format of the data we need it to be in look like?
+  prefs: []
+  type: TYPE_NORMAL
+- en: For finetuning the Donut model we need to have the data organized in one folder
+    with all the documents as separate image files and one metadata file, structured
+    as a JSON lines file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The JSONL file contains per image file a line like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s break down this JSON line. On the upper level we have a dict with two
+    elements: *file_name* and *ground_truth*. Under the *ground_truth* key, we have
+    a dict with key *gt_parse*. The value is in itself a dict with the key value pairs
+    that we know on the document. Or even better: *assign*. Remember that the doctype
+    is not necessarily present as text in the document. The term *datasheet* is not
+    present as text on those documents.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Luckily pix2struct uses the same format for finetuning, so we can kill two birds
+    with one stone. Once we have converted it in this structure, we can use it for
+    finetuning Pix2Struct as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conversion**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the conversion itself, I created a Jupyter notebook on colab. I decided
+    to create a split into a train and validation set at this stage, as opposed to
+    just before finetuning. This way, the same validation images will be used for
+    both models and the results will be better comparable. One out of 5 documents
+    will be used for validation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With the above knowledge of the structure of the Ghega dataset, we can construe
+    the conversion procedure as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For every filename ending in in.000.png we take the corresponding groundtruth
+    file and create a temporary dataframe object.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Beware that the groundtruth could be empty or doesn’t exist entirely. (e.g.
+    for *datasheets/taiwan-switching*)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Next, we deduct the class from the subfolder: *patent* or *datasheet .* Now
+    we have to build the JSON line. For each element/index we want to extract, we
+    check if it is in that dataframe and collect it. Then copy the image itself.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Do this for all images and at the end we have a JSONL file to write out.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In python it looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The ghega_df is a dataframe to do some sanity checks or statistical analysis
+    on if wanted. I used it to check random samples if my converted data was actually
+    correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hiccups**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once converted, it looks like everything is all copacetic. But I want to get
+    rid of the idea that everything usually runs from the first try. There are always
+    small unexpected hiccups happening. Talking about the errors I encountered and
+    showing the remedies is useful for anybody mimicking this whole process with their
+    own dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, after converting the dataset, I wanted to train the Donut model.
+    Before I can do that I need to create a train dataset, like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And got this error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So it seems there is a problem with the JSON format in row 7\. I copied that
+    line and pasted it in an [online JSON validator](https://jsonformatter.curiousconcept.com/#):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fcc1e25cb0180b26712b1496194d27d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/732f1846570edeab4c0b07c4006f595b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/732f1846570edeab4c0b07c4006f595b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It however says it’s a valid JSON line. So let’s have a deeper look:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Did you spot the error? After some time I noticed there’s a missing comma between
+    the *DocType* and *FilingDate*. It was however missing on all lines, so it’s unclear
+    to me why it says line 7 has a problem. When I fixed this issue, I tried again
+    and now it claims there’s a problem on line 17:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is line 17, do you spot the problem?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It’s the unescaped quotation marks for the *Classification* element. To remedy
+    this, I made a decision that all values will only be allowed to contain alphanumeric
+    and a few special characters with this regex:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: This may affect the true performance badly, but from what I could see, any other
+    characters were caused by OCR errors anyway. I suppose for the relative comparison
+    between the models leaving them out doesn’t matter much.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Data preparation: done**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s often overlooked and certainly underestimated, the importance of preparing
+    data before training. With the steps above I have shown you how you can adapt
+    your own data to be used by both Donut and Pix2Struct for key index extraction
+    on documents. Common pitfalls were also remedied. The Jupyter notebook with all
+    steps can be found [here](https://github.com/Toon-nooT/notebooks/blob/main/Donut_vs_pix2struct_1_Ghega_data_prep.ipynb).
+    We’re halfway there. The next step is to train both models on this dataset. I’m
+    very curious how well they fare, but the comparison and training will be for a
+    next article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may also like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://toon-beerten.medium.com/hands-on-document-data-extraction-with-transformer-7130df3b6132?source=post_page-----b5a826bc2ac3--------------------------------)
+    [## Hands-on: document data extraction with 🍩 transformer'
+  prefs: []
+  type: TYPE_NORMAL
+- en: My experience using donut transformers model to extract invoice indexes.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: toon-beerten.medium.com](https://toon-beerten.medium.com/hands-on-document-data-extraction-with-transformer-7130df3b6132?source=post_page-----b5a826bc2ac3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'References:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://arxiv.org/abs/2111.15664?source=post_page-----b5a826bc2ac3--------------------------------)
+    [## OCR-free Document Understanding Transformer'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding document images (e.g., invoices) is a core but challenging task
+    since it requires complex functions such…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'arxiv.org](https://arxiv.org/abs/2111.15664?source=post_page-----b5a826bc2ac3--------------------------------)
+    [](https://arxiv.org/abs/2210.03347?source=post_page-----b5a826bc2ac3--------------------------------)
+    [## Pix2Struct: Screenshot Parsing as Pretraining for Visual Language Understanding'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visually-situated language is ubiquitous -- sources range from textbooks with
+    diagrams to web pages with images and…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: arxiv.org](https://arxiv.org/abs/2210.03347?source=post_page-----b5a826bc2ac3--------------------------------)
+    [](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset?source=post_page-----b5a826bc2ac3--------------------------------)
+    [## Machine Learning Lab - Ghega dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ghega-dataset: a dataset for document understanding and classification We provide
+    here a labeled dataset which can be…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: machinelearning.inginf.units.it](https://machinelearning.inginf.units.it/data-and-tools/ghega-dataset?source=post_page-----b5a826bc2ac3--------------------------------)
+    [](https://huggingface.co/to-be/donut-base-finetuned-invoices?source=post_page-----b5a826bc2ac3--------------------------------)
+    [## to-be/donut-base-finetuned-invoices · Hugging Face
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edit model card Based on Donut base model (introduced in the paper OCR-free
+    Document Understanding Transformer by…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: huggingface.co](https://huggingface.co/to-be/donut-base-finetuned-invoices?source=post_page-----b5a826bc2ac3--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL

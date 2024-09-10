@@ -1,0 +1,621 @@
+- en: Testing Language Models (and Prompts) Like We Test Software
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/testing-large-language-models-like-we-test-software-92745d28a359?source=collection_archive---------0-----------------------#2023-05-24](https://towardsdatascience.com/testing-large-language-models-like-we-test-software-92745d28a359?source=collection_archive---------0-----------------------#2023-05-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*TL;DR: you should*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@marcotcr?source=post_page-----92745d28a359--------------------------------)[![Marco
+    Tulio Ribeiro](../Images/beb3909927c9c9575d87a828c9c6b841.png)](https://medium.com/@marcotcr?source=post_page-----92745d28a359--------------------------------)[](https://towardsdatascience.com/?source=post_page-----92745d28a359--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----92745d28a359--------------------------------)
+    [Marco Tulio Ribeiro](https://medium.com/@marcotcr?source=post_page-----92745d28a359--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4274f519efce&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-large-language-models-like-we-test-software-92745d28a359&user=Marco+Tulio+Ribeiro&userId=4274f519efce&source=post_page-4274f519efce----92745d28a359---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----92745d28a359--------------------------------)
+    ·18 min read·May 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F92745d28a359&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-large-language-models-like-we-test-software-92745d28a359&user=Marco+Tulio+Ribeiro&userId=4274f519efce&source=-----92745d28a359---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F92745d28a359&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftesting-large-language-models-like-we-test-software-92745d28a359&source=-----92745d28a359---------------------bookmark_footer-----------)![](../Images/0971839269724022e19d9d743e6440b6.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image created by the authors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we test applications built with LLMs? In this post we look at the concept
+    of testing applications (or prompts) built with language models, in order to better
+    understand their capabilities and limitations. We focus entirely on testing in
+    this article, but if you are interested in tips for writing better prompts, check
+    out our [Art of Prompt Design](https://www.google.com/search?q=Art+of+Prompt+Design)
+    series (ongoing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: While it is introductory, this post (written jointly with [Scott Lundberg](https://medium.com/@scottmlundberg))
+    is based on a fair amount of experience. We’ve been thinking about testing NLP
+    models for a while — e.g. in [this paper](https://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)
+    arguing that we should test NLP models like we test software, or [this paper](https://aclanthology.org/2022.acl-long.230.pdf)
+    where we get GPT-3 to help users test their own models. This kind of testing is
+    orthogonal to more traditional evaluation focused on benchmarks, or collecting
+    human judgments on generated text. Both kinds are important, but we’ll focus on
+    testing (as opposed to benchmarking) here, since it tends to be neglected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll use ChatGPT as the LLM throughout, but the principles here are general,
+    and apply to any LLM (or any NLP model, for that matter). All of our prompts use
+    the [guidance](https://github.com/microsoft/guidance) library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The task: an LLM email-assistant'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Testing ChatGPT or another LLM in the abstract is very challenging, since it
+    can do so many different things. In this post, we focus on the more tractable
+    (but still hard) task of testing a specific tool that *uses* an LLM. In particular,
+    we made up a typical LLM-based application: an email-assistant. The idea is that
+    a user highlights a segment of an email they received or a draft they are writing,
+    and types in a natural language instruction such as `write a response saying no
+    politely`, or `please improve the writing`, or `make it more concise`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, here is an input `INSTRUCTION, HIGHLIGHTED_TEXT, SOURCE` (source
+    indicates whether it''s a received email or draft), and corresponding output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our first step is to write a simple prompt to execute this task. Note that we
+    are not trying to get the best possible prompt for this application, just something
+    that allows us to illustrate the testing process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is an example of running this prompt on the email above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1376d98f51e21675acaba56bff3258f9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Let’s try this on making simple edits to a few sample sentences:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a8a2605b892e08654570efe1dd131c2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Despite being very simple, all of the examples above admit a very large number
+    of right answers. How do we test an application like this? Further, we don’t have
+    a labeled dataset, and even if we wanted to collect labels for random texts, we
+    don’t know what kinds of instructions users will actually try, and on what kinds
+    of emails / highlighted sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll first focus on *how* to test, and then discuss *what* to test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How to test: properties'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Even if we can’t specify a single right answer to an input, we can specify *properties*
+    that any correct output should follow. For example, if the instruction is “Add
+    an appropriate emoji”, we can verify properties like `the input only differs from
+    the output in the addition of one or more emojis`. Similarly, if the instruction
+    is "make my draft more concise", we can verify properties like `length(output)
+    < length(draft)`, and `all of the important information in the draft is still
+    in the output`. This approach (first explored in [CheckList](https://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf))
+    borrows from **property-based testing** in software engineering and applies it
+    to NLP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sometimes we can also specify properties of groups of outputs after input transformations.
+    For example, if we perturb an instruction by adding typos or the word ‘please’,
+    we expect the output to be roughly the same in terms of content. If we add an
+    intensifier to an instruction, such as `make it more concise` -> `make it much
+    more concise`, we can expect the output to reflect the change in intensity or
+    degree. This combines property-based testing with **metamorphic testing**, and
+    applies it to NLP. This type of testing can be handy to check for robustness,
+    consistency, and similar properties.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Some properties are easy to evaluate:** The examples in CheckList were mostly
+    of classification models, where it’s easy to verify certain properties automatically
+    (e.g. `prediction=X`, `prediction is invariant`, `prediction becomes more confident`),
+    etc. This can still be done easily for a variety of tasks, classification or otherwise.
+    In [another blog post](https://medium.com/@marcotcr/exploring-chatgpt-vs-open-source-models-on-slightly-harder-tasks-aa0395c31610),
+    we could check whether models solved quadratic equations correctly, since we knew
+    the right answers. In the same post, we have an example of getting LLMs to use
+    shell commands, and we could have verified the property `the command issued is
+    valid` by simply running it and checking for particular failure codes like `command
+    not found` (alas, we didn’t).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Evaluating harder properties using LLMs:** Many interesting properties are
+    hard to evaluate exactly, but can be evaluated with very high accuracy by an LLM.
+    It is often easier to evaluate a property of the output than to produce an output
+    that matches a set of properties.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To illustrate this, we write a couple of simple prompts that turn a question
+    into a YES-NO classification problem, and then use ChatGPT to evaluate the properties
+    (again, we’re not trying to optimize these prompts). Here is one of our prompts
+    (the other one is similar, but takes a pair of texts as input). Note that we ask
+    for an explanation when the answer is not as expected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s ask our email assistant to make a few emails more concise, and then use
+    this prompt to evaluate the relevant property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**— —'
+  prefs: []
+  type: TYPE_NORMAL
+- en: INSTRUCTION:** Make it more concise
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TEXT:** Hey Marco,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Can you please schedule a meeting for next week?
+  prefs: []
+  type: TYPE_NORMAL
+- en: We really need to discuss what’s happening with guidance!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scott
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**OUTPUT:** Hi Marco, can we schedule a meeting next week to discuss guidance?
+    Thanks, Scott.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**TEXT:** Hey Scott,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’m sorry man, but you’ll have to do that guidance demo without me… I’m going
+    rock climbing with our children tomorrow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cheers,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Marco
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**OUTPUT:** Hey Scott, I can’t do the guidance demo tomorrow. I’m going rock
+    climbing with the kids. Cheers, Marco.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: — —
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we run our property evaluator on these input-output pairs with the question
+    `Do the texts have the same meaning?`, it (correctly) judges that both outputs
+    have the same meaning as the original emails.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then change the outputs slightly so as to change the meaning, to see if
+    our evaluator identifies the shift and provides good explanations. It does in
+    both cases. Here is one of them, with the resulting property evaluation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f854465a39d1027bf0f50291de0ca206.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Property evaluators should be high precision** If we’re using an LLM to evaluate
+    a property, we need the LLM to be right when it claims a property is violated
+    (high precision). Tests are never exhaustive, and thus a false positive is worse
+    than a false negative when testing. If the LLM misses a few violations, it just
+    means our test won’t be as exhaustive as it could be. However, if it claims a
+    violation when there isn’t one, we won’t be able to trust the test when it matters
+    most (when it fails).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We show a quick example of low precision in [this gist](https://gist.github.com/marcotcr/9ab4ba0f54d9a87f577adf6c36715b92),
+    where GPT-4 is used to compare between the outputs of two models solving quadratic
+    equations (you can think of this as evaluating the property `model 1 is better
+    than model 2`), and GPT-4 cannot reliably select the right model even for an example
+    where it can solve the equation correctly. This means that this particular prompt
+    would be a bad candidate for testing this property.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Perception is easier than generation** While it seems reasonable to check
+    the output of GPT 3.5 with a *stronger* model (GPT-4), does it make sense to use
+    an LLM to judge *its own* output? If it can’t produce an output according to instructions,
+    can we reasonably hope it evaluates such properties with high accuracy? While
+    it may seem counterintuitive at first, the answer is yes, because perception is
+    often easier than generation. Consider the following (non-exhaustive) reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Generation requires planning*: even if the property we’re evaluating is ‘did
+    the model follow the instruction’, evaluating an existing text requires no ‘planning’,
+    while generation requires the LLM to produce text that follows the instruction
+    step by step (and thus it requires it to somehow ‘plan’ the steps that will lead
+    to a right solution from the beginning, or to be able to correct itself if it
+    goes down the wrong path *without changing the partial output it already generated*).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*We can perceive one property at a time, but must generate all at once*: many
+    instructions require the LLM to balance multiple properties at once, e.g. `make
+    it more concise` requires the LLM to balance the property `output is shorter`
+    with the property `output contains all the important information` (implicit in
+    the instruction). While balancing these may be hard, evaluating them one at a
+    time is much easier.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Here is a quick toy example, where ChatGPT can evaluate a property but not
+    generate an output that satisfies it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fc5c31dfd89e4b5c0a9cfbb2d4d4ba6f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '‘Unfortunately’ and ‘perhaps’ are adverbs, but ‘Great’ is not. Our property
+    evaluator with the question `Does the text start with an adverb?` answers correctly
+    on all four examples, flagging only the failure case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d852409caadb4afb21243a485394cc6c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Summary**: test properties, use LLM to evaluate them if you can get high
+    precision.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What to test
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Is this section superfluous? Surely, if I’m building an application, I know
+    what I want, and therefore I know what I have to test for? Unfortunately, we have
+    **never** encountered a situation where this is the case. Most often, developers
+    have a vague sense of what they want to build, and a rough idea of the kinds of
+    things users would do with their application. Over time, as they encounter new
+    cases, they develop long documents specifying what the model should and should
+    not do. The *best* developers try to anticipate this as much as possible, but
+    it is very hard to do it well, even when you have pilots and early users. Having
+    said this, there are big benefits to doing this thinking early. Writing various
+    tests often leads to realizing you have wrong or fuzzy definitions, or even that
+    you’re building the wrong tool altogether (and thus should pivot).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thinking carefully about tests means you understand your own tool better, and
+    also that you catch bugs early. Here is a rough outline of a testing process,
+    which includes figuring out what to test and actually testing it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enumerate use cases for your application.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each use case, try to think of high-level behaviors and properties you can
+    test. Write concrete test cases.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Once you find bugs, drill down and expand them as much as possible (so you can
+    understand and fix them).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**A historical note**: [CheckList](https://homes.cs.washington.edu/~marcotcr/acl20_checklist.pdf)
+    assumed use cases were a given, and proposed a set of linguistic capabilities
+    (e.g. vocabulary, negation, etc) to help users think about behaviors, properties,
+    and testcases (step 2). In hindsight, this was a terrible assumption (as noted
+    above, we most often don’t know what use cases to expect ahead of time).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If CheckList focused on step 2, [AdaTest](https://aclanthology.org/2022.acl-long.230.pdf)
+    focused mostly on step 3, where we showed that GPT-3 with a human in the loop
+    was an *amazing* tool for finding and expanding bugs in models. This was a good
+    idea, which we now expand by getting the LLM to also help in steps 1 and 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Recall vs precision**: In contrast to property evaluators (where we want
+    high precision), when thinking about *“what to test”* we are interested in *recall*
+    (i.e. we want to discover as many use cases, behaviors, tests, etc as possible).
+    Since we have a human in the loop in this part of the process, the human can simply
+    disregard any LLM suggestions that are not useful (i.e. we don’t need high precision).
+    We usually set a higher temperature when using the LLM in this phase.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The testing process: an example'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 1\. Enumerate use cases
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Our goal here is to think about the kinds of things users will do with our
+    application. This includes both their goals (what they’re trying to do) and the
+    kinds of inputs our system may be exposed to. Let’s see if ChatGPT helps us enumerate
+    some use cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4068674d525983494d0f3c9b1bf86432.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Output truncated for space reasons)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We run the prompt above with `n=3`, getting ChatGPT to list 15 potential use
+    cases. Some are pretty good, others are more contrived. We then tell ChatGPT that
+    we got all of these use cases from elsewhere, and get it to organize them into
+    categories. Here are a few categories it lists (full list in the [notebook](https://github.com/microsoft/guidance/blob/main/notebooks/testing_lms.ipynb)
+    accompanying this post):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We don’t want to just take ChatGPT’s summary wholesale, so we reorganize the
+    categories it lists and add a couple of ideas of our own (again, [here](https://github.com/microsoft/guidance/blob/main/notebooks/testing_lms.ipynb)).
+    Then, we ask ChatGPT to iterate on our work. This is actually a very good pattern:
+    **we use the LLM to generate ideas, select and tweak the best ideas, and then
+    ask the LLM to generate more ideas based on our selection.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23e28989562209b607e907223a67e7b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ChatGPT suggested ‘generating ideas for how to respond to the email’ as a use
+    case, which ironically we hadn’t considered (even though we had already listed
+    6 broad use cases and were literally using ChagGPT to generate ideas).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generating data** We need some concrete data (in our case, emails) to test
+    our model on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We start by simply asking ChatGPT to generate various kinds of emails:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8c984824593d2c74938ce2f01bde5464.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Output truncated for space reasons)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ChatGPT writes mostly short emails, but it does cover a variety of situations.
+    In addition to changing the prompt above for more diversity, we can also use existing
+    datasets. As an example ([see notebook](https://github.com/microsoft/guidance/blob/main/notebooks/testing_lms.ipynb)),
+    we load a dataset of Enron emails and take a small subset, such that we have an
+    initial set of 60 input emails to work with (30 from ChatGPT and 30 from Enron).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have a list of use cases and some data to explore them, we can move
+    to the next step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Think of behaviors and properties, write tests.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is possible (and very useful) to use the same ideation process as above for
+    this step (i.e. ask the LLM to generate ideas, select and tweak the best ones,
+    and then ask the LLM to generate more ideas based on our selection). However,
+    for space reasons we pick a few use cases that are straightforward to test, and
+    test just the most basic properties. While one might want to test some use cases
+    more exhaustively (e.g. even using CheckList capabilities as in [here](https://gist.github.com/marcotcr/a897fad16f40619af0be693c32f42eda)),
+    we’ll only scratch the surface below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use case: responding to an email** We ask our tool to `write a response that
+    politely says no` to our 60 input emails. Then, we verify it with the question
+    `Is the response a polite way of saying no to the email?`. Notice we could have
+    broken the question down into two separate properties if precision was low.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Surprisingly, the tool fails 53.3% of the time on this simple instruction.
+    Upon inspection, most of the failures have to do with ChatGPT not writing a response
+    at all, e.g.:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7bcbe52c71ee230703aaa34a6879a5a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: While not directly related to its skills in writing full responses, it’s good
+    that the test caught this particular failure mode (which we could correct via
+    better prompting). It often happens that trying to test a capability reveals a
+    problem elsewhere.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Use case: Make a draft more concise** We ask our tool to `Shorten the email
+    by removing everything that is unecessary. Make sure not to lose any important
+    information`. We then evaluate two properties: (1) whether the text is shorter
+    (measured directly by string length), and (2) whether the shortened version loses
+    information, through the question `Does the shortened version communicate all
+    of the important information in the original email?`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first property is almost always met, while the second property has a low
+    failure rate of 8.3%, with failures like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24f22402e49b05cb85978343941eedfa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Use case: Extracting action points from an incoming email.** We ask our tool
+    to take a received email, and`Extract any action items that I may need to put
+    in my TODO list`. Rather than using our existing input emails, we’ll illustrate
+    a technique we haven’t talked about yet: **generating inputs that are guaranteed
+    to meet a certain property.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this use case, we can generate emails with *known* action points, and then
+    check if the tool can extract *at least those*. To do so, we take the action item
+    `Don''t forget to water the plants` and ask ChatGPT to paraphrase it 10 times.
+    We then ask it to generate emails containing one of those paraphrases, like the
+    one below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/048aa0b8f5003aad7ebd8eff4c4dfa84.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: These emails may have additional action items that are not related to watering
+    the plants. However, this does not matter at all, as the property we’re going
+    to check is whether the tool extracts `watering the plants` as *one* of the action
+    items, not whether it is the only one. In other words, our question for the output
+    will be `Does it talk about watering the plants?`
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our email assistant prompt fails on 4/10 generated emails, saying that “There
+    are no action items in the highlighted text”, even though (by design) we know
+    there is at least one action point in there. This is a high failure rate for such
+    simple examples. Of course, if we were testing for real we would have a variety
+    of embedded action items (rather than just this one example), and we would also
+    check for other properties (e.g. whether the tool extracts *all* action items,
+    whether it extracts *only* action items, etc). However, we’ll now switch gears
+    and see an example of metamorphic testing**.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Metamorphic testing: robustness to instruction paraphrasing** Sticking with
+    this use case (extracting action items), we go back to our original 60 input emails.
+    We will test the tool’s robustness, by paraphrasing the instruction and verifying
+    if the output list has the same action items. Note that *we are not testing whether
+    the output is correct*, but whether the model is consistent in light of paraphrased
+    instructions (which in itself is an important property).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For presentation reasons we only paraphrase the original instruction once (in
+    practice we would have many paraphrases of different instructions):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Orig: Extract any action items that I may need to put in my TODO list Paraphrase:
+    List any action items in the email that I may want to put in a TODO list`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We then verify the property of whether the outputs of these different instructions
+    have the same meaning (they should if they have the same bullet points). The failure
+    rate is 16.7%, with failures like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62622a3f398a5f6d49ff8e53f135625a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Again, our evaluator seems to be working fine on the examples we have. Unfortunately,
+    the model has a reasonably high failure rate on this robustness test, extracting
+    different action items when we paraphrase the instruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Drill down on discovered bugs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s go back to our example of making a draft more concise, where we had a
+    low error rate (8.3%). We can often find error patterns if we drill down into
+    these errors. Here is a very simple prompt to do this, which is a very quick-and-dirty
+    emulation of [AdaTest](https://aclanthology.org/2022.acl-long.230.pdf), where
+    we optimized the prompt / UI way more (we’re just trying to illustrate the principle
+    here):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We run this prompt with the few discovered failures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5536ead256b00fbb4d4f96a47d675e72.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: (Output truncated for space reasons)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ChatGPT provided a hypothesis for what ties those emails together. Whether that
+    hypothesis is right or wrong, we can see how the model does on the new examples
+    it generates. Indeed, the failure rate on the same property (`Does the shortened
+    version communicate all of the important information in the original email?`)
+    is now much higher (23.5%), with similar failures as before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It does seem like ChatGPT latched on to kind of a pattern. While we don’t have
+    enough data yet to know whether it is a real pattern or not, this illustrates
+    the drill-down strategy: **take failures and get a LLM to ‘generate more’**. We
+    are very confident that this strategy works, because we have tried it in *a lot*
+    of different scenarios, models, and applications (with AdaTest). In real testing,
+    we would keep iterating on this process until we found real patterns, would go
+    back to the model (or in this case, the prompt) to fix the bugs, and then iterate
+    again.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But now it’s time to wrap up this blog post :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here is a TL;DR of this whole post (not written by ChatGPT, we promise):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What we’re saying:** We think it’s a good idea to test LLMs just like we
+    test software. Testing does not replace benchmarks, but complements them.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**How to test:** If you can’t specify a single right answer, and / or you don’t
+    have a labeled dataset, specify **properties** of the output or of groups of outputs.
+    You can often use the LLM itself to evaluate such properties with high accuracy,
+    since *perception is easier than generation*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**What to test:** Get the LLM to help you figure it out. Generate potential
+    use cases and potential inputs, and then think of properties you can test. If
+    you find bugs, get the LLM to drill down on them to find patterns you can later
+    fix.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, it’s obvious that the process is much less linear and straightforward than
+    what we described it here — it is not uncommon that testing a property leads to
+    discovering a new use case you hadn’t thought about, and maybe even makes you
+    realize you have to redesign your tool in the first place. However, having a stylized
+    process is still helpful, and the kinds of techniques we describe here are very
+    useful in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Is it too much work?** Testing is certainly a laborious process (although
+    using LLMs like we did above makes it *much easier*), but consider the alternatives.
+    It is really hard to to benchmark generation tasks with multiple right answers.
+    and thus we often don’t trust the benchmarks for these tasks. Collecting human
+    judgments on the existing model’s output can be even *more* laborious, and does
+    not transfer well when you iterate on the model (suddenly your labels are not
+    as useful anymore). *Not testing* usually means you don’t really know how your
+    model behaves, which is a recipe for disaster. Testing, on the other hand, often
+    leads to (1) finding bugs, (2) insight on the task itself, (3) discovering severe
+    problems in the specification *early*, which allows for pivoting before its too
+    late. On balance, we think *testing is time well spent*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: — — — — — — — — — -
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Here is a link](https://github.com/microsoft/guidance/blob/main/notebooks/testing_lms.ipynb)
+    to the jupyter notebook with code for all the examples above (and more). This
+    post was written jointly by Marco Tulio Ribeiro and [Scott Lundberg](https://medium.com/@scottmlundberg)'
+  prefs: []
+  type: TYPE_NORMAL

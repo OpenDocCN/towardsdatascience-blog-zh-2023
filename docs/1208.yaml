@@ -1,0 +1,378 @@
+- en: Boosting Tabular Data Predictions with Large Language Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/boosting-tabular-data-predictions-with-large-language-models-531337f834dc?source=collection_archive---------0-----------------------#2023-04-06](https://towardsdatascience.com/boosting-tabular-data-predictions-with-large-language-models-531337f834dc?source=collection_archive---------0-----------------------#2023-04-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/a72057e01d27e5e83c1457e4d918103d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: What happens when you unleash GPT-4 on a tabular Kaggle competition to predict
+    home prices?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://aparnadhinak.medium.com/?source=post_page-----531337f834dc--------------------------------)[![Aparna
+    Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----531337f834dc--------------------------------)[](https://towardsdatascience.com/?source=post_page-----531337f834dc--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----531337f834dc--------------------------------)
+    [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----531337f834dc--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosting-tabular-data-predictions-with-large-language-models-531337f834dc&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----531337f834dc---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----531337f834dc--------------------------------)
+    ·9 min read·Apr 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F531337f834dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosting-tabular-data-predictions-with-large-language-models-531337f834dc&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----531337f834dc---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F531337f834dc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fboosting-tabular-data-predictions-with-large-language-models-531337f834dc&source=-----531337f834dc---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Follow along with this blog’s*** [***accompanying Colab***](https://colab.research.google.com/gist/PubliusAu/3c0b73ecf5558e4dda2a483693be2b93/arize-wide-llm-kaggle-example-v2-0-1.ipynb)**.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This blog is a collaboration with Jason Lopatecki, CEO and Co-Founder of Arize
+    AI, and Christopher Brown, CEO and Founder of Decision Patterns*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are two distinct groups in the ML ecosystem. One works with highly organized
+    data collected in tables — the tabular-data-focused data scientist. The other
+    works on deep learning applications including vision, audio, large language models
+    (LLMs), etc. For the purposes of this piece, we call the former the “tabular”
+    or “traditional” group and the latter the “LLM” group. Each group uses its own
+    techniques and models that have, in large part, developed separately. With the
+    recent successes of large language models including OpenAI’s GPT-4 and others,
+    we wanted to see if we could use modern LLM results to help make predictions on
+    tabular datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to demonstrate the efficacy of the approach, we submitted results to
+    several blind Kaggle competitions (including the popular “House Prices — Advanced
+    Regression Techniques” [competition](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques)).
+    The typical Kaggle competition supplies tabular data and is dominated by traditional
+    ML approaches. However, we found with little background knowledge, zero data cleaning,
+    and zero feature development required by traditional methods, LLMs were able to
+    return results with predictive power. LLM predictions were not competitive with
+    the leading models produced with lengthy and extensive tabular methods, but were
+    strong enough to place well higher than the median score on the leaderboard rankings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We expect this to be the beginning of a number of techniques that use LLMs on
+    tabular data and would not be surprised to see their use widen and compete favorably
+    to more traditional model development processes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Included in this write up is the first approach we have seen that merges traditional
+    tabular datasets and XGBoost models with LLMs using latent structure embeddings,
+    allowing the tabular approaches to work off of the numerical “features” produced
+    internally by the LLM.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To date, we haven’t seen an LLM used this way to date and hope this is the beginning
+    of something exciting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Challenges of Applying Deep Learning to Tabular Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The typical machine learning application involves cleaning and training a narrow
+    set of data typically collected, held, or acquired by an organization. At a high
+    level, the process can be thought of developing a “context” for which only one
+    specific type of questions can be asked. When that type of question arises, the
+    ML model produces one or more predictions. Further improving models comes from
+    three areas: adding more data, improving methods, or acquiring more and different
+    features. The last is often the most interesting here, as the data scientist is
+    generally always asking herself: “what different data can I get to make my predictions
+    better?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Partitioning, boosting, and/or bagging models have been developed for and do
+    exceedingly well in this domain. Despite much effort, deep learning has not shown
+    to be as effective in this area. Observations show that XGBoost and cousins generalize
+    better in production, where deep learning models tend to overfit. A large number
+    of teams have tried to improve deep learning on tabular datasets, but these efforts
+    have largely lagged behind established, high performing tabular approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Problem of Training with Narrow Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A common deep learning approach is to apply a neural network and multilayer
+    perceptron (MLP) to a relatively “small” dataset consisting of an organization’s
+    data. This approach has been repeatedly shown to require more work (data scientist
+    time), resource consumption (training time), and parameter tuning to get similar
+    or worse performance than tabular approaches. The failure of deep learning here
+    may be a mismatch between the approach and narrow data available to it. Deep Learning
+    seems somewhat gated by its ability to learn from narrow data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/78022d5ae3eff5cd2b3061b3b0dcd1ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the image above, a large parameter neural network model is trained on the
+    “small data” of a single company. Training a large model on a relatively small
+    dataset causes the model to almost always be over-parameterized. This is because
+    the information contained to make decisions is not that large, there are only
+    so many “error surfaces” related to the data to optimize performance against.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Applying a Large Language Model To a Tabular Dataset: Enter Prompt Engineering'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: LLMs have come to the fore through two innovations. The first is the transformer
+    architecture pioneered by Google and others. The second is the application of
+    these architectures to colossal data sets on the order of dozens or hundreds of
+    terabytes. A reasonable hypothesis is that these LLMs are able to sidestep the
+    “narrow” data problem that beleagures deep learning approaches. By training on
+    Internet-scale data, LLMs have built an internal representation for the context
+    of many applications. This is a needed step in order to have a model that can
+    respond to any number of prompts. A happy and necessary consequence is that the
+    LLMs may have developed the context for answering questions related to an organization’s
+    prediction problems or those of a Kaggle competition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By way of analogy, LLMs have come to understand the context of your problem
+    in a similar way that traditional/tabular machine learning has done in its training
+    step. Surprisingly, this has been done using a broader source of data and not
+    the organization’s specific data. Another way to look at it is that the LLMs has
+    trained a model capable of predictions from all the data it acquired elsewhere.
+    To the data scientist, this provides access to a diverse dataset and a potential
+    treasure trove of information — or they may just provide noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlocking the information in LLMs for tabular models encounters two obstacles.
+    The first is that LLMs are accessed via prompts and not tabular data (DataFrames).
+    The second is that LLMs primarily produce textual output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To overcome the first obstacle, we supply our tabular data through prompts.
+    Here the prompt is created on each row of the table. The construction of the prompt
+    is pretty simple: a paragraph comprised of sentences, one for each cell in the
+    table row, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/edd36272c1e0764e525699b80fc2089c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The “row” prompt consists of the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“The <column name> is <cell value>. The <column name> is <cell value>. …”*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Two things to note here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is not necessary to generate prompts for training data, only the data about
+    which the prediction needs to be made; and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It is not strictly necessary to ask what prediction will be made of the data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The second obstacle is that the LLMs produce textual responses. In some instances,
+    LLMs can provide predictions. As of this writing, the predictions are not very
+    good — likely because the LLMs that are not trained with specific predictions
+    in mind. Instead of accessing LLM predictions, we find the flexibility to work
+    with the features produced by the LLM preferable. In the parlance of LLMs, the
+    features are latent structure embeddings or simply “[embeddings](https://arize.com/blog-course/embeddings-meaning-examples-and-how-to-compute/).”
+    These embeddings are accessible through LLM APIs. It is important to note that
+    the embedding vectors are typically of values-per-row. Once we extract the embeddings,
+    we can run them through a tabular model (XGBoost).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The embeddings will be used in two examples: first, to make predictions for
+    home prices in a Kaggle data competition ([this blog](https://arize.com/blog-course/applying-large-language-models-to-tabular-data/));
+    and second, to measure multivariate drift and anomaly detection using embedding
+    drift (an upcoming blog).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3210aeb11f4399874213c75821d6113e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Workflow: Table -> Prompt -> LLM -> Embedding -> XGboost -> Prediction (Image
+    by author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The LLM provides a great simple feature engineering tool available for use on
+    any tabular dataset, essentially allowing performance gains with almost no feature
+    engineering or parameterization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Towards Harnessing Big Data and Large Language Models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In most companies, the data you are training on is small relative to the information
+    contained across the internet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s take an example of home price prediction. Imagine the model you train
+    learns from your data that a certain zip-code has higher priced homes. It also
+    might learn some interesting relationships with other features, such as that homes
+    with pools have higher selling prices. But imagine what you could say about home
+    prices in a zip-code by gathering the entire world’s knowledge about that zip
+    code and applying it in parallel with your current pricing model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac6feaec585d82887fb012d76e3c2f11.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language models are trained on an immense amount of data, and through
+    that data they learn structure and relationships. Internally, they learn manifolds
+    and surfaces in embedding/activation space that relate to concepts and knowledge
+    that can be applied to almost anything.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following approach can be applied to any pandas dataframe with no feature
+    engineering. The results in this case was a 0.14 RLMSE, putting us in a respectable
+    position in the results with little effort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does it work? The data flows the model generating embeddings that represent
+    the data in the prompt. The embeddings represent latent structure of the data
+    that is flowing through the model. They capture the immense amount of training
+    data that is then projected on the specific data we are looking at in the tabular
+    data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/223a557b116d1cf969eeb674658b79d8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The image above shows the embedding space of a Kaggle home price data set. You
+    can generate this view with the [Colab](https://colab.research.google.com/gist/PubliusAu/3c0b73ecf5558e4dda2a483693be2b93/arize-wide-llm-kaggle-example-v2-0-1.ipynb)
+    that accompanies this blog. Here, the predictions mapped onto the UMAP view of
+    the [Kaggle Dataset](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99f33d9aec5a20f54905d72ba8189596.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The embeddings of the LLM have immense structure that is represented by the
+    UMAP view. One can see some of the information contained by mapping original features
+    onto the predictions in the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final House Price Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In order to make a prediction, the embedding values flow out of the LLM and
+    to the XGBoost model that is trained on the embedding latent structure space.
+    The XGBoost model then predicts the price of homes. This is all done with no feature
+    engineering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why not VAE’s?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We started this journey looking at applying Variational Autoencoders (VAEs)
+    to tabular data. However, we ultimately found that VAE’s are just trained on too
+    little data and are too sensitive to parameters to generate useful value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPT-4
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We also tested pasting in the data directly to GPT-4 to see how it would fare
+    just making predictions on the dataset directly with no training on the data directly.
+    In many cases, the results were impressive. We expect there will be approaches
+    to connect tabular data more directly to GPT-4 to help with these predictions
+    directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“The following is a set of row and column data:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Id MSSubClass MSZoning …*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*1 60 RL …”*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the rows and columns of data are pasted into the context you can ask questions
+    about the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c328b65cfb81b5b2b70f8abd5faab09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of Lookup (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: It definitely understands the data, the following is a lookup on the exact ID
+    in the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/544e57857c968626290db4e4e52ea4d9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pre-Prompt (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above example is a pre-prompt prior to pasting in the data to predict.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/56d0ea5a6d10ccea1ea00d812a6adeac.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GPT-4 Prediction (image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The GPT-4 prediction above is a decent prediction without a model or training
+    data. The actual value of the sales price is $130,250\. It’s clear there will
+    eventually be methods to connect data with GPT-4 and get fairly decent estimates
+    without any training or in combination with training for state of the art (SOTA).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A Look Ahead**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given how little effort went into optimizing these outcomes, it is reasonable
+    to expect [LLMs to be used on tabular data](https://arize.com/blog-course/applying-large-language-models-to-tabular-data/)
+    in an increasingly large set of environments. It is also likely that LLMs will
+    outperform traditional techniques, on small data sets, at some point in the near
+    future. As LLMs and [prompt engineering](https://arize.com/blog-course/prompt-engineering/)
+    evolve many areas of data science, tabular data problems are not immune.
+  prefs: []
+  type: TYPE_NORMAL

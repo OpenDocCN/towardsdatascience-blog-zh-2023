@@ -1,0 +1,292 @@
+- en: Accelerating PyTorch Training Workloads with FP8 — Part 1
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/accelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7?source=collection_archive---------4-----------------------#2023-11-15](https://towardsdatascience.com/accelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7?source=collection_archive---------4-----------------------#2023-11-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to make the most of your modern-day GPU
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a5123aec7d7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5a5123aec7d7--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----5a5123aec7d7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----5a5123aec7d7---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a5123aec7d7--------------------------------)
+    ·9 min read·Nov 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5a5123aec7d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7&user=Chaim+Rand&userId=9440b37e27fe&source=-----5a5123aec7d7---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a5123aec7d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Faccelerating-pytorch-training-workloads-with-fp8-5a5123aec7d7&source=-----5a5123aec7d7---------------------bookmark_footer-----------)![](../Images/39337db002266767825d449c2f59b599.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Deva Darshan](https://unsplash.com/@darshan394?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The past few years have seen revolutionary advancements in the field of AI,
+    perhaps best exemplified by the recent popularity and proliferation of LLM-based
+    applications such as [ChatGPT](https://en.wikipedia.org/wiki/ChatGPT). These breakthroughs
+    have been powered by equally exciting developments in the machinery used to train
+    AI models. New and innovative architectures, sophisticated tensor processing cores,
+    and dedicated HW accelerators have enabled the convergence of AI models of ever-increasing
+    sizes, at faster and faster rates. In this post, we will focus on one particular
+    advancement in AI-specialized HW — **the inclusion of dedicated 8-bit floating-point
+    (FP8) tensor processing cores**. Appearing in the most modern AI HW architectures
+    (e.g., [Nvidia Hopper](https://www.nvidia.com/en-eu/data-center/technologies/hopper-architecture/),
+    [Nvidia Ada Lovelace](https://www.nvidia.com/en-eu/geforce/ada-lovelace-architecture/),
+    and [Habana Gaudi2](https://www.intel.com/content/www/us/en/developer/articles/technical/habana-gaudi2-processor-for-deep-learning.html))
+    the FP8 tensor cores enable a significant increase in floating-point operations
+    per second (FLOPS), as well as opportunities for memory optimization and energy
+    savings for both AI training and inference workloads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Taking advantage of the HW-level FP8 capabilities requires appropriate support
+    in the SW stack and development framework that we use to build our AI training
+    and inference applications. In this post we will describe how to **modify a PyTorch
+    training script so as to utilize the built-in support for the FP8 datatype of
+    an** [**Nvidia H100 GPU**](https://www.nvidia.com/en-eu/data-center/h100/). We
+    will start by providing some motivation for the use of the FP8 datatype. We will
+    then review the FP8-specific PyTorch API support exposed by the [Transformer Engine](https://github.com/NVIDIA/TransformerEngine)
+    library and show how to integrate them into a simple training script. Although
+    we will **not** go into the theory behind the use of FP8 for AI training, we will
+    note the potential challenges involved in its use. Last, we will demonstrate the
+    significant optimization opportunities of the FP8 datatype.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disclaimers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Please do not interpret our mention of any SW component, methodology, or service
+    as an endorsement for its use. The best design for ML development will vary greatly
+    based on the specific details of your own AI workload. Please also keep in mind
+    that the APIs and behaviors of some of the SW packages and components we will
+    mention may change by the time you read this post. You are highly encouraged to
+    evaluate any potential design decisions based on the most up to date HW and SW
+    available.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As AI models grow more and more sophisticated, so does the machinery required
+    to train them. The [**Nvidia H100 GPU**](https://www.nvidia.com/en-eu/data-center/h100/),
+    said to support “unprecedented performance and scalability”, is (at the time of
+    this writing) Nvidia’s newest and strongest AI accelerator, purposely designed
+    with the goal of enabling the AI development of the next generation. With the
+    current AI hype in full swing, the demand for these GPUs has been huge (e.g.,
+    see [here](https://www.hpcwire.com/2023/08/17/nvidia-h100-are-550000-gpus-enough-for-this-year/)).
+    Accordingly, and unsurprisingly, the cost of these GPUs has been extremely high
+    — perhaps even **forbidding** for many of our readers. Fortunately, cloud service
+    providers such as AWS, GCP, and Microsoft Azure, offer “pay as you go” (per hour/per
+    second) access to H100 powered machines thereby opening up the opportunity for
+    their use to a much greater community of AI developers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In AWS, H100 GPUs are offered as a component of the [recently announced](https://aws.amazon.com/blogs/aws/new-amazon-ec2-p5-instances-powered-by-nvidia-h100-tensor-core-gpus-for-accelerating-generative-ai-and-hpc-applications/)
+    [AWS EC2 p5 instance family](https://aws.amazon.com/ec2/instance-types/p5/). These
+    instances are claimed to **“accelerate your time to solution by up to 4x compared
+    to previous-generation GPU-based EC2 instances and reduce cost to train ML models
+    by up to 40%”**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a [recent post](/instance-selection-for-deep-learning-7463d774cff0) we discussed
+    some of the considerations that should go into the choice of an ML training instance.
+    We highlighted the fact that the most optimal instance type will be very-much
+    dependent on the project at hand. Specifically, when it comes to ML training instances
+    — **bigger is *not* always better**. This is particularly true of the p5 instance
+    family. True — the p5 will likely out-perform any other instance type — after
+    all, the H100 is an undisputed performance beast. But once you factor in the cost
+    of the p5 ($98.32 per hour for the 8-GPU p5.48xlarge instance — at the time of
+    this writing), you might find other instance types to be more suitable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the next section we will train a relatively large computer vision model on
+    a p5.48xlarge and compare its performance to a [p4d.24xlarge](https://aws.amazon.com/ec2/instance-types/p4/)
+    containing 8 [Nvidia A100 GPUs](https://www.nvidia.com/en-eu/data-center/a100/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Model
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the code-block below we define a [Vision Transformer](https://en.wikipedia.org/wiki/Vision_transformer)
+    (ViT)-backed classification model (using the popular [timm](https://pypi.org/project/timm/)
+    Python package version 0.9.10) along with a randomly generated dataset. ViT backbones
+    come in many shapes and sizes. Here we have chosen what is often referred to as
+    the ViT-Huge configuration — with **632** million parameters — in order to take
+    better advantage of the capacity the H100 has for large models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We trained this model on both the [p5.48xlarge](https://aws.amazon.com/ec2/instance-types/p5/)
+    and [p4d.24xlarge](https://aws.amazon.com/ec2/instance-types/p4/) instance types
+    using the dedicated PyTorch 2.1 [AWS deep learning container](https://github.com/aws/deep-learning-containers/blob/master/available_images.md)
+    (763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.1.0-gpu-py310-cu121-ubuntu20.04-ec2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unsurprisingly, the p5 step-time performance blows away the p4d performance
+    — 0.199 seconds per step compared to 0.41 — more than twice as fast!! That would
+    mean halving the time to train your large ML models. However, when you take into
+    account the difference in cost ($32.77 per-hour for the p4d vs $98.32 per-hour
+    for the p5 — as of the time of this writing) a completely different story unfolds.
+    The **price-performance of the p5 is ~30% worse than the p4d**!! This is very
+    far from the 40% improvement that appeared in the [p5 announcement](https://aws.amazon.com/blogs/aws/new-amazon-ec2-p5-instances-powered-by-nvidia-h100-tensor-core-gpus-for-accelerating-generative-ai-and-hpc-applications/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point you might draw one of two possible conclusions. The first possibility
+    is that, despite all the hype, the p5 is simply not the right machine for you.
+    The second is that the p5 could still be viable, but that adaptations would be
+    required to your model in order to take full advantage of its potential. In the
+    next sections we will adopt the second approach and demonstrate how using the
+    FP8 datatype — unique to the p5 instance type — can completely alter the comparative
+    price-performance results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Integrating FP8 with Transformer Engine
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The first thing we should emphasize is that, as of the time of this writing,
+    PyTorch (version 2.1) does not include a native 8-bit floating datatype. To program
+    our script to use FP8 we will use [Transformer Engine](https://github.com/NVIDIA/TransformerEngine)
+    (TE) a dedicated library for accelerating Transformer models on NVIDIA GPUs. TE
+    (version 0.12) comes preinstalled in the AWS PyTorch 2.1 DL container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although the theory behind the use of FP8 for training is beyond the scope of
+    this post (e.g., see [here](https://arxiv.org/pdf/2209.05433.pdf)), it is important
+    to be aware that **the mechanics of using FP8 are far more complex than the**
+    [**16-bit alternatives**](https://pytorch.org/docs/stable/amp.html) (float16 and
+    bfloat16). Fortunately, the TE imlementation hides all of the messy details from
+    the user. Please see the official [documentation](https://docs.nvidia.com/deeplearning/transformer-engine/user-guide/examples/fp8_primer.html)
+    as well as this simple [example](https://github.com/NVIDIA/TransformerEngine/blob/main/examples/pytorch/mnist/main.py)
+    for instructions on how to use the TE APIs. To learn more about what is going
+    on behind the scenes be sure to see the following two video tutorials.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s51393/?source=post_page-----5a5123aec7d7--------------------------------)
+    [## FP8 Training with Transformer Engine | NVIDIA On-Demand'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The session will include an introduction to FP8 and mixed precision, an overview
+    of Transformer Engine features, and a…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.nvidia.com](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s51393/?source=post_page-----5a5123aec7d7--------------------------------)
+    [](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s52166/?source=post_page-----5a5123aec7d7--------------------------------)
+    [## FP8 for Deep Learning | NVIDIA On-Demand
+  prefs: []
+  type: TYPE_NORMAL
+- en: FP8 is a natural progression for accelerating deep learning (DL) training beyond
+    the 16-bit formats common in modern…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: www.nvidia.com](https://www.nvidia.com/en-us/on-demand/session/gtcspring23-s52166/?source=post_page-----5a5123aec7d7--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: To modify our model to use TE, we wrap TE’s specialized Transformer Layer with
+    a custom transformer block class that conforms to timm’s [block layer signature](https://github.com/huggingface/pytorch-image-models/blob/v0.9.10/timm/models/vision_transformer.py#L114).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we modify the VisionTransformer initialization to use our custom block
+    layer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Until now we have not made any H100-specific changes — the same code can be
+    run on our A100-powered p4d instance type. The last modification is wrapping the
+    model forward-pass with a [te.fp8_autocast](https://github.com/NVIDIA/TransformerEngine/blob/release_v0.12/transformer_engine/pytorch/fp8.py#L453)
+    context manager. This change requires a GPU that supports FP8:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: A Few Cautionary Remarks Regarding the Use of FP8
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Usage of an 8-bit floating-point representation (as opposed to a 16 or 32-bit
+    representation) implies lower precision and a lower dynamic range. These can have
+    a meaningful impact on the attainability and/or speed of your model convergence.
+    Although the underlying TE FP8 implementation is designed to address this challenge,
+    there is no guarantee that this will work for your model. You may need to fiddle
+    with the underlying FP8 mechanics (e.g., using the TE [recipe](https://github.com/NVIDIA/TransformerEngine/blob/release_v0.12/transformer_engine/common/recipe.py)
+    APIs), tune some of the hyperparameters, and/or limit the application of the FP8
+    to subsections of the model. You might find that despite all of your attempts,
+    your model is simply not compatible with FP8.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the table below we summarize the results of our experiments on both p4d.24xlarge
+    and p5.48xlarge EC2 instance types, with and without the TE library. For the p5.48xlarge
+    experiments we doubled the batch size in order to increase the utilization of
+    the 80 GB GPU memory. Using FP8 reduces the GPU memory consumption enabling a
+    further increase to the batch size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51d33ff0bf6fc87a8a5cd2712726b5e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Experiment Results (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the use of the TE transformer block increased the price-performance
+    on both the p4d (~19%) and the p5 (~32%) instance types. Using FP8 boosts the
+    performance on the p5 by an additional ~20%. Following the TE and FP8 optimizations
+    **the price performance of the H100-based p5.48large beats that of the A100-based
+    p4d.24large** — although not by a very wide margin (~2%). Taking into account
+    the 3x increase in training speed, we can safely conclude that the p5 would be
+    the better instance type for training our optimized model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the relatively small increase in price-performance (far lower than
+    the 40% mentioned in the p5 announcement) leaves us wishing for additional H100-specific
+    optimizations… but those will have to wait for another post :).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have demonstrated how to program a PyTorch training script to
+    use 8-bit floating types. We further demonstrated how the use of FP8 can be a
+    key factor in getting the best performance out of modern GPUs such as Nvidia H100\.
+    Importantly, the viability of FP8 as well as its impact on training performance
+    can vary a great deal based on the details of the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post continues a long series of publications on the topic of optimizing
+    machine learning workloads. Be sure to see some of our [other posts](https://chaimrand.medium.com/)
+    on this important topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update** (May 21, 2024): Please check out our [sequel post](https://chaimrand.medium.com/pytorch-native-fp8-fedc06f1c9f7)
+    which covers the newly released PyTorch-native FP8 data types.'
+  prefs: []
+  type: TYPE_NORMAL

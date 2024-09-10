@@ -1,0 +1,462 @@
+- en: Scaling Agglomerative Clustering for Big Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/scaling-agglomerative-clustering-for-big-data-an-introduction-to-rac-fb26a6b326ad?source=collection_archive---------2-----------------------#2023-08-30](https://towardsdatascience.com/scaling-agglomerative-clustering-for-big-data-an-introduction-to-rac-fb26a6b326ad?source=collection_archive---------2-----------------------#2023-08-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to use Reciprocal Agglomerative Clustering (RAC) to power hierarchical
+    clustering of large datasets
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@danielfrees?source=post_page-----fb26a6b326ad--------------------------------)[![Daniel
+    Frees](../Images/1551fc64acc5fb23a0db3a690def05b9.png)](https://medium.com/@danielfrees?source=post_page-----fb26a6b326ad--------------------------------)[](https://towardsdatascience.com/?source=post_page-----fb26a6b326ad--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----fb26a6b326ad--------------------------------)
+    [Daniel Frees](https://medium.com/@danielfrees?source=post_page-----fb26a6b326ad--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc941373ce27d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscaling-agglomerative-clustering-for-big-data-an-introduction-to-rac-fb26a6b326ad&user=Daniel+Frees&userId=c941373ce27d&source=post_page-c941373ce27d----fb26a6b326ad---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----fb26a6b326ad--------------------------------)
+    ·8 min read·Aug 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ffb26a6b326ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscaling-agglomerative-clustering-for-big-data-an-introduction-to-rac-fb26a6b326ad&user=Daniel+Frees&userId=c941373ce27d&source=-----fb26a6b326ad---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ffb26a6b326ad&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fscaling-agglomerative-clustering-for-big-data-an-introduction-to-rac-fb26a6b326ad&source=-----fb26a6b326ad---------------------bookmark_footer-----------)![](../Images/ea07a10f9d8bbec3f54f02f1d40062d2.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Photo** by [Nastya Dulhiier](https://unsplash.com/@dulhiier) on [Unsplash](https://unsplash.com/photos/OKOOGO578eo).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Agglomerative clustering is one of the best clustering tools in data science,
+    but traditional implementations fail to scale to large datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I will take you through some background on agglomerative clustering,
+    an introduction to reciprocal agglomerative clustering (RAC) based on [2021 research
+    from Google](https://arxiv.org/abs/2105.11653), a runtime comparison between `RAC++`
+    and `scikit-learn`’s AgglomerativeClustering, and finally a brief explanation
+    of the theory behind RAC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background on Agglomerative Clustering
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In data science, it is frequently useful to cluster unlabeled data. With applications
+    ranging from grouping of search engine results, to genotype classification, to
+    banking anomaly detection, clustering is an essential piece of a data scientist’s
+    toolkit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Agglomerative clustering is one of the most popular clustering approaches in
+    data-science and for good reason, it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ Is easy to use with little to no parameter tuning
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ Creates meaningful taxonomies
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ Works well with high-dimensional data
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ Does not need to know the number of clusters beforehand
+  prefs: []
+  type: TYPE_NORMAL
+- en: ✅ Creates the same clusters every time
+  prefs: []
+  type: TYPE_NORMAL
+- en: In comparison, partitioning methods like `K-Means` require the data scientist
+    to guess at the number of clusters, the very popular density-based method `DBSCAN`
+    requires some parameters around density calculation radius (epsilon) and min neighborhood
+    size, and `Gaussian mixture models` make strong assumptions about the underlying
+    cluster data distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With agglomerative clustering, all you need to specify is a distance metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*At a high-level, agglomerative clustering follows the below algorithm:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Identify cluster distances between all pairs of clusters (each cluster begins
+    as a single point)`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`Merge the two clusters which are closest to one another`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`Repeat`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*The result:* a beautiful dendrogram that can then be partitioned based on
+    domain expertise.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fields like biology and natural language processing, clusters (of cells,
+    genes, or words) naturally follow a hierarchical relationship. Agglomerative clustering
+    therefore enables a more natural and data-driven selection of the final clustering
+    cutoff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Pictured below is a sample agglomerative clustering of the famous* [*Iris
+    Dataset.*](https://www.kaggle.com/datasets/arshid/iris-flower-dataset)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7f74c340408007ed7a8d59d729485277.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Clustering the famous Iris dataset by sepal length and sepal width. Graphs produced
+    by co-author Porter Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So why not use agglomerative clustering for every unsupervised classification
+    problem?
+  prefs: []
+  type: TYPE_NORMAL
+- en: ❌ Agglomerative clustering has a *terrible* runtime as datasets increase in
+    size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, traditional agglomerative clustering does not scale. The runtime
+    is `O(n³)` or `O(n²log(n))` if implemented with a min-heap. Even worse, agglomerative
+    clustering runs sequentially on a single-core and cannot be scaled up with compute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the field of NLP, agglomerative clustering is a top performer… for small
+    datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reciprocal Agglomerative Clustering (RAC)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Reciprocal Agglomerative Clustering (RAC) is a [method proposed by Google](https://arxiv.org/abs/2105.11653)
+    to scale the benefits of traditional Agglomerative clustering to larger datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAC decreases the runtime complexity while also parallelizing the operations
+    to utilize a multi-core architecture. Despite these optimizations, RAC produces
+    the exact same results as traditional Agglomerative clustering when the data is
+    *fully connected* (see below).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: Fully connected data means that a distance metric can be calculated
+    between any pair of points. Non-fully connected datasets have connectivity constraints
+    (usually provided in the form of a linkage matrix) whereby some points are considered
+    disconnected.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fab556d0824638732d92c22031dd5f14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RAC produces the exact same results as traditional agglomerative clustering
+    when data is fully connected! (Top) and often continues to do so with connectivity
+    constraints (Bottom). Graphs produced by co-author Porter Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even with connectivity constraints (data which is not fully connected), RAC
+    and Agglomerative clustering are still typically identical, as seen in the second
+    [Swiss Roll dataset](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_swiss_roll.html)
+    example above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, large discrepancies can emerge when there are very few possible clusters.
+    The [Noisy Moons dataset](https://scikit-learn.org/stable/modules/generated/sklearn.datasets.make_moons.html)
+    is a good example of this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46f4af8634c7bb089d17dbbf01c97c88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inconsistent results between RAC and sklearn. Graphs produced by co-author Porter
+    Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAC++ scales to larger datasets than scikit-learn
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can compare `[RAC++](https://github.com/porterehunley/RACplusplus)` (an implementation
+    of reciprocal agglomerative clustering) to its counterpart, [AgglomerativeClustering](https://scikit-learn.org/stable/modules/generated/sklearn.cluster.AgglomerativeClustering.html),
+    in `scikit-learn`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s generate some example data with 25 dimensions, and test how long agglomerative
+    clustering takes using `racplusplus.rac` vs. `sklearn.cluster.AgglomerativeClustering`
+    for datasets ranging in size from 1,000 to 64,000 points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: I am using a connectivity matrix to limit memory consumption.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is a graph of the runtime results for each size dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/33370be559570d8b7609a6017ff32e85.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Runtime explodes for big datasets when using sklearn in comparison to racplusplus.
+    Graph produced by co-author Porter Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see, there are drastic difference in runtime between RAC++ and traditional
+    Agglomerative clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At just over 30k points, `RAC++` is around 100x faster! Even more improtantly,
+    `scikit-learn`’s Agglomerative clustering hits a time limit at ~35 thousand points,
+    while `RAC++` could scale to hundreds of thousands of points by the time it hits
+    a reasonable time limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RAC++ can scale to high-dimensions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also compare how well `RAC++` scales to high-dimensional data vs its
+    traditional counterpart.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a0b01365935489bed4018a500117db53.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaling time complexity by data dimensionality for RAC++ and sklearn. Graph
+    by co-author Porter Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time taken to generate clusters vs dimensionality for 3,000 points
+  prefs: []
+  type: TYPE_NORMAL
+- en: For 3,000 points we can see that traditional agglomerative clustering is faster
+    but it scales linearly while `RAC++` is nearly constant. Working with 768 or 1536
+    dimensional embeddings has become the norm in the field of NLP, and so scaling
+    dimensionality to meet those requirements is important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RAC++ has a better runtime**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Researchers at [Google proved that RAC has a runtime of](https://arxiv.org/abs/2105.11653)
+    `[O(nk)](https://arxiv.org/abs/2105.11653)` [where](https://arxiv.org/abs/2105.11653)
+    `[k](https://arxiv.org/abs/2105.11653)` [is the connectivity constraint and](https://arxiv.org/abs/2105.11653)
+    `[n](https://arxiv.org/abs/2105.11653)`[is the number of points](https://arxiv.org/abs/2105.11653)—
+    a linear runtime. However, this is excluding the initial distance matrix calculation
+    which is `O(n²)` — a quadratic runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our results, running a constant 30-neighbor connectivity constraint do confirm
+    an `O(n²)` runtime:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Doubling data-points is a 4x increase in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A quadratic runtime limits how well RAC++ will perform as datasets become truly
+    massive, however, this runtime is already a big improvement over the traditional
+    `O(n³)` or min-heap optimized`O(n²log(n))` runtime.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: the developers of* `*RAC++*` *are working on passing the distance matrix
+    as a parameter which would give* `*RAC++*` *a linear runtime.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How RAC Works
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Why is RAC++ so must faster? We can reduce the underlying algorithm to a few
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Pair clusters with reciprocal nearest neighbors`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`Merge the pairs of clusters`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`Update neighbors`'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note that the only difference between this and the traditional agglomerative
+    clustering algorithm is that we make sure to pair *reciprocal nearest neighbors*
+    together. This is where the name Reciprocal Agglomerative Clustering (RAC) comes
+    from. As you’ll see, this reciprocal pairing enables us to parallelize the most
+    computationally expensive step of agglomerative clustering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Pair clusters with reciprocal nearest neighbors**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we loop through to find clusters with reciprocal nearest neighbors, meaning
+    that their closest neighbors are each-other *(remember, distance can be directional!)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2889c911af71d713b2ecbdc2887ddd81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Identifying reciprocal nearest neighbors. Figure by co-author Porter Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Merge pairs**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: RAC is parallelizable because it does not matter what order reciprocal nearest
+    neighbors are merged in, as long as the linkage method is *reducible*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A linkage method is the function that determines the distance between two clusters,
+    based on pairwise distances between the points contained in each cluster. A *reducible*
+    linkage method guarantees that the new merged cluster is not closer to any other
+    cluster after the merge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/890d967e8d72fc0a73cbff0bec6f13b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: ab_c will not be closer than a_c or b_c if reducible linkage is used. Figure
+    by co-author Porter Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fortunately, the four most popular linkage methods are reducible:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Single linkage — min distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Average linkage — average of the distances
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Complete linkage — max distance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Ward linkage — minimizing variance
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/afc5c06e9af08f3843891b326ff6fe2f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visual representation of the 4 reducible linkage methods. Figures drawn by me,
+    inspired by [http://www.saedsayad.com/clustering_hierarchical.htm](http://www.saedsayad.com/clustering_hierarchical.htm).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we know that our identified reciprocal pairs are each other’s nearest
+    neighbor, and we know that reducible linkage merges will never make a newly merged
+    cluster closer to another cluster, we can safely merge all reciprocal nearest
+    neighbor pairs together at once. Each nearest-neighbor pair can be placed into
+    an available thread to be merged according to the linkage method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The fact that we can merge reciprocal nearest neighbors at the same time is
+    fantastic, because merging clusters is the most computationally expensive step!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46c0ebb69d4db2999ca0c97ba75c9275.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualizing clusters getting ready to merge. Figure by co-author Porter Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update nearest neighbors**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With reducible linkage the order in which nearest neighbors are updated after
+    merging also does not matter. Therefore, with some clever design, we can update
+    the relevant neighbors in parallel as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/31bf487b5bab07e5c37243a2b6575726.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Identifying new nearest neighbors after the merge. Image by co-author Porter
+    Hunley.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With a few test datasets, we have shown that `RAC++` produces the exact same
+    results as traditional Agglomerative Clustering (ie. `sklearn`) for fully connected
+    datasets at a much better runtime. With an understanding of reducible linkage
+    metrics and a basic understanding of parallel programming, we can understand the
+    logic that makes `RAC++` so much faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a more complete understanding (and proof) of the algorithm `RAC++`has adopted
+    into open-source, take a look at the [original Google research](https://arxiv.org/abs/2105.11653)
+    it was based on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The future**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Porter Hunley started building RAC++ to create taxonomies for clinical term
+    endpoints produced via fine-tuned BERT embeddings. Each of these medical embeddings
+    had 768 dimensions and out of the many clustering algorithms he tried, only agglomerative
+    clustering gave good results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: All other high-scale clustering methods required reducing dimensionality to
+    give any coherent results at all. There is, unfortunately, no fool-proof way to
+    reduce dimensionality — you will always lose information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After discovering Google’s research around RAC, Porter decided to build a custom
+    open-source clustering implementation to support his clinical term clustering
+    research. Porter lead development, and I co-developed portions of RAC, particularly
+    wrapping the C++ implementation in python, optimizing runtime, and packaging the
+    software for distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`RAC++` enables tons of clustering applications which are too slow using traditional
+    agglomerative clustering, and will eventually be scalable to millions of datapoints.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Although RAC++ can already be used to cluster large datasets, there are improvements
+    to be made… RAC++ is still in development — please contribute!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Contributing authors****:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Porter Hunley, Senior Software Engineer at Daceflow.ai: [github](https://github.com/porterehunley)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Daniel Frees, MS Stats & Data Science Student at Stanford, Data Scientist at
+    IBM: [github](https://github.com/danielfrees)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**GitHub — porterehunley/RACplusplus: A high performance implementation of
+    Reciprocal Agglomerative…**](https://github.com/porterehunley/RACplusplus)'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,550 @@
+- en: The Matrix Algebra of Linear Regression in R
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-in-r-b172ee5296e3?source=collection_archive---------12-----------------------#2023-05-10](https://towardsdatascience.com/the-matrix-algebra-of-linear-regression-in-r-b172ee5296e3?source=collection_archive---------12-----------------------#2023-05-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Explore how to estimate regression parameter using R’s matrix operators
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)[![Rob
+    Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------)
+    [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----b172ee5296e3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----b172ee5296e3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b172ee5296e3--------------------------------)
+    ·12 min read·May 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb172ee5296e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----b172ee5296e3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb172ee5296e3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-matrix-algebra-of-linear-regression-in-r-b172ee5296e3&source=-----b172ee5296e3---------------------bookmark_footer-----------)![](../Images/db58cd733b595a3b246084687d7db11e.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Breno Machado](https://unsplash.com/@brenomachado?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I recently wrote an [article](/the-matrix-algebra-of-linear-regression-6fb433f522d5)
+    that explored the matrix algebra and mathematical operations that sit behind linear
+    regression. Now, while it’s certainly important to have a firm grasp of theoretical
+    principles, nothing actually beats *doing* those calculations. So, in this follow
+    up article, we’re going to look at how to implement those matrix operations using
+    R.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article should be treated as a companion to my earlier [post](/the-matrix-algebra-of-linear-regression-6fb433f522d5),
+    so if you haven’t read it already, I encourage you to check it out; however, if
+    you haven’t, you’ll still be able to following along.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As our working example I’ve chosen the `cars` dataset from the `datasets` package
+    in R. It’s nice and simple set of data that comprise stopping distances for cars
+    travelling at varying speeds. Accordingly, the dataset contains just two variables:
+    `speed` and `dist.` Now, the observations were made during the 1920s so it’s certainly
+    not the most current data! Nevertheless, it’s perfect for building a simple linear
+    regression model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, let’s just take a quick look at the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: There’s nothing complicated here. We have a total of 50 observations and two
+    numeric variables. The only point to note, perhaps, is that both `speed` and `dist`
+    are integer values. This does introduce some discretisation but that doesn’t matter
+    so much for now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get a sense of the relationship between `dist` and `speed,` below I’ve plotted
+    stopping distance as a function of speed. There’s a decent positive association
+    between these variables suggesting that stopping distances *increase* with higher
+    speeds. I’ve also overlayed the best fitting regression line using ggplot’s `geom_smooth`
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our goal, then, is to estimate the parameters of this line *without* using the
+    inbuilt `lm` function. Instead, we’re going to apply matrix operations to obtain
+    regression coefficients and then generate fitted values that should fall along
+    this line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ecde3aaf52c5f24e897d7e5b79fed328.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plot of the stopping distance as a function of speed. From the cars dataset
+    in R (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Quick Review
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s worth reminding ourselves what we’re actually aiming to do. To that end,
+    we are attempting to model a response vector *Y* containing *n* observations as
+    a weighted linear combination of *m* predictor variables plus an intercept term.
+    For the example data here we only have a single predictor, `speed,`so we can let
+    *m =* 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The predictor and intercept together form an *n* × *p* design matrix, where
+    *p = m + 1* reflectsthe number of unknown regression coefficients in the model
+    which must be estimated from data. Estimation requires finding a solution to the
+    following *normal equation*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1d44c78834574b4e7515cae3829549b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The normal equation (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rearranging the equation to solve for the unknown coefficients, we arrive at
+    the following solution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/83c7b142968ce142f76bbd673a288b5b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Estimation equation (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: where **b** is a *p*-dimensional vector containing the best fitting regression
+    coefficients.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In approaching this problem, I’m going to break down the estimation equation
+    into parts that each deal with a different operation, before bringing them back
+    together to estimate the model parameters. In effect, there are three operations
+    we need to do, each of which returns a matrix we need to use at some point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Matrix Operations in R
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before diving in, I’ll just quickly review the matrix operations that we’ll
+    be using. There are only *three* operations that are important for this example.
+    The first is *matrix multiplication*. If you haven’t already come across this,
+    matrix multiplication in R is performed using the `%*%` operator. The second operation
+    involves finding the *inverse of a matrix*, which in R is done using the `solve`
+    function (no, we won’t be doing this part by hand!). The final operation is `t,`
+    which is the *transpose* operator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting Up
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, we need to define a *response vector* and create the *design matrix*.
+    For our toy example, we’re modelling distance as a function of speed, so therefore
+    `dist` is our *response variable*. Let’s assign those values its own vector called
+    `y_vec`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note the `$` is used here to access the `dist`column in the `cars` data frame.
+    I find that this method isn’t always convenient, or tidy, so you’ll see that I
+    soon switch to using `with` for some calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We next need to assign `speed` to the design matrix, which can be done using
+    the `model.matrix` function. Here I’m creating a variable called `x_mat`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note that the call to `model.matrix` is very similar to an `lm` function call.
+    There’s obviously a good reason for that, but here the formula just lets `model.matrix`
+    know that `speed` is a predictor variable. Let’s just take a quick look at what
+    this produces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can see that we have *two* columns: one for our `speed` variable and another
+    containing only ones. Recall that the design matrix includes an additional column
+    to accomodate the intercept term.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have `y_vec` and `x_mat` loaded into our workspace, we can move
+    onto the matrix operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 1
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we look at the right hand side of the estimation equation, the first term
+    is the inverse of the design matrix multiplied by itself. I’m going to deal with
+    the inverse in Step 2, so we first need to compute *X*ᵀ*X.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our simple linear regression model here, *X*ᵀ*X* will be square 2 × 2 matrix.
+    For practical purposes I’m just going to denote this as matrix *A*. Using the
+    matrix multiplication, `%*%,`and transpose, `t` , operators to compute this matrix,
+    I’ll assign the output to an object called `A`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, in my earlier post we learned a little bit about the elements contained
+    in this matrix by working through the matrix operations. I won’t revisit those
+    specific details here and will just note the result below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1682048cb8a51d79ef59ef220e99985.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The cross product of the design matrix (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that each element in *A* is quite easy to interpret, and indeed compute.
+    Notice that *a₁₁* is just the total number of observations, *n,* which is 50 for
+    the `cars` dataset. The elements along the minor diagonal, *a₁₂* and *a₂₁,* are
+    just the sum of `speed`, while *a₂₂* is the sum of `speed` squared.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can do some quick checks to verify that our object `A` does indeed contain
+    these values. Let’s first print `A` to see what we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The value at `A[1,1]` matches the total number of observations in `cars` so
+    we’re off to a good start. We can next check the values in `A[1,2]` and `A[2,1]`
+    by simply summing `speed:`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Another match — things are looking good! Finally, we can check the value in
+    `A[2,2]` by computing the square of `speed` and summing those values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s correct, too!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 2
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next step is to find the *inverse* of the matrix *XᵀX*. In R, we use the
+    `solve` function to perform this operation on `A.` Let’s do that first and assign
+    the output to an object called `A_inv:`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, before we take a look at `A_inv` lets first examine the solution for the
+    inverse of *XᵀX:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/936f0f5ae04f7aeb3071c1cb3b4ece9c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The inverse of the design matrix cross product (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we ignore the first term for now, then what we see is that some of the elements
+    in the original matrix *A* have been swapped around, while others have been transformed
+    slightly. Specifically, elements *a₁₂* and *a₂₁* have had their signs reversed
+    and now reflect the *negative* sum of `speed` . Also, the values at *a₁₁* and
+    *a₂₂* in the original matrix have swapped locations, so now *a₂₂* is the total
+    number of observations and *a₁₁* is thesum of `speed` squared.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s compile a matrix that contains these adjusted elements and assign it
+    to an object called `A_rev` , then check that everything worked:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Everything looks good! We can now multiply `A_rev` by the first term which is
+    a *scalar constant* equal to the reciprocal of *n* times the sum of squared deviations
+    around the mean of `speed.` Let’s quickly compute the constant term by creating
+    a variable called `c:`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I won’t print this out because it’s an exceedingly small value. All that’s
+    left to do now is to multiply `c` and `A_rev` together and see what we get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s now compare these values to the solution we got using `solve` by printing
+    `A_inv` to the console:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Fantastic — each element in `A_inv` matches with its corresponding element in
+    `A_rev.`
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before moving on to the next step there is one additional check we could do.
+    If for some reason we were suspicious that the output from `solve` was errant
+    in some way, we can lean on the fact that any *n* × *n* square matrix *A* is considered
+    *invertible* if and only if there exists another square *n* × *n* matrix *B* that
+    results in the following identity:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a845c04b13e0f9540be32cbc3ce0519.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Condition for matrix invertibility (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What this implies is, if `A_inv` is indeed the multiplicative inverse of `A`
+    then, if we multiply `A` and `A_inv` together, we should get back the *identity
+    matrix*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s looks like the `solve` function is doing sensible things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Just a note before moving on: these checks on the matrix outputs are not at
+    all necessary for any practical purpose. Rather, what I’m hoping to do by including
+    these little tests is further enhance your understanding about these concepts
+    by actually putting the mathematics into action.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 3
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now that we have the inverse of *XᵀX* taken care of, we can shift our attention
+    to the last term in the estimation equation: *XᵀY.* This operation involves multiplying
+    the *design matrix* with the *response vector.* Given the data we’re working with,
+    this computation will produce a *p × 1* vector that we’ll simply denote as *B*.
+    Again, we’ll just apply the matrix multiplication operator and assign the output
+    to a variable, though this time we call the variable `B:`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As we’ve done above, let’s consider what the expected output of this operation
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/694d2c7c07ee8921b843d9a6cd10f55d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The cross product of the design matrix with the response vector (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, we have some elements that are fairly easy to intuit. One is simply the
+    sum of the response variable `dist` and the other is just the sum of the product
+    of `speed` and `dist.` Let’s quickly compute those values and see whether they
+    match up with the values already stored in `B:`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have a match!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameter Estimation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Alright. We now have everything we need to estimate the model coefficients.
+    In fact, the only objects we need are `A_inv` and `B,` and all we need to do is
+    multiply these together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let’s print this to the console and see what we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Taking a quick look at the slope parameter, we’ve got a positive value. This
+    is a good sign given the positive association observed earlier and hopefully means
+    we’re on the right track. Let’s now see how these estimates compare to the coefficients
+    returned using the `lm` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Identical!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There’s just one last thing I want to point out. I demonstrated in my earlier
+    post that if you do some algebra with the estimation equation you arrive at a
+    very convenient solution. That is, the slope parameter is equivalent to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/34ab197a6dc7deb317ffcd1787e9a765.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The slope parameter (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'and the intercept parameter is equivalent to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/80d70d35f595c980c8a328469c442ee2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The intercept parameter (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Both these are very straightforward to compute and can be done in R as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Printing these objects to console shows that we get the same parameter values:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Interpreting the Coefficients
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Looking at our estimates, we can see that we have a negative intercept term
+    which doesn’t make much sense. The intercept here is the value of `dist` when
+    `speed` is set to zero, implying that when the vehicle has zero speed — i.e.,
+    it’s *stantionary* — it has a *negative* stopping distance. I’m not going to address
+    that issue here, so for now we’ll leave this alone and just accept that this is
+    reasonable (it’s not, though).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The slope parameter, on the other hand, is certainly more useful. What this
+    indicates is that for every unit *increase* in speed (which is in miles per hour)
+    the stopping distance *increase* by nearly 4 feet. So, if a vehicle increases
+    its speed from 10mph to 11mph, the distance required to stop jumps from 21.7ft
+    to 25.7ft. However, the same increase in stopping distance would also be expected
+    if the car increased its speed from 60mph to 61mph, which might not be as reasonable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Computing the Fitted Values
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The last thing we need to do is compute the fitted values. To do so, we just
+    grab our parameter estimates held in `b_vec` and multiply those with the design
+    matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: I have also computed the error vector in the above code, but this is just to
+    show you how, more than anything. We’re not going to be doing anything with those
+    values here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The very last thing we can do is overlay our fitted values on the plot we produced
+    earlier. All things being good, we should see that our fitted values fall nicely
+    along the regression line:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c01051643702151c2b223a07e79f0e53.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Overlaying the fitted values on the plot produced earlier (image by author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And indeed they do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wrapping Up
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The focus here has very much been on parameter estimation so there is much I
+    haven’t touched on. For example, model diagnostics, computing standard errors
+    for the parameter estimates, and model fit measures like the coefficient of determination,
+    *R²*. Because this post is intended to be a companion to my earlier article I
+    wanted to avoid introducing new concepts here, but I’ll cover those concepts another
+    time. Nevertheless, I hope this article helps you along your linear algebra journey
+    in some way. If you want to check out the code used in this article its available
+    at my [Git](https://github.com/dataforyounz/matrix-regression-in-r) page.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Related Articles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[The Matrix Algebra of Linear Regression](/the-matrix-algebra-of-linear-regression-6fb433f522d5)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[A Primer on Linear Algebra](https://medium.com/towards-data-science/a-primer-on-linear-algebra-414111d195ca)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A [Primer on Linear Algebra: Part 2](https://medium.com/towards-data-science/a-primer-on-linear-algebra-part-2-eba53c564a90)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Multicollinearity: Problem, or Not?](https://medium.com/towards-data-science/multicollinearity-problem-or-not-d4bd7a9cfb91)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you enjoyed this post and would like to stay up to date then please consider
+    [following me on Medium.](https://medium.com/@dataforyou) This will ensure you
+    don’t miss out on any new content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get unlimited access to all content consider signing up for a [Medium subscription](https://medium.com/membership).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can also follow me on [Twitter](https://twitter.com/dataforyounz), [LinkedIn](https://www.linkedin.com/in/dataforyou/),
+    or check out my [GitHub](https://github.com/dataforyounz) if that’s more your
+    thing.
+  prefs: []
+  type: TYPE_NORMAL

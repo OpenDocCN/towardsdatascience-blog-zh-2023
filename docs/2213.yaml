@@ -1,0 +1,410 @@
+- en: How to design a dbt model from scratch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-design-a-dbt-model-from-scratch-8c72c7684203?source=collection_archive---------5-----------------------#2023-07-10](https://towardsdatascience.com/how-to-design-a-dbt-model-from-scratch-8c72c7684203?source=collection_archive---------5-----------------------#2023-07-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A simple framework for building dbt models that actually get used.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)[![Taylor
+    Brownlow](../Images/1b9df2c82aea2920ba4059dba8b7c93b.png)](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------)
+    [Taylor Brownlow](https://taylor-count.medium.com/?source=post_page-----8c72c7684203--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fcdc63fa2a06e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=post_page-cdc63fa2a06e----8c72c7684203---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8c72c7684203--------------------------------)
+    ·6 min read·Jul 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8c72c7684203&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&user=Taylor+Brownlow&userId=cdc63fa2a06e&source=-----8c72c7684203---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8c72c7684203&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-design-a-dbt-model-from-scratch-8c72c7684203&source=-----8c72c7684203---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I was researching the [Ultimate Guide to dbt](https://count.co/canvas/JpkaYdqr9oN),
+    I was shocked by the lack of material around actually building models from scratch.
+    Not the exact steps to take in the tool — that is all covered in innumerable blogs
+    and tutorials. I mean how do you know the right design? How do you make sure your
+    stakeholders will use that model? How can you make sure it will be trusted and
+    understood?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we deploy new models without taking these steps, there can be significant
+    consequences:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: we face a deluge of questions and follow-up requests from stakeholders
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we get suggestions for code improvements from other Data Engineers or Analytics
+    Engineers
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: we have to go back and add in the new features, make the improvements, and answer
+    all the questions before our work is done
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If we repeat this process over and over trust between data and business teams
+    begins to deteriorate as each side gets progressively more exhausted from this
+    feedback frenzy, something that can be very challenging to build back up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This underscores the importance of thinking carefully about ***how*** we design
+    models, not just on our own in dbt, but collectively with all of our stakeholders,
+    to make sure the model is **accurate** and **effective**, and we don’t waste our
+    time building each model 4–5 times before its **useful**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article is the result of research and experiments into how best to design
+    and implement a dbt model. It won’t have any commands to execute in dbt, but it
+    will talk through how to think about your model, and how to structure your workflow
+    to make sure you’re not wasting your time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f429f6d1332a7f408dc76c3a94aeaaa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Med Badr Chemmaoui](https://unsplash.com/@medbadrc?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/wallpapers/design?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: A different approach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Lucky for me, I’m not the first to think about this problem. Many other fields
+    have faced similar challenges and have created their own frameworks and processes
+    that I can leverage when thinking about how to approach data modeling. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Agile principles**](https://agilemanifesto.org/principles.html)discourage
+    software engineers from a waterfall development approach which is antithetical
+    to an environment of rapidly-changing requirements [1]. Instead, Agile embraces
+    rapid iteration and acknowledges the competitive advantage of being able to respond
+    to changing requirements quickly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Design principles**](https://www.designcouncil.org.uk/our-resources/framework-for-innovation/)
+    similarly acknowledge the need to be deliberate about how you work with multiple
+    stakeholders on a design project [2]. The framework prioritizes people and encourages
+    feedback and each stage of development so the best solution can be found as quickly
+    as possible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99babf2f4cd4ad9ca3af977304fa14c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image Source: This work by [the Design Council](https://www.designcouncil.org.uk/)
+    is licensed under a [CC BY 4.0 license](https://creativecommons.org/licenses/by/4.0/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even the data modeling godfather [Ralph Kimball](https://en.wikipedia.org/wiki/Ralph_Kimball)
+    nods to the importance of getting quality input from stakeholders early in a modeling
+    process in his [**4-step process** **to data modeling**](https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/)
+    **[3]**. Step 1 of which is to go learn as much about the business process as
+    you can before you even think about building a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, the most influential source I found when thinking about this problem
+    was the [**System Engineering Heuristics**](https://sebokwiki.org/wiki/Systems_Engineering_Heuristics)
+    — a set of truisms about working on a complex problem with many stakeholders [4]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Don’t assume that the original statement of the problem is necessarily the
+    best, or even the right one.***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***In the early stages of a project, unknowns are a bigger issue than known
+    problems.***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Model before build, wherever possible.***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '***Most of the serious mistakes are made early on.***'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These sources helped shape the following process for designing data models from
+    scratch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A data modeling design process
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: And so I wanted to build a process that was true to those principles, that was
+    repeatable, and that would actually make sure my models were built well the first
+    time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s what I came up with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/89141d26c96ae2d31042367cd67ed49e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We’ll walk through each step in more detail below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following examples will show screenshots from [count.co](https://count.co),
+    a data canvas, where I am Head of Product. It’s important to note, however, this
+    process is tool-agnostic. You can follow along with the example in the screenshots
+    [here](https://count.co/canvas/m1UgaD6DbvG).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/142e64c1cdef0313a4221c58da0c2c03.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. All 5 steps of the process in action. See the full canvas [here](https://count.co/canvas/m1UgaD6DbvG).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Discover'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Objective**: Understand the business process you are modeling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Players**: You, Business stakeholders'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Activities**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Map out the business process
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Identify what the stakeholder wants to do with the final table (e.g. which metrics
+    they need to calculate, which filters they need to add, etc.)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understand how they are doing this today (if they are). What is wrong with that
+    solution?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Who else will use this? Any secondary stakeholders you should talk to as well?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Any other relevant business context? e.g. someone has a big presentation on
+    this topic next week
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/549784a1f0e84b0e766f0e9eaa041145.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. Click [here](https://count.co/canvas/m1UgaD6DbvG?object=PZUMv4Y0CvO)
+    to see the example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Design (& iterate!)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Objective**: Map out possible approaches to building your model'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Players**: You'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Activities**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Map out the final table
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: what granularity will you choose?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: which columns will you include?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If there are multiple options for a final table design, map them out and get
+    feedback from stakeholders before continuing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/6e774dbde0e3fef7fc56ae2651ec2d7c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. Click [here](https://count.co/canvas/m1UgaD6DbvG?object=iKESpCOMjyZ)
+    to see the example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: Prototype (& iterate!)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Objective**: Map out how you’re going to get to the agreed-upon final table.
+    Include code and explanation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Players**: You, members of the data team, stakeholders'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Activities**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: map out each step of the model, including code and results at each stage
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: make sure another member of the data team reviews your code
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: go through logic with stakeholders to make sure it aligns with their expectations
+    and context
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: validate results of the prototyped model
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: iterate until both business stakeholders and the data team understand and approve
+    the approach and results
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/76e0d9762f813f6d8c36eda6499ce348.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. Click [here](https://count.co/canvas/m1UgaD6DbvG?object=I7aMI3ANu87)
+    to see the example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: Deploy'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Objective**: Deploy model in dbt'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Players**: You'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Activities**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: take the final prototyped code and deploy it into your dbt codebase
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: makes sure it passes all tests
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/c6ffb607ab110f16fb77efe14ce50542.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. This is how you export the prototyped SQL to dbt-friendly syntax.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 5: Deliver'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Objective**: Let stakeholders know the table is now available and how to
+    interact with the table'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Players**: You, Business Stakeholders'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Activities**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: create documentation (either in dbt or elsewhere)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: send link to table and docs to stakeholders
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[optional] Create sample analysis with the table so they have a starting point'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[optional] Hold a quick session for anyone who wants an introduction to the
+    new table'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/9c868836aa942c9fc96fba975074f309.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author. Click [here](https://count.co/canvas/m1UgaD6DbvG?object=HNu4QT6yLSR)
+    to see the full example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next Steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Try this process the next time you start building a dbt model from scratch.
+    It will be a big change for both you and your stakeholders, but it has proven
+    to significantly decrease the time taken to deploy new models and improve the
+    overall uptake of those models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The simple act of bringing more people into your data modeling process, and
+    demonstrating transparency helps to promote trust and deliver valuable data models
+    quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**And if you do give this a spin, please drop me a comment and let me know
+    how it went and any ideas for improvements! These things have to be constantly
+    iterated after all…**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Agile Manifesto. (2001). Principles behind the Agile Manifesto. Retrieved
+    July 1, 2023, from [https://agilemanifesto.org/principles.html](https://agilemanifesto.org/principles.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Design Council. (2004). Framework for Innovation. Retrieved July 1, 2023,
+    from [https://www.designcouncil.org.uk/our-resources/framework-for-innovation/](https://www.designcouncil.org.uk/our-resources/framework-for-innovation/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Holistics. Kimball’s Dimensional Data Modeling. Retrieved July 1, 2023,
+    from [https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/](https://www.holistics.io/books/setup-analytics/kimball-s-dimensional-data-modeling/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Peter Brook. “Systems Enegineering Heuristics.” in SEBoK Editorial Board.
+    2023\. *The Guide to the Systems Engineering Body of Knowledge (SEBoK)*, v. 2.8,
+    R.J. Cloutier (Editor in Chief). Hoboken, NJ: The Trustees of the Stevens Institute
+    of Technology. Accessed [DATE]. [www.sebokwiki.org.](http://www.sebokwiki.org.)
+    BKCASE is managed and maintained by the Stevens Institute of Technology Systems
+    Engineering Research Center, the International Council on Systems Engineering,
+    and the Institute of Electrical and Electronics Engineers Systems Council.'
+  prefs: []
+  type: TYPE_NORMAL

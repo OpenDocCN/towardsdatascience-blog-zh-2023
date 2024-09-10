@@ -1,0 +1,339 @@
+- en: 'Anomaly Detection using Sigma Rules (Part 1): Leveraging Spark SQL Streaming'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457?source=collection_archive---------9-----------------------#2023-01-24](https://towardsdatascience.com/anomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457?source=collection_archive---------9-----------------------#2023-01-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Sigma rules are used to detect anomalies in cyber security logs. We use Spark
+    structured streaming to evaluate Sigma rules at scale.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)[![Jean-Claude
+    Cote](../Images/aea2df9c7b95fc85cc336f64d64b0a76.png)](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)[](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------)
+    [Jean-Claude Cote](https://medium.com/@jean-claude.cote?source=post_page-----246900e95457--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F444ed0089012&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&user=Jean-Claude+Cote&userId=444ed0089012&source=post_page-444ed0089012----246900e95457---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----246900e95457--------------------------------)
+    ·8 min read·Jan 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F246900e95457&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&user=Jean-Claude+Cote&userId=444ed0089012&source=-----246900e95457---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F246900e95457&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fanomaly-detection-using-sigma-rules-part-1-leveraging-spark-sql-streaming-246900e95457&source=-----246900e95457---------------------bookmark_footer-----------)![](../Images/e01586182f002a7b3841a272a0a406cd.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by Tom Carnegie on Unsplash, Supreme Court of Canada
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Rise of Data Sketching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data sketch is an umbrella term for data structures and algorithms that use
+    theoretical mathematics, statistics and computer science to solve set cardinality,
+    quantiles, frequency estimation, with mathematically proven error bounds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Data sketches are orders-of magnitude faster than traditional approaches, they
+    require less compute resources and sometimes are the only viable solution to big
+    data problems. To find out more about data sketches checkout the [Apache Data
+    Sketch project](https://datasketches.apache.org/docs/Background/SketchOrigins.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sketches implement algorithms that can extract information from a
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: stream of data in a single pass, which is also known as “one-touch” processing.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Spark leverages data sketches a lot, for example: [dimension reduction](https://spark.apache.org/docs/latest/mllib-dimensionality-reduction.html),
+    [locality sensitive hashing](https://spark.apache.org/docs/latest/ml-features.html#locality-sensitive-hashing),
+    [count min sketch](https://spark.apache.org/docs/latest/api/sql/#count_min_sketch).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this series of articles we will walk you through the design of a highly performant
+    fraud detection type system. Using real examples, we evaluate and contrast the
+    performance of a traditional algorithm versus one based on data sketching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are Sigma Rules
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Sigma](https://github.com/SigmaHQ/sigma) is a generic signature format that
+    allows you to make detections in log events. Rules are easy to write and applicable
+    to any type of log. Best of all, Sigma rules are abstract and not tied to any
+    particular SIEM, making Sigma rules shareable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once a cyber security researcher or analyst develops detection method, they
+    can use Sigma to describe and share their technique with others. Here’s a quote
+    from Sigma HQ:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sigma is for log files what [Snort](https://www.snort.org/) is for network traffic
+    and [YARA](https://github.com/VirusTotal/yara) is for files.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s look at an [example](https://github.com/SigmaHQ/sigma/blob/master/rules/web/web_webshell_regeorg.yml)
+    from Sigma HQ.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ff877108907697beaaf7a34f11c1d3b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The heart of the rule is the detection section. When the condition evaluates
+    to true it means we made a detection. A condition is composed of named expressions.
+    For example, here a selection and a filter expression are declared. These expressions
+    perform tests against attributes of the logs. In this case web logs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sigmac Generates SQL
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The sigmac compiler is used to translate an abstract Sigma rule into a concrete
+    form which can be evaluated by an actual SIEM or processing platform. Sigmac has
+    many backends capable of translating a rule into QRadar, ElasticSearch, ArcSight,
+    FortiSIEM and generic SQL.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using the SQL sigmac backend we can translate the rule above into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: These SQL statements are typically invoked by a scheduler on particular trigger
+    interval; say 1 hour. Every hour the detection searches through the newest events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5929476215d8840014c7f5cbee9e00a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: However, some Sigma rules apply temporal aggregations. For example [Enumeration
+    via the Global Catalog](https://github.com/SigmaHQ/sigma/blob/7c36a33ea77e94cbb5ad58fa061a84ed74dd503a/rules/windows/builtin/security/win_global_catalog_enumeration.yml)
+    counts occurrence of events in a window of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the batch model above, these types of queries reprocess the same events
+    over and over. Especially if the correlation window is large. Furthermore, if
+    we try to reduce the detection latency by increasing the trigger rate say to every
+    5 minutes, we introduce even more reprocessing of the same events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally to reduce reprocessing the same events over and over we would like the
+    anomaly detection to remember what was the last event it processed and what were
+    the value of the counters so far. And that is exactly what Spark Structured Streaming
+    framework provides. A streaming query triggers a micro-batch every minute (configurable).
+    It reads in the new events, updates all counters and persists them (for disaster
+    recovery).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5364db4f9be8cdd1834da5eeb713c863.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In this model, each event is evaluated once. Increasing the trigger rate does
+    not incur the same cost as the stateless batch model. Also because events are
+    evaluated only once, complex detections such as regex matching do not incur ballooning
+    costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Use Spark Streaming to run Detections
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Spark Structured streaming can easily evaluate the SQL produced by the sigmac
+    compiler. First we create a streaming dataframe by connecting to our favorite
+    queuing mechanism (EventHubs, Kafka). In this example, we will `readStream` from
+    an Iceberg table, where events are incrementally inserted into. Find out more
+    about Iceberg’s streaming capabilities [here](https://iceberg.apache.org/docs/latest/spark-structured-streaming/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice that we aliased the streaming dataframe with the view name “events”.
+    We do this in order to refer to this streaming dataframe in our SQL statement,
+    i.e.: `select * from events`. All we have to do now is configure the sigmac compiler
+    to produce SQL statements against an `events` table. For example a generated sql
+    file might look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our analytic we load this generated SQL and ask Spark to create a `hitsDf`
+    dataframe from it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We start the streaming query by invoking `writeStream` and we configure the
+    query to trigger a micro-batch every minute. This streaming query will run indefinitely
+    writing detections to the sink of our choice. Here we simply write to the console
+    sink but we could write to another Iceberg table. Or we could use `[forEachBatch](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#using-foreach-and-foreachbatch)`
+    and execute some arbitrary python code, for example to push notifications into
+    a REST endpoint. Or we can even do both.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Parent Process Challenge
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far we have seen how to detect anomalies in discrete events. However, Sigma
+    rules can correlate an event with previous ones. A classic example of this is
+    found in [Windows Security Logs (Event ID 4688)](https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/event.aspx?eventID=4688).
+    In this log source we find information about a process being created. A crucial
+    piece of information in this log is the process that started this process. You
+    can use these `Process ID` to determine what the program did while it ran etc.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s use this Sigma rule as an example: [Rundll32 Execution Without DLL File](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the raw telemetry an event only knows the parent `Process ID` . Yet the rule
+    refers to the `ParentImage` and the `ParentCommandLine`. The rule basically assumes
+    a join has already been performed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Luckily Spark Structured Streaming supports [stream-stream joins](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#stream-stream-joins).
+    In order to retrieve the ParentImage and ParentCommanLine, we perform a self-join
+    of the process logs. We will join the `current` side with the `parent_of_interest`
+    side. With a join condition like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`current.ParentProcessID = parent_of_interest.ProcessID`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Left side: Set flags for every detection rule'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use a convention `c` for current process and `r1` for rule 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So `filter_empty` in [Rundll32 Execution Without DLL File](https://github.com/SigmaHQ/sigma/blob/master/rules/windows/process_creation/proc_creation_win_run_executable_invalid_extension.yml)
+    (rule 1) is named `cr1_filter_empty`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Right side: Filter messages on the parents_of_interest'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We do the same with conditions that apply to parent process. However, in this
+    case we also filter the table. This means parent process that are filtered out
+    necessarily had all their flags set to `FALSE`. By filtering we greatly reduce
+    the amount of `parents_of_interest` keys to cache when performing a streaming
+    join.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Join current with its parent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We are doing a left join with the parent side. Since the parent side is filtered
+    it is possible we will not find the corresponding parent process id. When a parent
+    is not found, the columns will have flags set to NULL. We use coalesce to assign
+    these parent side flags a value of `FALSE`. `pr3_selection_atexec` is a parent
+    flag, so we apply coalesce like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We also combine conditions that come from current and parent side. For example
+    the `selection_atexec` condition is composed of a parent and child condition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We thus combine them like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`r3_selection_atexec` is the final flag for `selection_atexec` in rule 3.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally we apply the Sigma rule condition
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For example rule1’s condition is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: We simply apply this condition and name the result `rule1`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here’s the condition in the complete statement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note, the sigmac compiler does not produce this type of SQL. However, we plan
+    on writing a custom sigma compiler to produce the above SQL statements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running these SQL statements is no different then our original example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Spark Structured Streaming can keep and persist state across micro-batches.
+    In the documentation Spark refers to this as [Windowed Grouped Aggregation](https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#window-operations-on-event-time).
+    The same principal applies to stream-stream join. You configure Spark to cache
+    aggregations or in this case the rows of the `parents_of_interests` inside a window.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, how well does this scale? How many rows of `parents_of_interests` can
+    we keep in Spark’s [state store](https://spark.apache.org/docs/3.0.2/api/scala/org/apache/spark/sql/streaming/GroupState.html)
+    window?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our next article we will answer these questions. In order not to miss it,
+    follow us and subscribe to get these stories via email. Stay tuned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: All images unless otherwise noted are by the author
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

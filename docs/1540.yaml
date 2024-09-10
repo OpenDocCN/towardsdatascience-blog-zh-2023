@@ -1,0 +1,226 @@
+- en: A primer on functional PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/introduction-to-functional-pytorch-b5bf739e1e6e?source=collection_archive---------1-----------------------#2023-05-07](https://towardsdatascience.com/introduction-to-functional-pytorch-b5bf739e1e6e?source=collection_archive---------1-----------------------#2023-05-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to use `write Jax-style PyTorch models`
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)[![Mario
+    Dagrada](../Images/32dff27962b941b1efd7a7bdf680fca9.png)](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------)
+    [Mario Dagrada](https://mariodagrada.medium.com/?source=post_page-----b5bf739e1e6e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F99ed96040994&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&user=Mario+Dagrada&userId=99ed96040994&source=post_page-99ed96040994----b5bf739e1e6e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5bf739e1e6e--------------------------------)
+    ·6 min read·May 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5bf739e1e6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&user=Mario+Dagrada&userId=99ed96040994&source=-----b5bf739e1e6e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5bf739e1e6e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fintroduction-to-functional-pytorch-b5bf739e1e6e&source=-----b5bf739e1e6e---------------------bookmark_footer-----------)![](../Images/363519458d8628ce115a6d939b8f089d.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Ricardo Gomez Angel](https://unsplash.com/@rgaleriacom?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: PyTorch has recently integrated the `torch.func` module into its main codebase
+    in the 2.0 release. This module, previously known as `functorch`, enables the
+    development of purely functional neural network models in PyTorch with a straightforward
+    API. This package is PyTorch’s response to the growing [popularity](https://www.assemblyai.com/blog/why-you-should-or-shouldnt-be-using-jax-in-2023/#:~:text=Since%20Google's%20JAX%20hit%20the,and%20others%20are%20using%20JAX.)
+    of [Jax](https://github.com/google/jax), a Python framework for general differentiable
+    programming built using a functional programming paradigm from the ground up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, we will first introduce the basics of `torch.func`, followed by
+    a **simple end-to-end example** of using a neural network (NN) model to fit a
+    non-linear function. While using an NN for this task is admittedly overkill, it
+    works well for illustrative purposes. Additionally, we will discover some of the
+    benefits of adopting a functional approach when constructing NN models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Write a functional model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Using `torch.func` begins in the same way as standard PyTorch: you need to
+    construct a neural network. For simplicity, let us define a very simple one composed
+    of an arbitrary number of linear layers and non-linear activation functions. The
+    forward pass takes a batch of data points as input, where the model is evaluated.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now things get interesting. Recall that `torch.func` allows to build purely
+    functional models. But what does in mean in practice?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First of all, one needs to grasp the central concept of functional programming:
+    [**pure functions**](https://en.wikipedia.org/wiki/Pure_function). Essentially,
+    a pure function has two defining properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: its return values are identical for identical input arguments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: it has no side effects, meaning it does not modify its input arguments in any
+    way
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'By this definition, most of the methods of a standard PyTorch module are not
+    pure since the parameters are stored within the PyTorch model. In other words,
+    a standard PyTorch model is **stateful** rather than stateless, as required by
+    the functional paradigm. Consider this code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The forward pass of the model has not the same output for identical input arguments
+    since the optimizer updated the parameters in place.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One way for making a PyTorch module pure would then be to decouple the parameters
+    from the model, thus making the model completely **stateless**. This is exactly
+    what the `torch.func.functional_call()` routine does:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now that we have a purely functional forward pass for our neural network model,
+    we can explore how to use it with the composable primitives provided by PyTorch’s
+    functional API. This allows us to construct complex models using modular building
+    blocks, each with its own functional implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Composable function transforms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I just showed how to define a purely functional forward pass for our model.
+    But how can we define differentiation rules and loss functions with it? We need
+    to use the **composable** **function transforms** provided by `torch.func`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Function transforms consist of a set of routines, each of which returns a function
+    that can be used to evaluate specific quantities. This kind of function that returns
+    another function is known as a *higher-order function*. For example, one can use
+    the `grad` primitive to evaluate the gradients with respect to the input data
+    `x` as follow:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that, by default, the `grad` function applies to a single number. One
+    can use another function transform called`vmap` to efficiently deal with batches
+    of inputs. Notice that `vmap` performs also automatic parallelization when multiple
+    CPUs or GPUs are available without any code change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One important consequence of all the functions in the `torch.func` module being
+    pure is their ability to be arbitrarily composed together (hence the term “composable”
+    in their name). This is because a pure function can always be replaced with its
+    result without affecting program execution, a direct consequence of the two properties
+    mentioned above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this in mind, let’s calculate the second derivative for a batch of input
+    data `x`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It’s worth noting that the forward pass of the model does not take parameters
+    as input. As a result, to compute the gradient with respect to the parameters,
+    we need to define an auxiliary `make_functional_fwd` routine with the appropriate
+    arguments. In practice, we can achieve this using a closure, as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `torch.func` module offers many more composable function transforms for
+    computing, for example, vector-Jacobian products. [Here](https://pytorch.org/functorch/stable/notebooks/whirlwind_tour.html#why-composable-function-transforms)
+    you can find more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization with functional models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you made until here, you might wonder how can you perform gradient-based
+    optimization with a functional model. After all, the standard PyTorch optimizers
+    works by modifying the model parameters in place which, as I just showed, breaks
+    the pure function requirements.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, PyTorch does not natively provide functional optimizers. However,
+    one can use the`[torchopt](https://github.com/metaopt/torchopt)` library for this
+    purpose.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For showing how functional optimization works, let’s assume that we want to
+    fit a simple function, for example *f(x) = 2 sin(x + 2π)* using some random input
+    points in the domain *[0, 2π]*. We can generate some training and test data points
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let’s use `torchopt`and the PyTorch functional API to train our NN to fit
+    this function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: As you can see, the optimization loop is pretty similar to standard PyTorch,
+    with the crucial difference that the optimizer step now requires the current loss
+    and the current parameters values, and evaluates the updated parameters in a fully
+    stateless manner. In my opinion, this approach looks much cleaner than the typical
+    stateful API of PyTorch!
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the complete code for this blog post, you can look at [this code snippet](https://gist.github.com/madagra/64afe1b56ff5656b2b1acb19cc68f477).
+    As you will notice, some details of the implementation (particularly the interaction
+    between `torch.func.functional_call` and the `torchopt` optimizer) have not been
+    covered in this blog. Feel free to send me a message on [Linkedn](https://www.linkedin.com/in/mariodagrada/)
+    if you have any questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thank you for reading this blog post. The functional API of PyTorch is a powerful
+    tool that enables you to write high-performance neural network models and utilize
+    composable functions and automatic parallelization and vectorization, similar
+    to Jax. However, it is still an experimental feature and should be used with caution.
+    Happy coding!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Concise comparison with Jax: [Tutorial: Writing JAX-like code in PyTorch
+    with functorch — Simone Scardapane (sscardapane.it)](https://www.sscardapane.it/tutorials/functorch/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] A bit old but very well-explained tutorial: [Working with FuncTorch: An
+    Introduction | functorch-examples — Weights & Biases (wandb.ai)](https://wandb.ai/functorch-examples/functorch-examples/reports/Working-with-FuncTorch-An-Introduction--VmlldzoxNzMxNDI1)'
+  prefs: []
+  type: TYPE_NORMAL

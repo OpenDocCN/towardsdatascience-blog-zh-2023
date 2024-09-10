@@ -1,0 +1,462 @@
+- en: Improving Physics-Informed Neural Networks through Adaptive Loss Balancing
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/improving-pinns-through-adaptive-loss-balancing-55662759e701?source=collection_archive---------6-----------------------#2023-01-31](https://towardsdatascience.com/improving-pinns-through-adaptive-loss-balancing-55662759e701?source=collection_archive---------6-----------------------#2023-01-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to boost your PINN’s performance with ReLoBRaLo, Learning Rate Annealing
+    and co.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)[![Rafael
+    Bischof](../Images/a1d468ea5b61c26a18541f0c0f42c5c6.png)](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)[](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------)
+    [Rafael Bischof](https://rabischof.medium.com/?source=post_page-----55662759e701--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F913c6c1e6a94&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&user=Rafael+Bischof&userId=913c6c1e6a94&source=post_page-913c6c1e6a94----55662759e701---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----55662759e701--------------------------------)
+    ·14 min read·Jan 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F55662759e701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&user=Rafael+Bischof&userId=913c6c1e6a94&source=-----55662759e701---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F55662759e701&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimproving-pinns-through-adaptive-loss-balancing-55662759e701&source=-----55662759e701---------------------bookmark_footer-----------)![](../Images/78a596b4145a3b2807cb6d025b3d9cf1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [David Clode](https://unsplash.com/@davidclode?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we review the basics of PINNs, explore the issue of imbalanced
+    losses, and show how the balancing scheme [ReLoBRaLo (Relative Loss Balancing
+    with Random Lookbacks)](https://arxiv.org/abs/2110.09813) [1], proposed by Michael
+    Kraus and myself, can significantly boost the training process. Plus, experience
+    the technique in action with two accompanying notebooks solving real-world PDEs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Notebook for Kirchhoff Plate bending PDE**](https://colab.research.google.com/drive/1_PmLv8OWh9GZTzqPgFpCXYYBlxGqszOn?usp=sharing)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**Notebook for Helmholtz PDE**](https://colab.research.google.com/drive/1R6aPThhp1wrQVaydl8pj1G0s4gLiH8Wc?usp=sharing)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you clicked on this article, it is probably because you already have quite
+    a good understanding of what [Physics-Informed Neural Networks (PINN)](https://www.sciencedirect.com/science/article/pii/S0021999118307125)
+    [2] are. Maybe you have found some tutorials online and implemented PINNs on well-known
+    benchmarks like the Burgers or Helmholtz equation. The idea of harnessing the
+    power of neural networks to solve complex partial differential equations (PDEs)
+    is certainly an appealing one. But as many of us have painfully discovered, the
+    reality of working with PINNs can also be quite a frustrating process. If you
+    went ahead and tried applying these tools on a PDE that you encountered in your
+    own research, one that may not yet be well-documented in the literature, then
+    it is very likely that the vanilla PINNs may not have performed as well as you
+    had hoped. Worse, that they even converged more slowly than established approaches
+    like the Finite Elements Method (FEM)!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bear with me, I have been there, in fact, basically every time that I tried
+    applying PINNs to a new problem. Despite the progress that has been made in the
+    five years since their proposal, and the decades of [research on using differentiable
+    Neural Networks to solve differential equations](https://www.sciencedirect.com/science/article/pii/002199919090007N)
+    [3], there is still no easy, plug-and-play version of PINNs that can be seamlessly
+    transferred to any type of problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You see, PINNs make use of differential equations in their loss function by
+    taking multiple higher-order derivatives of the output with respect to the input.
+    These derivatives are then used to construct the residual and boundary conditions
+    that should be approximated. This means that each partial differential equation
+    fundamentally changes the PINN’s training procedure. Not only may it become necessary
+    to adapt the architecture, such as adding or removing layers and nodes, but other,
+    more intricate hyperparameters may have a crucial impact on the modelling capabilities,
+    many of which are pecularities of PINNs and can not be found in the literature
+    of classical Neural Networks. These may include the choice of activation functions,
+    the sampling procedure on the physical domain, or, very treacherous, the choice
+    of units of measurements in the differential equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While I can unfortunately not give you all the ingredients necessary to make
+    your PINNs work, I can most certainly tell you what the fundamental steps are,
+    without which your endeavour will most likely be fruitless. But before I reveal
+    these crucial tools, allow me to provide some context to better understand my
+    arguments. Let us take a step back and open a parenthesis, if you will. (
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmark PDEs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For the sake of illustration, let us introduce the Helmholtz and Kirchhoff plate
+    bending equations. But before you start feeling overwhelmed, let me assure you
+    that understanding the intricacies of these PDEs is not necessary for following
+    the rest of this article. If you want to skip this section, just know that the
+    Helmholtz PDE is a second-order PDE with zeroth order (Dirichlet) boundary conditions,
+    and the Kirchhoff plate bending equation is a fourth-order PDE with boundary conditions
+    on the zeroth and second-order derivatives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This equation is a fourth-order partial differential equation (PDE) that describes
+    the deformation of a plate under load. The unknown function u in the equation
+    represents the vertical displacement (in meters, for example) from the initial
+    state of the plate at a given point (x, y). The load applied on the plate is represented
+    by the function p(x, y). The constant D in the equation encapsulates various properties
+    of the plate such as its thickness, modulus of elasticity, and density.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kirchhoff plate bending equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, Kirchhoff’s equation states that the fourth-order derivative of the deformation
+    is equal to the load applied on the plate divided by a constant factor. Fairly
+    straightforward, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course every experienced PDE-tian knows that a governing equation, as elegant
+    as it may seem, is nothing but a meaningless abstraction without the proper boundary
+    conditions. After all, there are an infinite number of equations that could fulfill
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So let us also introduce the boundary conditions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Boundary conditions for simply supported edges
+  prefs: []
+  type: TYPE_NORMAL
+- en: where W and H define the the plate’s width and height, respectively. The first
+    row of the boundary conditions shows the zeroth (Dirichlet) and states that the
+    edges of the plate are not allowed to bend. The second row shows the second-order
+    derivatives, which enforce the moments on the edges to be zero. This can be illustrated
+    with an edge of a plate that is supported below by a beam (hence zero 0th order
+    derivative) and squeezed by another beam by above (resulting in zero moments).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/099f79c55b98b5e1bf1a6c4e071fe2a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a Kirchhoff plate and its deformation (in m) under a sine load and
+    W = H = 10 and D = 20.83\. Figure by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Helmholtz Equation: Modeling Waves in a Medium'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Helmholtz equation is a partial differential equation that describes the
+    propagation of waves in a medium. It is a second-order equation and named after
+    the German physicist Hermann von Helmholtz.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Helmholtz equation, where u(x, y) is the unknown function and k is the wave
+    number
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where k is the wave number and u(x, y) the unknown function to be found. For
+    this problem, we will use the zeroth-order Dirichlet boundary conditions on all
+    four edges of the domain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dirichlet boundary conditions for the Helmholtz PDE
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2886293b8233c59f6685f4398d25dc8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a Helmholtz wave propagation with zero Dirichlet boundaries. Figure
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PINN Loss Function
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If I lost you anywhere during the definition of the Kirchhoff or Helmholtz functions,
+    do not worry. It took me over half a year, and countless explanations from patient
+    civil engineers, before being able to ruminate these formulas to you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The real key is understanding how to translate these equations into a loss
+    function that can be used to train our PINN, here for the Helmholtz equation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You can find the full code in the notebooks implementing ReLoBRaLo for the [Helmholtz](https://colab.research.google.com/drive/1R6aPThhp1wrQVaydl8pj1G0s4gLiH8Wc?usp=sharing)
+    and the [Kirchhoff PDEs](https://colab.research.google.com/drive/1_PmLv8OWh9GZTzqPgFpCXYYBlxGqszOn?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-Objective Optimisation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As we have already established, the final loss function for our Helmholtz PDE
+    will consist of two, the Kirchhoff PDE of three objectives:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Helmholtz: the loss for the governing equation L_f and the loss for the 0th
+    order boundary condition L_b0.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Kirchhoff: in addition to L_f and L_b0, Kirchhoff also has a term for the second-order
+    boundary condition L_b2.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Therefore, these losses fall into the category of Multi-Objective Optimisation
+    (MOO), as is the case for most applications involving PINNs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The way the several objectives are aggregated into a single loss is usually
+    done through linear scalarisation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the lambdas are scaling factors for controlling each term’s contribution
+    towards the total loss. But why are they necessary?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Issue of imbalanced Gradients
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: After this detour for gathering the necessary context, we can finally close
+    the open parenthesis ) and continue exploring why the units of measurements in
+    the PDE have an influence on the convergence of PINNs. You see, the several objectives
+    in our loss function — L_f, L_b0, and L_b2 — each have different units of measurement.
+    L_b0 for Kirchhoff may be measured in meters, while L_b2 is measured in Nm, and
+    the load on the plate is measured in MN per square meter. This creates a significant
+    disparity in the magnitude of each term, leading to a computation of gradients
+    that heavily favours the terms with the highest magnitude. The same is true for
+    Helmholtz and any other PDE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us have a look at what this means in our example with the Helmholtz equation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6367883a371059a849c42e9f27ef8483.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evolution of the losses when training a PINN on Helmholtz’ equation. L_f is
+    the squared loss on the governing equation, L_b is the squared loss on the boundary
+    conditions and L_u is the square loss of the predictions against the analytical
+    solution. Figure by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice how the governing equation loss L_f is several orders of magnitude larger
+    than the losses for the boundary conditions at the beginning of training and,
+    as a consequence, how the value of L_b starts off by actually INCREASING. This
+    discrepancy in magnitude can lead to a PINN that prioritizes L_f over L_b, ultimately
+    converging towards a solution that satisfies the governing equation but neglects
+    the crucial boundary conditions. This effect can be observed in the plot by the
+    fact that the validation loss L_u follows the same pattern as the boundary loss
+    L_b, suggesting that the validation performance is closely related to the performance
+    on the boundaries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about the Kirchhoff PDE?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22e01b59520f242a04d2e9942fcd2ca8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evolution of the losses when training a PINN on Kirchhoff’s equation. L_f is
+    the squared loss on the governing equation, L_b0 is the squared loss on the Dirichlet
+    boundary conditions, L_b2 on the moments’ boundary conditions, and L_u is the
+    square loss of the predictions against the analytical solution. Figure by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of Kirchhoff, the inverse holds true. Here, the boundary conditions
+    converge much more rapidly, while the governing equation makes little progress.
+    The most likely explanation is that the governing equation involves fourth-order
+    derivatives and is therefore a particularly hard objective to optimise for. This
+    shows that the causes for **imbalanced losses** are not limited to differences
+    in magnitudes between the terms. They range from the choice of activation function
+    to the complexity of the function being approximated by each term.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I**mbalanced gradients** are by no means limited to the Helmholtz or Kirchhoff
+    PDEs alone. Many studies have [documented this issue in various PINN applications](https://arxiv.org/pdf/2001.04536.pdf)
+    [4]. The key takeaway here is that, in order to arrive at accurate solutions,
+    it is essential to strike a balance between all the objectives in the loss function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Adaptive Loss balancing Schemes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To mitigate the issue of imbalanced losses and gradients, one can resort to
+    the scaling factors lambda in the linear scalarisation of the Multi-Objective
+    Optimisation introduced earlier. Selecting larger values of lambda for terms with
+    smaller magnitudes or harder objectives can help evening the contributions to
+    the final gradient, and thus make sure that all terms are appropriately approximated.
+    However, doing this by hand is a tedious task, requiring many iterations and thus
+    a lot of resources in terms of time and compute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is why researchers have proposed loss balancing schemes, such as [Gradnorm](https://arxiv.org/abs/1711.02257)
+    [5], [SoftAdapt](https://arxiv.org/abs/1912.12355) [6] or [Learning Rate Annealing](https://arxiv.org/pdf/2001.04536.pdf)
+    [4].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relative Loss Balancing with Random Lookbacks (ReLoBRaLo)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we will focus on a scheme called [Relative Loss Balancing with
+    Random Lookbacks (ReLoBRaLo)](https://arxiv.org/abs/2110.09813) [1], which is
+    a combination of the aforementioned methods.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of ReLoBRaLo is to ensure that each term in the loss function makes
+    the same amount of progress over time, relative to its value at the start of training.
+    For example, if L_f improves by 50% since the beginning of training, we want the
+    other terms to improve at about the same rate and achieve a reduction of 50%.
+    However, if there is a term that consistently improves at a slower rate, ReLoBRaLo
+    incrementally increases the scaling lambda of this term, thus increasing its contribution
+    to the gradient calculation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us say that we have n loss terms L_i and let us denote the function L_i(t)
+    to be the value of this term at training iteration t. One way that we can measure
+    its progress since the start of training is by dividing the value at the current
+    iteration L_i(t) by the value at the beginning of training, L_i(0):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ReLoBRaLo measures the progress each term i made since the start of training
+    by dividing the current value of the Loss L_i(t) by the value at the first iteration
+    L_i(0) for each of the n terms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The greater the progress since the beginning of training was, the smaller the
+    result of this operation will be. Observe how this is exactly what we are looking
+    for: our scheme should attribute high scalings to terms that improved slowly,
+    and small scalings to terms that improved fast — and all of that should happen
+    independent of the absolute values of the terms. Therefore, we can use L_i(t)
+    / L_i(0) for calculating the scalings of the terms in the loss function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this is the key component of ReLoBRaLo, it contains a number of additional
+    extension that have been found to further improve the performance. However, for
+    the sake of readability of this article, I leave it to the interested reader to
+    [have a look at the paper](https://arxiv.org/abs/2110.09813) and learn more about
+    the methods used and their motivation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But does it work? Well let us have a look at the loss evolution on the Helmholtz
+    PDE, but this time by using ReLoBRsLo for balancing the contributions of the terms
+    to the total loss:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f120a085525018f63a88739c940f103.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evolution of the losses when training a PINN on Helmholtz’ equation and using
+    ReLoBRaLo. L_f is the squared loss on the governing equation, L_b is the squared
+    loss on the boundary conditions and L_u is the square loss of the predictions
+    against the analytical solution. Figure by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While the loss for the governing equation L_f does not make as much progress
+    anymore (it converged at around -3.8 in the previous plot), the boundary conditions
+    L_b and in consequence the validation loss L_u receive much more weight. The final
+    validation loss against the analytical solution yields a **65% improvement over
+    the unscaled training run**. Let us have a look at the scaling values that ReLoBRaLo
+    computed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f8a93c6fd313f29335315568ae2f069f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaling factors lambda_i obtained through ReLoBRaLo for the governing equation
+    term L_f (blue) and boundary conditions L_b (orange) on the Helmholtz PDE. Figure
+    by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The same goes for Kirchhoff:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/984c55984aeba4b757521f9ff03d4ef5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Evolution of the losses when training a PINN on Kirchhoff’s equation and using
+    ReLoBRaLo. L_f is the squared loss on the governing equation, L_b0 is the squared
+    loss on the Dirichlet boundary conditions, L_b2 on the moments’ boundary conditions,
+    and L_u is the square loss of the predictions against the analytical solution.
+    Figure by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/927cdde2e032e638cd94dc9cf03dd3ef.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaling factors lambda_i obtained through ReLoBRaLo for the governing equation
+    term L_f (blue), Dirichlet boundary conditions L_b0 (orange) and moments’ boundary
+    conditions L_b2 (green) on the Kirchhoff PDE. Figure by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Again, ReLoBRaLo improved the error against the analytical solution by over
+    an order of magnitude. It is also worth noting that this balancing scheme adds
+    almost no computational overhead (cf. the paper). It is this effectiveness and
+    efficiency that earned ReLoBRaLo its way into [Nvidia’s Modulus framework for
+    Physics-Informed Deep Learning](https://docs.nvidia.com/deeplearning/modulus/api/modulus.loss.html#modulus.loss.aggregator.Relobralo).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But the real question is: can you use ReLoBRaLo in your own projects? The answer
+    is a resounding yes! As it happens, the scheme can be neatly wrapped into a keras
+    loss that can either be added to your keras model through model.compile(), or,
+    in case you defined your own custom training loop, by explicitly calling it at
+    each iteration.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the full code in the notebooks implementing ReLoBRaLo for the [Helmholtz](https://colab.research.google.com/drive/1R6aPThhp1wrQVaydl8pj1G0s4gLiH8Wc?usp=sharing)
+    and the [Kirchhoff PDEs](https://colab.research.google.com/drive/1_PmLv8OWh9GZTzqPgFpCXYYBlxGqszOn?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Thank you a lot for reading until the end of this article! If you found this
+    article helpful and would like to use ReLoBRaLo or the notebooks in your own work,
+    please use [this citation](https://ui.adsabs.harvard.edu/abs/2021arXiv211009813B/exportcitation).
+    You can find more information about me on [rabischof.ch](http://rabischof.ch)
+    and my colleague on [mkrausai.com](http://mkrausai.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Rafael Bischof and Michael Kraus. Multi-objective loss balancing for physics-informed
+    deep learning. arXiv preprint arXiv:2110.09813, 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] M. Raissi, P. Perdikaris, and G. E. Karniadakis, Physics-informed neural
+    networks: A deep learning framework for solving forward and inverse problems involving
+    nonlinear partial differential equations, Journal of Computational Physics 378
+    (2019), 686–707.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] H. Lee and I. S. Kang, Neural algorithm for solving differential equations,
+    J. Comput. Phys. 91 (1990), no. 1, 110–131'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Wang, S., Teng, Y., and Perdikaris, P. Understanding and mitigating gradient
+    pathologies in physics-informed neural networks. arXiv e-prints (Jan. 2020), arXiv:2001.04536.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Chen, Z., Badrinarayanan, V., Lee, C.-Y., and Rabinovich, A. GradNorm:
+    Gradient Normalization for Adaptive Loss Balancing in Deep Multitask Networks.
+    arXiv e-prints (Nov. 2017), arXiv:1711.02257.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Heydari, A. A., Thompson, C. A., and Mehmood, A. SoftAdapt: Techniques
+    for Adaptive Loss Weighting of Neural Networks with Multi-Part Loss Functions.
+    arXiv e-prints (Dec. 2019), arXiv:1912.12355.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,637 @@
+- en: A Simple Solution for Managing Cloud-Based ML-Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a?source=collection_archive---------10-----------------------#2023-12-21](https://towardsdatascience.com/a-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a?source=collection_archive---------10-----------------------#2023-12-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to Implement a Custom Training Solution Using Basic (Unmanaged) Cloud Service
+    APIs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----c80a69c6939a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----c80a69c6939a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c80a69c6939a--------------------------------)
+    ·18 min read·Dec 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc80a69c6939a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a&user=Chaim+Rand&userId=9440b37e27fe&source=-----c80a69c6939a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc80a69c6939a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-solution-for-managing-cloud-based-ml-training-c80a69c6939a&source=-----c80a69c6939a---------------------bookmark_footer-----------)![](../Images/708f7fdb7efc84080b4ea5662f37e3dd.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Photo by [Aditya Chinchure](https://unsplash.com/@adityachinchure?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In previous posts (e.g., [here](/6-steps-to-migrating-your-machine-learning-project-to-the-cloud-6d9b6e4f18e0))
+    we have expanded on the benefits of developing AI models in the cloud. Machine
+    Learning projects, especially large ones, typically require **access** to specialized
+    machinery (e.g., training accelerators), the ability to **scale** at will, an
+    appropriate **infrastructure** for maintaining large amounts of data, and **tools**
+    for managing large-scale experimentation. Cloud service providers such as [Amazon
+    Web Services (AWS)](https://aws.amazon.com/), [Google Cloud Platform (GCP)](https://cloud.google.com/),
+    and [Microsoft Azure](https://azure.microsoft.com/) offer a great number of services
+    that are targeted at AI development ranging from low-level infrastructure (e.g.,
+    GPUs and virtually infinite object-storage) to highly automated tooling for creating
+    custom ML models (e.g., [AWS AutoML](https://aws.amazon.com/machine-learning/automl/)).
+    Managed training services (such as [Amazon SageMaker](https://aws.amazon.com/sagemaker/),
+    [Google Vertex AI](https://cloud.google.com/vertex-ai), and [Microsoft Azure ML](https://azure.microsoft.com/en-us/products/machine-learning))
+    in particular, have made training in the cloud especially easy and increased accessibility
+    to prospective ML engineers. To use a managed ML service all you need to do is
+    specify your desired instance type, choose an ML framework and version, and point
+    to your training script, and the service will automatically start up the chosen
+    instances with the requested environment, run the script to train the AI model,
+    save the resultant artifacts to a persistent storage location, and tear everything
+    down upon completion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While a managed training service might be the ideal solution for many ML developers,
+    as we will see, there are some occasions that warrant running directly on “unmanaged”
+    machine instances and training your models in an unmediated fashion. In these
+    situations, i.e., in the absence of an official management layer, it may be desirable
+    to include a custom solution for controlling and monitoring your training experiments.
+    In this post, we will propose a few steps for building a very simple “poor man’s”
+    solution for managing training experiments using the APIs of low-level unmanaged
+    cloud services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will begin by noting some of the motivations for training on unmanaged machines
+    rather than via managed services. Next, we will identify some of the basic training
+    management features that we desire. Finally, we will demonstrate one way to implement
+    a simple management system using GCPs APIs for [creating VM instances](https://cloud.google.com/compute/docs/instances/create-start-instance).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although we will demonstrate our solution on GCP, similar solutions can be developed
+    on alternative cloud platforms, as well. Please do not interpret our choice of
+    GCP or any other tool, framework, or service we should mention as an endorsement
+    of its use. There are multiple options available for cloud-based training, each
+    with their own advantages and disadvantages. The best choice for you will greatly
+    depend on the details of your project. Please be sure to reassess the contents
+    of this post against the most up-to-date versions of the APIs and documentation
+    at the time that you read this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many thanks to my colleague [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/)
+    for his contributions to this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Motivation — Limitations of Managed Training Services
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: High-level solutions will typically prioritize ease-of-use and increased accessibility
+    at the cost of reduced control over the underlying flow. Cloud-based managed training
+    services are no different. Along with the convenience (as described above), comes
+    a certain loss of control over the details of the training startup and execution.
+    Here we will mention a few examples which we hope are representative of the types
+    of limitations you might encounter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Limitations on choice of machine type
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The variety of machine types offered in managed training services does not always
+    cover all of the machine types supported by the cloud service provider. For example,
+    Amazon SageMaker does not (as of the time of this writing) support training on
+    instance types from their [DL1](/training-on-aws-with-habana-gaudi-3126e183048)
+    and [Inf2](/dl-training-on-aws-inferentia-53e103597a03) families. For a variety
+    of reasons (e.g. cost savings) you might need or want to train on these instance
+    types. In such cases you will have no choice but to pass on the luxuries of training
+    with Amazon SageMaker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Limited control over the underlying machine image
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Managed training workloads typically run inside a dedicated [Docker](https://www.docker.com/)
+    container. You can rely on the service to choose the most appropriate container,
+    choose a specific container from a list predefined containers built by the service
+    provider (e.g. [AWS Deep Learning Containers](https://github.com/aws/deep-learning-containers)),
+    or define your own Docker image customized for your specific needs (e.g. see [here](/customizing-your-cloud-based-machine-learning-training-environment-part-2-b65a6cf91812)).
+    But, while you have quite a bit of control over the Docker image container, you
+    have *no* control over the underlying [machine image](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html).
+    In most cases this will not be an issue as Docker is purposely designed to reduce
+    dependence on the host system. However, there are situations, particularly when
+    dealing with specialized HW (as in the case of training), in which we are dependent
+    on specific driver installations in the host image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Limitations on control over multi-node placement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It is common to train large models on multiple machine instances in order to
+    increase the speed of training. In such scenarios, the networking capacity and
+    latency between the machines can have a critical impact on the speed (and cost)
+    of training — due to the continuous exchange of data between them. Ideally, we
+    would like the instances to be co-located in the same data center. Unfortunately,
+    (as of the time of this writing), managed services, such Amazon SageMaker, limit
+    your control over device placement. As a result, you might end up with machines
+    in two or more [availability zones](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html)
+    which could negatively impact your training time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. User-privilege limitations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Occasionally, training workloads may require root-level to the system host.
+    For example, AWS recently announced [Mountpoint for Amazon S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/mountpoint.html),
+    a new [FUSE](https://en.wikipedia.org/wiki/Filesystem_in_Userspace)-based solution
+    for high throughput access to data storage and a potential method for optimizing
+    the flow of data into your training loop. Unfortunately, this solution can be
+    used only in a [Docker environment](https://github.com/awslabs/mountpoint-s3/blob/main/docker/README.md)
+    if your container is run with the `*--cap-add SYS_ADMIN*` flag, effectively preventing
+    its use in a managed service setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Limitations on Docker start-up settings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Some training workloads require the ability to configure particular *docker
+    run* settings. For example, if your workload stores training data in shared memory
+    (e.g., in */dev/shm*) and your data samples are especially large (e.g., high resolution
+    3D point clouds) you may need to specify an increase in the amount of shared memory
+    allotted to a Docker container. While Docker enables this via the *shm-size* flag,
+    your managed service might block your ability to control this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Limited access to the training environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the side effects of managed training is the reduced accessibility to
+    the training environment. Sometimes you require the ability to connect directly
+    to your training environment, e.g. for the purposes of debugging failures. When
+    running a managed training job, you essentially relinquish all control to the
+    service including your ability to access your machines at will. Note that some
+    solutions support reduced level access to managed environments assuming appropriate
+    configuration of the training job (e.g. see [here](https://github.com/aws-samples/sagemaker-ssh-helper)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 7\. Lack of notification upon Spot Instance termination
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Spot instances](https://aws.amazon.com/ec2/spot/) are unused machines that
+    CSPs often offer at discounted prices. The tradeoff is that these machines can
+    be abruptly taken away from you. When using an unmanaged Spot Instance that is
+    interrupted, you get a [termination notice](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-instance-termination-notices.html)
+    that allows you a bit of time to stop your applications gracefully. If you are
+    running a training workload you can use this advance notification to capture the
+    latest state of you model and copy it to persistent storage so that you can use
+    it to resume later on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the compelling features of managed training services is that they [manage
+    the Spot life-cycle](https://docs.aws.amazon.com/sagemaker/latest/dg/model-managed-spot-training.html)
+    for you, i.e., you can choose to train on lower cost Spot Instances and rely on
+    the managed service to automatically resume interrupted jobs when possible. However,
+    when using a Spot Instance via a managed service such as Amazon SageMaker, you
+    do *not* get a termination notice. Consequently, when you resume your training
+    job it will be from the most recent model state that you captured, not the state
+    of the model at the time of preemption. Depending on how often you capture intermediate
+    checkpoints, this difference can have an impact on your training costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cost Considerations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another property of managed training services that is worth noting is the additional
+    cost that is often associated with their use. AI development can be an expensive
+    undertaking and you might choose to reduce costs by forgoing the convenience of
+    a managed training service in exchange for a simpler custom solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Kubernetes Alternative
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Container orchestration systems are sometimes put forth as an alternative to
+    managed training services. The most popular of these (as of the time of this writing)
+    is [Kubernetes](https://kubernetes.io/). With its high level of auto-scalability
+    and its support for breaking applications into *microservices*,Kubernetes has
+    become the platform of choice for many modern-application developers. This is
+    particularly true for applications that include complex flows with multiple interdependent
+    components, sometimes referred to as Directed Acyclic Graph **(**DAG) workflows.
+    Some end-to-end ML development pipelines can be viewed as a DAG workflow (e.g.,
+    beginning with data preparation and processing and ending with model deployment).
+    And in fact, Kubernetes-based solutions are often applied to ML pipelines. However,
+    when it comes to the training phase alone (as in the context of this post), where
+    we typically know the precise number and type of instances, it can be argued that
+    [Kubernetes](https://kubernetes.io/) provides little added value. The primary
+    disadvantage of Kubernetes is that it usually requires reliance on a dedicated
+    infrastructure team for its ongoing support and maintenance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Management Minimal Requirements
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the absence of a CSP training management service, let’s define some of the
+    basic management features that we would like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Automatic start-up** — We would like the training script to run automatically
+    as soon as the instances start up.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Automatic instance termination** — We would like for the machine instances
+    to be automatically terminated as soon as the training script completes so that
+    we do not pay for time when the machines are not in use.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Support for multi-instance training** — We require the ability to start-up
+    a cluster of co-located instances for multi-node training.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Persistent logs** — We would like for training log output to be written to
+    persistent storage so that it can be accessed at will even after the training
+    machines are terminated.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Checkpoint capturing** — We would like for training artifacts, including
+    periodic checkpoints, to be saved to persistent storage.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Summary of training** **jobs**— We would like a method for reviewing (and
+    comparing) training experiments.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Restart on spot termination (advanced feature)** — We would like the ability
+    to take advantage of discounted [spot instance](https://aws.amazon.com/ec2/spot/)
+    capacity to reduce training costs without jeopardizing continuity of development.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the next section we will demonstrate how these can be implemented in GCP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Poor Man’s Managed Training on GCP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this section we will demonstrate a basic solution for training management
+    on GCP using Google’s [gcloud command-line utility](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)
+    (based on Google Cloud SDK version 424.0.0) to [create VM instances](https://cloud.google.com/compute/docs/instances/create-start-instance).
+    We will begin with a simple VM instance creation command and gradually supplement
+    it with additional components that will incorporate our desired management features.
+    Note that the gcloud [compute-instances-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)
+    command includes a long list of optional flags that control many elements of the
+    instance creation. For the purposes of our demonstration, we will focus only on
+    the controls that are relevant to our solution. We will assume: 1) that your environment
+    has been [set up](https://cloud.google.com/sdk/gcloud/reference/auth) to use gcloud
+    to connect to GCP, 2) that the default network has been appropriately configured,
+    and 3) the existence of a [managed service account](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances)
+    with access permissions to the GCP resources we will use.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Create a VM Instance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The following command will start up a [g2-standard-48](https://gcloud-compute.com/g2-standard-48.html)
+    VM instance (containing four [NVIDIA L4](https://www.nvidia.com/en-us/data-center/l4/)
+    GPUs) with the public [M112](https://cloud.google.com/deep-learning-vm/docs/release-notes#October_10_2023)
+    VM image. Alternatively, you could choose a [custom image](https://cloud.google.com/compute/docs/images/create-custom).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 2\. Auto-start Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As soon as the machine instance is up and running, we’d like to automatically
+    start the training workload. In the example below we will demonstrate this by
+    passing a [startup script](https://cloud.google.com/compute/docs/instances/startup-scripts/linux)
+    to the gcloud [compute-instances-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)
+    command. Our startup script will perform a few basic environment setup steps and
+    then run the training job. We start by adjusting the *PATH* environment variable
+    to point to our conda environment, then download the tarball containing our source
+    code from Google Storage, unpack it, install the project dependencies, and finally
+    run our training script. The demonstration assumes that the tarball has already
+    been created and uploaded to the cloud and that it contains two files: a requirements
+    file (*requirements.txt*) and a stand-alone training script (*train.py*). In practice,
+    the precise contents of the startup script will depend on the project.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Self-destruct on Completion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the compelling features of managed training is that you pay only for
+    what you need. More specifically, as soon as your training job is completed, the
+    training instances will be automatically torn down. One way to implement this
+    is to append a self-destruct command to the end of our training script. Note that
+    in order to enable self-destruction the instances need to be created with an appropriate
+    *scopes* setting. Please see the [API documentation](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)
+    for more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is important to keep in mind that despite our intentions, sometimes the instance
+    may not be correctly deleted. This could be the result of a specific error that
+    causes the startup-script to exit early or a stalling process that prevents it
+    from running to completion. We highly recommend introducing a backend mechanism
+    that verifies that unused instances are identified and terminated. One way to
+    do this is to schedule a periodic [Cloud Function](https://cloud.google.com/functions?hl=en).
+    Please see our [recent post](https://medium.com/towards-data-science/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b)
+    in which we proposed using serverless functions to address this problem when training
+    on Amazon SageMaker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. Write Application Logs to Persistent Storage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Given that the instances that we train on are terminated upon completion, we
+    need to ensure that system output is written to persistent logging. This is important
+    for monitoring the progress of the job, investigating errors, etc. In GCP this
+    is enabled by the [Cloud Logging](https://cloud.google.com/logging?hl=en) offering.
+    By default, output logs are collected for each VM instance. These can be accessed
+    with the [Logs Explorer](https://cloud.google.com/logging/docs/view/logs-explorer-interface)
+    by using the *instance id* associated with the VM. The following is a sample query
+    for accessing the logs of a training job:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To be able to query the logs, we need to make sure to capture and store the
+    *instance id* of each VM. This has to be done before the instance is terminated.
+    In the code block below we use the [compute-instances-describe](https://cloud.google.com/sdk/gcloud/reference/compute/instances/describe)
+    API to retrieve the instance id of our VM. We write the id to a file and upload
+    it to a dedicated *metadata* folder in the path associated with our project in
+    Google Storage for future reference:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We further populate our *metadata* folder with the full contents of our [compute-instances-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)
+    command. This will come in handy later on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 5\. Save Artifacts in Persistent Storage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Importantly, we must ensure that all of the training jobs’ artifacts are uploaded
+    to persistent storage before the instance is terminated. The easiest way to do
+    this is to append a command to our startup script that syncs the entire output
+    folder with Google Storage:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The problem with this solution is that it will sync the output only at the end
+    of training. If for some reason our machine crashes due to some error, we might
+    lose all of the intermediate artifacts. A more fault-tolerant solution would involve
+    uploading artifacts to Google Storage (e.g. at fixed training step intervals)
+    throughout the training job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Support Multi-node Training
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To run a multi-node training job we can use the [compute-instances-bulk-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/bulk/create)
+    API to [create a group of GPU VMs](https://cloud.google.com/compute/docs/gpus/create-gpu-vm-bulk).
+    The command below will create two [g2-standard-48](https://gcloud-compute.com/g2-standard-48.html)
+    VM instances.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are a few important differences from the single VM creation command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For bulk creation we specify a *region* rather than a *zone*. We chose to force
+    all instances to be in a single zone by setting the [*target-distribution-shape*](https://cloud.google.com/compute/docs/instance-groups/regional-mig-distribution-shape)
+    flag to *any_single_zone*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We have prepended a number of environment variable definitions to our startup
+    script. These will be used to properly configure the training script to run on
+    all nodes.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To delete a VM instance we need to know the *zone* in which it was created.
+    Since we do not know this when we run our bulk creation command, we need to extract
+    it programmatically in the startup-script.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We now capture and store the instance ids of *both* of the created VMs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the script below we demonstrate how to use the environment settings to configure
+    [data parallel training](https://pytorch.org/tutorials/intermediate/ddp_tutorial.html)
+    in [PyTorch](https://pytorch.org/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 7\. Experiment Summary Reports
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Managed services typically expose an API and/or a dashboard for reviewing the
+    status and outcomes of training jobs. You will likely want to include a similar
+    feature in your custom management solution. There are many ways to do this including
+    using a [Google Cloud Database](https://cloud.google.com/products/databases?hl=en)
+    to maintain training job metadata or using third party tools (such as [neptune.ai](https://neptune.ai/),
+    [Comet](https://www.comet.com/site/), or [Weights & Biases](https://wandb.ai/site))
+    to record and compare training results. The function below assumes that the training
+    application return code was uploaded (from the startup script) to our dedicated
+    *metadata* folder, and simply iterates over the jobs in Google Storage:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The code above will generate a table with the following format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3753e9bf01d0e1dea9d613cacf4a58f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table of Training Experiments (by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 8\. Support Spot Instance Usage
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can easily modify our single-node creation script to use [Spot VM](https://cloud.google.com/compute/docs/instances/spot)s
+    by setting the [*provisioning-model*](https://cloud.google.com/compute/docs/instances/create-use-spot#create)
+    flag to *SPOT* and the [*instance-termination-action*](https://cloud.google.com/compute/docs/instances/create-use-spot#create)flag
+    to *DELETE*. However, we would like our training management solution to manage
+    the full life-cycle of Spot VM utilization, i.e. to identify Spot preemptions
+    and restart unfinished jobs when possible. There are many ways of supporting this
+    feature. In the example below we define a dedicate Google Storage path, *gs://my-bucket/preempted-jobs/*
+    , that maintains a list of names of unfinished training jobs and define a shutdown
+    script to identify a Spot preemption and populate our list with the current job
+    name. Our shutdown script is a stripped down version of the script recommended
+    in the [documentation](https://cloud.google.com/compute/docs/instances/create-use-spot#handle-preemption).
+    In practice, you may want to include logic for capturing and uploading the latest
+    model state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: We copy the contents of our shutdown script to a *shutdown.sh* file and add
+    the [*metadata-from-file*](https://cloud.google.com/compute/docs/shutdownscript#provide_a_shutdown_script_file)flag
+    with the location of the script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Working with shutdown scripts in GCP has [some caveats](https://cloud.google.com/compute/docs/shutdownscript#limitations)
+    that you should make sure to be aware of. In particular, the precise behavior
+    may vary based on the machine image and other components in the environment. In
+    some cases, you might choose to program the shutdown behavior directly into the
+    machine image (e.g., see [here](https://stackoverflow.com/questions/61110921/shutdown-script-not-executing-on-a-google-cloud-vm)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The final component to the solution requires a [Cloud Function](https://cloud.google.com/functions?hl=en)
+    that traverses the list of items in *gs://my-bucket/preempted-jobs/* and for each
+    one retrieves the associated initialization command (e.g., *gs://my-bucket/test-vm/metadata/create-instance.sh*)
+    and attempts to rerun it. If it succeeds, it removes the job name from the list.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The Cloud Function can be programmed to run periodically and/or we can design
+    a mechanism that [triggers](https://cloud.google.com/functions/docs/calling) it
+    from the shutdown script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Multi-node Spot usage**: When applying Spot utilization to multi-node jobs,
+    we need to address the possibility that only a subset of nodes will be terminated.
+    The easiest way to handle this is to program our application to identify when
+    some of the nodes have become unresponsive, discontinue the training loop, and
+    proceed to shut down.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Managed-Training Customization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One of the advantages of building your own managed training solution is your
+    ability to customize it to your specific needs. In the previous section we demonstrated
+    how to design a custom solution for managing the Spot VM life cycle. We can similarly
+    use tools such as [Cloud Monitoring Alerts](https://cloud.google.com/monitoring/alerts),
+    [Cloud Sub/Pub](https://cloud.google.com/pubsub/docs/overview) messaging services,
+    and serverless [Cloud Functions](https://cloud.google.com/functions?hl=en), to
+    tailor solutions for other challenges, such as cleaning up stalled jobs, identifying
+    under-utilized GPU resources, limiting the overall up-time of VMs, and governing
+    developer usage patterns. Please see our [recent post](https://chaimrand.medium.com/using-server-less-functions-to-govern-and-monitor-cloud-based-training-experiments-755c43fba26b)
+    in which we demonstrated how to apply serverless functions to some of these challenges
+    in a managed training setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note that the management solution we have defined addresses each of the limitations
+    of managed training that we listed above:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gcloud [compute-instances-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/create)
+    API exposes all of the VM instance types offered by GCP and allows you to point
+    to the machine image of your choice.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The gcloud [compute-instances-bulk-create](https://cloud.google.com/sdk/gcloud/reference/compute/instances/bulk/create)
+    API allows us to start up multiple nodes in a way that ensures that all nodes
+    are co-located in the same *zone*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Our solution supports running in a non-containerized environment. If you choose
+    to use containers nonetheless, you can configure them with any setting and any
+    user privilege that you want.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: GCP VMs support SSH access (e.g. via the gcloud [compute-ssh](https://cloud.google.com/compute/docs/connect/standard-ssh)
+    command).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The Spot VM lifecycle support we described supports capturing and acting on
+    [preemption notifications](https://cloud.google.com/compute/docs/instances/spot#preemption-process).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Having Said All That…
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There is no denying the convenience of using managed training services (such
+    as [Amazon SageMaker](https://aws.amazon.com/pm/sagemaker/), [Google Vertex AI](https://cloud.google.com/vertex-ai),
+    and [Microsoft Azure ML](https://azure.microsoft.com/en-us/products/machine-learning)).
+    Not only do they take care of all of the managed requirements we listed above
+    for you, but they typically offer additional features such as [hyperparameter
+    optimization](https://docs.aws.amazon.com/sagemaker/latest/dg/automatic-model-tuning.html),
+    [platform optimized distributed training libraries](https://docs.aws.amazon.com/sagemaker/latest/dg/distributed-training.html),
+    [specialized development environments](https://docs.aws.amazon.com/sagemaker/latest/dg/machine-learning-environments.html),
+    and more. Indeed, there are sometimes very good reasons to develop your own management
+    solution, but it may be a good idea to fully explore all opportunities for using
+    existing solutions before taking that path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While the cloud can present an ideal domain for developing AI models, an appropriate
+    training management solution is essential for making its use effective and efficient.
+    Although CSPs offer dedicated managed training services, they don’t always align
+    with our project requirements. In this post, we have shown how a simple management
+    solution can be designed by using some of the advanced controls of the lower level,
+    unmanaged, machine instance creation APIs. Naturally, one size does *not* fit
+    all; the most ideal design will highly depend on the precise details of your AI
+    project(s). But we hope that our post has given you some ideas with which to start.
+  prefs: []
+  type: TYPE_NORMAL

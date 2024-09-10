@@ -1,0 +1,390 @@
+- en: 'Similarity Search, Part 3: Blending Inverted File Index and Product Quantization'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa?source=collection_archive---------1-----------------------#2023-05-19](https://towardsdatascience.com/similarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa?source=collection_archive---------1-----------------------#2023-05-19)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Discover how to combine two basic similarity search indexes to get the advantages
+    of both
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@slavahead?source=post_page-----a8e508c765fa--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----a8e508c765fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a8e508c765fa--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a8e508c765fa--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----a8e508c765fa--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----a8e508c765fa---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a8e508c765fa--------------------------------)
+    ·8 min read·May 19, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa8e508c765fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----a8e508c765fa---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa8e508c765fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-blending-inverted-file-index-and-product-quantization-a8e508c765fa&source=-----a8e508c765fa---------------------bookmark_footer-----------)![](../Images/8768896b9afee7af342394c9d1259b58.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: S**imilarity search** is a problem where given a query the goal is to find the
+    most similar documents to it among all the database documents.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In data science, similarity search often appears in the NLP domain, search engines
+    or recommender systems where the most relevant documents or items need to be retrieved
+    for a query. There exists a large variety of different ways to improve search
+    performance in massive volumes of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the first two parts of this series we have discussed two fundamental algorithms
+    in information retrieval: **inverted file index** and **product quantization**.
+    Both of them optimize search performance but focus on different aspects: the first
+    one accelerates the search speed while the latter compresses vectors to a smaller,
+    memory-efficient representation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/similarity-search-knn-inverted-file-index-7cab80cc0e79?source=post_page-----a8e508c765fa--------------------------------)
+    [## Similarity Search, Part 1: kNN & Inverted File Index'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarity search is a popular problem where given a query Q we need to find
+    the most similar documents to it among all…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'towardsdatascience.com](/similarity-search-knn-inverted-file-index-7cab80cc0e79?source=post_page-----a8e508c765fa--------------------------------)
+    [](https://medium.com/@slavahead/similarity-search-product-quantization-b2a1a6397701?source=post_page-----a8e508c765fa--------------------------------)
+    [## Similarity Search, Part 2: Product Quantization'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first part of this article series, we looked at kNN and inverted file
+    index structure for performing similarity…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@slavahead/similarity-search-product-quantization-b2a1a6397701?source=post_page-----a8e508c765fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since both algorithm focus on different aspects, the question that naturally
+    arises is whether it is possible to merge these two algorithms into a new one
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will combine the advantages of both approaches to produce
+    a fast and memory-efficient algorithm. For information, most of the discussed
+    ideas will be based on this [paper](https://lear.inrialpes.fr/pubs/2011/JDS11/jegou_searching_with_quantization.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before diving into details, it is necessary to understand what residual vectors
+    are and get a simple intuition on their useful properties. We will use them later
+    while designing an algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Residual vectors
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Imagine a clustering algorithm was executed and it produced several clusters.
+    Each cluster has a centroid and points associated with it. **Residual** is an
+    offset of a point (vector) from its centroid. Basically, to find a residual for
+    a particular vector, the vector has to be subtracted from its centroid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the cluster was built by the k-means algorithm, then the cluster centroid
+    is the mean of all points belonging to that cluster. Thus, finding a residual
+    from any point would be equivalent to subtracting the mean of a cluster from it.
+    By subtracting the mean value from all points belonging to a particular cluster,
+    the points would be centered around 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7070915590dccde2b899bc0a636574f5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An original cluster of points is shown on the left. Then the cluster centroid
+    is subtracted from all cluster points. The resulting residual vectors are shown
+    on the right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can observe a useful fact:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Replacing original vectors with their residuals does not change their relative
+    position to each other.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: That is, the distance between vectors stays always the same. Let us simply look
+    at two equations below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/46d8743cac599b38e4087207b97f6a19.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Subtracting the mean does not change the relative distance
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first equation is the formula of euclidean distance between a pair of vectors.
+    In the second equation, the cluster mean value is subtracted from both vectors.
+    We can see that the mean term simply cancels out — the whole expression becomes
+    identical to euclidean distance in the first equation!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We proved this statement by using the formula for the L2 metric (euclidean distance).
+    It is important to remember that this rule may not work for other metrics.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So, if for a given query the goal is to find the nearest neighbour, it is possible
+    to just subtract the cluster mean from the query and proceed to the normal search
+    procedure among residuals.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db343cbb826a8da69214579119ce24eb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Subtracting a mean from a query does not change its relative position to other
+    vectors
+  prefs: []
+  type: TYPE_NORMAL
+- en: Right now let us look at another example in the figure below with two clusters
+    where residuals for vectors of each cluster are calculated separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Subtracting the mean of the corresponding centroid from each vector of a cluster
+    will center all the dataset vectors around 0*.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: That is a useful observation that will be used in the future. Additionally,
+    for a given query, we can calculate query residuals to all the clusters. The query
+    residuals allow us to calculate distances to the original residuals of the cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b183b38434931323d2192408830c3cb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After subtracting mean values from each cluster, all the points become centered
+    around 0\. Relative position from query and query residuals to other points of
+    corresponding clusters does not change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Having taken into considerations useful observations in the previous section,
+    we can start designing the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given a vector database, an inverted file index is constructed that divides
+    the set of vectors into *n* Voronoi partitions and thus reduces the search scope
+    during the inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Inside each Voronoi partition, the coordinates of the centroid are subtracted
+    from each vector. As a result, vectors from all the partitions become closer to
+    each other and centered around 0\. At this moment, there is no need the original
+    vectors as we store their residuals instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After that, the product quantization algorithm is run on vectors from all the
+    partitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Important aspect*: the product quantization is **not** executed for each partition
+    separately — that would be inefficient because the number of partitions usually
+    tends to be high which will could result in a lot of memory needed to store all
+    the codebooks. Instead, **the algorithm is executed** **for all the residuals
+    from all partitions simultaneously**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Effectively, now each subspace contains subvectors from different Voronoi partitions.
+    Then, for each subspace, a clustering algorithm is performed and *k* clusters
+    with their centroids are built, as usual.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d790a9adfcd54f936d2deaab13c2390d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training process
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*What was the importance of replacing vectors with their residuals?* If vectors
+    were not replaced with their residuals, then each subspace would contain more
+    various subvectors (because subspaces would store subvectors from different non-intersecting
+    Voronoi partitions which could have been very far from each other in space). Now
+    vectors (residuals) from different partitions overlap with each other. Since now
+    there is less variety in each subspace, it takes fewer reproduction values to
+    effectively represent vectors. In other words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the same length of PQ codes used before, vectors can be represented more
+    accurately because they have less variance.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Inference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For a given query, the *k* nearest centroids of Voronoi partitions are found.
+    All the points inside these regions are considered as candidates. Since the original
+    vectors were initially replaced by their residuals in each Voronoi region, the
+    residual of the query vector also needs to be calculated. In this case, the query
+    residual needs to be calculated separately for every Voronoi partition (because
+    every region has different centroids). Only residuals from chosen Voronoi partitions
+    are going to the candidates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The query residual is then split into subvectors. As in the original product
+    quantization algorithm, for each subspace, the distance matrix *d* containing
+    distances from subspace centroids to the query subvector is computed. It is essential
+    to keep in mind that the query residual is different for each Voronoi partition.
+    Basically it means that the distance matrix *d* needs to be computed separately
+    for each of the query residuals. That is the computation price for the desired
+    optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, partial distances are summed up as it was previously done in the product
+    quantization algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sorting results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After all the distances are calculated, the *k* nearest neighbors need to be
+    selected. To do it efficiently, authors propose maintaining a [MaxHeap](https://medium.com/@slavahead/heapify-with-heap-sort-5df23b5764c1)
+    data structure. It has a limited capacity of *k* and at each step, it stores *k*
+    current smallest distances. Whenever a new distance is calculated, its value is
+    added to the MaxHeap only if the computed value is less than the largest value
+    in the MaxHeap. After calculating all the distances, the answer to the query is
+    already stored in the MaxHeap. The advantage of using the MaxHeap is its fast
+    building time which is *O(n)*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e743b5800768527c67c5281736ef73a8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inference process
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The algorithm takes advantage of both inverted file index and product quantization.
+    Depending on the number of Voronoi partitions probe during the inference, the
+    same number of subvector-to-centroid matrices *d* needs to be computed and stored
+    in the memory. This might look like a downside but comparing it to overall advantages,
+    it is a pretty good trade-off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d6b859afba6649a67a22658427d08a91.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The algorithm inherits a good search speed from inverted file index and compression
+    efficiency from product quantization
+  prefs: []
+  type: TYPE_NORMAL
+- en: Faiss implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[**Faiss**](https://github.com/facebookresearch/faiss) (Facebook AI Search
+    Similarity) is a Python library written in C++ used for optimised similarity search.
+    This library presents different types of indexes which are data structures used
+    to efficiently store the data and perform queries.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Based on the information from the [Faiss documentation](https://faiss.ai), we
+    will see how inverted file and product quantization indexes can be combined together
+    to form a new index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Faiss implements the described algorithm in the *IndexIVFPQ* class which accepts
+    the following arguments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**quantizer**: specifies how distance between vectors is computed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**d**: data dimensionality.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**nlist**: number of Voronoi partitions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**M**: number of subspaces.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**nbits**: number of bits it takes to encode a single cluster ID. This means
+    that the number of total clusters in a single subspace will be equal to *k = 2^nbits*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Additionally, it is possible to adjust the **nprobe** attribute which specifies
+    how many Voronoi partitions must be used for the search of candidates during inference.
+    Changing this parameter does not require retraining.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6725c5f1ff01d708620078a43c2de613.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Faiss implementation of IndexIVFPQ
+  prefs: []
+  type: TYPE_NORMAL
+- en: Memory required to store a single vector is the same as in the original product
+    quantization method except now we add 8 more bytes to store information about
+    the vector in the inverted file index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c990b125612a4c97a448acbe3bd99a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Using the knowledge from the previous article parts, we have walked through
+    the implementation of a state-of-the-art algorithm that achieves high memory compression
+    and accelerated search speed. This algorithm is widely used in information retrieval
+    systems when dealing with massive volumes of data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resources
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Product quantization for the nearest search](https://lear.inrialpes.fr/pubs/2011/JDS11/jegou_searching_with_quantization.pdf)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss documentation](https://faiss.ai)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Faiss repository](https://github.com/facebookresearch/faiss)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Summary of Faiss indexes](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

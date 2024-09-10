@@ -1,0 +1,520 @@
+- en: 'Class Imbalance: From SMOTE to BorderlineSMOTE1, SMOTE-NC and SMOTE-N'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/class-imbalance-from-smote-to-smote-n-759d364d535b?source=collection_archive---------3-----------------------#2023-08-30](https://towardsdatascience.com/class-imbalance-from-smote-to-smote-n-759d364d535b?source=collection_archive---------3-----------------------#2023-08-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Exploring four algorithms to tackle the class imbalance problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://essamwissam.medium.com/?source=post_page-----759d364d535b--------------------------------)[![Essam
+    Wisam](../Images/6320ce88ba2e5d56d70ce3e0f97ceb1d.png)](https://essamwissam.medium.com/?source=post_page-----759d364d535b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----759d364d535b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----759d364d535b--------------------------------)
+    [Essam Wisam](https://essamwissam.medium.com/?source=post_page-----759d364d535b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccb82b9f3b87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-from-smote-to-smote-n-759d364d535b&user=Essam+Wisam&userId=ccb82b9f3b87&source=post_page-ccb82b9f3b87----759d364d535b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----759d364d535b--------------------------------)
+    ·12 min read·Aug 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F759d364d535b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-from-smote-to-smote-n-759d364d535b&user=Essam+Wisam&userId=ccb82b9f3b87&source=-----759d364d535b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F759d364d535b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-from-smote-to-smote-n-759d364d535b&source=-----759d364d535b---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the [previous story](https://medium.com/towards-data-science/class-imbalance-from-random-oversampling-to-rose-517e06d7a9b)
+    we explained how the naive random oversampling, random oversampling examples (ROSE),
+    random walk oversampling (RWO) algorithms work. More importantly, we also defined
+    the class imbalance problem and derived solutions for it with intuition. I highly
+    recommend checking this [story](https://medium.com/@essamwissam/class-imbalance-and-oversampling-a-formal-introduction-c77b918e586d)
+    to ensure clear understanding of class imbalance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ∘ [Introduction](#7af2)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [SMOTE (Synthetic Minority Oversampling Technique)](#6edb)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [BorderlineSMOTE1](#4148)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [SMOTE-NC (SMOTE-Nominal Continuous)](#051e)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [SMOTE-N (SMOTE-Nominal)](#e808)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this story, we will continue by considering the SMOTE, BorderlineSMOTE1,
+    SMOTE-NC and SMOTE-N algorithms. But before we do, it’s worthy to point out the
+    two algorithms we considered in the last story fit the following implementation
+    framework:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define how the algorithm takes data belonging to class k that needs *N_k* examples
+    and computes such examples by oversampling
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Given some ratios hyperparameter, compute the number of points that need to
+    be added for each class
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each class run the algorithm then combine all newly added points together
+    with the original data to form the final oversampled dataset
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'For both the random oversampling and ROSE algorithms (probably also random
+    walk oversampling if ratios are big enough) it was also true that to generate
+    *N_k* examples for class k the algorithm does the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choose *N_k* points randomly with replacement from the data belonging to class
+    k
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Perform logic on each of the chosen points to generate a new point (e.g., replication
+    or placing a Gaussian then sampling from it)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It holds that the rest of the algorithms we will consider in this story also
+    fit the same framework.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**SMOTE (Synthetic Minority Oversampling Technique)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'It thereby follows that to explain what SMOTE does we only need to answer one
+    question: What logic is performed on each of the *N_k* randomly chosen with replacement
+    examples from class k in order to generate *N_k* new examples?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The answer is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the k-nearest neighbors of the point (k is a hyperparameter of the algorithm)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Choose one of them randomly
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Draw a line segment from the point to that randomly chosen neighbor
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Randomly choose a point on that line segment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Return it as the new point
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mathematically,
+  prefs: []
+  type: TYPE_NORMAL
+- en: If point *x_i* has nearest neighbors *z_i1, z_i2, …, z_ik*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And if *j* is a random number in *[1,k]*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And *r* is a random number in *[0, 1]*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'then for each point *x_i* SMOTE generates a new point *x_i’* by simply applying:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a41c1312ef4852d106601cc513ec0e7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This is really all what the SMOTE algorithm does. From point *x_i,* walk a distance
+    *r* along the vector *z_ij — x_i* then place a new point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0cd51923480cdaf66d3c69190a6bfdf1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure Drawn by the Author. Examples in black are synthetically generated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A minor side note is that there is a small difference in how the algorithm operates
+    compared to how the algorithm is presented in the paper. In particular, the authors
+    assume that ratios are integers (and floor it if not). If the ratio for class
+    k is an integer C then for each point in it choose a random neighbor with replacement
+    C times then apply the SMOTE logic we described. **In practice**, when SMOTE is
+    implemented it’s typically generalized to work with floating point ratios as we
+    described by rather choosing *N_k* points randomly then applying SMOTE on each.
+    For integer ratios such as C=2, it follows that each point is picked on average
+    twice and we go back to original algorithm. This should make sense as it is the
+    same transition from oversampling by repeating with integer ratios to random oversampling
+    which was explained in the last story.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9f395610785b80be87714f2efef03d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation by the Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This animation shows how the decision regions of an SVM change by changing the
+    oversampling ratio for the versicolor class over an imbalanced subset of the Iris
+    dataset. The ratio here is relative to the size of the majority class. That is,
+    a ratio of 1.0 would set *N_k* so that the versicolor class has as much examples
+    as the virginica class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may be thinking why would SMOTE ever be better than ROSE. After all, SMOTE’s
+    logic of generating points has not been justified in the paper; meanwhile, sampling
+    from an estimate of *P(x|y)* as done in ROSE is much more rational and intuitive.
+    One problem is possibly that getting a good estimate of *P(x|y)* requires a lot
+    of data; however, we know that minority classes often have little data. If we
+    don’t have a lot of data we have two options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choose the bandwidth to be too small where we go back to possible overfitting
+    as was in random oversampling
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Choose it to be too big which in the extreme case is equivalent to just uniformly
+    adding random points from the feature space (i.e., unrealistic examples)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If you think about it, we should worry less about this problem in SMOTE. If
+    a hyperplane that linearly perfectly separates the data exists then that solution
+    still exists after applying SMOTE. In fact, the way SMOTE generates points may
+    cause a nonlinear hypersurface to be become more linear so it seems to be at a
+    much lower risk of causing the model to overfit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**BorderlineSMOTE1**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'There is a myriad of algorithms in the literature that are simply modifications
+    or improvements over SMOTE. One popular instance is BorderlineSMOTE1 which applies
+    the following modification:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a41c1312ef4852d106601cc513ec0e7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: when choosing *x_i,* instead of choosing it randomly from the set of all points
+    belonging to the class, choose it randomly from the set of borderline (called
+    DANGER in the paper) points belonging to the class. A point is borderline if the
+    majority of its k-nearest neighbors but not all of them are from the majority/another
+    class. It indeed makes sense logically that points close to the decision boundary
+    meet this condition; it also holds that these are the most important points for
+    deciding the decision boundary or the performance of the classification model.
+    The rationale behind ignoring points where all the neighbors are from another
+    class is that these are potentially noise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another variant BorderlineSMOTE2 is described in the same paper and is simply
+    a modification of the condition used to find borderline points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following is an example of applying BorderlineSMOTE1 using the Imbalance.jl
+    package in Julia
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6680d63060f700ced18501a855fb87d5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the corresponding animation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/072d1e4463e7674ec7377ebd3e947125.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**SMOTE-NC (SMOTE-Nominal Continuous)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While both ROSE and SMOTE appear to offer a significant improvement over naive
+    random oversampling, they come with the drawback of losing the capability to handle
+    categorical variables which was not a problem for naive random oversampling. The
+    authors of SMOTE were bright enough to think of a way to circumvent this by developing
+    this extension for the SMOTE algorithm to handle cases where categorical features
+    are also present.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may be thinking that encoding categorical features would be a way to get
+    around this whatsoever; however, this is not absolutely right because SMOTE or
+    ROSE will then treat them as continuous and generate invalid values for them.
+    For instance, if a feature is binary then the chosen point along the line may
+    be 0.57 for the new point which is not 0 and 1\. Rounding it is a bad idea because
+    that is equivalent to randomly choosing whether it is 0 or 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall that the following is how SMOTE generated a new point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose point *x_i* has nearest neighbors *z_i1, z_i2, …, z_ik*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: let *j* be a random number in *[1,k]*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: let *r* be a random number in *[0, 1]*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: then for each point *x_i* SMOTE generates a new point *x_i’* by simply applying
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a41c1312ef4852d106601cc513ec0e7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It should be obvious that we can’t apply the same method in the presence of
+    categorical features unless we extend it by answering the following two questions
+  prefs: []
+  type: TYPE_NORMAL
+- en: How are the k-nearest neighbors found? The Euclidean distance metric only operates
+    on continuous features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How is the new point generated? We can’t apply the SMOTE equation to generate
+    the categorical part of *x_i’*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For the first question, the author’s suggested a modification to the Euclidean
+    distance to account for the categorical part. Suppose each of *x_i* and *z_ij*
+    involve *m* continuous features and *n* categorical features then in the modified
+    metric the continuous features are naturally subtracted and squared and then a
+    constant penalty is added for each differing pair of categorical features. This
+    penalty is in particular the median of variances of all continuous features which
+    can be computed at the start of the algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an example, to measure the distance between two points *x_1* and *x_2*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f6a88f01c3e1bc54d7c5919b676a769.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: then if the median of standard deviations is *m*, the distance is given by
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3058b57d4f0efd18e637dc37e4b75ffd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: the last two terms account for how the last two categorical features are different.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although authors provide no justification for the metric, it may make sense
+    after observing that one of the most common way to measure distances among categorical
+    features is Hamming distance. It simply adds 1 for each differing pair of categorical
+    features. A Hamming distance of 6 suggests that the two points have different
+    values in 6 of the categorical features. It’s obvious in our case that setting
+    the penalty as 1 as in Hamming distance is not intuitive because if continuous
+    features often strongly vary then the 1s will be very insignificant in the sum
+    which is equivalent to ignore the categorical features in the measurement. It
+    should make sense that using the average squared difference between any two continuous
+    features as the penalty would get around this problem because then if the variance
+    of continuous features is often large, the penalty is as large and is not negligible.
+    The only catch is that the authors used the median of variances and not their
+    mean which may be justified by its robustness to outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Answering the second question is far more simple, now that we have found the
+    k-nearest neighbors using the modified metric we can generate the continuous part
+    of the new point using the SMOTE equation as usual. To generate the categorical
+    part of the new point, it makes sense to simply take the mode of the categorical
+    parts of the k-nearest neighbors. I.e., let the neighbors vote over the values
+    in the categorical part where the most common values will dominate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It follow that what SMOTE-NC does to generate a new point is…
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the k-nearest neighbors of the point (k is a hyperparameter of the algorithm)
+    using the modified Euclidean metric
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Choose one of them randomly
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Draw a line segment from the point to that neighbor in the continuous features
+    space
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Randomly choose a point on that line segment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Let that be the continuous part of the new point
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For the categorical part of the new point, take the mode of the categorical
+    parts of the k-nearest neighbors.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**SMOTE-N (SMOTE-Nominal)**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It should be obvious that SMOTE-NC becomes SMOTE when no categorical features
+    are involved because then the penalty is zero and the mode step in generation
+    is skipped. However, if no continuous features are involved then the algorithm
+    is in a precarious position because there is no penalty defined as there are no
+    continuous features. Your workaround may be to set it as 1 or something and operate
+    the algorithm as normal but that is not ideal because there will easily be many
+    ties when computing the nearest neighbors. *If the Hamming distance between one
+    point and another 10 points is 7 are they all really equally close to that point?*
+    Or do they just share in common that they differ from the point in 7 of the features?
+  prefs: []
+  type: TYPE_NORMAL
+- en: SMOTE-N is another algorithm that the authors present in the paper to deal with
+    data that is purely categorical. It responds negatively to the italicized question
+    above by employing another distance metric over the categorical features. Once
+    the k nearest neighbors are found mode computation decides the new points; however,
+    this time the point itself also is involved in the mode computation (voting).
+  prefs: []
+  type: TYPE_NORMAL
+- en: It hence suffices to explain the distance metric used in SMOTE-N to perform
+    K-NN. The metric is called the “modified value distance metric” (Cost & Salzberg,
+    1993) and it operates as follows given two feature vectors with q categorical
+    features and p_1, p_2, …,p_q possible values for each of the categorical features
+    respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Encode each of the categorical values via a vector V of length K where K is
+    the number of classes. V[i] should be the frequency of that value for the i_th
+    class divided by its frequency over all classes.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now any categorical vector is represented by a tensor of q vectors each of length
+    k
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compute the distance between any two categorical vectors represented by that
+    tensor by computing the Manhattan distance between each pair of vectors of length
+    k then take the L2 norm of the result
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For an example, suppose we want to find the distance between the following two
+    categorical vectors
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6178857c9fb658a728c51cc0a807d815.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: then given 3 classes, after encoding them suppose we end up with
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ea692d9ecf0dca1f48c40ded514b267b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: After computing the Manhattan distance between each pair of vectors we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/876b46aaf6f81c5eee83792f511f2a82.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: which evaluates to 1.428 after talking the L2 norm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be precise, the paper points out that it is possible to use either the L1
+    norm or the L2 for the magnitude but does not decide which to use for the algorithm
+    (here we chose L2).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may be asking yourself why this would be any better than using plain Hamming
+    distance. The definite answer is that the authors have not justified. However,
+    just to introduce some slight intuition, we argued earlier that the Hamming may
+    often result in a lot of ties during the distance computation for KNN. Suppose
+    we have three categorical vectors
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08b11fb1254e2775d25df3f02061bf9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here Hamming distance would suggest that *x_2* and *x_3* are as close to *x_1*
+    as in both cases the Hamming distance is 1\. Meanwhile, the modified value difference
+    metric would look at how each value is distributed over the classes first before
+    deciding which is closer. Suppose the frequencies per class for B2 is [0.3, 0.2,
+    0.5] and for B3 is [0.1, 0.9, 0] and for B1 is [0.25, 0.25, 0.5]. In this case,
+    MVDM would suggest that *x_3* is much closer to *x_1* because B1 is much closer
+    to B2 than B3 is. From a probabilistic perspective, if we were to collect a new
+    point with an unknown class then knowing whether the category is B2 or B3 does
+    not help much predict the class and in this sense they are similar or interchangeable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hence, in summary the SMOTE-N algorithm operates as follows to generate a new
+    point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the k-nearest neighbors of the point (k is a hyperparameter of the algorithm)
+    using the modified value difference metric
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Return the mode of the categorical values of the neighbors (including the point
+    itself) to generate the new point
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: That’s it! It should be now crystal clear to you how each of SMOTE, BorderlineSMOTE1,
+    SMOTE-N and SMOTE-NC work. We conclude this series of explaining all resampling
+    algorithms initially implemented in the Julia package [Imbalance.jl](https://github.com/JuliaAI/Imbalance.jl)
+    with [this story](https://medium.com/towards-data-science/class-imbalance-exploring-undersampling-techniques-24009f55b255)
+    on undersampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] N. V. Chawla, K. W. Bowyer, L. O.Hall, W. P. Kegelmeyer, “SMOTE: synthetic
+    minority over-sampling technique,” Journal of artificial intelligence research,
+    321–357, 2002.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] H. Han, W.-Y. Wang, and B.-H. Mao, “Borderline-SMOTE: A New Over-Sampling
+    Method in Imbalanced Data Sets Learning,” in International Conference on Intelligent
+    Computing, 2005, pp. [878–8871](https://sci2s.ugr.es/keel/keel-dataset/pdfs/2005-Han-LNCS.pdf)'
+  prefs: []
+  type: TYPE_NORMAL

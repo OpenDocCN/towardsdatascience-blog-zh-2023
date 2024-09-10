@@ -1,0 +1,498 @@
+- en: Using GPT-3.5-Turbo and GPT-4 for Predicting Humanitarian Data Categories
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/using-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c?source=collection_archive---------5-----------------------#2023-03-29](https://towardsdatascience.com/using-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c?source=collection_archive---------5-----------------------#2023-03-29)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)[![Matthew
+    Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------)
+    [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----6f02219c693c--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----6f02219c693c---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6f02219c693c--------------------------------)
+    ·23 min read·Mar 29, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6f02219c693c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----6f02219c693c---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6f02219c693c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fusing-gpt-3-5-turbo-and-gpt-4-to-apply-text-defined-data-quality-checks-on-humanitarian-datasets-6f02219c693c&source=-----6f02219c693c---------------------bookmark_footer-----------)![](../Images/cdad9a981470d96cf832f828beeed3b8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image created by [Stable Diffusion](https://stablediffusionweb.com/#demo) with
+    prompt ‘Predicting Cats’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*TL;DR*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In this article, I explore using GPT-3.5-Turbo and GPT-4 to categorize datasets
+    without the need for labeled data or model training, by prompting the model with
+    data excerpts and category definitions. Using a small sample of categorized ‘Data
+    Grid’ datasets found on the amazing Humanitarian Data Exchange (HDX), zero-shot
+    prompting of GPT-4 resulted in 96% accuracy when predicting category and 89% accuracy
+    when predicting both category and sub-category. GPT-4 outperformed GPT-3.5-turbo
+    for the same prompts, with 96% accuracy versus 66% for category. Especially useful
+    was that the model could provide reasoning for its predictions which helped to
+    identify improvements to the process. This is just a quick analysis involving
+    a small number of records due to cost limitations, but it shows some promise for
+    using Large Language Models for data quality checks and summarization. Limitations
+    exist due to the maximum number of tokens allowed in prompts affecting the amount
+    of data that can be included in data excerpts, as well as performance and cost
+    challenges — especially if you’re a small non-profit! — at this early stage of
+    commercial generative AI.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [Humanitarian Data Exchange](https://data.humdata.org/) (HDX) platform has
+    a great feature called the [HDX Data Grid](https://centre.humdata.org/introducing-the-hdx-data-grid-a-way-to-find-and-fill-data-gaps/)
+    which provides an overview of high-quality data coverage in six key crisis categories
+    by country, see [here](https://data.humdata.org/group/tcd) for an example for
+    Chad. The datasets which make it into the grid undergo a [series of rigorous tests](https://humanitarian.atlassian.net/wiki/spaces/HDX/pages/682393601/Data+Grid+Data+Completeness+Curation+Procedures)
+    by the HDX team to determine coverage and quality, the first of which is to determine
+    if the dataset is in an approved category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wondered if perhaps Large Language Models (LLMs) might be an efficient way
+    to apply data quality and classification rules in situations where there might
+    not be any labeled training data. It would also be convenient to provide rules
+    in a human-readable text form that non-technical teams could easily maintain,
+    and use these directly in order to eliminate the requirement for features engineering
+    and model management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oh, and I also recently got early access to GPT-4 and wanted to take it for
+    a bit of a spin! 🙂 … So decided to also do some analysis comparing performance
+    with GPT-3.5-Turbo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is the Dataset in an Approved Category?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Looking at [The State of Humanitarian Data 2023 Annex B](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf),
+    which outlines the criteria and categories used when assessing if data is of sufficient
+    quality and coverage …
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step in determining whether a dataset should be included in a Data
+    Grid is to check whether the dataset meets the thematic requirement defined in
+    Annex A. Datasets that are not considered relevant are automatically excluded.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The categories in Annex A are …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e935a601b4060d8d5788b7c76f5754aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Accepted data categories for HDX Data Grid datasets (See HDX’s yearly report,
+    Annex A [[1](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)])
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could write a classifier to assign these categories to our datasets based
+    on the data they contain, but we only know categories for the subset of datasets
+    that were approved for HDX Data Grid. If prompting alone can classify our data
+    without having to manually label it, that would be fantastic. This is a zero-shot
+    task[[2](https://arxiv.org/pdf/2005.14165.pdf)], one of the amazing properties
+    of Large Language Models where classification can occur without training specifically
+    for the task or providing examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting Dataset Category for a Single Table
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s read the categories data and use it to generate prompt text defining each
+    one …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which gives …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is a test file related to agriculture which is an unsupported category
+    and which doesn’t appear on HDX’s Data Grid …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e2483882c28d40f0030fe8f55976ba5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Excerpt of a dataset table which doesn’t fall into one of the supported HDX
+    categories
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the above, I have intentionally avoided parsing the table to tidy things
+    up (see [here](https://medium.com/towards-data-science/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45)
+    for more on that). Instead, we’ll throw the raw table at GPT to see how it performs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Represented as a CSV string for the prompt, the table looks like this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the prompt, we’ll combine category definitions into one chat prompt, and
+    some instructions and the table being analyzed into a second …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: So prompt 1 …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: And prompt 2 …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s try this with both **GPT-3.5-turbo** and **GPT-4** …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: We get …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Both GPT-3.5-turbo and GPT-4 worked perfectly and identified that our table
+    does *not* fall into one of the required categories (it’s related to agriculture).
+    I also like the reasoning, which is exactly correct at least in this one example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try with a table that is in a supported category, [Food prices for Chad](https://data.humdata.org/dataset/wfp-food-prices-for-chad)
+    as found on the [Chad HDX Data Grid](https://data.humdata.org/group/tcd). The
+    CSV string for this file, taking the top 20 rows, looks like this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Prompting with the same format we get …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So again, both models were correct. The category for this dataset is indeed
+    ‘Food Security & Nutrition : Food Prices’.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OK, looking good for some quick examples using a single table. What about identifying
+    the category based on the contents of *multiple* tables?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting a Dataset Category Using Excerpts from Multiple Tables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In HDX a dataset can have multiple ‘Resources’ (files), and for data in Excel,
+    these files can have multiple tables in sheets. So just looking at just one table
+    from the dataset might not tell the whole story, we need to make a decision based
+    on multiple tables. This is important because among all the tables in a dataset
+    there might be tabs for documentation about the dataset, field lookups, and more,
+    which by themselves wouldn’t be enough to deduce the category of all data in the
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before ChatGPT API was launched, this would have been difficult due to token
+    limits. However, ChatGPT allows us to specify [multiple prompts](https://platform.openai.com/docs/guides/chat)
+    as well as having [increased token limits](https://platform.openai.com/docs/guides/rate-limits/overview).
+    As we’ll see, still a limiting factor, but an improvement on previous models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The sample data for this analysis — provided in the notebook repo — was extracted
+    from HDX by …
+  prefs: []
+  type: TYPE_NORMAL
+- en: Looping over datasets
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each dataset loop over files
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each tabular file, download it
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: For each tab in the file create an excerpt of the table (first 20 rows) in CSV
+    format
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Note: I haven’t included this code to avoid too much traffic on HDX, but if
+    interested in this code, message me here on Medium.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So each dataset has a field like this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Having this structure for each dataset allows us to generate multiple prompts
+    for each table …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which generates prompts like this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prompt 1 — Defining the categories**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Prompt 2 — Specifying Dataset name and introducing table excerpts**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Prompt 3, 4, etc —Providing Table Excerpts**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Final Prompt — Our request to classify the data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You’ll notice in the last prompt that we’ve been a bit demanding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We request that the model indicates if the data *doesn’t* align with our categories
+    so we catch negative cases and the model doesn’t try and assign a category to
+    every dataset. Some will fall outside of the approved categories
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Request that category ‘exactly matches’. Without this GPT-3.5-Turbo would merrily
+    construct new ones!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the model does identify a category, wrap it in ‘|’ for easier parsing
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We ask the model to provide its reasoning as this has been shown to improve
+    results [[3](https://arxiv.org/pdf/2205.11916.pdf)]. It’s also useful to see why
+    the category decision was made to highlight cases of hallucination
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, for our discussion later, we request the second most likely category
+    as well
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Also, if you look closely at the code in the predict function, I have used a
+    [temperature](https://platform.openai.com/docs/api-reference/chat/create) of 0.0
+    for this study. Temperature controls how random the output is, and since we want
+    things to be nice and specific rather than text describing quantum physics in
+    the voice of [cookie monster](https://www.youtube.com/watch?v=Ye8mB6VsUHw), I
+    set it as low as possible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making our predictions …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: How did we do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note: Though we passed in 150 datasets to predict, the API timed out quite
+    a bit for GPT-4 and calls weren’t retried to save costs. This is entirely to be
+    expected for GPT-4 which is in early preview. Some prompts also exceeded the token
+    length for GPT-3.5-Turbo. The following results therefore apply to 53 predictions
+    made by both GPT-3.5-turbo and GPT-4.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For predicting the category only, for example, “Coordination & Context” when
+    the full category and sub-category is “Coordination & Context : Humanitarian Access”
+    …'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: GPT-4 was nearly always able to identify the correct category (**96%** accuracy),
+    performing significantly better than GPT-3.5-turbo for the same prompts (66% accuracy).
+  prefs: []
+  type: TYPE_NORMAL
+- en: For predicting the whole category *and* sub-category together …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Again GPT-4 outperformed GPT-3.5 by a significant margin. **89%** accuracy is
+    actually pretty good given ….
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**We *only* provided a set of text rules and didn’t label data, train a classifier
+    or provide any examples**.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In fact, if we look at the examples where it failed the predictions …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: We get …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: A couple of things jump out. Datasets like ‘mozambique-attacks-on-aid-operations-education-health-and-protection’,
+    have a mix of data files related to both healthcare and attacks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0f406a7ab9b745351ab0fb8adb6ef54a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So assuming one category per dataset might not be the best way to frame the
+    problem, datasets are reused across categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In about half the cases where GPT-4 was incorrect, the second-place category
+    it predicted was correct. Looking at the model output for one of these cases,
+    [Ukranian border crossings](https://data.humdata.org/dataset/ukraine-border-crossings)
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What is pretty cool is its explanation of *why* it didn’t choose ‘Coordination
+    & Context : Humanitarian Access’, because ‘*…it does not specifically focus on
+    access constraints*’. Here is the category definition …'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Coordination & Context : Humanitarian Access: Tabular or vector data describing
+    the location of natural hazards, permissions, active fighting, or other access
+    constraints that impact the delivery of humanitarian interventions.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: So GPT-4 seems to be following the category rule to the word. There is some
+    more nuance to the classification that the HDX team applies where border-crossing
+    datasets are very reasonably related to humanitarian access. So perhaps one way
+    to improve model prediction in this particular case would be to add additional
+    text to the category definition indicating border crossing can relate to humanitarian
+    access.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The takeaway here is that GPT-4 performed amazingly well and that the few incorrect
+    predictions were due to how the problem was framed poorly by me (datasets can
+    have multiple categories) and perhaps text used to define categories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The technique seems to be quite promising. We were able to achieve some good
+    results **without any requirement to set labels, train models, or provide examples
+    in prompts.** Additionally, the data summarization capabilities of models like
+    GPT-4 are really impressive, helping with debugging model predictions, and might
+    also be a nice way to provide quick data overviews.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, there are some caveats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The amount of data used for this study was very limited due to cost and the
+    fact GPT-4 is only in an early preview. Future studies would need to use more
+    data of course.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Prompt length is currently a limiting factor, the study above only included
+    datasets with less than 4 tables to avoid breaching token limits when prompting
+    with table excerpts. HDX datasets can have more tables than this and having larger
+    table excerpts might have been desirable in some cases. Vendors such as OpenAI
+    seem to be progressively increasing token limits, so over time perhaps this becomes
+    less of an issue.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Likely related to being an early preview, GPT-4 model performance was very slow,
+    taking 20 seconds per prompt to complete.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The framing of the problem was not ideal, for example, assuming a dataset can
+    only have one category. It sufficed to illustrate the potential of Large Language
+    Models for assessing data quality and summarization, but a slightly different
+    approach in the future might yield better results. For example, predicting top
+    dataset candidates for a given category per country for datasets on the HDX platform.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Being able to specify data tests and questions about data in natural language
+    is still pretty cool though!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] OCHA, [State of Open Humanitarian Data 2023](https://data.humdata.org/dataset/2048a947-5714-4220-905b-e662cbcd14c8/resource/9d4121c6-b32b-4eb8-a707-209c79241970/download/state-of-open-humanitarian-data-2023.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Brown et al, [Language Models are Few Shot Learners](https://arxiv.org/pdf/2005.14165.pdf)
+    (2020).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Kojima et al, [Large Language Models are Zero-shot reasoners](https://arxiv.org/abs/2205.11916).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Schopf et al, [Evaluating Unsupervised Text Classification: Zero-Shot and similarity-based
+    approaches](https://arxiv.org/abs/2211.16285)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code for this analysis can be found in [this notebook](https://github.com/datakind/gpt-3-meta-data-discovery/blob/main/gpt-4-data-quality-tests.ipynb).
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,632 @@
+- en: Running a Stable Diffusion Cluster on GCP with tensorflow-serving (Part 1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-1-4f7a8e2f66df?source=collection_archive---------10-----------------------#2023-03-07](https://towardsdatascience.com/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-1-4f7a8e2f66df?source=collection_archive---------10-----------------------#2023-03-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Part 1: Setting up the infrastructure using Terraform'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://thushv89.medium.com/?source=post_page-----4f7a8e2f66df--------------------------------)[![Thushan
+    Ganegedara](../Images/3fabfa37132f7d3a9e7679c3b8d7e061.png)](https://thushv89.medium.com/?source=post_page-----4f7a8e2f66df--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4f7a8e2f66df--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4f7a8e2f66df--------------------------------)
+    [Thushan Ganegedara](https://thushv89.medium.com/?source=post_page-----4f7a8e2f66df--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6f0b045d5681&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-1-4f7a8e2f66df&user=Thushan+Ganegedara&userId=6f0b045d5681&source=post_page-6f0b045d5681----4f7a8e2f66df---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4f7a8e2f66df--------------------------------)
+    ·11 min read·Mar 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4f7a8e2f66df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-1-4f7a8e2f66df&user=Thushan+Ganegedara&userId=6f0b045d5681&source=-----4f7a8e2f66df---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4f7a8e2f66df&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Frunning-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-1-4f7a8e2f66df&source=-----4f7a8e2f66df---------------------bookmark_footer-----------)![](../Images/113074e89bc6c210b08c2df7f0659860.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Kier in Sight](https://unsplash.com/@kierinsight?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first part of this two-part tutorial, we will learn to create a Kubernetes
+    cluster that deploys a Stable Diffusion model on GCP. [Stable Diffusion](https://stability.ai/blog/stable-diffusion-public-release)
+    (a form of generative AI) is the new cool kid on the block. Stable Diffusion allows
+    us to generate realistic images from a given text prompt. Due to the novelty and
+    computational load posed by the Stable Diffusion model, it provides invaluable
+    opportunities to address some unique challenges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: You can follow this tutorial end-to-end even if you’re a free user
+    (as long as you have some of free tier credit left).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Github: [https://github.com/thushv89/tf-serving-gke/tree/master/infrastrcture](https://github.com/thushv89/tf-serving-gke/tree/master/infrastrcture)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: But to create the perfect storm (or the perfect product), having access to the
+    latest version of the model weights won’t cut it. It takes effort to create a
+    reliable production system around your model to support the user requests and
+    serve them reliably, with a reasonable latency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/029cc38eb4a6dca452cd71a4f95ebe6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Few examples of images I obtained from the deployed model. Can you guess the
+    prompts? (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do that, we will learn how to run a stable diffusion model on a GKE cluster.
+    This 2-part tutorial will consist of 4 parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting up the accounts & roles (Part 1)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Setting up the cluster (Part 1)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Deploying a prediction service in the provisioned cluster (Part 2)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Generating new images with the deployed endpoint (Part 2)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Before you get started, make sure you have created a GCP project and logged
+    in to your user account via `gcloud auth login` . You can use `gcloud config set
+    project <project_id>` and `gcloud config set region <region>` to make sure you
+    are in the correct project and the region.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note**: Most of the IAM (Identity & Access Management) I’m talking through
+    here is based on my (limited) personal experience on the subject. If you see anything
+    that could be improved let me know!'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'terraform: Manage infrastructure in style'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If you’re already familiar with `terraform` , go ahead and jump to the section
+    “Defining the accounts & roles (IAM)”.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'For all of the infrastructure setup on GCP, we’ll be using `terraform`; an
+    IaaS (Infrastructure as a Service) tool, allowing us to codify all of our infrastructure
+    requirements. Why manage cloud resources through code, rather than error-prone
+    laborious manual operations, you may ask? There are many (other) reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code (written in a human readable fashion) makes it easier to understand the
+    architecture, improves reusability, etc.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`terraform` automatically manages dependencies and perform operations in the
+    correct order'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Version controlled code provides you the ability to get a snapshot of the state
+    of your system at a given point in time (for troubleshooting)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`terraform` provides a comprehensive out of the box API to build infrastructure
+    quickly for all of the common provides such as GCP, AWS, Azure, etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: terraform concepts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '`terraform` parlance organizes code into configurations. A `terraform` configuration
+    operates on a working directory, where it will have the configuration files ending
+    with the extension `.tf` or `.tf.json`;'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`variables.tf` — Contains all the variable definitions that are used by the
+    configuration'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`outputs.tf` — Any outputs that needs to be written out'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Apart from these, you can include any number of `.tf` files containing resource
+    definitions, providers, etc. In our simple scenario, we only need a single file,
+    which we’ll call `main.tf` .
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next, let’s look at how `terraform` enables compartmentalizing of code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`terraform` is a declarative language, meaning you tell `terraform` what to
+    do (like SQL), not how to do it (like Python). It’s up to `terraform` to build
+    a plan (e.g. in the form of a graph) and execute it.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We can then compose our `terraform` configuration using [modules](https://developer.hashicorp.com/terraform/language/modules).
+    Modularizing is optional, however, it breaks complex infrastructure to logical
+    components/sub-systems and greatly enhances reusability. In our case, we’ll be
+    defining three modules ;
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manages accounts and roles (`modules/iam`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Manages the GKE cluster (`modules/gke_cluster`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Manages storage — setting up the GCS bucket (`modules/storage`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: When you go into these modules in the code, you’ll see the following basic building
+    blocks used in harmony to reach the desired state of infrastructure we need (see
+    the Appendix for specific examples).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Resource blocks — Describes infrastructure objects (e.g. VMs, a cluster, VPCs)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data source / data block — represents a source of data (e.g. a file) and the
+    data associated with it
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Provider plugin — Provides access to resource types and data sources associated
+    with a certain provider.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Input & output variables of the modules
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Once you define your configuration, you can run `terraform plan` to see what
+    `terraform` will be executing. Next `terraform apply` can be used to apply those
+    changes. Once applied, `terraform` will record the changes made in a `terraform.tfstate`
+    file. So if you want to make a change (or destroy), `terraform` is aware of the
+    current state of your infrastructure, so it can create a plan for the required
+    changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you need further reinforcing of `terraform` concepts, you can read the documentation
+    [here](https://developer.hashicorp.com/terraform/language) or go through this
+    [GCP tutorial](https://developer.hashicorp.com/terraform/tutorials/gcp-get-started/google-cloud-platform-build).
+    Now that we understand the basics of `terraform`, let’s move on to understanding
+    the logic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the accounts & roles (IAM)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For our operations relating to setting up the GKE cluster, we’ll be creating
+    a service account. As the name suggests, a service account is typically used by
+    applications and workloads, and not an actual person. For example, GKE nodes can
+    use a service account to execute an application as. A service account can be assigned
+    permissions and roles (i.e. a collection of permission collated in a meaningful
+    way) just like a user account. Few advantages of service accounts are,
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can quickly bind/remove bindings of a user to a service account, allowing
+    us to provide necessary permission to a user with assigning roles/permissions
+    to individual users repetitively.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Service accounts can be [setup with short lived credentials](https://cloud.google.com/iam/docs/create-short-lived-credentials-direct)
+    making it more secure.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'We’ll be setting up two service accounts with the following IDs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`gke-admin` — Has the required permission to create a GKE cluster and provision
+    nodes'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`gke-node` — Has the necessary permission to execute a workload successfully
+    (e.g. read from a GCS bucket)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Though a service account is not directly used by or attached to a person, one
+    can [impersonate a service account](https://cloud.google.com/iam/docs/impersonating-service-accounts),
+    allowing the user to execute commands just as it’s the service account. This is
+    the method we’ll be using to setup the cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58ae52b348f33fcf618f46e76bfb5c81.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: High-level view of what the identities & resources look like (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the process will be outlining in our `terraform` code,
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Create service accounts: `gke-admin` and `gke-node`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Assign the required roles for the created accounts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '— `gke-admin`: `container.admin`(e.g. create cluster), `compute.viewer` (e.g.
+    creating the node pool), `iam.serviceAccountUser`'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '— `gke-node`: `container.nodeServiceAccount` (permission for a typical Kubernetes
+    workload)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: — You can have a look in **GCP console → IAM → Roles** to learn what permission
+    are provided by each role.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Assign required roles to the user account to create a short-lived access token
+    (`iam.serviceAccountTokenCreator`)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Create a binding from the user account to the service account so that the user
+    can impersonate the service account
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, we will declare the names of the two service accounts we created as
+    outputs (in `outputs.tf`), so they can be referenced by the configuration and
+    other child modules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To provision the infrastructure, we’ll be using two forms of authentication,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typical authentication you obtain by running `gcloud auth login` which will
+    be used to create the service accounts and the bindings.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: After that, we’ll use impersonate the service account set up the cluster
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Note 1**: I have the `owner` role (i.e. project owner) attached to my user
+    account, if you don’t, you’d need the permission required to create a service
+    account, etc.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Note 2**: It might seem redundant to do all of these service account creation
+    and bindings when you have the owner role, however, when working on a project,
+    where you’re collaborating with a team (or in an organization), you’ll need to
+    think and set up permission with a least-privileged user mindset, to avoid security
+    exploitation.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: We won’t run `terraform apply` yet, as we’ll be creating the service accounts
+    and the GKE cluster all at once.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the GKE cluster
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ll be creating a GKE cluster that can be setup by even a free-tier user.
+    A cluster consists of a control plane and one or more worker nodes. The control
+    plane provides access to the cluster, so that you can inspect nodes, pods, services,
+    etc. Each node can run one or more pods (with a specific resource requirement
+    — e.g. CPU/memory). A pod (which may run one or more containers) will be running
+    a specified workload (e.g. `tensorlfow-serving` image to serve a model). You can
+    refer [here](https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-architecture)
+    to learn about the GKE architecture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d5016c1dd6ddb36ae71acc4e3c27009.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: High-level architecture of a GKE cluster (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll be creating a cluster in the standard mode with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`machine_type`: n2-standard-4'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`max_node_count`(number of max nodes to provision): 2'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`preemptible` : true (You could also use `spot` instances which are cheaper
+    than `preemptible` instances. Learn the differences [here](https://cloud.google.com/kubernetes-engine/docs/concepts/spot-vms#how-it-works).)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that we’re not using GPUs, since as a free-user, you may not have the eligibility
+    for a GPU quota. But if you do, feel free to follow the process [here](https://cloud.google.com/kubernetes-engine/docs/how-to/gpus)
+    for setting up a node pool with GPUs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Note 1**: If you’re a free-tier user, you will be restricted by two important
+    quotas:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`all_regions_cpus`: defaults to `12`'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`all_n2_cpus`: defaults to `8`'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`all_regions_gpus`: defaults to `0`'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Since we’re using the N2 type instances, each with 4 vCPUs, we can only spin
+    up 2 of these instances withing the quota. You can experiment with other instances
+    such as `n2-standard-2` or `n1` instances if you’d like to have more nodes in
+    the cluster.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Note 2**: These a global quotas, meaning, if you, for example, have a Vertext
+    AI notebook with another `n2` type instance started, it will count towards this
+    quota as well.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: If you don’t respect these you’ll run into `Quota exceeded` type of errors,
+    when you apply these infrastructure on terraform.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You can read the full configuration in [here](https://github.com/thushv89/tf-serving-gke/tree/master/infrastrcture/modules/gke_cluster).
+    I won’t go into the details here as it’s straightforward. However, one caveat
+    I’d like to raise here is that, the notion of regional and zonal clusters. Ignoring
+    this distinction can lead to somewhat mysterious errors such as [this Stackoverflow
+    question](https://stackoverflow.com/questions/74836213/error-403-insufficient-regional-quota-to-satisfy-request-resource-ssd-total/75378781#75378781).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating the infrastructure & resources on GCP
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have some housekeeping to do before we apply the discussed `terraform` changes.
+    First, run
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will create a config file that has the defined arguments so they can be
+    imported into `terraform` code. Next, run,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will install the provide plugin as well as the local modules we have defined.
+    Following this, we can run the following command to learn what `terraform` would
+    be doing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The plan would look like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: If we’re happy with the plan, we can run the command below to apply the changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: If everything is successful, you should see a `terraform.tfstate` file appearing
+    in your working directory, delineating all the changes that were applied. Visit
+    the [README](https://github.com/thushv89/tf-serving-gke/blob/master/infrastrcture/README.md)
+    here for detailed instructions. You can go to the **GCP console → IAM → Service
+    accounts** and make sure the service accounts are created properly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48e969bb6de810d564a888ac282bf95e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The created service accounts after applying the terraform transformation (Image
+    by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: You’ll also see a cluster named `sd-cluster` in the **GCP console → Kubernetes
+    Engine → Clusters**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/909cd447982e445a069657a3dd89a95d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The cluster has been initialized with a single node (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6026e8bb8d28c36040071647c3fb5ece.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Once you go inside the cluster you can see more information about the node pool
+    and nodes (Image by author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Great, now we have everything we need to deploy our ML model as a service. We’ll
+    look at how we can do this in the [next part of the tutorial](/running-a-stable-diffusion-cluster-on-gcp-with-tensorflow-serving-part-2-c421ecb7472a).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far you,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learned what `terraform` is and how it can make infrastructure management easy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Created the identities (service accounts) and setting them up with correct roles
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Understood what a GKE cluster is and created one by impersonating the required
+    service account
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Troubleshooting & Caveats
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Error**: `Unable to connect to the server: x509: certificate has expired
+    or is not yet valid`'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Solution 1**: This can be due to `gcloud` session expiring. Simply run `gcloud
+    auth login` and complete the login process.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Solution 2**: There is a [bug in WSL](https://stackoverflow.com/questions/65086856/wsl2-clock-is-out-of-sync-with-windows)
+    where the clock within WSL is out of sync with the Windows clock. You can run
+    `sudo hwclock -s` to trigger the sync'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Caveat**: If you’re using bash within Powershell (powered by [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)),
+    you may not be able to export environment variables (to be used by `terraform`).
+    So I’d recommend not using environment variables if you rely on that.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Appendix
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Resource blocks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Describes one or more infrastructure objects (e.g. VMs, a cluster, VPCs). Each
+    resource is identified by a *resource type* and a *unique name*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data source / data block
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Represents a source of data and the data associated with it
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Provider plugin
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Provides access to resource types and data sources associated with a certain
+    provider.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Input & output variables
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Act as arguments and return types for modules.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Acknowledgement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I’d like to acknowledge the [ML Developer Programs](https://developers.google.com/community/experts)
+    and the team for the GCP credits provided to make this tutorial a success.
+  prefs: []
+  type: TYPE_NORMAL

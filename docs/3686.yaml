@@ -1,0 +1,528 @@
+- en: 'System Design Series: The Ultimate Guide for Building High-Performance Data
+    Streaming Systems from Scratch!'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/system-design-series-0-to-100-guide-to-data-streaming-systems-3dd584bd28fa?source=collection_archive---------0-----------------------#2023-12-17](https://towardsdatascience.com/system-design-series-0-to-100-guide-to-data-streaming-systems-3dd584bd28fa?source=collection_archive---------0-----------------------#2023-12-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@sanilkhurana7?source=post_page-----3dd584bd28fa--------------------------------)[![Sanil
+    Khurana](../Images/b6aea8dd0366a0659fcf3828fc745aea.png)](https://medium.com/@sanilkhurana7?source=post_page-----3dd584bd28fa--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3dd584bd28fa--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3dd584bd28fa--------------------------------)
+    [Sanil Khurana](https://medium.com/@sanilkhurana7?source=post_page-----3dd584bd28fa--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2bda56b80bb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-series-0-to-100-guide-to-data-streaming-systems-3dd584bd28fa&user=Sanil+Khurana&userId=2bda56b80bb9&source=post_page-2bda56b80bb9----3dd584bd28fa---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3dd584bd28fa--------------------------------)
+    ·12 min read·Dec 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3dd584bd28fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-series-0-to-100-guide-to-data-streaming-systems-3dd584bd28fa&user=Sanil+Khurana&userId=2bda56b80bb9&source=-----3dd584bd28fa---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3dd584bd28fa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsystem-design-series-0-to-100-guide-to-data-streaming-systems-3dd584bd28fa&source=-----3dd584bd28fa---------------------bookmark_footer-----------)![](../Images/e7927bd4b8459b08130d6ca30e85f9e6.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Source: [Unsplash](https://unsplash.com/photos/a-black-and-white-photo-of-a-bunch-of-cubes-gC_aoAjQl2Q)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Setting up an example problem: A Recommendationxt System'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: “Data Streaming” sounds incredibly complex and “Data Streaming Pipelines” even
+    more so. Before we talk about what that means and burden ourselves with jargon,
+    let’s start with the reason for the existence of any software system, a problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our problem is pretty simple, we have to build a recommendation system for an
+    e-commerce website (something like Amazon) i.e. a service that returns a set of
+    products for a particular user based on the preferences of that user. We don’t
+    need to tire ourselves with how it works just yet (more on that later), for now,
+    we will focus on how data is sent to this service, and how it returns data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data is sent to the service in the form of “events”. Each of these events is
+    a particular action performed by the user. For example, a click on a particular
+    product, or a search query. In simple words, all user interactions on our website,
+    from a simple scroll to an expensive purchase, is considered an “event”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e5717366e9bb3abc284aac833daac58.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: These events essentially tell us about the user. For example, a user interested
+    in buying a gaming PC might also be interested in a gaming keyboard or mouse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every once in a while, our service gets a request to fetch recommendations for
+    a user, its job is simple, respond with a list of products the user is interested
+    in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b76708acb83e39afbf956f9dd806d9ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now, we don’t care how this recommendations list is populated, assume that
+    this “Recommendation Service” does some magical steps (more on this magic later
+    at the end of the post, for now, we don’t care much about the logic of these steps)
+    and figures out what our users prefer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommendations are usually an afterthought in many systems, but it's much more
+    critical than you may think. Almost every application you use relies heavily on
+    recommendation services like these to drive user actions. For example, according
+    to [this paper](https://library.ucsd.edu/dc/object/bb8503744c/_2_1.pdf), 35% of
+    Amazon web sales were generated through their recommended items.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem however lies in the sheer scale of data. Even if we run just a moderately
+    popular website, we could still be getting hundreds of thousands of events per
+    second (maybe even millions) at peak time! And if there is a new product or a
+    huge sale, then it might go much higher.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And our problems don’t end there. We have to process this data (perform the
+    magic we talked about before) in real-time and provide recommendations to users
+    in real time! If there is a sale, even a few minutes of delay in updating recommendations
+    could cause significant financial losses to a business.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a Data Streaming Pipeline?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A Data Streaming Pipeline is just what I described above. It is a system that
+    ingests continuous data (like events), performs multiple processing steps, and
+    stores the results for future use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, the events will come from multiple services, our processing steps
+    will involve a few “magical” steps to compute recommendations about the user,
+    and then we will update the recommendations for each user in a data store. When
+    we get a query for recommendations for a particular user, we simply fetch the
+    recommendations we stored earlier and return them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of this post is to understand how to handle this scale of data,
+    how to ingest it, process it, and output it for use later, rather than to understand
+    the actual logic of the processing steps (but we will still dive a little into
+    it for fun).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Creating a Data Streaming Pipeline: Step-by-step'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There is a lot to talk about, ingestion, processing, output, and querying, so
+    let’s approach it one step at a time. Think of each step as a smaller, isolated
+    problem. At each step, we will start with the most intuitive solution, see why
+    it doesn’t work, and build a solution that does work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Ingestion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start at the beginning of the pipeline, data ingestion. The data ingestion
+    problem is pretty easy to understand, the goal is just to ingest events from multiple
+    sources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e5717366e9bb3abc284aac833daac58.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: But while the problem seems simple at first, it comes with its fair share of
+    nuances,
+  prefs: []
+  type: TYPE_NORMAL
+- en: The scale of data is extremely high, easily going into hundreds of thousands
+    of events per second.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: All these events have to be ingested in real-time, we cannot have a delay of
+    even a few seconds.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s start simple, the most intuitive way to achieve this is to send each event
+    as a request to the recommendation system, but this solution has a lot of problems,
+  prefs: []
+  type: TYPE_NORMAL
+- en: Services sending events shouldn’t need to wait for a response from our recommendation
+    service. That will increase latency on the services and block them till the recommendation
+    service sends them a 200\. They should instead send fire-and-forget requests.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The number of events would be highly volatile, going up and down throughout
+    the day (for example, going up in the evenings or during sales), we would have
+    to scale our recommendation service based on the scale of events. This is something
+    we will have to manage and calculate.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If our recommendation service crashes, then we will lose events while it is
+    down. In this architecture, our recommendation service is a single point of failure.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Let’s fix this by using a message broker or an “event streaming platform” like
+    Apache Kafka. If you don’t know what that is, it's simply a tool that you set
+    up that can ingest messages from “publishers” to certain topics. “Subscribers”
+    listen or subscribe to a topic and whenever a message is published on the topic,
+    the subscriber receives the message. We will talk more about Kafka topics in the
+    next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What you need to know about Kafka is that it facilitates a decoupled architecture
+    between producers and consumers. Producers can publish a message on a Kafka topic
+    and they don’t need to care when, how, or if the consumer consumes the message.
+    The consumer can consume the message on its own time and process it. Kafka would
+    also facilitate a very high scale since it can scale horizontally, and linearly,
+    providing almost infinite scaling capability (as long as we keep adding more machines)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/643bb100e4e30b9b67ef6f5980b3b891.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: So each service sends events to Apache Kafka. The recommendation service fetches
+    these events from Kafka. Let’s see how this helps us -
+  prefs: []
+  type: TYPE_NORMAL
+- en: Events are processed asynchronously, services no longer need to wait for the
+    response from the Recommendation Service.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It is easier to scale Kafka, and if the scale of events increases, Kafka will
+    simply store more events while we scale up our recommendation service.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Even if the recommendation service crashes, we won’t lose any events. Events
+    are persisted in Kafka so we never lose any data.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now we know how to ingest events into our service, let’s move to the next part
+    of the architecture, processing events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Processing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Data processing is an integral part of our data pipeline. Once we receive events,
+    we need to generate new recommendations for the user. For example, if a user searches
+    for “Monitor”, we need to update the recommendations for this user based on this
+    search, maybe add that the user is interested in monitors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we talk more about the architecture, let’s forget all this and talk a
+    little about how to generate recommendations. This is also where machine learning
+    comes in, it's not very important to understand this to continue with the post,
+    but it’s pretty fun so I will try to give a very basic brief description of how
+    it works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try to better understand user interactions and what they mean. When the
+    user interacts with our website with a search, a click, or a scroll event, the
+    user is telling us something about his/her interests. Our goal is to understand
+    these interactions and use them to understand the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When you think of a user, you probably think of a person, with a name, age,
+    etc. but for our purposes, it's easier to think of every user as a vector, or
+    simply a set of numbers. It sounds confusing(how can a user be represented as
+    a set of numbers after all), but bear with me, and let’s see how this works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s assume we can represent each user(or his/her interests) as a point in
+    a 2D space. Each axis represents a trait of our user. Let’s assume the X-axis
+    represents how much he/she likes to travel, and the Y-axis represents how much
+    he/she likes photography. Each action by the user influences the position of this
+    user in the 2D space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say a user starts with the following point in our 2D space —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6cbe49336b0c35b5425a0b18e8c84e1a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: When the user searches for a “travel bag”, we move the point to the right since
+    that hints that the user likes traveling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72fbb66e4c68c539a127b86cb84c8609.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the user had searched for a camera, we would have moved the user upwards
+    in the Y-axis instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also represent each product as a point in the same 2D space,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4f93b753acfc3cf0c28fe85092ec2e18.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The position of the user in the above diagram indicates that the user loves
+    to travel, and also likes photography a little. Each of the products is also placed
+    according to how relevant they are to photography and traveling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since the user and the products are just points in a 2-dimensional space, we
+    can compare them and perform mathematical operations on them. For example, from
+    the above diagram, we can find the nearest product to the user, in this case,
+    the suitcase, and confidently say that it is a good recommendation for the user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above is a very basic introduction to recommendation systems (more on them
+    at the end of the post). These vectors (usually much larger than 2 dimensions)
+    are called embeddings (user embeddings that represent our users, and product embeddings
+    that represent products on our website). We can generate them using different
+    types of machine-learning models and there is a lot more to them than what I described
+    but the basic principle remains the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s come back to our problem. For every event, we need to update the user
+    embeddings (move the user on our n-dimensional chart), and return related products
+    as recommendations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s think of a few basic steps for each event that we need to perform to generate
+    these embeddings,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`update-embeddings`: Update the user’s embeddings'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`gen-recommendations`: Fetch products related to (or near) the user embeddings'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`save`: Save the generated recommendations and events'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We can build a Python service for each type of event.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d7febd5828a12f78c83280e20828572.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of these microservices would listen to a Kafka topic, process the event,
+    and send it to the next topic, where a different service would be listening.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a313815b49996547bcd9cb7ad44d3da4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we are again using Kafka instead of sending requests, this architecture
+    gives us all the advantages we discussed before as well. No single Python microservice
+    is a single point of failure and it's much easier to handle scale. The last service
+    `save-worker` has to save the recommendations for future use. Let’s see how that
+    works.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Sinks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once we have processed an event, and generated recommendations for it, we need
+    to store the event and recommendation data. Before we decide where to store events
+    and recommendation data, let’s consider the requirements for the data store
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scalability and high write throughput— Remember we have a lot of incoming events,
+    and each event also updates user recommendations. This means our data store should
+    be able to handle a very high number of writes. Our database should be highly
+    scalable and should be able to scale linearly.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Simple queries — We are not going to perform complex JOINs, or do different
+    types of queries. Our query needs are relatively simple, given a user, return
+    the list of precomputed recommendations
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: No ACID Requirements — Our database doesn’t need to have strong ACID compliance.
+    It doesn’t need any guarantees for consistency, atomicity, isolation, and durability.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In simple terms, we are concerned with a database that can handle an immense
+    amount of scale, with no extra bells and whistles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cassandra is a perfect choice for these requirements. It scales linearly due
+    to its decentralized architecture and can scale to accommodate very high write
+    throughput which is exactly what we need.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use two tables, one for storing recommendations for every user, and the
+    other for storing events. The last Python microservice `save` worker would save
+    the event and recommendation data in Cassandra.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b8eaacce1ca4495011cb442a894cc3da.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Querying
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Querying is pretty simple. We have already computed and persisted recommendations
+    for each user. To query these recommendations, we simply need to query our database
+    and fetch recommendations for the particular user.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7acbfd7170e8adc3ccc4dd31f77e5189.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Full Architecture
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: And, that’s it! We are done with the entire architecture, let’s draw out the
+    complete architecture and see what it looks like.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0404a3c0477c5180409b286a871d7d1c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more learning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Kafka
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Kafka is an amazing tool developed by LinkedIn to handle an extreme amount of
+    scale ([this](https://engineering.linkedin.com/kafka/running-kafka-scale) blog
+    post by LinkedIn in 2015 talked about ~13 million messages per second!).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kafka is amazing at scaling linearly and handling crazy high scale, but to build
+    such systems, engineers need to know and understand Kafka, what is it, how it
+    works, and how it fares against other tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wrote a blog post in which I explained what Kafka is, how it differs from
+    message brokers, and excerpts from the original Kafka paper written by LinkedIn
+    engineers. If you liked this post, check out my post on Kafka —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://betterprogramming.pub/system-design-series-apache-kafka-from-10-000-feet-9c95af56f18d?source=post_page-----3dd584bd28fa--------------------------------)
+    [## System Design Series: Apache Kafka from 10,000 feet'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at what Kafka is, how it works and when should we use it!
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: betterprogramming.pub](https://betterprogramming.pub/system-design-series-apache-kafka-from-10-000-feet-9c95af56f18d?source=post_page-----3dd584bd28fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cassandra
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Cassandra is a unique database meant to handle very high write throughput. The
+    reason it can handle such high throughput is due to its high scalability decentralized
+    architecture. I wrote a blog post recently discussing Cassandra, how it works,
+    and most importantly when to use it and when not to —
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/geekculture/system-design-solutions-when-to-use-cassandra-and-when-not-to-496ba51ef07a?source=post_page-----3dd584bd28fa--------------------------------)
+    [## System Design Solutions: When to use Cassandra and when not to'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Everything you need to know about when to use Cassandra and when not to
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/geekculture/system-design-solutions-when-to-use-cassandra-and-when-not-to-496ba51ef07a?source=post_page-----3dd584bd28fa--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recommendation Systems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recommendation systems are an amazing piece of technology, and they are used
+    in almost all applications that you and I use today. In any system, personalization
+    and recommendation systems form the crux of the search and discovery flow for
+    users.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have been writing quite a bit about search systems, and I have touched up
+    a bit on how to build basic personalization in search systems, but my next topic
+    will be to dive deeper into the nitty gritty of recommendation engines, how they
+    work, and how to architect them. If that sounds interesting to you, follow me
+    on Medium for more content! I also post a lot of byte-sized content on LinkedIn
+    for regular reading, for example, [this](https://www.linkedin.com/posts/sanil-khurana-a2503513b_database-tech-softwareengineer-activity-7064441910639161344-1mQz?utm_source=share&utm_medium=member_desktop)
+    post on Kafka Connect that describes how it works, and why it is so popular with
+    just one simple diagram.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I love discussing interesting and complex topics like these and breaking them
+    down into a 10-minute read. If you enjoyed this post, follow me here on Medium
+    for more such content! [Follow me on LinkedIn](https://www.linkedin.com/in/sanil-khurana-a2503513b?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app)
+    for smaller, regular guides to elevate your technical and design knowledge every
+    day bit by bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hope you enjoyed this post, if you have any feedback about the post or any thoughts
+    on what I should talk about next, you can post it as a comment!
+  prefs: []
+  type: TYPE_NORMAL

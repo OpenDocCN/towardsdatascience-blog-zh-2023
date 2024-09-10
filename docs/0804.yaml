@@ -1,0 +1,462 @@
+- en: How to Understand and Use the Jensen-Shannon Divergence
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-understand-and-use-jensen-shannon-divergence-b10e11b03fd6?source=collection_archive---------0-----------------------#2023-03-02](https://towardsdatascience.com/how-to-understand-and-use-jensen-shannon-divergence-b10e11b03fd6?source=collection_archive---------0-----------------------#2023-03-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/f6c7a2a138f1455efd358eb0f3ecb001.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A primer on the math, logic, and pragmatic application of JS Divergence — including
+    how it is best used in drift monitoring
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://aparnadhinak.medium.com/?source=post_page-----b10e11b03fd6--------------------------------)[![Aparna
+    Dhinakaran](../Images/e431ee69563ecb27c86f3428ba53574c.png)](https://aparnadhinak.medium.com/?source=post_page-----b10e11b03fd6--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b10e11b03fd6--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b10e11b03fd6--------------------------------)
+    [Aparna Dhinakaran](https://aparnadhinak.medium.com/?source=post_page-----b10e11b03fd6--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff32f85889f3a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-understand-and-use-jensen-shannon-divergence-b10e11b03fd6&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=post_page-f32f85889f3a----b10e11b03fd6---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b10e11b03fd6--------------------------------)
+    ·9 min read·Mar 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb10e11b03fd6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-understand-and-use-jensen-shannon-divergence-b10e11b03fd6&user=Aparna+Dhinakaran&userId=f32f85889f3a&source=-----b10e11b03fd6---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb10e11b03fd6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-understand-and-use-jensen-shannon-divergence-b10e11b03fd6&source=-----b10e11b03fd6---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This piece is co-authored with Jason Lopatecki, CEO and Co-Founder of Arize
+    AI*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In machine learning systems, drift monitoring can be critical to delivering
+    quality ML. Some common use cases for drift analysis in production ML systems
+    include:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Detect feature changes between training and production to catch problems ahead
+    of performance dips
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detect prediction distribution shifts between two production periods as a proxy
+    for performance changes (especially useful in delayed ground truth scenarios)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Use drift as a signal for when to retrain — and how often to retrain
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Catch feature transformation issues or pipeline breaks
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Detect default fallback values used erroneously
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Find new data to go label
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Find clusters of new data that are problematic for the model in unstructured
+    data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Find anomalous clusters of data that are not in the training set
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: While there is no perfect drift metric, the field has learned a lot over the
+    past decade and there are some well-tested approaches and metrics that are useful
+    depending on your use case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One such measure is **Jensen Shannon divergence** (JS Div). [Also](https://nlp.stanford.edu/fsnlp/)
+    [referred](https://dl.acm.org/doi/10.3115/976909.979625) to as **total divergence
+    to the average** or **information radius**, JS divergence is a statistical metric
+    with a basis in information theory**.** The advantage of JS divergence over other
+    metrics like is mostly related to issues with empty probabilities for certain
+    events or bins and how these cause issues with Kullback-Leibler divergence ([KL
+    Divergence](https://arize.com/blog-course/kl-divergence/)) and population stability
+    index (PSI). JS divergence uses a mixture probability as a baseline when comparing
+    two distributions. In the discrete versions of PSI and KL divergence, the equations
+    blow up when there are 0 probability events.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This blog post covers what JS divergence is and how it differs from KL divergence,
+    how to use JS divergence in drift monitoring, and how mixture distribution resolves
+    a common measurement problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: JS Divergence Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Jensen-Shannon is an asymmetric metric that [measures the relative entropy](http://hanj.cs.illinois.edu/cs412/bk3/KL-divergence.pdf)
+    or difference in information represented by two distributions. Closely related
+    to KL Divergence, it can be thought of as measuring the distance between two data
+    distributions showing how different the two distributions are from each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The following shows the symmetry with KL Divergence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22b530ede09a7031f31c5b481a365440.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And a discrete form of JS Divergence:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9dd111bba855d65aee45fd3adfde9f22.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Where the mixture distribution is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/28a1c4ba276bee31cfbe73b072d8d5f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more background, one of the better technical [papers](https://www.mdpi.com/1099-4300/21/5/485)
+    on JS Divergence is written by Frank Nielsen of Sony Computer Science Laboratories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In model monitoring, the discrete form of JS divergence is typically used to
+    obtain the discrete distributions by [binning data](https://arize.com/blog-course/data-binning-production/).
+    The discrete form of JS and continuous forms converge as the number of samples
+    and bins move to infinity. There are optimal [selection approaches](https://stats.stackexchange.com/questions/510699/discrete-kl-divergence-with-decreasing-bin-width)
+    to the number of bins to approach the continuous form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How Is JS Divergence Used In Drift Monitoring?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In model monitoring, JS divergence is similar to PSI in that it is used to monitor
+    production environments, specifically around feature and prediction data. JS divergence
+    is also utilized to ensure that input or output data in production doesn’t drastically
+    change from a baseline. The baseline can be a training production window of data
+    or a training/validation dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Drift monitoring can be especially useful for teams that receive delayed ground
+    truth to compare against production model decisions. Teams rely on changes in
+    prediction and feature distributions as a proxy for performance changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: JS divergence is typically applied to each feature independently; it is not
+    designed as a covariant feature measurement but rather a metric that shows how
+    each feature has diverged independently from the baseline values. Although JS
+    divergence does uniquely support a multi-distribution mixture approach, it really
+    is not designed for comparing completely disparate distributions — it’s not a
+    mulit-variate drift measurement.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The challenge with JS divergence — and also its advantage — is that the comparison
+    baseline is a mixture distribution. Think of JS Divergence as occurring in two
+    steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create mixture distribution for comparison using the production and baseline
+    distributions;
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f203a178e7099ee8af66f9d2f0e05999.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compare production and baseline to mixture.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5a881c2453f0edc36e623dcf73c4bc09.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above diagram shows the A distribution, B distribution and mixture distribution.
+    The JS Divergence is calculated by comparing the JS distribution to both A & B.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*✏️****NOTE****:* sometimes non-practitioners have a somewhat overzealous goal
+    of perfecting the mathematics of catching data changes. In practice, it’s important
+    to keep in mind that real data changes all the time in production and many models
+    extend well to this modified data. The goal of using drift metrics is to have
+    a solid, stable and strongly useful metric that enables troubleshooting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: JS Divergence Is a Symmetric Metric
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: JS divergence is similar to PSI in that it is a symmetric metric. If you swap
+    the baseline distribution p(x) and sample distribution q(x), you will get the
+    **same** number. This has several advantages compared to KL divergence for troubleshooting
+    data model comparisons. There are times where teams want to swap out a comparison
+    baseline for a different distribution in a troubleshooting workflow, and having
+    a metric where *A / B* is the same as *B / A* can make comparing results much
+    easier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/460446b933160356df397264124821b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'JS Divergence Advantage: Handling Zero Bins'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main advantage of JS divergence is that the mixture distribution allows
+    the calculation to handle bin comparisons to 0\. With KL Divergence, if you are
+    comparing 0 bins the equation essentially blows up.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a5f423837cad2e92371f824ea53e1141.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As you can see in the image above, there are two buckets where one bucket is
+    0 in the current time frame and the other has a value. The approach with JS Divergence
+    to handle the 0 bucket is to take the two terms in JS Divergence and assume one
+    is *0 (0*ln(0) = 0)* as the function is smooth and has a limit as it approaches
+    0 and the other has a value:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/361552a8aeefca01ea9811e52a0fee49.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Assuming one term is 0, you have for the 0 bin:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ec7b89a5476dd2e7719e392f5ca52055.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'This will not work with KL divergence or PSI as you would divide by 0 in the
+    denominator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/990a2823111543843e66c52a9623f45b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'In the case where q(x) = 0 you have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3fd477d5b3709d59cc9e6c7652d566b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Advantage: The zero bins are handled naturally without issue*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '✏️NOTE: where preferred, it’s also possible to make a modification that allows
+    KL Divergence and PSI to be used on distributions with 0 bins.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'JS Divergence Disadvantage: Mixture Distribution Moves'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The disadvantage of JS divergence actually derives from its advantage, namely
+    that the comparison distribution is a “mixture” of both distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of PSI or KL divergence, the baseline comparison distribution is
+    static comparison distribution, fixed in every comparison time period. This allows
+    you to get a stable metric that means the same thing on every comparison and in
+    every period. For example, if you have a PSI value on one day of 0.2 then a week
+    later it is 0.2 this implies the entropy difference to the baseline is the same
+    on both of these days. That is not necessarily the case with JS divergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of JS divergence, the mixture distribution changes every time you
+    run a comparison because the production distribution changes every sample period.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/644033335603c6bfbd7ba7eb634d59e4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Calculation of Mixture Distribution for Each Monitoring Day (Image by author)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The chart above shows an example of a mixture distribution calculated for two
+    different timeframes. The mixture acts like a slowly moving baseline that smoothly
+    connects the baseline at time A with time B by averaging differences.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Differences Between Continuous Numeric and Categorical Features
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: JS divergence can be used to measure differences between numeric distributions
+    and categorical distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c4e470bdbe494a24cb1759ceac225fa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numerics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the case of numeric distributions, the data is split into bins based on cutoff
+    points, bin sizes and bin widths. The binning strategies can be even bins, quintiles
+    and complex mixes of strategies that ultimately affect JS divergence (stay tuned
+    for a future write-up on binning strategy).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Categorical
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The monitoring of JS divergence tracks large distributional shifts in the categorical
+    datasets. In the case of categorical features, often there is a size where the
+    cardinality gets too large for the measure to have much usefulness. The ideal
+    size is around 50–100 unique values — as a distribution has higher cardinality,
+    the question of how different the two distributions and whether it matters gets
+    muddied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: High Cardinality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the case of high cardinality feature monitoring, out-of-the-box statistical
+    distances do not generally work well — instead, it is advisable to use one of
+    these options instead:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Embeddings:** In some high cardinality situations, the values being used
+    — such as *User ID* or *Content ID* — are already used to create embeddings internally.
+    Monitoring embeddings can help.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Pure High Cardinality Categorical:** In other cases, where the model has
+    encoded the inputs to a large space, just monitoring the top 50–100 top items
+    with JS divergence and all other values as “other” can be useful.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Of course, sometimes what you want to monitor is something very specific — like
+    the percent of new values or bins in a period. These are better set up with data
+    quality monitors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: JS Divergence Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here is an example of JS divergence with both numeric and categorical features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d02fb7b9df255591b340a7d770477dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imagine you work at a credit card company and have a numeric distribution of
+    charge amounts for a fraud model. The model was built with the baseline shown
+    in the picture above from training. We can see that the distribution of charges
+    has shifted. There are a number of industry standards around thresholds for PSI
+    but as one can see the values are very different for JS divergence. The 0.2 standard
+    for PSI does not apply to JS divergence. At Arize (full disclosure: I work at
+    Arize), we typically look at a moving window of values over a multi-day period
+    to set a threshold for each feature.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example shows a numeric variable and JS divergence over the distribution.
+    In the example above, it’s worth noting that a nine point drop from 12% to 3%
+    for bin 95–97 causes a 1.4 movement in JS. This is exactly mirrored by a nine
+    point increase from 3% to 12% for bin 105–107\. PSI works in a similar symmetric
+    manner to JS. This is not the same for KL divergence. In the case of KL Divergence,
+    the 12%->3% causes a larger movement in the number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Intuition Behind JS Divergence
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It’s important to intrinsically understand some of the logic around the metric
+    and changes in the metric based on distribution changes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/253819f9d2f1110915eeb8c68c532215.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above example shows a move from one categorical bin to another. The predictions
+    with “medical” as input on a feature (use of loan proceeds) increase from 2% to
+    8%, while the predictions with “vacation” decrease from 23% to 17%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this example, the component to JS divergence related to “medical” is 0.96
+    and is larger than the component for the “vacation” percentage movement of 0.023\.
+    This is the opposite of what you get with KL divergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8f3c0d38c1731ec8ac64dd9643ed071c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[JS divergence](https://arize.com/blog-course/jensen-shannon-divergence/) is
+    a common way to measure drift. It has some great properties in that it is symmetric
+    and handles the 0 bin comparison naturally but also has some drawbacks in the
+    moving mixture as a baseline. Depending on your use case, it can be a great choice
+    for a drift metric.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, it is not the only choice. One alternative is to use [population
+    stability index](https://arize.com/blog-course/population-stability-index-psi/)
+    along with an out-of-distribution binning technique to handle zero bins. Leveraging
+    an out-of-distribution binning technique can allow teams to both dial in how sensitive
+    you want the metric to be out of distribution events and easily compare to a fixed
+    baseline distribution (there is no mixture). Stay tuned for additional pieces
+    covering this and binning best practices!
+  prefs: []
+  type: TYPE_NORMAL

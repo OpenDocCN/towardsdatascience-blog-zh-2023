@@ -1,0 +1,541 @@
+- en: 'DL Notes: Gradient Descent'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/gradient-descent-f09f19eb35fb?source=collection_archive---------13-----------------------#2023-11-04](https://towardsdatascience.com/gradient-descent-f09f19eb35fb?source=collection_archive---------13-----------------------#2023-11-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How Neural Networks “Learn”
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisdamed?source=post_page-----f09f19eb35fb--------------------------------)[![Luis
+    Medina](../Images/d83d326290ae3272f0618d0bd28bd875.png)](https://medium.com/@luisdamed?source=post_page-----f09f19eb35fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f09f19eb35fb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f09f19eb35fb--------------------------------)
+    [Luis Medina](https://medium.com/@luisdamed?source=post_page-----f09f19eb35fb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F562a027a34f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-descent-f09f19eb35fb&user=Luis+Medina&userId=562a027a34f0&source=post_page-562a027a34f0----f09f19eb35fb---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f09f19eb35fb--------------------------------)
+    ·11 min read·Nov 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff09f19eb35fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-descent-f09f19eb35fb&user=Luis+Medina&userId=562a027a34f0&source=-----f09f19eb35fb---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff09f19eb35fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-descent-f09f19eb35fb&source=-----f09f19eb35fb---------------------bookmark_footer-----------)![](../Images/c5a5af3b75e58cac86deb3abd95692a0.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Rohit Tandon](https://unsplash.com/@sepoys?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit)
+    / [Unsplash](https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Artificial Neural Networks (ANNs) are [universal function approximators](https://www.youtube.com/watch?v=lkha188L4Gs%3Fref%3Dmakerluis.com).
+    They can approximate any complex function if provided with enough data, have a
+    proper architecture, and are *trained* for enough time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But what does “training” a network even mean?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [a previous post about the feedforward process](https://medium.com/@luisdamed/feedforward-artificial-neural-networks-52bcf96d6ac3),
+    I mentioned that training a network means adjusting the value of its weights,
+    to obtain a better fit of the function we are trying to approximate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I’m going to describe the algorithm of gradient descent, which
+    is used to adjust the weights of an ANN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s start with the basic concepts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Descending from a mountain
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Imagine we are at the top of a mountain and need to get to the lowest point
+    of a valley next to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t have a map, it is foggy and getting dark, we lost the routes and need
+    to get to the bottom quickly. Not a nice scenario, but it shows the “boundaries”
+    of the problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our safety, let’s suppose there are no steep ridges in the mountain, so
+    it is similar to a [differentiable function](https://en.wikipedia.org/wiki/Differentiable_function?ref=makerluis.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95b5dc5e213b18cdb7bc509d24da0138.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Descent from the Monviso peak. [A small valley near Oncino, Cuneo](https://www.google.com/maps/@?api=1&map_action=map&basemap=satellite&center=44.659382%2C7.120437&zoom=16&ref=makerluis.com).
+    Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When it gets dark, we can’t see in which direction we are moving. The only way
+    we can descend is by taking small steps, and checking whether we are at a lower
+    height or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we notice we moved up, we go in the opposite direction. If we moved down,
+    we continue that way. We repeat the process until, eventually, we’ll reach the
+    bottom.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, this is not necessarily the best approach. We might end up in
+    a small valley, not at the bottom of the mountain, or we could spend a huge amount
+    of time on a plateau.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This illustrates the basic working principle of gradient descent and also its
+    main challenges. We’ll come back to this example, but let’s see a more formal
+    explanation first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is a gradient?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A gradient is a representation of the rate of change of a function. It indicates
+    the direction of the greatest increase or decrease. Intuitively, that means the
+    gradient is zero at a local maximum or a local minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a function that depends on several variables (or coordinate axes), the gradient
+    is a vector whose components are the partial derivatives of the function, evaluated
+    at a given point. This is denoted with the symbol ∇ (nabla) which represents the
+    vector differential operator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see this in math notation. Suppose we have an n-dimensional function
+    f:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The gradient of this function at point p (which is determined by n coordinates),
+    is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Coming back to the example of the mountain, there are areas of the mountain
+    where the terrain is steep, like the mountain slopes, and other zones where the
+    terrain is almost flat, like a valley or a plateau. Valleys and plateaus represent
+    local minima, which are usually critical points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gradient descent method
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For many optimization problems, we aim to minimize a loss function to achieve
+    the most accurate result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In Deep Learning and ANNs, the loss functions we use are differentiable: they
+    have no discontinuities, being smooth across their whole domain.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This allows us to use the derivative of the loss function with respect to the
+    independent variables as an indication of whether we are moving towards a solution
+    (a global minimum).
+  prefs: []
+  type: TYPE_NORMAL
+- en: How large are the steps we take in proportion to the derivative? this is determined
+    by a step size parameter, *η* (we can call it **learning rate** when we are talking
+    about Deep Learning). It will multiply the gradient, scaling it to determine the
+    step size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way, steeper gradients will produce larger steps. As we approach a local
+    minimum, the slope (gradient) will tend to zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s look at the following figure, for example, to illustrate how this works
+    when optimizing a 1D function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cdef9ea00750a1e9e7aebad15276301b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified example of gradient descent in a 1D problem. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As you can see, we initialize our “search” for the minima at an arbitrary point
+    (I’ve depicted two examples, A and B). We gradually take steps toward the closest
+    minima, making changes in *θ* in proportion to the slope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The illustration represents what the following algorithm does (pseudo-code)
+    [1]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The loss function here is like our example of the mountain when it’s dark and
+    we don’t have a map: we don’t know what it looks like. We want to know the value
+    of *θ* for which ***J*** is minimized, but the optimization algorithm doesn’t
+    know what the value of ***J*** would be for all possible inputs *θ* .'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is why we initialize our optimization algorithm with any arbitrary value
+    of *θ*. For instance, points A and B in the figure represent two different initialization
+    values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Potential problems with Gradient Descent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The gradient descent algorithm is effective because it can help us obtain an
+    approximate solution for any convex function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the function we are trying to optimize is convex, for any value of *ϵ* there
+    is some step size *η* such that gradient descent will converge to *θ** within
+    *ϵ* of the true optimal *θ.* [1]
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, as you might have guessed, this is not perfect. The algorithm might
+    converge, but that doesn’t guarantee that we’ll find a global minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The main challenges of gradient descent are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Arbitrary initialization has an impact on the results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using different initialization values, we could encounter local minima instead
+    of global minima.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, starting at point B instead of point A in the previous figure above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Or, a less evident case, converging to a plateau (vanishing gradient problem)
+    as shown by the blue line in the figure below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e06647b8def86857c479409b11888d71.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Vanilla gradient descent over a saddle surface. The animation shows how different
+    initialization points can produce different results. Image by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*💡* If you are curious about how to create this kind of animation, check out
+    my article [Creating a Gradient Descent Animation in Python](/creating-a-gradient-descent-animation-in-python-3c4dcd20ca51).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Selecting the appropriate step size requires a trade-off between convergence
+    speed and stability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There’s an interaction between the step size or learning rate, and the number
+    of epochs we should use to achieve accurate results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Take for example the results of a parametric experiment, shown below. The images
+    are from the online course [A Deep Understanding of Deep Learning](https://www.udemy.com/course/deeplearning_x/?ref=makerluis.com),
+    by Mike X Cohen, which I highly recommend to anyone interested in Deep Learning
+    and using [PyTorch](https://pytorch.org/?ref=makerluis.com), following a scientific
+    approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this case, Mike showed how to test the results for a gradient descent optimization
+    when changing the learning rate and the number of training epochs independently
+    (one parameter over time, for a grid of different values). We can see how both
+    parameters affect the results for this particular case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4bd9c40334c3a73736990c791efe9f16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Images are from the online course [A Deep Understanding of Deep Learning](https://www.udemy.com/course/deeplearning_x/?ref=makerluis.com),
+    by Mike X Cohen.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The true global minimum of the function is around -1.4\. For smaller learning
+    rates, it takes a larger number of training epochs to converge to that result.
+    So it would seem like just using a larger learning rate can help us reduce the
+    computational time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But in practice, this isn’t a simple matter of convergence speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large step sizes can lead to very slow convergence, prevent the algorithm from
+    converging at all (oscillating around the minima forever), or provoke a divergent
+    behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next figure shows how different learning rates affect the results of the
+    optimization, even if we initialize the algorithm in the same location x = 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17adbdaca929c0d64adab695e1b7f420.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of stochastic gradient descent applied to *f*(*x*)=*x^*2 with different
+    step sizes. In all cases, the algorithm is initialized at x = 2\. Image by the
+    author, with base code adapted from [Saraj Rival’s notebook](https://github.com/llSourcell/The_evolution_of_gradient_descent/blob/master/GD_vs_SGD.ipynb?ref=makerluis.com).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here, it is evident that having large step sizes improves the convergence speed
+    but only up to a certain point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increasing the learning rate by an order of magnitude caused the algorithm to
+    get stuck. The results for *η* = 1 oscillate between x = 2 and x = -2, and this
+    is shown only by the blue horizontal line in the left figure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some cases, a large step size might actually “shoot” the results to infinity,
+    causing a numerical overflow of our program.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, too small step sizes can create a very slow convergence or
+    no convergence at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent for training a Neural Network
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the context of Deep Learning, the function we are trying to optimize is
+    our loss function ***J***. We define our training losses as the average of the
+    losses for all our training dataset:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where Dtrain is the number of samples in our training dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, we can implement gradient descent based on the following algorithm, in
+    which we compute the gradient of the training losses to perform an update of the
+    model weights, and repeat for a number of iterations[2]
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Since we are computing an average of the gradient of the loss function, we have
+    a better estimate of it. For this reason, the weights update is more likely to
+    be in the direction that improves the model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem with this implementation of gradient descent is its low speed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a toy example with a few points and a simple function it might work well,
+    but imagine we are developing an ANN and we have a million data points to train
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To train the ANN with this algorithm, we would need to compute the outputs of
+    the model for each sample of the training data and then average their losses as
+    a large batch. Just to do *one* update of the weights. Then repeat it, over and
+    over again, until we reach convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is called *Batch* Gradient Descent. It makes one (accurate) weight update
+    per iteration, but each iteration can take a *long time* because we are repeating
+    the model computation n times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To overcome this problem, we could use the so-called Stochastic Gradient Descent
+    algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Stochastic Gradient Descent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To overcome the slow convergence problem of Batch Gradient Descent, we can perform
+    an update of the model weights based on each sample of the training set. The advantage
+    is that we don’t need to wait until we have looped through the whole set to perform
+    just one update of the weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can do this by using the Loss function for each individual sample, instead
+    of the Training Loss which considers the whole dataset as a batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is what the Stochastic Gradient Descent Algorithm (SGD) looks like
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that the step size is a function of the training iterations. That’s because,
+    for the algorithm to converge, η must decrease as the number of iterations progresses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the [lecture notes of MIT 6.036](https://openlearninglibrary.mit.edu/courses/course-v1:MITx+6.036+1T2019/courseware/Week4/gradient_descent/?activate_block_id=block-v1%3AMITx%2B6.036%2B1T2019%2Btype%40sequential%2Bblock%40gradient_descent%3Fref%3Dmakerluis.com&ref=makerluis.com)
+    [1], the following theorem is mentioned:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Theorem 4.1\. If J is convex, and η(t) is a sequence satisfying
+  prefs: []
+  type: TYPE_NORMAL
+- en: then SGD converges with probability one to the optimal *θ*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'People take different approaches to reduce the value of η as the training progresses,
+    and this is often called “Annealing”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Changing the learning rate in proportion to the training epoch (for instance,
+    η(t) = 1/t ), or setting it to a smaller value once a certain learning epoch has
+    been reached. This method offers good results but is unrelated to the model performance.
+    This is called “learning rate decay”, and is the industry standard to handle this
+    problem.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Multiplying the learning rate by the gradient of the loss function: This method
+    is good because it’s adaptive to the problem, but requires careful scaling. This
+    is incorporated into RMSprop and Adam variations of gradient descent.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Multiplying the learning rate by the losses: The advantage is that this is
+    also adaptive to the problem, but requires scaling too.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: SGD may perform well after visiting only some of the data. This behavior can
+    be useful for relatively large data sets, because we may reduce the amount of
+    memory needed, and the total runtime compared to the “vanilla” implementation
+    of gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We could say that the Batch implementation is slower because it needs to run
+    through all samples to perform a single update of the weights.
+  prefs: []
+  type: TYPE_NORMAL
+- en: SGD performs an update at every sample, but the quality of the updates is lower.
+    We may have noisy data or a really complex function we are trying to fit with
+    our ANN.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using a batch of size Dtrain is slow, but accurate, and using a batch of size
+    1 is fast, but less accurate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a term in between, and it’s called “mini-batch” gradient descent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mini-Batch Gradient Descent
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/e49352109af2b9cbce81357c4eb26785.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Sebastian Herrmann](https://unsplash.com/@herrherrmann?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we split our data into smaller batches of equal size, we could do what Batch
+    gradient descent does, but for each of those *mini-batches*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s say we divide the data into 100 smaller parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We go through our data in 100 steps. On each step, we look at the Training Losses
+    just for the data contained in the current mini-batch and improve our model parameters.
+    We repeat this until we have looked at all samples, and start the cycle again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each cycle is known as an **epoch**. I have used the term more loosely before
+    just to refer to the number of iterations during optimization, but the normal
+    definition refers to each cycle through the training dataset. For Batch gradient
+    descent, an *iteration* is an epoch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we set how many epochs we want to use for training an ANN, we are defining
+    how many passes through the training dataset we will make.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The advantage of using mini-batches is that we update our model parameters on
+    each mini-batch, rather than after we have looked at the whole data set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For Batch gradient descent, the batch size is the total number of samples in
+    the training dataset. For mini-batch gradient descent, the mini-batches are usually
+    powers of two: 32 samples, 64, 128, 256, and so on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: SGD would be an extreme case when the mini-batch size is reduced to a single
+    example in the raining dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The disadvantage of using a mini-batch gradient in our optimization process
+    is that we incorporate a level of variability — although less severe than with
+    SDG. It is not guaranteed that every step will move us closer to the ideal parameter
+    values, but the general direction is still towards the minimum.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This method is one of the industry standards because by finding the optimal
+    batch size, we can choose a compromise between speed and accuracy when dealing
+    with very large datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thank you for reading! I hope this article was interesting and helped you clear
+    some concepts. I’m also sharing the sources I used when writing this, in case
+    you are interested in going through deeper and more formal material.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a future post, I’ll write about [more advanced methods of gradient descent](https://medium.com/towards-data-science/dl-notes-advanced-gradient-descent-4407d84c2515)
+    (the ones people use in real applications) and how we actually update the model
+    weights during training, using backpropagation, as gradient descent is only one
+    part of the full story.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the meantime, you might be interested in reading my previous article, about
+    Feedforward Artificial Neural Networks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@luisdamed/feedforward-artificial-neural-networks-52bcf96d6ac3?source=post_page-----f09f19eb35fb--------------------------------)
+    [## Feedforward Artificial Neural Networks'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The basic concept, explained
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@luisdamed/feedforward-artificial-neural-networks-52bcf96d6ac3?source=post_page-----f09f19eb35fb--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [MIT Open Learning Library: 6.036 Introduction to Machine Learning. Chapter
+    6: Gradient Descent](https://openlearninglibrary.mit.edu/assets/courseware/v1/d81d9ec0bd142738b069ce601382fdb7/asset-v1:MITx+6.036+1T2019+type@asset+block/notes_chapter_Gradient_Descent.pdf?ref=makerluis.com)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] [Standford Online: Artificial Intelligence & Machine Learning 4 — Stochastic
+    Gradient Descent | Stanford CS221 (2021)](https://www.youtube.com/watch?v=bl2WgBLH0tI%3Fref%3Dmakerluis.com&ref=makerluis.com)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Online course [A Deep Understanding of Deep Learning](https://www.udemy.com/course/deeplearning_x/?ref=makerluis.com),
+    by Mike X Cohen ( [sincxpress.com](https://sincxpress.com/?ref=makerluis.com))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] [Standford Online: CS231 Convolutional Neural Networks for Visual Recognition](https://cs231n.github.io/neural-networks-3?ref=makerluis.com)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*https://www.makerluis.com*](https://www.makerluis.com/gradient-descent/)
+    *on November 4, 2023.*'
+  prefs: []
+  type: TYPE_NORMAL

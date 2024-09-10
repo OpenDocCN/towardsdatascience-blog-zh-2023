@@ -1,0 +1,230 @@
+- en: 'Class Imbalance: ROSE and Random Walk Oversampling (RWO)'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/class-imbalance-from-random-oversampling-to-rose-517e06d7a9b?source=collection_archive---------7-----------------------#2023-08-29](https://towardsdatascience.com/class-imbalance-from-random-oversampling-to-rose-517e06d7a9b?source=collection_archive---------7-----------------------#2023-08-29)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Let’s formally define the class imbalance problem then intuitively derive solutions
+    for it!
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://essamwissam.medium.com/?source=post_page-----517e06d7a9b--------------------------------)[![Essam
+    Wisam](../Images/6320ce88ba2e5d56d70ce3e0f97ceb1d.png)](https://essamwissam.medium.com/?source=post_page-----517e06d7a9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----517e06d7a9b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----517e06d7a9b--------------------------------)
+    [Essam Wisam](https://essamwissam.medium.com/?source=post_page-----517e06d7a9b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fccb82b9f3b87&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-from-random-oversampling-to-rose-517e06d7a9b&user=Essam+Wisam&userId=ccb82b9f3b87&source=post_page-ccb82b9f3b87----517e06d7a9b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----517e06d7a9b--------------------------------)
+    ·5 min read·Aug 29, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F517e06d7a9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-from-random-oversampling-to-rose-517e06d7a9b&user=Essam+Wisam&userId=ccb82b9f3b87&source=-----517e06d7a9b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F517e06d7a9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclass-imbalance-from-random-oversampling-to-rose-517e06d7a9b&source=-----517e06d7a9b---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this series of stories, we explain various resampling techniques used to
+    deal with class imbalance; in particular, those initially implemented in the [Imbalance.jl](https://github.com/JuliaAI/Imbalance.jl)
+    Julia package which includes Naive Random Oversampling, Random Oversampling Examples
+    (ROSE), random walk oversampling (RWO), Synthetic Minority Oversampling Technique
+    (SMOTE), SMOTE-Nominal, and SMOTE-Nominal Continuous and many undersampling techniques.
+    For this story, we will assume familiarity with the class imbalance problem as
+    [formally explained earlier](https://essamwissam.medium.com/class-imbalance-and-oversampling-a-formal-introduction-c77b918e586d)
+    and explain two interesting algorithms that help solve it; namely, ROSE and RWO.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: ∘ [Random Oversampling Examples (ROSE)](#2a1c)
+  prefs: []
+  type: TYPE_NORMAL
+- en: ∘ [Random Walk Oversampling (RWO)](#0f3f)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Oversampling Examples (ROSE)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We know that any extra data we collect follows the probability distribution
+    of the underlying population of data belonging to the minority class so how about
+    approximating this probability distribution then sampling from it to simulate
+    collecting real examples. This is what the random oversampling examples (ROSE)
+    algorithm does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It follows then that ROSE tries to estimate the probability distribution *P(x|y=k)*
+    for each class k and then draws the needed *N_k* samples from it. It’s well known
+    that one way to estimate such density is through kernel density estimation which
+    you can derive or intuit starting from more crude versions such as histogram analysis.
+    The following describes KDE:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Given:** data points *x* **Wanted:** An estimate of *P(x)* **Operation:**
+    Choose a kernel function *K(x)* and then estimate *P(x)* as'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/48e3a2758a22f4d3ea2b516e8b408a14.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Typically, we want to be able to control the scale of the kernel function (i.e.,
+    squeeze it or spread it) as that can improve the estimate of *P(x)* so in a more
+    general sense we have
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04d53a5b8dd60bb9756bd70ea0cdf1b9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In essence, what it does is place the kernel function above each point and then
+    sum and normalize them all so it integrates to 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6aadf6515a2b00f605cff98eb427051.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Applying KDE to Estimate Distribution by Drleft on Wikimedia Commons ([License](https://commons.wikimedia.org/wiki/Commons:GNU_Free_Documentation_License,_version_1.2))
+  prefs: []
+  type: TYPE_NORMAL
+- en: The choice of the kernel function itself is a hyperparameter; perhapse, one
+    that has been shown not to be so significant as long as it satisfies basic properties
+    such as smoothness and symmetry. A simple Gaussian with σ as the scale is a common
+    choice and which ROSE uses for its KDE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a9ccdeb86107ad9b0eb140abd2a5be94.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The standard deviation in the normal distribution formula acts as h; hence,
+    not written
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ROSE samples the *N_k* points from this distribution once estimated for any
+    class k (resulting in *P(x|y=k)*) by performing the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choose a point randomly
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Place the Gaussian on it
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Sample one point from the Gaussian
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is just like random oversampling except that after choosing a point randomly
+    it places a Gaussian on it and samples the Gaussian to generate the new point
+    instead of repeating the chosen point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this, ROSE sets the bandwidth h (or more generally the smoothing matrix in
+    higher dimensions which is the covariance matrix parameter in the normal distribution)
+    using a rule of thumb called Silverman so that the [mean integrated squared error
+    is minimized](https://en.wikipedia.org/wiki/Mean_integrated_squared_error). In
+    particular,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a470d9207ad7e19e4611995aa72bc051.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: where D_σ is a diagonal matrix of the standard deviations of each of the features,
+    d is the number of features and N is the number of points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the Imbalance.jl package, this is multiplied by another constant **s** to
+    allow optional control of the hyperparameter. For s=1 it’s left as in the paper
+    and for s=0, ROSE becomes equivalent to random oversampling. The following animation
+    produced using the package illustrates the effect of increasing s on the generated
+    points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/304f20ed1081ff8989ebb7791ebdb905.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure by author. Synthetic points shown as diamonds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that as we increase s, the synthetic points generated due to each original
+    point that was randomly chosen is even farther apart from it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random Walk Oversampling (RWO)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When the central limit theorem applies, one can show that all it takes is *n*
+    examples so that it holds with 95% probability that a mean estimate over such
+    examples x̄=µ*±1.96**σ/√n. Suppose the minority class has small σ (e.g., σ=10)
+    and we have collected n=1000 examples for it then it holds that x̄=µ*±0.6* with
+    95% probability or in other words if our estimate x̄ is big enough then pretty
+    much x̄≈µ. A similar argument can be used to show that the estimated standard
+    deviation *S_x* will be very close to σ; at least when the data is normal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This motivates that synthetic data can be generated just such that the estimates
+    x̄ and *S_x* are preserved to simulate collecting new data. It can be shown that
+    if the features in the data belonging to some class k are independent where x̄
+    is the mean of all points in the class and *S_x* is their standard deviation (both
+    of which are vectors) then if new points for that class are generated by applying
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bc93bf51bc3f3aa9ceda5a0dd1105784.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: x is some point belonging to the class; when this is done on all points for
+    k times, k*n new examples are introduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: then asymptotically these points do not change the original x̄ and *S_x.* This
+    is easy to see for *x̄* as when the number of generated points N_k=k*n is very
+    large it will hold that *sum(x_new)=k*sum(x)* because *sum(r)=0\.* It follows
+    that *x̄* for the new dataset with both old and new examples is *x̄*(k+1)/(k+1)=x̄*
+    so the mean is preserved. It can be likewise shown that the standard deviation
+    is preserved as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d4963915e941cf78fdbee1f5d8073cbb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Animation by the author. Diamonds correspond to synthetically generated points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The implementation shown in the animation works for any ratio by choosing points
+    from the class to be oversampled randomly instead of looping on all of them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b2d3b2a827d7a41e4a2189a3742f7c3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure by the author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The method is called random walk oversampling because in the plot it feels like
+    points were generated by walking randomly over existing ones and placing new points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope this story has enlightened you with the class imbalance problem in machine
+    learning and how it can be solved. Let’s consider the algorithms presented in
+    the SMOTE paper for the [next story](https://medium.com/towards-data-science/class-imbalance-from-smote-to-smote-n-759d364d535b).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reference:** [1] G Menardi, N. Torelli, “Training and assessing classification
+    rules with imbalanced data,” Data Mining and Knowledge Discovery, 28(1), pp.92–122,
+    2014.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Zhang, H., & Li, M. (2014). RWO-Sampling: A random walk over-sampling approach
+    to imbalanced data classification. Information Fusion, 25, 4–20.'
+  prefs: []
+  type: TYPE_NORMAL

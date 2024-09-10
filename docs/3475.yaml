@@ -1,0 +1,284 @@
+- en: Managing Your Cloud-Based Data Storage with Rclone
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/managing-your-cloud-based-data-storage-with-rclone-32fff991e0b3?source=collection_archive---------10-----------------------#2023-11-22](https://towardsdatascience.com/managing-your-cloud-based-data-storage-with-rclone-32fff991e0b3?source=collection_archive---------10-----------------------#2023-11-22)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to optimize data transfer across multiple object storage systems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----32fff991e0b3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----32fff991e0b3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32fff991e0b3--------------------------------)
+    ·7 min read·Nov 22, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32fff991e0b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&user=Chaim+Rand&userId=9440b37e27fe&source=-----32fff991e0b3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32fff991e0b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmanaging-your-cloud-based-data-storage-with-rclone-32fff991e0b3&source=-----32fff991e0b3---------------------bookmark_footer-----------)![](../Images/31058489fd9aa402449e5f9e7e07f343.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Tom Podmore](https://unsplash.com/@tompodmore86?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: As companies become more and more dependent on cloud-based storage solutions,
+    it is imperative that they have the appropriate tools and techniques for effective
+    management of their [big data](https://en.wikipedia.org/wiki/Big_data). In previous
+    posts (e.g., [here](https://medium.com/towards-data-science/streaming-big-data-files-from-cloud-storage-634e54818e75)
+    and [here](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056)) we have explored
+    several different methods for retrieving data from cloud storage and demonstrated
+    their effectiveness at different types of tasks. We found that the most optimal
+    tool can vary based on the specific task at hand (e.g., file format, size of data
+    files, data access pattern) and the metrics that we wish to optimize (e.g., latency,
+    speed, or cost). In this post, we explore yet another popular tool for cloud-based
+    storage management — sometimes [referred to](https://rclone.org/) as “*the Swiss
+    army knife of cloud storage”* — the [rclone](https://rclone.org/) command-line
+    utility. Supporting more than [70 storage service providers](https://rclone.org/#providers),
+    rclone supports similar functionality to vendor-specific storage management applications
+    such as AWS CLI (for Amazon S3) and [gsutil](https://cloud.google.com/storage/docs/gsutil)
+    (for Google Storage). But does it perform well enough to constitute a viable alternative?
+    Are there situations in which rclone would be the tool of choice? In the following
+    sections we will demonstrate rclone’s usage, assess its performance, and **highlight
+    its value in a particular use-case — transferring data across different object
+    storage systems**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Disclaimers
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This post is not, by any means, intended to replace the official [rclone documentation](https://rclone.org/).
+    Nor is it intended to be an endorsement of the use of rclone or any of the other
+    tools we should mention. The best choice for your cloud-based data management
+    will greatly depend on the details of your project and should be made following
+    thorough, use-case specific testing. Please be sure to re-evaluate the statements
+    we make against the most up to date tools available at the time you are reading
+    this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Retrieval from Cloud Storage with Rclone
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The following command line uses [rclone sync](https://rclone.org/commands/rclone_sync/)
+    in order to sync the contents of a cloud-based object-storage path with a local
+    directory. This example demonstrates the use of the [Amazon S3](https://rclone.org/s3/)
+    storage service but could just as easily have used a different cloud storage service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The rclone command has dozens of [flags](https://rclone.org/docs/) for programming
+    its behavior. The *-P* flag outputs the progress of the data transfer including
+    the transfer rate and overall time. In the command above we included two (of the
+    many) controls that can impact rclone’s runtime performance: The [*transfers*](https://rclone.org/flags/#performance)flag
+    determines the maximum number of files to download concurrently and [*multi-thread-streams*](https://rclone.org/docs/#multi-thread-streams-n)
+    determines the maximum number of threads to use to transfer a single file. Here
+    we have left both at their default values (4).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rclone’s functionality relies on the appropriate definition of the [rclone configuration
+    file](https://rclone.org/commands/rclone_config/). Below we demonstrate the definition
+    of the remote *S3store* object storage location used in the command line above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now that we have seen rclone in action, the question that arises is whether
+    it provides any value over the other cloud storage management tools that are out
+    there such as the popular [AWS CLI](https://aws.amazon.com/cli/). In the next
+    two sections we will evaluate the performance of rclone compared to some of its
+    alternatives in two scenarios that we have explored in detail in our previous
+    posts: 1) downloading a 2 GB file and 2) downloading hundreds of 1 MB files.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use Case 1: Downloading a Large File'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The command line below uses the [AWS CLI](https://docs.aws.amazon.com/cli/latest/)
+    to download a 2 GB file from Amazon S3\. This is just one of the many of methods
+    we evaluated in [a previous post](/streaming-big-data-files-from-cloud-storage-634e54818e75).
+    We use the linux *time* command to measure the performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The reported download time amounted to roughly 26 seconds (i.e., ~79 MB/s).
+    Keep in mind that this value was calculated on our own local PC and can vary greatly
+    from one runtime environment to another. The equivalent [rclone copy](https://rclone.org/commands/rclone_copy/)
+    command appears below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our setup, we found the rclone download time to be more than two times slower
+    than the standard AWS CLI. It is highly likely that this could be improved significantly
+    through appropriate tuning of the rclone control flags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Use Case 2: Downloading a Large Number of Small Files'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In this use case we evaluate the runtime performance of downloading *800* relatively
+    small files of size 1 MB each. In a [previous blog post](/training-from-cloud-storage-with-s5cmd-5c8fb5c06056)
+    we discussed this use case in the context of streaming data samples to a deep-learning
+    training workload and demonstrated the superior performance of [s5cmd](https://github.com/peak/s5cmd)
+    [*beast*](https://github.com/peak/s5cmd#beast-mode-s5cmd) mode. In *beast* mode
+    we create a file with a list of object-file operations which s5cmd performs in
+    using [multiple parallel workers](https://github.com/peak/s5cmd#numworkers) (256
+    by default). The s5cmd beast mode option is demonstrated below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *cmds.txt* file contains a list of *800* lines of the form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The s5cmd command took an average time of 9.3 seconds (averaged over ten trials).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rclone supports a functionality similar to s5cmd’s beast mode with the *files-from*
+    command line option. Below we run rclone copy on our *800* files with the *transfers*
+    value set to *256* to match the default [concurrency](https://github.com/peak/s5cmd#configuring-concurrency)
+    settings of s5cmd.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The *files.txt* file contains *800* lines of the form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The rclone copy of our *800* files took an average of 8.5 seconds, slightly
+    less than s5cmd (averaged over ten trials).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We acknowledge that the results demonstrated thus far may not be enough to convince
+    you to prefer rclone over your existing tools. In the next section we will describe
+    a use case that highlights one of the potential advantages of rclone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Transfer Between Object Storage Systems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: These days it is not uncommon for development teams to maintain their data in
+    more than one object store. The motivation behind this could be the need to protect
+    against the possibility of a storage failure or the decision to use data-processing
+    offerings from multiple cloud service providers. For example, your solution for
+    AI development might rely on training your models in the AWS using data in Amazon
+    S3 and running data analytics in Microsoft Azure using the same data stored in
+    Azure Storage. Additionally, you may want to maintain a copy of your data in a
+    local storage infrastructure such as [FlashBlade](https://www.purestorage.com/products/unstructured-data-storage/flashblade-s.html),
+    [Cloudian](https://cloudian.com/), or [VAST](https://vastdata.com/). These circumstances
+    require the ability to transfer and synchronize your data between multiple object
+    stores in a secure, reliable, and timely fashion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some cloud service providers offer dedicated services for such purposes. However,
+    these do not always address the precise needs of your project or may not enable
+    you the level of control you desire. For example, [Google Storage Transfer](https://cloud.google.com/storage-transfer/docs/overview)
+    excels at speedy migration of *all of the data* within a specified storage folder,
+    but does not (as of the time of this writing) support transferring a specific
+    subset of files from within it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another option we could consider would be to apply our existing data management
+    towards this purpose. The problem with this is that tools such as AWS CLI and
+    s5cmd do not (as of the time of this writing) support specifying different [access
+    settings](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-endpoints.html)
+    and [security-credentials](https://docs.aws.amazon.com/IAM/latest/UserGuide/security-creds.html)
+    for the source and target storage systems. Thus, migrating data between storage
+    locations requires transferring it to an intermediate (temporary) location. In
+    the command below we combine the use of s5cmd and AWS CLI to copy a file from
+    Amazon S3 to Google Storage via system memory and using Linux piping:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: While this is a legitimate, albeit clumsy way of transferring a *single* file,
+    in practice, we may need the ability to transfer many millions of files. To support
+    this, we would need to add an additional layer for spawning and managing multiple
+    parallel workers/processors. Things could get ugly pretty quickly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Transfer with Rclone
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Contrary to tools like AWS CLI and s5cmd, rclone enables us to specify different
+    access settings for the source and target. In the following rclone config file
+    we add settings for [Google Cloud Storage](https://rclone.org/googlecloudstorage/)
+    (GCS) access. (Here we treat GCS as an S3 provider. See [here](https://rclone.org/googlecloudstorage/)
+    for other configuration options.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Transferring a single file between storage systems has the same format as copying
+    it to a local directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'However, the real power of rclone comes from combining this feature with the
+    *files-from* option described above. Rather than having to orchestrate a custom
+    solution for parallelizing the data migration, we can transfer a long list of
+    files using a single command:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: In practice, we can further accelerate the data migration by parsing the list
+    of object files into smaller lists (e.g., with 10,000 files each) and running
+    each list on a separate compute resource. While the precise impact of this kind
+    of solution will vary from project to project, it can provide a significant boost
+    to the speed and efficiency of your development.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have explored cloud-based storage management using rclone and
+    demonstrated its application to the challenge of maintaining and synchronizing
+    data across multiple storage systems. There are undoubtedly many alternative solutions
+    for data transfer. But there is no questioning the convenience and elegance of
+    the rclone-based method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is just one of many posts that we have written on the topic of maximizing
+    the efficiency of cloud-based storage solutions. Be sure to check out some of
+    [our other posts](https://chaimrand.medium.com/) on this important topic.
+  prefs: []
+  type: TYPE_NORMAL

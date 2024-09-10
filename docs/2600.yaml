@@ -1,0 +1,287 @@
+- en: The Complexities of Entity Resolution Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-complexities-of-entity-resolution-implementation-a2284e54171?source=collection_archive---------11-----------------------#2023-08-14](https://towardsdatascience.com/the-complexities-of-entity-resolution-implementation-a2284e54171?source=collection_archive---------11-----------------------#2023-08-14)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Hands-on example of some typical challenges when working on data matching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)[![Stefan
+    Berkner](../Images/a84ebfb24744984c0de8f2e77c2070e6.png)](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------)
+    [Stefan Berkner](https://medium.com/@stefan.berkner?source=post_page-----a2284e54171--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F704fdfc8efaa&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&user=Stefan+Berkner&userId=704fdfc8efaa&source=post_page-704fdfc8efaa----a2284e54171---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a2284e54171--------------------------------)
+    ·11 min read·Aug 14, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa2284e54171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&user=Stefan+Berkner&userId=704fdfc8efaa&source=-----a2284e54171---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa2284e54171&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-complexities-of-entity-resolution-implementation-a2284e54171&source=-----a2284e54171---------------------bookmark_footer-----------)![](../Images/1796f00e2295895c1e15056138d13ef5.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Artsy Representation of an Entity (Image by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Entity resolution is the process of determining whether two or more records
+    in a data set refer to the same real-world entity, often a person or a company.
+    At a first glance entity resolution may look like a relatively simple task: e.g.
+    given two pictures of a person, even a small child could determine if it shows
+    the same person or not with a quite high accuracy. And the same is true for computers:
+    comparing two records that contain attributes like names, addresses, emails etc.,
+    can easily be done. However, the deeper one digs into that topic, the more challenging
+    it gets: various matching algorithms need to be evaluated, handling millions or
+    billions of records means quadratic complexity, not to mention real-time and data
+    deletion use cases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fuzzy Text Matching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s start with looking into comparing two records of the famous artist Vincent
+    Van Gogh — or was it Van Gough?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30f4ee24c32fce80c0b5f28833b1b4df.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'There are a few errors in the second record (beside being born a century later
+    and an email address): the name is spelled incorrectly, the day of birth is mixed
+    up, the postcode is missing and the email address is slightly different.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So how can we compare those values? If, let’s say, the names would be equal,
+    then a simple string comparison of those values would be sufficient. As this is
+    not the case, we need some more advanced fuzzy matching. There are many different
+    algorithms available for text-based fuzzy matching and they can be roughly separated
+    into three groups. Phonetic algorithms focus on how similar a text is pronounced.
+    The most famous algorithms are Soundex and Metaphone, which are mostly used for
+    English texts, but variations of those exist for other languages too like the
+    Kölner Phonetik (Cologne Phonetic) for German. Text distance algorithms typically
+    define how many characters of a text need to change to reach the other text. Levenshtein
+    and Hamming distance are two well known algorithms in that group. Similarity algorithms,
+    such as Cosine Similarity or the Jaccard Index, compute the structural similarity
+    of texts and often represent the similarity as a percentage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For the purpose of this article, we will use a very simple approach, using only
+    a Levenshtein distance on the name and equality on the city. This example and
+    all following examples will use golang as a programming language and use existing
+    libraries where possible. Converting this into python, java or any other language
+    should be trivial. Also it will only perform matching on the name attribute. Adding
+    more attributes or even making it configurable is not the purpose of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Try in the Go Playground: [https://go.dev/play/p/IJtanpXEdyu](https://go.dev/play/p/IJtanpXEdyu)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Levensthein distance between the two names is exactly 3\. That is because,
+    there are three additional characters (“en” in the first name and “u” in the last
+    name). Note, that this works with this specific input. It is however far away
+    from perfect. E.g. the names “Joe Smith” and “Amy Smith” also have a Levenshtein
+    distance of three, but are obviously not the same person. Combining a distance
+    algorithm with a phonetic algorithm could solve the issue, but that is out of
+    scope for this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When using a rule-based approach, instead of a ML-based approach, choosing the
+    right algorithms that yield the best results for your use case is the most crucial
+    aspect of your business success. This is where you should be spending most of
+    your time. Unfortunately, as we will discover now, there is a ton of other things
+    that will distract you from optimizing those rules if you decide to develop an
+    entity resolution engine yourself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Naïve Entity Resolution
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Now that we know how to compare two records, we need to find all records that
+    match with each other. The easiest approach is to simply compare each record with
+    all other records. For the purpose of this example we work with randomly chosen
+    names and cities. For the names we force up to three errors (replace any character
+    with x).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Try in the Go Playground: [https://go.dev/play/p/ky80W_hk4S3](https://go.dev/play/p/ky80W_hk4S3)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You should see some output similar like this (you may need to run it multiple
+    times if you do not get any matches for the randomized data):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: If you are lucky, you will also get mismatches like “Daisy” and “Dave”. That
+    is because we are using a Levenshtein distance of three, which is way to high
+    as the sole fuzzy algorithm on short names. Feel free to improve this on your
+    own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance wise, the real problematic bit is the 9,900 comparisons needed to
+    get to the result, because doubling the amount of the input will roughly quadruple
+    the amount of needed comparisons. 39,800 comparisons are needed for 200 records.
+    For the small amount of only 100,000 records that would mean almost 10 billion
+    comparisons are needed. No matter how big your system is, there will be a point
+    at which the system will not be able to finish this in an acceptable time as the
+    amount of data grows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A quick, but almost useless optimization is to not compare every combination
+    twice. It should not matter if we compare A with B or B with A. However, this
+    would only reduce the amount of comparisons needed by factor two, which is neglectable
+    due to the quadratic growth.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Complexity Reduction by Blocking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we are looking at the rules we created, we easily notice that we will never
+    have a match if the cities are different. All those comparisons are completely
+    wasted and should be prevented. Putting records which you suspect are similar
+    into a common bucket and others that are not into another one, is in entity resolution
+    called blocking. As we want to use the city as our blocking key, the implementation
+    is fairly simple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Try in the Go Playground: [https://go.dev/play/p/1z_j0nhX-tU](https://go.dev/play/p/1z_j0nhX-tU)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The result will now be the same, but we have only roughly a tenth of the comparisons
+    as previously, because we have ten different cities. In a real application this
+    effect would be tremendously bigger due to the much higher variance of the cities.
+    Furthermore, each block can be processed independently of the others, e.g. in
+    parallel on the same or on different servers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finding the right blocking key can be a challenge on its own. Using an attribute
+    like the city could result in uneven distributions, and therefore result in cases
+    where one huge block (e.g. a large city) takes a lot longer than all other blocks.
+    Or the city contains a tiny spelling error and is no longer considered as a valid
+    match. Using multiple attributes and/or using phonetic keys or [q-grams](https://en.wikipedia.org/wiki/N-gram)
+    as a blocking key can solve these issues, but increases the complexity of the
+    software.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From Matches to Entity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far all we can say about our records is, whether two of them are matching
+    or not. For very basic use cases this might already be sufficient. However, in
+    the majority you want to know all matches that belong to the same entity. This
+    can reach from simple star-like patterns where A matches with B, C and D, over
+    chain-like patterns where A matches B, B matches C and C matches D, to very complex
+    graph-like patterns. This so called transitive record-linkage can easily be implemented
+    using a connected component algorithm as long as all data fits in memory on a
+    single server. Again, in a real world application, this is much more challenging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Try in the Go Playground: [https://go.dev/play/p/vP3tzlzJ2LN](https://go.dev/play/p/vP3tzlzJ2LN)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The connected components function iterates over all edges and either creates
+    a new component, adds the new id to the existing component or merges two components
+    into a single one. The result then looks something like that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Keeping those edges gives us a few advantages. We can use them to make the resulting
+    entity understandable and explainable, ideally even with a nice UI that shows
+    how the records of an entity are connected. Or when working with a real-time entity
+    resolution system, we can use the edges to split an entity as data was removed.
+    Or you use them when constructing a [graph neural network (GNN)](https://en.wikipedia.org/wiki/Graph_neural_network),
+    leading to even better ML results instead of just the records alone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1a6b9d79c3aa9defb431b1244e9d2cf.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visual Representation of an Entity (Image by the Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: One issue from the edges can arise when there are a lot of very similar records.
+    If e.g. A matches with B and B matches with C, then C might also match with A
+    depending on the used rules. If D, E, F and so on also match with the existing
+    records, then we are back to the quadratic growth issue, soon resulting in so
+    many edges that they become no longer handleable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember how we built the blocking buckets? Surprise! For very similar data,
+    which all ends up in a few huge buckets, the performance of the computation drops
+    drastically again — even if you followed the previous advice of creating buckets
+    from multiple attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A typical example for these kind of non-identical duplicates is someone ordering
+    regularly in the same shop, but with guest access (sorry, no nice customer id).
+    That person might be using almost always the same delivery address and is mostly
+    capable of writing their own name correctly. Those records therefore should be
+    treated in a special way to ensure a stable system performance, but that is a
+    [topic on its own](https://www.youtube.com/watch?v=HjafHL068XM).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Before you feel too comfortable with your gained knowledge and want to start
+    implementing your own solution, let me quickly crush your dreams. We have not
+    yet talked about the challenges of doing any of this in real-time. Even if you
+    think you will not need an always up-to-date entity (the obvious benefit), a real-time
+    approach yields further value: you don’t need to do the same calculations over
+    and over again, but only for the new data. On the other hand, it is much more
+    complex to implement. Want to do blocking? Compare the new records with all the
+    records of the bucket(s) it belongs to, but that can take a while and could be
+    rather considered as incremental batch. Also until that finally finished, there
+    are a ton of new records waiting already to be processed. Want to calculate the
+    entities using connected components? Sure, keep the whole graph in memory and
+    just add the new edges. But do not forget to keep track of the two entities that
+    just have been merged together due to the new record.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, you are still willing to implement this on your own. And you made the (in
+    that case) wise decision, to not store edges and not support real-time. So you
+    successfully ran your first entity resolution batch job with all your data. It
+    took a while, but you will only do this once per month, so that is fine. It is
+    probably just about then when you see your data protection officer running around
+    the corner and telling you to remove that one person from your data set due to
+    a GDPR complaint. So you run the whole batch job again for a single removed entity
+    — yay.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Doing entity resolution may at first look fairly simple, but it contains a lot
+    of significant technical challenges. Some of these can be simplified and/or ignored,
+    but others need to be solved for good performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Originally published at* [*https://tilores.io*](https://tilores.io/content/The-Complexities-of-Entity-Resolution-Implementation)*.*'
+  prefs: []
+  type: TYPE_NORMAL

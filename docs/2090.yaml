@@ -1,0 +1,426 @@
+- en: 'TaatikNet: Sequence-to-Sequence Learning for Hebrew Transliteration'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/taatiknet-sequence-to-sequence-learning-for-hebrew-transliteration-4c9175a90c23?source=collection_archive---------5-----------------------#2023-06-28](https://towardsdatascience.com/taatiknet-sequence-to-sequence-learning-for-hebrew-transliteration-4c9175a90c23?source=collection_archive---------5-----------------------#2023-06-28)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'A simple demonstration of character-level seq2seq learning applied to a complex
+    task: converting between Hebrew text and Latin transliteration'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@morrisalper?source=post_page-----4c9175a90c23--------------------------------)[![Morris
+    Alper](../Images/3c21362e6bbb077d066f625a46c8f56c.png)](https://medium.com/@morrisalper?source=post_page-----4c9175a90c23--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4c9175a90c23--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4c9175a90c23--------------------------------)
+    [Morris Alper](https://medium.com/@morrisalper?source=post_page-----4c9175a90c23--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3d69bf87dbed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftaatiknet-sequence-to-sequence-learning-for-hebrew-transliteration-4c9175a90c23&user=Morris+Alper&userId=3d69bf87dbed&source=post_page-3d69bf87dbed----4c9175a90c23---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4c9175a90c23--------------------------------)
+    ·10 min read·Jun 28, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4c9175a90c23&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftaatiknet-sequence-to-sequence-learning-for-hebrew-transliteration-4c9175a90c23&user=Morris+Alper&userId=3d69bf87dbed&source=-----4c9175a90c23---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4c9175a90c23&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftaatiknet-sequence-to-sequence-learning-for-hebrew-transliteration-4c9175a90c23&source=-----4c9175a90c23---------------------bookmark_footer-----------)![](../Images/1ae0bda614ea7219880780a53035490d.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How can we use deep learning to convert between strings without getting “boggled”?
+    ([Image](https://commons.wikimedia.org/wiki/File:Boggle_%282041108449%29.jpg)
+    by Andrew Malone, [CC BY 2.0)](https://creativecommons.org/licenses/by/2.0/deed.en)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*This article describes TaatikNet and how to easily implement seq2seq models.
+    For code and documentation, see the* [*TaatikNet GitHub repo*](https://github.com/morrisalp/taatiknet)*.
+    For an interactive demo, see* [*TaatikNet on HF Spaces*](https://huggingface.co/spaces/malper/taatiknet)*.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Many tasks of interest in NLP involve converting between texts in different
+    styles, languages, or formats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Machine translation** (e.g. English to German)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Text summarization** **and paraphrasing** (e.g. long text to short text)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Spelling correction**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Abstractive question answering** (input: context and question, output: text
+    of answer)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Such tasks are known collectively as **Sequence-to-Sequence (Seq2seq) Learning**.
+    In all of these tasks, the input and desired output are strings, which may be
+    of different lengths and which are usually not in one-to-one correspondence with
+    each other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose you have a dataset of paired examples (e.g. lists of sentences and their
+    translations, many examples of misspelled and corrected texts, etc.). Nowadays,
+    it is fairly easy to train a neural network on these as long as there is enough
+    data so that the model may learn to generalize to new inputs. Let’s take a look
+    at how to train seq2seq models with minimal effort, using PyTorch and the Hugging
+    Face transformers library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll focus on a particularly interesting use case: learning to **convert between
+    Hebrew text and Latin transliteration.** We’ll give an overview of this task below,
+    but the ideas and code presented here are useful beyond this particular case —
+    this tutorial should be useful for **anyone who wants to perform seq2seq learning
+    from a dataset of examples**.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our Task: Hebrew Transliteration'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In order to demonstrate seq2seq learning with an interesting and fairly novel
+    use case, we apply it to **transliteration**. In general, transliteration refers
+    to converting between different scripts. While English is written with the Latin
+    script (“ABC…”), the world’s languages use many different writing systems, as
+    illustrated below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/102989c28f1b328fa40affc11b9136c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Some of the many writing systems of the world. ([Image](https://commons.wikimedia.org/wiki/File:World_alphabets_%26_writing_systems.svg)
+    by Nickshanks, [CC-BY-SA-3](https://creativecommons.org/licenses/by-sa/3.0/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What if we want to use the Latin alphabet to write out a word from a language
+    originally written in a different script? This challenge is illustrated by the
+    many ways to write the name of the Jewish holiday of Hanukkah. The current introduction
+    to [its Wikipedia article](https://en.wikipedia.org/wiki/Hanukkah) reads:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Hanukkah** ([/ˈhɑːnəkə/](https://en.wikipedia.org/wiki/Help:IPA/English);
+    [Hebrew](https://en.wikipedia.org/wiki/Hebrew_language): חֲנֻכָּה‎, [Modern](https://en.wikipedia.org/wiki/Modern_Hebrew):
+    Ḥanukka, [Tiberian](https://en.wikipedia.org/wiki/Tiberian_vocalization): Ḥănukkā)
+    is a [Jewish festival](https://en.wikipedia.org/wiki/Jewish_holidays) commemorating
+    the recovery of [Jerusalem](https://en.wikipedia.org/wiki/Jerusalem) and subsequent
+    rededication of the [Second Temple](https://en.wikipedia.org/wiki/Second_Temple)
+    at the beginning of the [Maccabean Revolt](https://en.wikipedia.org/wiki/Maccabean_Revolt)
+    against the [Seleucid Empire](https://en.wikipedia.org/wiki/Seleucid_Empire) in
+    the 2nd century BCE.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The Hebrew word חֲנֻכָּה‎ may be transliterated in Latin script as *Hanukkah*,
+    *Chanukah, Chanukkah, Ḥanukka,* or one of many other variants. In Hebrew as well
+    as in many other writing systems, there are various conventions and ambiguities
+    that make transliteration complex and not a simple one-to-one mapping between
+    characters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the case of Hebrew, it is largely possible to transliterate text with nikkud
+    (vowel signs) into Latin characters using a complex set of rules, though there
+    are various edge cases that make this deceptively complex. Furthermore, attempting
+    to transliterate text without vowel signs or to perform the reverse mapping (e.g.
+    *Chanukah* → חֲנֻכָּה) is much more difficult since there are many possible valid
+    outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thankfully, with deep learning applied to existing data, we can make great headway
+    on solving this problem with only a minimal amount of code. Let’s see how we can
+    **train a seq2seq model — TaatikNet — to learn how to convert between Hebrew text
+    and Latin transliteration on its own**. We note that this is a **character-level
+    task** since it involves reasoning on the correlations between different characters
+    in Hebrew text and transliterations. We will discuss the significance of this
+    in more detail below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an aside, you may have heard of [UNIKUD](/unikud-adding-vowels-to-hebrew-text-with-deep-learning-powered-by-dagshub-56d238e22d3f),
+    our model for adding vowel points to unvocalized Hebrew text. There are some similarities
+    between these tasks, but the key difference is that UNIKUD performed character-level
+    classification, where for each character we learned whether to insert one or more
+    vowel symbols adjacent to it. By contrast, in our case the input and output texts
+    may not exactly correspond in length or order due to the complex nature of transliteration,
+    which is why we use seq2seq learning here (and not just per-character classification).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data collection
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As with most machine learning tasks, we are fortunate if we can collect many
+    examples of inputs and desired outputs of our model, so that we may train it using
+    **supervised learning.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For many tasks regarding words and phrases, a great resource is [Wiktionary](https://www.wiktionary.org/)
+    and its multilingual counterparts — think Wikipedia meets dictionary. In particular,
+    the [Hebrew Wiktionary (ויקימילון)](https://he.wiktionary.org/) contains entries
+    with structured grammatical information as shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0ce163ee79b25159ef63f0c717ca3ab9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Grammatical information from the Hebrew Wiktionary article [עגבניה](https://he.wiktionary.org/wiki/%D7%A2%D7%92%D7%91%D7%A0%D7%99%D7%94)
+    (tomato).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, this includes Latin transliteration (*agvani****ya***, where
+    the bold indicates stress). Along with section titles containing nikkud (vowel
+    characters), this gives us the (freely-licensed) data that we need to train our
+    model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to create a dataset, we scrape these items using the Wikimedia REST
+    API ([example here](https://gist.github.com/morrisalp/8fb89b43d79e2ea2190b18441e83d5eb)).
+    Please note that original texts in Wiktionary entries have permissive licenses
+    for derivative works (CC and GNU licenses, [details here](https://en.wiktionary.org/wiki/Wiktionary:Copyrights))
+    and require share-alike licensing (TaatikNet license [here](https://github.com/morrisalp/taatiknet/blob/main/LICENSE));
+    in general, if you perform data scraping make sure that you are using permissively
+    licensed data, scraping appropriately, and using the correct license for your
+    derivative work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We perform various preprocessing steps on this data, including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Removing Wiki markup and metadata
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Replacing bolding to represent stress with acute accents (e.g. *agvani****ya***
+    → *agvaniyá)*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Unicode NFC normalization](https://unicode.org/reports/tr15/) to unify identically
+    appearing glyphs such as בּ (U+05D1 Hebrew Letter Bet + U+05BC Hebrew Point Dagesh
+    or Mapiq) and בּ (U+FB31 Hebrew Letter Bet with Dagesh). You can compare these
+    yourself by copy-pasting them into the [Show Unicode Character tool](https://qaz.wtf/u/show.cgi).
+    We also unify similarly appearing punctuation marks such as Hebrew geresh (׳)
+    and apostrophe (‘).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Splitting multiple-word expressions into individual words.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'After data scraping and preprocessing, we are left with nearly 15k word-transliteration
+    pairs ([csv file available here](https://github.com/morrisalp/taatiknet/blob/main/data/he_transliterations.csv)).
+    A few examples are shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f78fcd61ff3823076b9648f752661681.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A few examples of items from our dataset. Note that the Hebrew with nikkud (vowel
+    points) is the second column, but appears first due to right-to-left text rendering
+    issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The transliterations are by no means consistent or error-free; for example,
+    stress is inconsistently and often incorrectly marked, and various spelling conventions
+    are used (e.g. ח may correspond to *h, kh,* or *ch*). Rather than attempting to
+    clean these, we will simply feed them directly to the model and have it make sense
+    of them by itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have our dataset, let’s get to the “meat” of our project — training
+    a seq2seq model on our data. We call the final model **TaatikNet** after the Hebrew
+    word תעתיק *taatik* meaning “transliteration”. We will describe TaatikNet’s training
+    on a high level here, but you are highly recommended to peruse the [annotated
+    training notebook](https://github.com/morrisalp/taatiknet/blob/main/training.ipynb).
+    The training code itself is quite short and instructive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To achieve state-of-the-art results on NLP tasks, a common paradigm is to take
+    a pretrained transformer neural network and apply transfer learning by continuing
+    to fine-tune it on a task-specific dataset. For seq2seq tasks, the most natural
+    choice of base model is an [encoder-decoder (enc-dec) model](https://huggingface.co/docs/transformers/model_doc/encoder-decoder).
+    Common enc-dec models such as T5 and BART are excellent for common seq2seq tasks
+    like text summarization, but because they tokenize text (split it into subword
+    tokens, roughly words or chunks of words) these are less appropriate for our task
+    which requires reasoning on the level of individual characters. For this reason,
+    we use the tokenizer-free ByT5 enc-dec model ([paper](https://arxiv.org/abs/2105.13626),
+    [HF model page](https://huggingface.co/docs/transformers/model_doc/byt5)), which
+    performs calculations on the level of individual bytes (roughly characters, but
+    see [Joel Spolsky’s excellent post on Unicode and character sets](https://www.joelonsoftware.com/2003/10/08/the-absolute-minimum-every-software-developer-absolutely-positively-must-know-about-unicode-and-character-sets-no-excuses/)
+    for a better understanding of how Unicode glyphs map to bytes).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We first create a PyTorch Dataset object to encapsulate our training data.
+    We could simply wrap the data from our dataset csv file with no modifications,
+    but we add some random augmentations to make the model’s training procedure more
+    interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This augmentation teaches TaatikNet to accept either Hebrew script or Latin
+    script as input and to calculate the corresponding matching output. We also randomly
+    drop vowel signs or accents to train the model to be robust to their absence.
+    In general, random augmentation is a nice trick when you would like your network
+    to learn to handle various types of inputs without calculating all possible inputs
+    and outputs from your dataset ahead of time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We load the base model with the Hugging Face pipeline API using a single line
+    of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'After handling data collation and setting hyperparameters (number of epochs,
+    batch size, learning rate) we train our model on our dataset and print out selected
+    results after each epoch. The training loop is standard PyTorch, apart from the
+    `evaluate(…)` function which we define elsewhere and which prints out the model’s
+    current predictions on various inputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Compare some results from early epochs and at the end of training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before training the model outputs gibberish, as expected. During training we
+    see that the model first learns how to construct valid-looking Hebrew and transliterations,
+    but takes longer to learn the connection between them. It also takes longer to
+    learn rare items such as ג׳ (*gimel* + *geresh*) corresponding to *j*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A caveat: We did not attempt to optimize the training procedure; the hyperparameters
+    were chosen rather arbitrarily, and we did not set aside validation or test sets
+    for rigorous evaluation. The purpose of this was only to provide a simple example
+    of seq2seq training and a proof of concept of learning transliterations; however,
+    hyperparameter tuning and rigorous evaluation would be a promising direction for
+    future work along with the points mentioned in the limitations section below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: A few examples are shown below, demonstrating conversion between Hebrew text
+    (with or without vowels) and Latin transliteration, in both directions. You may
+    try playing with TaatikNet yourself at the [interactive demo on HF Spaces](https://huggingface.co/spaces/malper/taatiknet).
+    Note that it uses beam search (5 beams) for decoding and inference is run on each
+    word separately.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/47a83d23e139337310a9b5dab24aacc5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample inputs and outputs of TaatikNet from [the interactive demo](https://huggingface.co/spaces/malper/taatiknet).
+    Multiple outputs are generated using beam search decoding (5 beams).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b1fd23bfc4ffe356ccf0b1981454607.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Sample output on a longer text. Inference is run on each word separately. Note
+    the successful transliteration of challenging cases such as שבעיניו (the final
+    yud is not pronounced), חוכמה (kamatz gadol), כאלה (penultimate stress).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Limitations and Further Directions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'For the sake of simplicity we implemented TaatikNet as a minimal seq2seq model
+    without extensive tuning. However, if you are interested in improving results
+    on conversion between Hebrew text and transliteration, there are many promising
+    directions for future work:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: TaatikNet only tries to guess the appropriate spelling (in Hebrew or Latin transliteration)
+    based on letter or sound correspondences. However, you might want to convert from
+    transliteration to valid Hebrew text given the context (e.g. *zot dugma* → זאת
+    דוגמא rather than the incorrectly spelled *זות דוגמע). Possible ways to accomplish
+    this could include retrieval augmented generation (accessing a dictionary) or
+    training on pairs of Hebrew sentences and their Latin transliterations in order
+    to learn contextual cues.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Unusually formed inputs may cause TaatikNet’s decoding to get stuck in a loop,
+    e.g. *drapapap* → דְּרַפָּפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּאפָּ.
+    This might be handled by augmentation during training, more diverse training data,
+    or using cycle consistency in training or decoding.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: TaatikNet may not handle some conventions that are quite rare in its training
+    data. For example, it often does not properly handle ז׳ (*zayin+geresh*) which
+    indicates the rare foreign sound *zh*. This might indicate underfitting or that
+    it would be helpful to use sample weights during training to emphasize difficult
+    examples
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The ease of seq2seq training comes at the cost of interpretability and robustness
+    — we might like to know exactly how TaatikNet makes its decisions, and ensure
+    that they are applied consistently. An interesting possible extension would be
+    distilling its knowledge into a set of rule-based conditions (e.g. if character
+    X is seen in context Y, then write Z). Perhaps recent code-pretrained LLMs could
+    be helpful for this.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We do not handle [“full spelling” and “defective spelling” (כתיב מלא / חסר)](https://en.wikipedia.org/wiki/Ktiv_hasar_niqqud),
+    whereby Hebrew words are spelled slightly differently when written with or without
+    vowel signs. Ideally, the model would be trained on “full” spellings without vowels
+    and “defective” spellings with vowels. See [UNIKUD](/unikud-adding-vowels-to-hebrew-text-with-deep-learning-powered-by-dagshub-56d238e22d3f)
+    for one approach to handling these spellings in models trained on Hebrew text.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you try these or other ideas and find that they lead to an improvement, I
+    would be very interested in hearing from you, and crediting you here — feel free
+    to reach out via my contact info below this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have seen that it is quite easy to train a seq2seq model with supervised
+    learning — teaching it to generalize from a large set of paired examples. In our
+    case, we used a character-level model (TaatikNet, fine-tuned from the base ByT5
+    model), but nearly the same procedure and code could be used for a more standard
+    seq2seq task such as machine translation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you have learned as much from this tutorial as I did from putting it
+    together! Feel free to contact me with any questions, comments, or suggestions;
+    my contact information may be found at my website, linked below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Morris Alper, MSc** is a PhD student at Tel Aviv University researching multimodal
+    learning (NLP, Computer Vision, and other modalities). Please see his webpage
+    for more information and contact info: [https://morrisalp.github.io/](https://morrisalp.github.io/)'
+  prefs: []
+  type: TYPE_NORMAL

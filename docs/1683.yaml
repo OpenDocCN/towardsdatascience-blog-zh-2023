@@ -1,0 +1,556 @@
+- en: Tips and Tricks for Upgrading to PyTorch 2.0
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d?source=collection_archive---------3-----------------------#2023-05-21](https://towardsdatascience.com/tips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d?source=collection_archive---------3-----------------------#2023-05-21)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: What to look out for when moving to the all-new “*Compiled Mode”*
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----3127db1d1f3d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----3127db1d1f3d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3127db1d1f3d--------------------------------)
+    ·19 min read·May 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3127db1d1f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&user=Chaim+Rand&userId=9440b37e27fe&source=-----3127db1d1f3d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3127db1d1f3d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftips-and-tricks-for-upgrading-to-pytorch-2-3127db1d1f3d&source=-----3127db1d1f3d---------------------bookmark_footer-----------)![](../Images/060c7e18eb124cb75770d6516eabd6ba.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Mohamed Nohassi](https://unsplash.com/@coopery?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/26d692c970946df49e1809c2e6ee619e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: by Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any new release of an AI development framework, AI accelerator, or AI computing
+    platform, brings with it the potential for runtime optimization and cost reduction
+    in our AI development life-cycle. The recent release of PyTorch 2.0 is no exception.
+    Highlighted by the introduction of [torch.compile](https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html),
+    PyTorch 2.x can, reportedly, [enable significant speedups](https://pytorch.org/get-started/pytorch-2.0/)
+    for both training and inference. Contrary to the all-familiar PyTorch eager execution
+    mode in which each PyTorch operation is run “eagerly”, the [compile](https://pytorch.org/docs/stable/generated/torch.compile.html)
+    API converts your model into an intermediate computation graph (an FX graph) which
+    it then compiles into low-level compute kernels in a manner that is optimal for
+    the underlying training accelerator, using techniques such as *kernel fusion*
+    and *out-of-order execution* (see [here](https://pytorch.org/docs/stable/torch.compiler_faq.html#how-are-you-speeding-up-my-code)
+    for more details).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we will demonstrate the use of this exciting new feature as well
+    as some of the issues and behaviors you might encounter when using it. You may
+    have already come across some posts that highlight how easy it is to use torch
+    compilation or how much it improves performance. Or (like me), you may have spent
+    the last two weeks grappling with the new API trying to get it to work and perform
+    well on your model. Indeed, for many public models all that is required is to
+    wrap them with a torch.compile call (as reported [here](https://pytorch.org/docs/stable/generated/torch.compile.html)).
+    However, as we will see, there are a number of things that can interfere with
+    graph compilation and/or with reaching the desired performance improvement. Adapting
+    your models and/or succeeding to reach optimal performance might require you to
+    redesign your project or modify some of your coding habits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A few things we should mention before we get started. Our intention in this
+    post is to share just a few examples of the issues that we encountered while adapting
+    the torch.compile API. The examples we will share are by no means comprehensive.
+    It is very possible that you might run into an issue not mentioned here. Also
+    keep in mind that torch.compile is still under active development. Some of the
+    stuff we write might no longer be relevant by the time you read this. Be sure
+    to stay up to date with the latest releases and documentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a number of innovative technologies underlying torch compilation,
+    including [TorchDynamo](https://github.com/pytorch/torchdynamo/tree/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd),
+    [FX Graph](https://pytorch.org/docs/stable/fx.html), [TorchInductor](https://dev-discuss.pytorch.org/t/torchinductor-a-pytorch-native-compiler-with-define-by-run-ir-and-symbolic-shapes/747),
+    [Triton](https://github.com/openai/triton), and more. While we will not dive into
+    the different components in this post, we encourage you to learn about them from
+    the [PyTorch documentation](https://pytorch.org/get-started/pytorch-2.0/#technology-overview),
+    from the [2022 PyTorch conference](https://www.youtube.com/watch?v=vbtGZL7IrAw&ab_channel=PyTorch),
+    or from [this helpful hands-on TDS post](/how-pytorch-2-0-accelerates-deep-learning-with-operator-fusion-and-cpu-gpu-code-generation-35132a85bd26).
+    Often times, a good understanding of what is happening behind the scenes can help
+    you figure out why your model is not compiling and what you can do to fix it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post should not — in any way — be viewed as a replacement for the official
+    PyTorch documentation (e.g., [here](https://pytorch.org/get-started/pytorch-2.0/)).
+    This post should also not be viewed as an endorsement for PyTorch over TensorFlow
+    (or other ML training framework), for compile mode over eager mode, or for any
+    other tool, library, or platform we should mention. I have found that all frameworks
+    have their strengths and weaknesses. I do not have a strong preference or passion
+    for any particular one. My passions lie in solving interesting technical challenges
+    — the harder the better — regardless of the platform or framework upon which they
+    reside. You could say that I am framework agnostic. All the same, allow me to
+    indulge in two completely unimportant observations on how the PyTorch and TensorFlow
+    libraries have evolved over time. Feel free to skip ahead to get back to the real
+    stuff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two Completely Unimportant Observations on the TensorFlow vs. PyTorch Wars
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Observation 1**: In the olden days, when life was simple, there was a clear
+    distinction between PyTorch and TensorFlow. PyTorch used eager execution mode,
+    TensorFlow used graph mode, and everyone was happy because we all knew what we
+    were fighting about. But then came TensorFlow 2 that introduced eager execution
+    as the default execution mode and TensorFlow became a little bit more like PyTorch.
+    And now PyTorch has come along, introduced its own graph compilation solution
+    and become a little bit more like TensorFlow. The TensorFlow vs. PyTorch wars
+    continue, but the differences between the two are slowly disappearing. See [this
+    tweet](https://twitter.com/cHHillee/status/1601371638913638402?lang=en) for one
+    commentary on the PyTorch evolution that I found interesting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Observation 2**: AI development is a trendy business. Not unlike the fashion
+    industry, the popular AI models, model architectures, learning algorithms, **training
+    frameworks**, etc., change from season to season. Not unlike the fashion industry,
+    AI has its own publications and conventions during which you can keep up with
+    the latest trends. Until a few years ago, most of the models we worked on were
+    written in TensorFlow. And people were unhappy. Their two primary complaints were
+    that the high-level model.fit API limited their development flexibility and that
+    graph mode made it impossible for them to debug. “We have to move to PyTorch”,
+    they said, “where we can build our models any way we want and debug them easily".
+    Fast forward a few years and the same folks are now saying “we have to adapt PyTorch
+    Lightening (or some other high-level API) and we must speed up our training with
+    torch.compile”. Just to be clear... I’m not judging. All I’m saying is that maybe
+    we should be a bit more self-aware.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to the Real Stuff
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The rest of the post is organized as a collection of tips for getting started
+    with the PyTorch 2 compile API as well as some of the potential issues you might
+    face. Depending on the specific details of your project, adapting your model to
+    PyTorch’s graph mode may require a non-trivial effort. Our hope is that this post
+    will help you better assess this effort and decide on the best way to take this
+    step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Installing PyTorch 2
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: From the [PyTorch installation documentation](https://pytorch.org/), it would
+    seem that installing PyTorch 2 is no different than installing any other PyTorch
+    version. In practice there are some issues you may encounter. For one, PyTorch
+    2.0 appears (as of the time of this writing) to require Python version 3.8 or
+    higher (see [here](https://pytorch.org/blog/pytorch-2.0-release/#deprecation-of-cuda-116-and-python-37-support-for-pytorch-20)).
+    Hopefully, you are already up to date with one of the latest Python versions and
+    this will not pose a problem for you, but in the unlikely (and unfortunate) case
+    that you are not, this might be one more motivation for you to upgrade. Furthermore,
+    PyTorch 2 contains package dependencies (most notably [pytorch-triton](https://pypi.org/project/pytorch-triton/))
+    that did not exist in previous versions and may introduce new conflicts. To add
+    to that, even if you succeed in building a PyTorch 2 environment, you might find
+    that calling torch.compile results in a crushing and wholly unexplained [segmentation
+    fault](https://discuss.pytorch.org/t/segmentation-fault-core-dumped-with-torch-compile/167835).
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to save yourself a lot of trouble is to take a pre-built and pre-validated
+    PyTorch 2.0 Docker image. In the examples below, we will use an official [AWS
+    Deep Learning Container](https://github.com/aws/deep-learning-containers) with
+    PyTorch 2.0\. Specifically, we will use the **763104351884.dkr.ecr.us-east-1.amazonaws.com/pytorch-training:2.0.0-gpu-py310-cu118-ubuntu20.04-sagemaker**
+    image designed for training on a GPU instance in [Amazon SageMaker](https://aws.amazon.com/pm/sagemaker/?trk=ps_a134p000007BxdvAAC&trkCampaign=acq_paid_search_brand&sc_channel=PS&sc_campaign=acquisition_IL&sc_publisher=Google&sc_category=Machine+Learning&sc_country=IL&sc_geo=EMEA&sc_outcome=acq&sc_detail=amazon+sagemaker&sc_content=Sagemaker_e&sc_matchtype=e&sc_segment=532435490322&sc_medium=ACQ-P%7CPS-GO%7CBrand%7CDesktop%7CSU%7CMachine+Learning%7CSagemaker%7CIL%7CEN%7CText&s_kwcid=AL%214422%213%21532435490322%21e%21%21g%21%21amazon+sagemaker&ef_id=Cj0KCQiAhMOMBhDhARIsAPVml-HxIwfeABmnxXbZ9ia_5DV_TckDGpMSH2mFhSpu8jrCgntII8hcHB4aAuhfEALw_wcB%3AG%3As)
+    with Python 3.10 and PyTorch 2.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Backward Compatibility
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the nice things about PyTorch 2 is that it is fully backward compatible.
+    Thus, even if you choose to stick with eager execution mode and not use torch.compile
+    at this time, you are still highly encouraged to upgrade to PyTorch 2.0 and benefit
+    from the other [new features and enhancements](https://pytorch.org/blog/pytorch-2.0-release/#stable-features).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Example
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s jump right in with a toy example of an image classification model. In
+    the following code block we build a basic [Vision Transformer](https://en.wikipedia.org/wiki/Vision_transformer)
+    (ViT) model using the [timm](https://pypi.org/project/timm/) Python package (version
+    0.6.12) and train it on a fake dataset for 500 steps. We define the *use_compile*
+    flag to control whether to perform model compilation (torch.compile) and the *use_amp*
+    to control whether to run using [Automatic Mixed Precision (AMP)](https://pytorch.org/docs/stable/amp.html)
+    or full precision (FP).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the table below we demonstrate the comparative performance results when running
+    the training script on an [*ml.g5.xlarge*](https://aws.amazon.com/ec2/instance-types/g5/)
+    instance type using [Amazon SageMaker](https://aws.amazon.com/pm/sagemaker/?trk=ps_a134p000007BxdvAAC&trkCampaign=acq_paid_search_brand&sc_channel=PS&sc_campaign=acquisition_IL&sc_publisher=Google&sc_category=Machine+Learning&sc_country=IL&sc_geo=EMEA&sc_outcome=acq&sc_detail=amazon+sagemaker&sc_content=Sagemaker_e&sc_matchtype=e&sc_segment=532435490322&sc_medium=ACQ-P%7CPS-GO%7CBrand%7CDesktop%7CSU%7CMachine+Learning%7CSagemaker%7CIL%7CEN%7CText&s_kwcid=AL%214422%213%21532435490322%21e%21%21g%21%21amazon+sagemaker&ef_id=Cj0KCQiAhMOMBhDhARIsAPVml-HxIwfeABmnxXbZ9ia_5DV_TckDGpMSH2mFhSpu8jrCgntII8hcHB4aAuhfEALw_wcB%3AG%3As).
+    The impact of model compilation will differ from platform to platform (e.g., see
+    [here](https://pytorch.org/get-started/pytorch-2.0/#pytorch-2x-faster-more-pythonic-and-as-dynamic-as-ever)).
+    Generally speaking the speed-up will be higher on more modern server-class GPUs.
+    Keep in mind that these are just examples of the types of results that you might
+    see. The actual results will be highly dependent on the specific details of your
+    project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f44b9117b23239c20b8e4695af3b66e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance Results (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the performance boost from model compilation is far more pronounced
+    when using [AMP](https://pytorch.org/docs/stable/amp.html) (28.6%) than when using
+    FP (4.5%). This is a well-known discrepancy (e.g., see [here](https://pytorch.org/get-started/pytorch-2.0/#pytorch-2x-faster-more-pythonic-and-as-dynamic-as-ever)).
+    If you don’t already train with AMP, you might find that the most significant
+    performance gain can be achieved by transitioning from FP to AMP. We can also
+    see that in the case of our model, the performance boost came with a very slight
+    increase in GPU memory utilization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the comparative performance might change when scaling to multiple
+    GPUs due to the way in which [distributed](https://pytorch.org/tutorials/beginner/dist_overview.html)
+    training is implemented on compiled graphs. See [here](https://pytorch.org/get-started/pytorch-2.0/#distributed)
+    for more details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advanced Compilation Options
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The torch.compile API includes a number of options for controlling the graph
+    creation. These enable you to fine-tune the compilation for your specific model
+    and potentially boost performance even more. The code block below contains the
+    function signature (from this [source](https://pytorch.org/docs/stable/_modules/torch.html#compile)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Compilation Mode**: The compilation mode allows you to choose between minimizing
+    the overhead required by compilation (“reduce-overhead”) and maximizing potential
+    performance boost (“max-autotune”). See [here](https://pytorch.org/get-started/pytorch-2.0/#modes)
+    for more details.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the table below we compare the results of compiling the ViT model above with
+    different compilation modes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fdbbadd482b933054be20692b2811160.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Performance Results (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the compilation modes behave pretty much as advertised, with
+    “reduce-overhead” reducing the compilation time at the cost of extra memory utilization
+    and “max-autotune” resulting in maximum performance at the expense of high overhead
+    in compilation time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Compiler Backend**: The compile API allows you determine which backend to
+    use to convert the intermediate representation (IR) computation graph (the [*FX
+    graph*](https://pytorch.org/docs/stable/fx.html#torch.fx.Graph)) into low-level
+    kernel operations. This option is useful for [debugging graph compilation issues](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#diagnosing-runtime-errors)
+    and for gaining a better understanding for the torch.compile internals (as demonstrated
+    in [this cool example](https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html#torchdynamo-and-fx-graphs)).
+    In most cases (as of the time of this writing) the default, [TorchInductor](https://pytorch.org/get-started/pytorch-2.0/#torchinductor-fast-codegen-using-a-define-by-run-ir)
+    backend, appears to provide the best training performance results. See [here](https://github.com/pytorch/torchdynamo/blob/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd/README.md#existing-backends)
+    for the current list of existing backends, or run the code below to see the ones
+    that are supported in your environment. And if you really want, you can also [add
+    your own backend](https://github.com/pytorch/torchdynamo/blob/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd/README.md#adding-backends)
+    :).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: For example, by modifying the code above to use the [*nvprims-nvfuser*](https://pytorch.org/blog/introducing-nvfuser-a-deep-learning-compiler-for-pytorch/)backend
+    we get an 13% performance boost over eager mode (compared to the 28.6% boost with
+    the default backend).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Force a Single Graph**: The *fullgraph* flag is an extremely useful control
+    for ensuring that you do not have any undesired *graph-breaks*. More on this topic
+    below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dynamic Shape Flag**: As of the time of this writing, compilation support
+    for tensors that have dynamic shapes is somewhat limited. A common byproduct of
+    compiling a model with dynamic shapes is [excessive recompilation](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#excessive-recompilation)
+    which can significantly increase overhead and slow your training down considerably.
+    If your model *does* include dynamic shapes, setting the *dynamic* flag to *True*
+    will result in better performance and, in particular, reduce the number of recompilations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance Profiling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have written extensively (e.g., [here](/cloud-ml-performance-checklist-caa51e798002))
+    about the importance of profiling the training performance as a means to accelerating
+    training speed and reducing cost. One of the key tools we use for profiling performance
+    of PyTorch models is the [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html).
+    The PyTorch profiler allows us to assess and analyze the manner in which graph
+    compilation optimizes the training step. In the code block below we wrap our training
+    loop with a [torch.profiler](https://pytorch.org/docs/stable/profiler.html) and
+    generate the results for [TensorBoard](http://orch.profiler.tensorboard_trace_handler).
+    We save the output in the [*SM_MODEL_DIR*](https://github.com/aws/sagemaker-training-toolkit/blob/master/ENVIRONMENT_VARIABLES.md#sm_model_dir)
+    which is automatically uploaded to persistent storage at the end of the training
+    job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The image below was captured from the *GPU Kernel* view of the TensorBoard PyTorch
+    Profiler tab. It provides details of the kernels that are run on the GPU during
+    the training step of the compiled model trial from above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3928d90159e9c441ef4e0adb7d6a5bca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screen Capture of Kernel View from TensorBoard PyTorch Profiler Tab (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: By comparing these charts to the ones from the eager execution run, we are able
+    to see that graph compilation increases the utilization of the GPU’s [Tensor Cores](https://www.nvidia.com/en-us/data-center/tensor-cores/)
+    (from 51% to 60%) and that it introduces the use of GPU kernels developed using
+    [Triton](https://openai.com/research/triton).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Diagnosing Model Compilation Issues
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: PyTorch compilation is still under active development (currently in beta) and
+    it is not at all unlikely that you will encounter issues when compiling your model.
+    If you are lucky, you will get an informative error and will have an easy (and
+    reasonable) way to work around it. If you are less lucky, you may have to work
+    a bit harder to find the root of the issue, and/or may come to the conclusion
+    that, at its current maturity level, model compilation does not address your needs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The primary resource for addressing compilation issues is the [TorchDynamo troubleshooting
+    page](https://pytorch.org/docs/stable/dynamo/troubleshooting.html) which includes
+    a list of debugging tools and offers a step-by-step guide for [diagnosing errors](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#diagnosing-runtime-errors).
+    Unfortunately, as of the time of this writing, the tools and techniques appear
+    to be targeted more towards PyTorch developers than PyTorch users. They can be
+    helpful in root-causing compilation issues, providing some hints as to how you
+    might be able to work around them, and/or reporting them to PyTorch. However,
+    you might find that they don’t help in actually resolving your issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the code block below we show a simple [distributed](https://pytorch.org/tutorials/beginner/dist_overview.html)
+    model that includes a call to [torch.distributed.all_reduce](https://pytorch.org/docs/stable/distributed.html).
+    This model runs as expected in eager mode, but fails (as of the time of this writing)
+    with an “attribute error” during graph compilation (*torch.classes.c10d.ProcessGroup
+    does not have a field with name ‘shape’*). By increasing the log level to *INFO*
+    we find that the error is in “step #3” of the calculation, the TorchInductor.
+    We can confirm this by verifying that compilation succeeds with the “eager” and
+    “aot_eager” backends. Finally, we can create a minimal code sample that reproduces
+    the failure using the [PyTorch Minifier](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#minifying-torchinductor-errors).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sadly, in our example, running the generated minifier_launcher.py script results
+    in a different attribute error (‘Repro’ object has no attribute ‘_tensor_constant0’),
+    and despite having enjoyed the whole experience, the documented debugging steps
+    did not help all that much in solving the compilation issue we demonstrated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Obviously, we hope that you do not run into any compilation issues. In case
+    you do, know that: 1\. you are not alone :), and 2\. although they are likely
+    to be different than the one demonstrated here, following the same steps described
+    in the [troubleshooting guide](https://pytorch.org/docs/stable/dynamo/troubleshooting.html)
+    may give some indication as to their source.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Common Graph Breaks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the most touted advantages of Pytorch eager mode is the ability to interleave
+    pure Pythonic code with your PyTorch operations. Unfortunately, this freedom (as
+    of the time of this writing) is significantly restricted when using torch.compile.
+    The reason for this is that certain Pythonic operations cause TorchDynamo to split
+    the computation graph into multiple components, thus hindering the potential for
+    performance gains. Your goal should be to minimize such [*graph breaks*](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#graph-breaks)
+    to the extent possible. As a best practice, you might consider compiling your
+    model with the [*fullgraph*](https://pytorch.org/docs/stable/generated/torch.compile.html#torch-compile)flag
+    when you are porting your model to PyTorch 2\. Not only will this encourage you
+    to remove any code that causes graph breaks, but it will also teach you how to
+    best adapt your PyTorch development habits for using graph mode. However, note
+    that you will have to disable this flag to run [distributed](https://pytorch.org/tutorials/beginner/dist_overview.html)
+    code as the current way that communication between GPUs is implemented requires
+    graph breaks (e.g., see [here](https://pytorch.org/get-started/pytorch-2.0/#distributed)).
+    Alternatively, you can use the *torch._dynamo.explain* utility to analyze graph
+    breaks, as described [here](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#identifying-the-cause-of-a-graph-break).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following code block demonstrates a simple model with four potential graph
+    breaks in its forward pass (as of the time of this writing). It is not uncommon
+    to see any one of these kinds of operations in a typical PyTorch model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is important to emphasize that graph breaks do *not* fail the compilation
+    (unless the *fullgraph* flag is set). Thus, it is perfectly possible that your
+    model is compiling and running but actually contains multiple graph breaks that
+    are slowing it down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Troubleshooting Training Issues
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While succeeding in compiling your model is a worthy achievement, it is not
+    a guarantee that training will succeed. As noted above, the low-level kernels
+    that run on the GPU will differ between eager mode and graph mode. Consequently,
+    certain high-level operations may exhibit different behaviors. In particular,
+    you might find that operations that run in eager mode fail in graph mode (e.g.,
+    [this torch.argmin failure](https://github.com/pytorch/pytorch/issues/99879) that
+    we encountered). Alternatively, you might find that numerical differences in computation
+    have an impact on your training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make matters worse, debugging in graph mode is much more difficult than in
+    eager mode. In eager mode each line of code is executed independently, allowing
+    us to place a breakpoint at any point in our code and evaluate the current tensor
+    values. In graph mode, on the other hand, the model defined by our code undergoes
+    multiple transitions before being processed and, consequently, your breakpoint
+    may not be triggered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the past, [we expanded on the difficulties of debugging](/debugging-in-tensorflow-392b193d0b8)
+    in graph mode in TensorFlow and proposed a few ways to address them. Here is a
+    two-step approach you could try when you encounter an issue. First, revert back
+    to eager mode where debugging is less difficult and pray that the issue reproduces.
+    If it does not, evaluate intermediate tensors of interest in your compiled computation
+    graph by purposely inserting graph breaks in your model. You can do this by either
+    explicitly breaking your model into two (or more) portions and applying torch.compile
+    to each portion separately, or by generating a graph break by inserting a *print*,
+    and/or a [Tensor.numpy](https://pytorch.org/docs/stable/generated/torch.Tensor.numpy.html)
+    invocation as described in the previous section. Depending on how you do this,
+    you may even succeed in triggering breakpoints in your code. Still, keep in mind
+    that breaking up your graph in this manner can modify the sequence of low-level
+    operations so it may not accurately reproduce the fully compiled graph execution.
+    But it certainly gives you more flexibility in trying to get to the bottom of
+    your issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: See the [accuracy-debugging](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#accuracy-debugging)
+    portion of the [troubleshooting guide](https://pytorch.org/docs/stable/dynamo/troubleshooting.html)
+    if you encounter discrepancies between compile mode and eager mode that are unexpected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Including the Loss Function in the Graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we demonstrated in the examples above, graph execution mode is enabled by
+    wrapping a PyTorch model (or function) with a torch.compile invocation. You may
+    have observed that the loss function is not part of the compilation call and,
+    as a result, not part of the generated graph. In many cases, including the ones
+    that we have demonstrated, the loss function is a relatively small portion of
+    the training step and running it eagerly will not incur much overhead. However,
+    if you have a particularly heavy loss you may be able to further boost performance
+    by including it in the compiled computation graph. For example, in the code block
+    below, we define a loss function for (naively) performing [model distillation](https://en.wikipedia.org/wiki/Knowledge_distillation)
+    from a large ViT model (with 24 ViT blocks) to a smaller ViT model (with 12 ViT
+    blocks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our implementation includes a loss function that calls the large model on each
+    input batch. This is a much more compute-heavy loss function than the [CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html)
+    above and running it *eagerly* would not be ideal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We describe two ways to solve this. The first is to simply wrap the loss function
+    in a torch.compile invocation of its own, as shown here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The disadvantage of this option is that the compiled graph of the loss function
+    is disjoint from the compiled graph of the model. The second option compiles the
+    model and loss together by creating a wrapper model that includes both and returns
+    the resultant loss as its output. This option is demonstrated in the code block
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The disadvantage of this approach is that the internal model will need to be
+    extracted from the wrapper model when the time comes to run the model in *inference*
+    mode.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our case, both options result in roughly the same 8% performance boost, demonstrating
+    the importance of this kind of optimization. When the loss is run eagerly, the
+    total step time is 0.37 seconds, and when the loss is compiled, the total step
+    time is 0.34 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamic Shapes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As reported in the [documentation](https://pytorch.org/get-started/pytorch-2.0/#dynamic-shapes),
+    compilation support for models with dynamic shapes is limited (as of the time
+    of this writing). Depending on the details of the dynamism, dynamic models could
+    incur significant performance overhead, either by introducing graph breaks and/or
+    triggering an excessive number of [graph recompilations](https://pytorch.org/docs/stable/dynamo/troubleshooting.html#excessive-recompilation).
+    Graph recompilations occur when one of the assumptions (referred to as [guards](https://github.com/pytorch/torchdynamo/tree/0b8aaf340dad4777a080ef24bf09623f1aa6f3dd#guards))
+    about the model that were made during the original compilation is violated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [torch.compile](https://pytorch.org/docs/stable/generated/torch.compile.html)
+    API includes the *dynamic* flag for signaling to the compiler to optimize for
+    dynamic shapes. However, as of the time of this writing, the degree to which this
+    will help is questionable. If you are trying to compile and optimize a dynamic
+    graph and facing issues, you might choose to hold off on this until the level
+    of support matures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: PyTorch 2.0 compile mode comes with the potential for a considerable boost to
+    the speed of training and inference and, consequently, meaningful savings in cost.
+    However, the amount of work that your model will require to realize this potential
+    can vary greatly. Many public models require nothing more than changing a single
+    line of code. Other models, especially ones that include non-standard operations,
+    dynamic shapes, and/or a lot of interleaved Python code, might require more considerable
+    effort. However, there may be no better time to start adapting your models than
+    today, as it appears that compile mode is here to stay.
+  prefs: []
+  type: TYPE_NORMAL

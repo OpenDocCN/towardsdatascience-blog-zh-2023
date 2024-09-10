@@ -1,0 +1,400 @@
+- en: 'The Job-Shop Scheduling Problem: Mixed-Integer Programming Models'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-job-shop-scheduling-problem-mixed-integer-programming-models-4bbee83d16ab?source=collection_archive---------0-----------------------#2023-03-07](https://towardsdatascience.com/the-job-shop-scheduling-problem-mixed-integer-programming-models-4bbee83d16ab?source=collection_archive---------0-----------------------#2023-03-07)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Mathematical modeling and Python implementation of the classical sequencing
+    problem using Pyomo
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bruscalia12?source=post_page-----4bbee83d16ab--------------------------------)[![Bruno
+    Scalia C. F. Leite](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----4bbee83d16ab--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4bbee83d16ab--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4bbee83d16ab--------------------------------)
+    [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----4bbee83d16ab--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-job-shop-scheduling-problem-mixed-integer-programming-models-4bbee83d16ab&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----4bbee83d16ab---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4bbee83d16ab--------------------------------)
+    ·11 min read·Mar 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4bbee83d16ab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-job-shop-scheduling-problem-mixed-integer-programming-models-4bbee83d16ab&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----4bbee83d16ab---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4bbee83d16ab&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-job-shop-scheduling-problem-mixed-integer-programming-models-4bbee83d16ab&source=-----4bbee83d16ab---------------------bookmark_footer-----------)![](../Images/0bfff84b7a0c840b74a82e372bac38ae.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Guillaume Bolduc](https://unsplash.com/fr/@guibolduc?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The job-shop scheduling problem (JSSP) is a widely studied optimization problem
+    with several industrial applications. The goal is to define how to minimize the
+    makespan required to allocate shared resources (machines) over time to complete
+    competing activities (jobs). As for other optimization problems, mixed-integer
+    programming can be an effective tool to provide good solutions, although for large
+    instances one should probably resort to heuristics.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout this article, one may find two of the most usual mixed-integer programming
+    formulations for the JSSP with implementation in Python, using the *pyomo* library
+    (Bynum et al., 2021). Those interested in details can follow along with the complete
+    code available in this [git repository](https://github.com/bruscalia/jobshop).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are unfamiliar with mixed-integer programming or optimization in general,
+    you might have a better experience after reading this introduction on the subject.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/an-introduction-to-mixed-integer-linear-programming-the-knapsack-problem-1445452a9fe9?source=post_page-----4bbee83d16ab--------------------------------)
+    [## An introduction to mixed-integer linear programming: The knapsack problem'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to solve optimization problems in Python using scipy and pyomo
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/an-introduction-to-mixed-integer-linear-programming-the-knapsack-problem-1445452a9fe9?source=post_page-----4bbee83d16ab--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let us dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem statement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Suppose a set of jobs *J* needs to be processed in a set of machines *M*, each
+    in a given order. For instance, job number 1 might need to be processed in machines
+    (1, 4, 3, 2), whereas job number 2 in (2, 3, 4, 1). In this case, before going
+    to machine 4, job 1 must have gone to machine 1\. Analogously, before going to
+    machine 1, job 2 must have been processed in machine 4.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each machine can process only one job at a time. Operations are defined by pairs
+    (machine, job) and each has a specific processing time *p*. Therefore, the total
+    makespan depends on how one allocates resources to perform tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The figure below illustrates an optimal sequence of operations for a simple
+    instance with 5 machines and 4 jobs. Notice that each machine processes just one
+    job at a time and each job is processed by only one machine at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0829a2614d0656d70bfbd213a4cbe3bd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of problem with three machines and four jobs. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As for other optimization problems, we must convert these rules into mathematical
+    equations to obtain smart allocations of resources. Therefore, in the following
+    section, let us see two usual formulations for the JSSP.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixed-integer models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Following the study of Ku & Beck (2016), two formulations for the JSSP will
+    be presented: the disjunctive model (Manne, 1960) and the time-index model (Bowman,
+    1959; Kondili, 1993). Those interested might refer to Wagner (1959) for a third
+    formulation (rank-based). The disjunctive model is surely the most efficient of
+    the three for the original problem. However, others might be easier to handle
+    when incorporating new constraints that might occur in real-world problems.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the disjunctive model, let us consider a set *J* of jobs and a set *M* of
+    machines. Each job *j* must follow a processing order (***σ****ʲ*₁, ***σ****ʲ*₂,
+    …, ***σ****ʲₖ*) and each operation (*m*, *j*) has a processing time *p*. The decision
+    variables considered are the time that job *j* starts on machine *m*, *xₘⱼ*; a
+    binary that marks precedence of job *i* before *j* on machine *m*, *zₘᵢⱼ*; and
+    the total makespan of operation, *C*, which is itself the minimization objective.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need to create constraints to ensure that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The starting time of job *j* in machine *m* must be greater than the starting
+    time of the previous operation of job *j* plus its processing time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Each machine processes just one job at a time. To do this, we state that if
+    *i* precedes *j* in machine *m*, the starting time of job *j* in machine *m* must
+    be greater than or equal to the starting time of job *i* plus its processing time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Of every pair of jobs *i*, *j* one element must precede the other for each machine
+    *m* in *M*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The total makespan is greater than the starting time of every operation plus
+    its processing time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'And we get the following formulation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3c91d9c86058566a90ccdc27498b20f2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Job-shop disjunctive model. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In which, *V* is an arbitrarily large value (big M) of the “either-or” constraint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next formulation explored will be the time-indexed model. It is limited
+    in the sense that only integer processing times can be considered and one can
+    notice that it produces a constraint matrix with several *nonzero* elements, which
+    makes it computationally more expensive than the disjunctive model. Furthermore,
+    as processing times increase, the number of decision variables increases as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the time-indexed model, we will consider the same sets of jobs *J* and machines
+    *M*, besides a set of discrete intervals *T*. The choice of the size of *T* might
+    be oriented in the same way as the definition of *V*: the sum of all processing
+    times. The same parameters of the order of jobs and processing times will be used
+    too. However, in this approach, we only consider binary variables that mark it
+    job *j* starts at machine *m* at instant *t*, *xₘⱼₜ*, besides the real-valued
+    (or integer) makespan *C*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us formulate the constraints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each job *j* at machine *m* starts only once.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Ensure that each machine processes just one job at a time. And this is the hard
+    one in the time-indexed approach. To do this, we state that at most one job *j*
+    can start at machine *m* during the time span between the current time *t* and
+    *pₘⱼ* previous times. For each machine and time instant.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The starting time of job *j* in machine *m* must be greater than the starting
+    time of the previous operation of job *j* plus its processing time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The total makespan is greater than the starting time of every operation plus
+    its processing time.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/1fc2dd7af812196db516efdb1922c496.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Job-shop time-indexed model. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before diving into the models, let us create a few utility classes to handle
+    the parameters of this problem. The first will be *JobSequence* a Python *list*
+    child class with methods to find previous and following elements in a sequence.
+    This will be useful when referring to the sequence of machines for each job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let us create a white-label class for parameters. It must store the set
+    of jobs *J*, the set of machines *M*, the sequence of operations of each job *j*
+    in a dict of *JobSequences*, and the processing time of each pair *m*, *j* in
+    a tuple-index dictionary *p_times*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: And at last, a class to generate random problem instances from a given number
+    of machines, jobs, and interval of processing times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can instantiate random problems at ease to validate our models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following steps, we will create three classes that inherit from *pyomo’s
+    ConcreteModel*. The first will be a white-label class for the MIP models. The
+    second and the third will be the disjunctive and time-indexed model classes respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: One can notice the sets of jobs *J* and machines *M* are stored in the instance
+    attributes of the same name. The attribute *p* holds processing times, and *V*
+    is the reasonable upper limit for makespan.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us now create the disjunctive model, the *DisjModel* class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Instances of *DisjModel* carry attributes *x*, *z*, and *C* — of the variables
+    previously described. The objective is quite simple: minimize one of the decision
+    variables: *C*. And notice we still need to define rules for the constraints.
+    They are defined in the same order previously listed when introducing the model.
+    Let us now write them in *pyomo* style.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: And we are ready to solve JSSP problems with the disjunctive model approach.
+    Let us define the time-indexed model as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once again, constraints were defined in the same order they were previously
+    presented. Let us write them in *pyomo* style too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: And we are ready to test how these models perform in some randomly generated
+    problems!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let us instantiate a random 4x3 (*J*x*M*) problem and see how our models perform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: To solve these examples, I will use the open-source solver CBC. You can download
+    CBC binaries from [AMPL](https://ampl.com/products/solvers/open-source-solvers/#cbc)
+    or from [this link](https://www.coin-or.org/download/binary/Cbc/). You can also
+    find an installation tutorial [here](https://github.com/coin-or/Cbc). As the CBC
+    executable is included in the PATH variable of my system, I can instantiate the
+    solver without specifying the path to an executable file. If yours is not, parse
+    the keyword argument “executable” with the path to your executable file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatively, one could have used GLPK to solve this problem (or any other
+    solver compatible with *pyomo*). The latest available GLPK version can be found
+    [here](http://ftp.gnu.org/gnu/glpk/) and the Windows executable files can be found
+    [here](https://sourceforge.net/projects/winglpk/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The solver had no trouble finding the optimal solution for the disjunctive model
+    and proving optimality in less than one second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08547d91baa7f81cae1dc9c94a28697a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of disjunctive model. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we can see that even for this simple problem, the solver could not
+    find the optimal solution for the time-indexed model within the limit of 20 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c19de4258b494f1a91e1c9365f1f1e92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of time-indexed model. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amazing to see the difference in performance for two models with the same idea
+    just by rearranging the mathematical equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By the way, those interested might find the complete code (plots included) in
+    [this repository](https://github.com/bruscalia/jobshop).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For larger instances, due to combinatorial aspects of this problem, even high-performance
+    commercial solvers, such as Gurobi or Cplex, might face difficulties to provide
+    good quality solutions and prove optimality. In this context, metaheuristics can
+    be an interesting alternative. I would suggest the interested reader to look for
+    the papers “[Parallel GRASP with path-relinking for job shop scheduling](http://doi.org/10.1016/S0167-8191(03)00014-0)”
+    (Aiex et al., 2003) and “[An extended Akers graphical method with a biased random-key
+    genetic algorithm for job-shop scheduling](https://doi.org/10.1111/itor.12044)”
+    (Gonçalves & Resende, 2014). I recently tried to implement simplified versions
+    of these algorithms and had some interesting results, although pure Python implementation
+    is still time-expensive. You can find them in [this repository](https://github.com/bruscalia/jobshop).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, two different mixed-integer programming approaches for the
+    job-shop scheduling problem (JSSP) were implemented and solved using the Python
+    library *pyomo* and the open-source solver CBC. The disjunctive model proved to
+    be a better alternative for the original JSSP, although more complex real-world
+    models might share similarities with the time-indexed formulation for incorporating
+    additional rules. The [complete code](https://github.com/bruscalia/jobshop) used
+    in these examples is available for further use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Aiex, R. M., Binato, S., & Resende, M. G. (2003). *Parallel GRASP with path-relinking
+    for job shop scheduling*. Parallel Computing, 29(4), 393–430.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Bynum, M. L. et al., 2021\. *Pyomo-optimization modeling in python.* Springer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gonçalves, J. F., & Resende, M. G. (2014). *An extended Akers graphical method
+    with a biased random‐key genetic algorithm for job‐shop scheduling*. International
+    Transactions in Operational Research, 21(2), 215–246.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Kondili, E., & Sargent, R. W. H. (1988). *A general algorithm for scheduling
+    batch operations* (pp. 62–75). Department of Chemical Engineering, Imperial College.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ku, W. Y., & Beck, J. C. (2016). *Mixed integer programming models for job
+    shop scheduling: A computational analysis*. Computers & Operations Research, 73,
+    165–173.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manne, A. S. (1960). On the job-shop scheduling problem. *Operations research*,
+    *8*(2), 219–223.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wagner, H. M. (1959). An integer linear‐programming model for machine scheduling.
+    *Naval research logistics quarterly*, *6*(2), 131–140.
+  prefs: []
+  type: TYPE_NORMAL

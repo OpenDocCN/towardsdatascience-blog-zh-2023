@@ -1,0 +1,371 @@
+- en: Building a Smart Travel Itinerary Suggester with LangChain, Google Maps API,
+    and Gradio (Part 2)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5?source=collection_archive---------3-----------------------#2023-09-26](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5?source=collection_archive---------3-----------------------#2023-09-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to build an application that might inspire your next road trip
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)[![Robert
+    Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------)
+    [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----86e9d2bcae5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----86e9d2bcae5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----86e9d2bcae5--------------------------------)
+    ·11 min read·Sep 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F86e9d2bcae5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5&user=Robert+Martin-Short&userId=83d38eb39498&source=-----86e9d2bcae5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F86e9d2bcae5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5&source=-----86e9d2bcae5---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This article is part 2 of a three part series where we build a travel itinerary
+    suggester application using OpenAI and Google APIs and display it in a simple
+    UI generated with gradio. In this part, we discuss how to use the Google Maps
+    API and folium to generate an interactive route map from a list of waypoints.
+    Just want see the code? Find it** [**here**](https://github.com/rmartinshort/travel_mapper)**.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**1\. Recap of part 1**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the [first](/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74)
+    of this three part series, we used LangChain and prompt engineering to build a
+    system that makes sequential calls to an LLM API — either Google’s PaLM or OpenAI’s
+    ChatGPT that convert a user’s query into a travel itinerary and a nicely parsed
+    list of addresses. Now it’s time to see how we can take that list of addresses
+    and convert it into a travel route with directions plotted on a map. To do this,
+    we will primarily be making use of the Google Maps API via the [googlemaps](https://pypi.org/project/googlemaps/)
+    package. We’ll also use [folium](https://pypi.org/project/folium/) for plotting.
+    Let’s get started!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Getting ready to make API calls
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In order to make an API key for Google Maps, you’ll first need to make an account
+    with Google Cloud. They have a [90-day free trial period](https://cloud.google.com/free/docs/free-cloud-features?_ga=2.153672123.-2071471501.1688189408),
+    after which you’ll pay for API services you use in a similar way to what you’d
+    do with OpenAI. Once that’s complete, you can make a project (mine is called LLMMapper)
+    and navigate the Google Maps Platform section of the Google Cloud site. From there,
+    you should be able to access the “Keys & Credentials” menu to generate an API
+    key. You should also check out the “APIs & Services” menu to explore the many
+    services that the Google Maps Platform provides. For this project we’ll just be
+    using the Directions and Geocoding services. We’ll be geocoding each of our waypoints
+    and then finding directions between them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2592a69158a712deddee1ca9d26f5921.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot showing navitation to the Keys & Credentials menu of the Google Maps
+    Platform site. This is where you will make an API key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, the Google Maps API key can be added to the `.env` file that we set up
+    earlier
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: To test if this works, load the secrets from the`.env` using the method described
+    in part 1\. We can then attempt a geocoding call as follows
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Google Maps is able to match the supplied string with the address and details
+    of an actual place, and should return a list like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is very powerful! Although the request is somewhat vague, the Google Maps
+    service has correctly matched it to an exact address with coordinates and various
+    other locale information that might be useful to a developer depending on the
+    application. We will only need to make use of the `formatted_address` and `place_id`fields
+    here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. Building the route**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Geocoding is important for our travel mapping application because the geocoding
+    API appears more adept at handling vague or partially compete addresses than the
+    directions API. There is no guarantee that the addresses coming from the LLM calls
+    will be contain enough information for the directions API to give a good response,
+    so doing this geocoding step first decreases the likelihood of errors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lets first call the geocoder on the start point, end point and intermadiate
+    waypoints list and store the results in a dictionary
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we can make use of the directions API to get the route from start to end
+    that includes the waypoints
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Full documentation for the directions api is [here](https://googlemaps.github.io/google-maps-services-python/docs/index.html),
+    and there are many different options that can be specified. Notice that we specific
+    the start and end of route along with the list of waypoints, and choose `optimize_waypoints=True`
+    so that Google Maps knows that the order of the waypoints can be changed in order
+    to reduce the total travel time. We can also specify transit type too, which defaults
+    to `driving` unless otherwise set. Recall that in part 1 we asked the LLM to return
+    transit type along with its itinerary suggestion, so in theory we could make use
+    of that here too.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dictionary returned from the directions API call has the following keys
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Of this information, `legs` and `overview_polyline` will be the most useful
+    to us. `legs` is a list of route segments, each element of which looks like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Each `leg` is further segmented into `steps`, which is the collection of turn-by-turn
+    instructions and their associated route segments. This a list of dictionaries
+    with the following keys
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `polyline`keys are where the actual route information is stored. Each polyline
+    is an encoded representation of a list of coordinates, which Google Maps generates
+    as a means of compressing a long list of latitude and longitude values into a
+    string. They are encoded strings that look like
+  prefs: []
+  type: TYPE_NORMAL
+- en: “e|peFt_ejVjwHalBzaHqrAxeE~oBplBdyCzpDif@njJwaJvcHijJ~cIabHfiFyqMvkFooHhtE}mMxwJgqK”
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can read more about this [here](https://developers.google.com/maps/documentation/utilities/polylinealgorithm),
+    but thankfully we can use the `decode_polyline` utility to convert them back into
+    coordinates. For example
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will give a list of latitude and longitude points along the route.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is all we need to know to plot a simple map showing the waypoints on a
+    route and the correct driving paths connecting them. We can use the `overview_polyline`
+    as a start, although we will see later on that this can cause resolution issues
+    at high zoom levels of the map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lets assume we started with the following query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “I want to do 5 day road trip from San Francisco to Las Vegas. I want to visit
+    pretty coastal towns along HW1 and then mountain views in southern California”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our LLM calls extracted a dictionary of waypoints and we ran `build_mapping_dict`
+    and `build_directions_and_route` to get our directions result from Google Maps
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can first extract the waypoints like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, using folium and branca, we can plot a nice interactive map which should
+    appear in Colab or Jupyter Notebook
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: When this code is run, Folium will generate an interactive map that we can explore
+    and click into each of the waypoints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0bef881abf974f02c318d7a36bf5c8f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Interactive map generated from the result of a Google Maps API call
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Refining the route**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The approach described above where we make a single call to the Google Maps
+    directions API with a list of waypoints and then plot the `overview_polyline`
+    works great as a POC, but there a few issues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of `formatted_address` , it is more efficient to use `place_id` when
+    specifying the start, end and waypoint names in the call to Google Maps. Fortunately
+    we get `place_id` in the result of our geocoding calls, so we should use it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The number of waypoints that can be requested in a single API call is limited
+    to 25 (see [https://developers.google.com/maps/documentation/directions/get-directions](https://developers.google.com/maps/documentation/directions/get-directions)
+    for details). If we have have more than 25 stops in our itinerary from the LLM,
+    we need to make more calls to Google Maps and then merge the responses
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`overview_polyline` has limited resolution when we zoom in, likely since the
+    number of points along it are optimized for a large-scale map view. This is not
+    a major issue for a POC, but it would be nice to have some more control over the
+    route resolution so that it looks good even at high zoom levels. The directions
+    API is giving us much more granular polylines in the route segments that it provides,
+    so we can make use of these.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: On the map, it would be nice to split the route into separate legs and allow
+    the user to see the distance and travel times associated with each one. Again,
+    Google Maps is providing us with that information so we should make use of it.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/7ba947b395671f85e82c5cf9793fd9ce.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The resolution of the overview_polyline is limited. Here we’ve zoomed into Santa
+    Barbara and its not obvious which roads we should be taking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Issue 1 can easily be solved just by modifying `build_directions_and_route`
+    to make use of `place_id` from the `mapping_dict` rather than `formatted_address`
+    . Issue 2 is a little more involved and requires breaking our initial waypoints
+    down into chunks of some maximum length, creating a start, end and sub-list of
+    waypoints from each and then running `build_mapping_dict` followed by `build_directions_and_route`
+    on those. The results can then be concatenated at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Issues 3 and 4 can be solved by using the individual step polylines for each
+    leg of the route returned by Google Maps. We just need to loop though these two
+    levels, decode the relevant polylines and then construct a new dictionary. This
+    also enables us to extract the distance and duration values, which get assigned
+    to each decoded leg and then used for plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The trouble now is that the `leg_route_points`list can become very long, and
+    when we come to plot this on the map it can cause folium to crash or run very
+    slowly. The solution is to sample the points along the route so that there are
+    enough to allow a good visualization but not too many that the map has trouble
+    loading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple and safe way to do this is calculate the number of points that the
+    total route should contain (say 5000 points) then determine what fraction should
+    belong to each leg of the route and then evenly sample the corresponding number
+    of points from each leg. Note that we need to make sure that each leg contains
+    at least one point for it to get included on the map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The following function will do this sampling, taking in a dictionary of `waypoints`
+    output from the `get_route` function above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here we specify the spacing of points that we want — one per 250m — and then
+    choose the number of points accordingly. We might also consider implementing a
+    way to estimate the desired point spacing from the length of the route, but this
+    method appears to work reasonably well for a first pass, giving acceptable resolution
+    at moderately high levels of zoom on the map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we’ve split the route up into legs with a reasonable number of sample
+    points, we can proceed to plot them on the map and label each leg with the following
+    code
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/eb81e046ba3eae34d2a5cdc93a96294b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of one leg of a route that has been labelled and annotated so that it
+    appears on the map
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**5\. Putting it all together**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the codebase, all the methodology mentioned above is packaged in two classes.
+    The first is `RouteFinder` , which takes in the stuctured output of `Agent` (see
+    part 1) and generates the sampled route. The second is `RouteMapper` , which takes
+    the sampled route and plots a folium map, which can be saved as html.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since we almost always want to generate a map when we ask for a route, the `RouteFinder's`
+    `generate_route` method handles both of these tasks
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Recall that in part 1 we constructed a class called `Agent` , which handled
+    the LLM calls. Now that we also have `RouteFinder` , we can put them together
+    in a base class for the entire travel mapper project
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: This can be run on a query as follows, which is the example given in the `test_without_gradio`
+    script
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: In terms of the route and map generation we’re now done! But how can we package
+    all this code into a nice UI thats easy to experiment with? That will be covered
+    in the [third and final part](/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb)
+    of this series.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading! Please feel free to explore the full codebase here [https://github.com/rmartinshort/travel_mapper](https://github.com/rmartinshort/travel_mapper).
+    Any suggestions for improvement or extensions to the functionality would be much
+    appreciated!
+  prefs: []
+  type: TYPE_NORMAL

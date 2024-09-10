@@ -1,0 +1,468 @@
+- en: Sliding Windows in Pandas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/sliding-windows-in-pandas-40b79edefa34?source=collection_archive---------1-----------------------#2023-03-29](https://towardsdatascience.com/sliding-windows-in-pandas-40b79edefa34?source=collection_archive---------1-----------------------#2023-03-29)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Identify Patterns in Time-Series Data with Overlapping Window Techniques
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://avrilaysha.medium.com/?source=post_page-----40b79edefa34--------------------------------)[![Avril
+    Aysha](../Images/a3be4bcc007664fb10885df00d111732.png)](https://avrilaysha.medium.com/?source=post_page-----40b79edefa34--------------------------------)[](https://towardsdatascience.com/?source=post_page-----40b79edefa34--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----40b79edefa34--------------------------------)
+    [Avril Aysha](https://avrilaysha.medium.com/?source=post_page-----40b79edefa34--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb016782a8709&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsliding-windows-in-pandas-40b79edefa34&user=Avril+Aysha&userId=b016782a8709&source=post_page-b016782a8709----40b79edefa34---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----40b79edefa34--------------------------------)
+    ·10 min read·Mar 29, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F40b79edefa34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsliding-windows-in-pandas-40b79edefa34&user=Avril+Aysha&userId=b016782a8709&source=-----40b79edefa34---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F40b79edefa34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsliding-windows-in-pandas-40b79edefa34&source=-----40b79edefa34---------------------bookmark_footer-----------)![](../Images/a1d1cf6d0a5270fa1d5be035f895a29c.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Eugene Chystiakov](https://unsplash.com/it/@eugenechystiakov?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/B-h3so_5UKA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Windowing techniques enable data analysts to identify valuable patterns in time-series
+    data. Sliding windows are particularly powerful because they allow you to spot
+    patterns earlier than other techniques. This is an important feature in situations
+    when making a key decision a few minutes (or seconds) earlier can save you money.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article will show you 3 ways to perform windowing in `pandas` and will
+    discuss the tradeoffs and benefits of each approach. By the end, you’ll be able
+    to create a sliding window visualisation that looks something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b2a4896b580e0058fd59a8176824fa3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Imagine you’re an Uber or Lyft driver. You’re driving around New York waiting
+    for your next ride…and burning expensive gas in the meantime. Not cool. You need
+    to find a way to maximise your chance of getting a new ride quickly. How could
+    you do this?
+  prefs: []
+  type: TYPE_NORMAL
+- en: You could take an experience-driven approach and test out different strategies
+    over a period of time to find out which parts of New York have high demand. You
+    try starting in one neighbourhood the first day, another the second, and so on…
+    But New York City is BIG and this way it’s going to take you a *loooong* time
+    before you can start to identify patterns with any degree of confidence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It would be much more efficient to take **a data-driven approach**. Which is
+    exactly what we’ll be doing in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get to it 🚀
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We’ll be working with 1 hour of rideshare (Uber/Lyft) data from the New York
+    City Taxi and Limousine Commission (TLC) Trip Record* dataset, which is subsampled
+    from the dataset for January 2022\. You can [download the complete Parquet file](https://d37ci6vzurychx.cloudfront.net/trip-data/fhvhv_tripdata_2022-01.parquet)
+    for January 2022\. This contains data for more than 14.5 million rides (!) To
+    replicate the dataset I’m using in this article, subsample to the first 100K rows.
+    You can also [access the data and notebook directly](https://github.com/rrpelgrim/sliding-windows-pandas)
+    from a dedicated Github repo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Remember: our objective is to **identify zones with peaks in demand, defined
+    as number of requests per unit of time.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '1\. Quick-n-Dirty: a GroupBy over the Entire Dataset'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/1174363574132195f1f9ac852f304885.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start by doing a very rough pass to identify high-demand zones over the
+    entire 1-hour dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After using a `time_mask` to subset the data for a specific hour and sorting
+    the values by the `request_datetime` column, this is essentially just a groupby
+    operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have a list of the number of requests per pickup location. Let’s clean
+    up the column names and sort the values to get a meaningful output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/98a688ed6632f2d6d12e8fecf61674a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author from [this notebook]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sweet. We can now identify the top-10 pick-up zones with highest demand during
+    the hour for which we have data. We could run this code in batch once a hour.
+    This is great…but only sort of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Processing the data in 1-hour batches means that drivers will only receive the
+    signal for a high-demand area *at the end of the hour.* What if the peak was actually
+    happening during the first 15 or even 5 minutes of that hour? Then there would
+    be absolutely no use in rushing to that part of town only to realise that the
+    peak demand was long over.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Tumbling Windows in Pandas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/3ff46ba016b001212ea1a49c580ed6f8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The drivers aren’t happy. We need to do better. Let’s build some code that can
+    chop up our hour of data into [tumbling windows](https://pathway.com/glossary/tumbling-window)
+    of 15 minutes each. This way we will get some more granularity and be able to
+    give the drivers more helpful instructions on when to be in which part of town.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can use the pandas `pivot_table()` and `.resample()` methods to do this.
+    We’ll need the index of our DataFrame to be set to a datetime column. Since we’re
+    interested in the number of requests, we’ll use the `request_datetime` column.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the dataset is not sorted correctly by incoming requests and includes
+    some trips that were requested before midnight on the year before. So let’s clean
+    those up first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Our DataFrame now looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/68e0cc65d98c57006727bc7ec50dffbd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Remember that we are looking to group our dataset into 15-minute windows with
+    the number of requests per pickup zone for each window. This means we want our
+    output to have 4 rows (15 x 4 = 60 minutes) and a column for each PULocationID.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We need a pivot:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/27444de101ba31efca250adc0b75f012.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a sparse DataFrame with simply a count (1) for each row (request) in
+    the column corresponding to that requests’ pickup zone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s resample our DataFrame with `.sum()`to group this data into 15-minute
+    windows and sum up the counts for each PULocationID:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/2ce7b5a0dbba7ee184ed752152df987d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nice! We now have the number of requests per pickup zone for each 15-minute
+    window. All that’s left is to define exactly what we mean with “high-demand” —
+    let’s say 40 requests per 15-minute window — and then we can use this DataFrame
+    to filter out the windows and pickup zones that exceed that high-demand threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also inspect the data visually to identify the peak-demand zones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4a9089534061e1526e24b601f7be5cf4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: plot generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is great…but still only sort of. We’re still missing out on lots of granularity
+    here. We need to wait for each 15-min window to finish before we can aggregate
+    the data. What if the spike happens in the 15-minute window between minute 1 and
+    minute 16 (rather than minute 0 and minute 15)? We will have missed the spike
+    by just a minute but will need to wait 14 minutes before receiving the signal.
+    By that time it may be too late to instruct drivers to that pickup zone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Do not fear, perfection is near!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 3\. Sliding Windows in Pandas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/d4a6f7ffa180c3168146983ddcdda1a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, we want a signal every minute that tells us which zones are experiencing
+    peak demand. We also want to reduce the size of our windows to enable our drivers
+    to react to the incoming data faster. So let’s work with 5-minute windows and
+    define “peak demand” as **more than 50 requests per 5-minute window**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can accomplish this using the pandas `.rolling()` method to create **sliding
+    windows**: 5-minute windows with a 4-minute overlap, so that we can track the
+    rate of incoming requests every minute.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can create sliding windows in pandas using the `.resample()` and `.rolling()`
+    methods. Make sure to `.resample()` to **the size of your desired signal interval**
+    instead of the size of your window:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s pick it apart step by step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want our output to be a series of rows in which each row is a 5-minute window
+    and the columns contain the sum of requests per pickup zone for that 5-minute
+    window. However, instead of starting the second row at the end of the first 5-minute
+    window, we want it to start at the end of the first minute of that first 5-minute
+    window.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Still with me here? If not, maybe this diagram below will help:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62ce4e0e63841c17874e49ac2fbd3250.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: What we really want is 56 rows of 5-minutes each, with a 4-minute overlap between
+    each row. This will give us a signal every minute which zones (if any) are getting
+    more than 50 requests per 5 minutes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To do this, we’ll have to resample our DataFrame first in order to get a single
+    row for every minute:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/96e8822e16bdc6daacbe56c710267db3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*(If you wanted to get a signal say every second, you would resample to* `*1s*`
+    *here.)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that every row represents a single minute we can use `rolling()` and `sum()`
+    to get the sum of the number of requests for every 5 rows (minutes):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a14579fddc40d0e9f1206de9e94ea64b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 😱 Yikes, that’s a lot of NaNs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But that’s only because `.rolling()` by default places the output of the window
+    operation (in this case the sum) at the right edge of the window. This is technically
+    correct since we will only get the first signal at the end of minute 4, when the
+    first window has been completed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can drop the first 4 columns if we want to get rid of the first 4 empty
+    rows (minutes):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/4ee16f3f4aa9494c0d38517f41fb8e3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Side note: Forward-Looking Windows'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In some cases, you might want to move the values to the left edge to make it
+    more easily readable. If you do so, be careful not to make the mistake of thinking
+    that you will actually have data for window 1 at minute 1 (!) — you’re really
+    just shifting the results over to the first row.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can use the `FixedForwardWindowIndexer` object to place the window output
+    on the left edge and create forward-looking windows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/b0fe34bea858226f190b4f4a9f96e445.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: The last 4 columns of our DataFrame are now empty (because there is no full
+    5-minute window available after minute 55) and we can drop them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f2d7ee6641a4e6e1791c84fb532f4e40.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: data output generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: This way of using the `.rolling()`method is not very well-known and is a little
+    [buried in the docs](https://pandas.pydata.org/docs/user_guide/window.html#custom-window-rolling)
+    but once you understand how it works it’s pretty easy to use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualise Sliding Windows in Pandas
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s visualise our data to identify some patterns and spot the pickup zones
+    with the highest peaks in demand. We’ll work with `windows` to make it extra clear
+    that we don’t have any data for the first 5 minutes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/c58d83243423d5bdafc9c1baba33bc73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: plot generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is a very rough visualisation but even here we can already clearly see
+    that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t have any data the first 5 minutes
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: There are clear peaks in the rate of pickup requests in specific zones.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: From here, we can now define a cutoff/threshold and identify zones with above-threshold
+    requests in specific windows. We can then motivate drivers to go to that zone.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One way to clarify the plot is to remove any columns with values below the
+    threshold. Let’s say we want to identify zones with more than 50 requests per
+    5-minute window:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/a986c6f7d4b27680048e9f17eab4a725.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: plot generated by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: There’s much more we could do here. Play around with the code in [the notebook](https://github.com/rrpelgrim/sliding-windows-pandas/blob/main/pandas-sliding-windows-nyc-uber-lyft.ipynb)
+    to perfect this further.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sliding Windows in Pandas: Conclusion'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This article has introduced you to the powerful capabilities of performing sliding
+    windows on time-series data. By chopping up your dataset into small, overlapping
+    windows you are now able to get valuable data signals *at an actionable rate*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, ideally you would be doing all of this in real-time. Watch this space
+    for more on that soon, but in the meantime you might want to check out [this real-time
+    monitoring tutorial](https://www.dataengineeringweekly.com/p/unlocking-data-stream-processing).
+    Be prepared for a slight context change from New York traffic to website traffic
+    instead ;)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I hope you found this post helpful and engaging. [Follow me on LinkedIn](https://www.linkedin.com/in/avrilaysha/)
+    to catch my latest content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Happy data crunching! 👋
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**New York City Taxi and Limousine Commission (TLC) Trip Record Data was accessed
+    on March 15, 2023 from* [*https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page*](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page)*.
+    License:* [*https://www.nyc.gov/home/terms-of-use.page*](https://www.nyc.gov/home/terms-of-use.page)'
+  prefs: []
+  type: TYPE_NORMAL

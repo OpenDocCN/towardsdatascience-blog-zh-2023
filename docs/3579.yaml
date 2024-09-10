@@ -1,0 +1,773 @@
+- en: 34% Faster Integer to String Conversion Algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/34-faster-integer-to-string-conversion-algorithm-c72453d25352?source=collection_archive---------0-----------------------#2023-12-04](https://towardsdatascience.com/34-faster-integer-to-string-conversion-algorithm-c72453d25352?source=collection_archive---------0-----------------------#2023-12-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Are we printing integers fast enough?*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@tigran.cs?source=post_page-----c72453d25352--------------------------------)[![Tigran
+    Hayrapetyan](../Images/5e046cbad20b2a418b6b98fe8ec61e19.png)](https://medium.com/@tigran.cs?source=post_page-----c72453d25352--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c72453d25352--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c72453d25352--------------------------------)
+    [Tigran Hayrapetyan](https://medium.com/@tigran.cs?source=post_page-----c72453d25352--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F36e8a35f28b3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F34-faster-integer-to-string-conversion-algorithm-c72453d25352&user=Tigran+Hayrapetyan&userId=36e8a35f28b3&source=post_page-36e8a35f28b3----c72453d25352---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c72453d25352--------------------------------)
+    ·14 min read·Dec 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc72453d25352&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F34-faster-integer-to-string-conversion-algorithm-c72453d25352&user=Tigran+Hayrapetyan&userId=36e8a35f28b3&source=-----c72453d25352---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc72453d25352&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F34-faster-integer-to-string-conversion-algorithm-c72453d25352&source=-----c72453d25352---------------------bookmark_footer-----------)![](../Images/cf81d98991f4797ff0a2e3ad2560806a.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In computer programming, converting given integer to a string is a common operation,
+    which should be done for example before printing the integer to the screen, or
+    printing it to any kind of textual file, such as *.xml, *.json, *.csv, *.txt,
+    etc…
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is well known that integers (as well as everything else) are stored in computer
+    memory in binary format — as sequences of 0s and 1s. For example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: number 12 is represented in memory as “1100”,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: and number 29 is represented as “11101”.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is the reason why such a conversion is needed every time, when we want
+    to bring it into human-readable, decimal format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this story I am going to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: make an overview of the standard algorithm used for such conversion,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: observe its existing optimizations,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: propose my algorithm, and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: present their experimental comparison.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We will see that on average, my algorithm runs **25–38%** faster for 32-bit
+    integers, and **40–58%** faster for 64-bit integers, than the optimized standard
+    algorithm. Its implementation in C++ language can be found on GitHub, as referenced
+    at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, if the application prints only a few integers during its lifetime,
+    the algorithm which is responsible for converting them to strings will never be
+    the bottleneck. But for cases when the application prints tons of data into text
+    files, the efficiency of the converting algorithm starts playing role. When working
+    in fields such as Data Science or Machine Learning, the need for converting lots
+    of integers into strings arises e.g. when exporting a dataset into a text file,
+    such as *.csv or *.json.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. The standard conversion algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As converting integers to strings is a common operation, an algorithm for that
+    is implemented in any modern programming language, either as part of the language
+    itself or as part of its standard library. And the algorithm is almost everywhere
+    the same — the one which is based on repeatedly obtaining and picking out the
+    last digit of the integer, and continuing with its remaining part.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In order to obtain the last digit of given integer *N*, it just calculates
+    the remainder of its division upon 10:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “digit := N mod 10”,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'and in order to pick it out, it performs the integer division itself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “N := N / 10”.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/8591b0f1155421879f34154e22b1c275.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Given an integer N, how its last digit'
+  prefs: []
+  type: TYPE_NORMAL
+- en: and the remaining part are being computed.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, in this story, when dividing 2 integers, we will assume that only the
+    whole part of result is taken.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an example of complete algorithm, when printing number “*N* = 2''167”, the
+    following operations will be made:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b254cfdf91782f79cf083dffefb1a3f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Operations for printing number “2167”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: 2167 % 10 = 7 (storing digit “7”) , 2167 / 10 = 216 (continuing with
+    216),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: 216 % 10 = 6 (storing digit “6”) , 216 / 10 = 21 (continuing with 21),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: 21 % 10 = 1 (storing digit “1”) , 21 / 10 = 2 (continuing with 2),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: As “2 < 10”, just storing the last digit “2”.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 5: (not illustrated) reversing order of stored digits and printing them.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, when we are dealing with 1-digit integer (i.e. from range [0..9]), we
+    can directly send it for print, as corresponding characters are already fixed
+    for each of those 10 digits. And a remainder of division upon 10 is always 1-digit
+    integer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also we can note that this algorithm reports digits of *N* in reverse order
+    (here we got sequence of digits ‘7’, ‘6’, ‘1’, ‘2’, instead of having ‘2’, ‘1’,
+    ‘6’, ‘7’), so there is need to reverse the produced sequence at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Summarizing that, its pseudo-code will be like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The described algorithm is simple, and we can easily implement it in 3–4 lines
+    of code. But its bottleneck is that it uses 2 relatively expensive operations
+    — integer division and integer remainder calculation, for every digit of *N*’s
+    decimal notation. It is well known that integer division and remainder calculation
+    on average take 4–5 times longer, than addition, subtraction or even multiplication
+    of 2 integers. Here we can observe time benchmarking of mentioned arithmetical
+    operations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e29e76171e0c7934e274679a56150872.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Experimental comparison of time (in nanoseconds) spent to perform the 5 types
+    of'
+  prefs: []
+  type: TYPE_NORMAL
+- en: arithmetical operations (each operation is run 200 times on random data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the last 2 operations (integer division and remainder calculation)
+  prefs: []
+  type: TYPE_NORMAL
+- en: are taking significantly more time. Also, we see that integer multiplication
+  prefs: []
+  type: TYPE_NORMAL
+- en: is performed almost as fast as addition or subtraction.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The experiments were made with Google Benchmark, under the following system:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*CPU: Intel Core i7–11800H @ 2.30GHz'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'RAM: 16.0 GB'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'OS: Windows 11 Home, 64-bit'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Compiler: MSVC 2022 ( /O2 /Ob2 /MD /GR /Gd )*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s see if faster methods for integer printing exist…
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Existing optimizations
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Optimization 1
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One common optimization for the described algorithm is in eliminating the last
+    step of reversing produced sequence of digits. The trick is well presented for
+    example in [1]. Within this optimization we will write digits in the buffer straightaway
+    in their proper order. And as the algorithm itself reports digits of given integer
+    *N* from right to left, so we also will write them in the buffer from right to
+    left.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5e40d834500e2762bacc6ff457b9b769.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Filling produced digits into result array from right to left,'
+  prefs: []
+  type: TYPE_NORMAL
+- en: directly in the order they should have at the end.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pseudo-code with this optimization will look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Note, in this and all other pseudo-codes within this story we are not handling
+    the case of printing number “0”. According to all written algorithms, “0” will
+    result as a sequence with no digits at all, and that is why in almost all printing
+    algorithms, printing “0” is made in a separate branch. We will just skip that
+    branch here for compactness.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another small advantage of this optimization is that we are not required to
+    write the terminating null-character after every conversion. Instead, we can write
+    it only once in the last position of the buffer, as physically position of *N*’s
+    last digit is fixed in advance, and it will always be the one-before-last position
+    in the buffer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The drawback of this optimization is that the position of the first character
+    becomes variable, as it becomes dependent on number of digits that integer *N*
+    has.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/79d34baef347509c42bd06c1ebbb6a7b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Drawback of optimization 1: numbers with different'
+  prefs: []
+  type: TYPE_NORMAL
+- en: digits count will start in the output array from different positions.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, practically, this does not become a problem, because the converted
+    integers are often promptly sent to a text file or to the screen, thus not remaining
+    in memory for long. And for such purposes we do not need for the converted digits
+    to be written starting from some exactly in advance specified position of the
+    memory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Optimization 2
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Next optimization is about using integer division and remainder calculation
+    operations to obtain 2 digits of *N* in a single step. This trick is also well
+    documented in [1] and [2]. For this purpose, instead of repeatedly calculating
+  prefs: []
+  type: TYPE_NORMAL
+- en: “digit := N mod 10”, followed by
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: “N := N / 10”,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'we will calculate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “digits := N mod 100”, followed by
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: “N := N / 100”,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: which will give us the last 2 digits of *N*, and then will cut them both off.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ff4b7b909f5925ce5822cdecf056b8bc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Operations for printing number “5174092” with second optimization enabled:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: 5174092 % 100 = 92 (storing digits “92”) , 5174092 / 100 = 51740 (continuing
+    with 51740),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: 51740 % 100 = 40 (storing digits “40”) , 51740 / 100 = 517 (continuing
+    with 517),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: 517 % 100 = 17 (storing digits “17”) , 517 / 100 = 5 (continuing with
+    5),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: As “5 < 100”, just storing the last digit “5”.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, in order to eventually and efficiently print those obtained 2 digits,
+    here we should have prepared an array of length 100 (with indexes from 0 to 99
+    — thus corresponding to all possible remainders “*N* mod 100”), where values will
+    be pairs of characters, starting from “00”, “01”, “02”, … till “98”, “99”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Within this optimization, count of integer division and remainder operations
+    is reduced by almost 2 times.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finalizing this part, I want to grab your attention to the fact that even with
+    the described both optimizations enabled, we still do number of integer division
+    and remainder calculation operations, proportional to the count of digits in given
+    integer *N*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 4\. My algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I am going to propose another algorithm, which will accelerate integer printing
+    by around **25–38%** for 32-bit integers, and around **40–58%** for 64-bit integers.
+    The idea is — what if we pick digits out of given integer *N* not from right to
+    left, but from left to right? So at first we will obtain its most significant
+    digit, then the next significant digit, and so on, until only the least significant
+    digit remains. Doing this becomes a bit difficult if we don’t know the count of
+    digits of *N* in advance, but let us put that question aside for now, and assume
+    that we already know that there are *L* digits in *N*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/22c9fdeb4133cfa5492899a06ec3ad2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Example of an input number N which has L=7 digits.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How are we going to obtain the most significant digit then? Again using integer
+    division, but this time as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “digit := N / 10^(L-1)”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/fa94d37a7ab8097b8acb97d7440cf8de.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Examples of obtaining left-most digits of given integers.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And how are we going to pick it out of *N*, in order to be able to continue
+    with the remaining part? After knowing the value of the most significant digit
+    is ‘*d*’, we can do the following subtraction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “N := N — d*10^(L-1)”
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/bd48919c6a34696d2371b84e1c434434.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Examples of picking left-most digits out of given integers.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Later we will repeat the division and subtraction operations, until *N* will
+    become 1-digit integer (i.e. in range [0..9]), and finally will print that digit
+    too. Let us view how the algorithm will work for case “*N* = 6''129”. Note, it
+    has 4 digits, so here we start with “*L*=4”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c694fb85d20b3df719b7f8987ce71a67.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Operations for printing number “6129” with my algorithm:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: 6129 / 1000 = 6 (printing digit ‘6’) , 6129–6*1000 = 129 (continuing
+    with 129),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: 129 / 100 = 1 (printing digit ‘1’) , 129–1*100 = 29 (continuing with
+    29),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: 29 / 10 = 2 (printing digit ‘2’) , 29–2*10 = 9 (continuing with 9),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: As “9 < 10” just printing the last digit ‘9’.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You might argue that calculating different powers of 10 is more time consuming
+    than doing integer division or remainder calculation. And that will be absolutely
+    correct except for one detail: we can precalculate all necessary powers of 10
+    and use them during program’s entire execution. For 32-bit integers, there are
+    only 10 different powers of 10, and for 64-bit integers, there are 20 powers of
+    10\. So keeping them all precalculated in memory will not be an issue.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So what do we have in overall? In order to print one digit of *N* with my algorithm
+    we do:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 integer division,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1 multiplication, and
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1 subtraction,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'compared to standard algorithm’s:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 remainder calculation and
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1 integer division.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the next section we will see that my approach is actually better, because
+    multiplication and subtraction together take less CPU time than remainder calculation.
+    Experimental comparison of time-consumption of those arithmetical operations was
+    presented in chapter 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pseudo-code of the main part of my algorithm might look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: As my algorithm prints digits of *N* from left to right, I want to call it “Left-to-right
+    printer” or shortly “LR printer”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The one thing which remains yet is to efficiently find *L* — count of decimal
+    digits of *N*. And luckily for us, the precalculated array of powers of 10 will
+    help here too. We can just iterate over that array from small powers to the larger
+    ones, until finding such power 10^*L* which will be greater than *N*. Then the
+    exponent *L* will itself represent the count of digits in *N*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For example, obtaining count of digits for “*N* = 23''504” will look as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57dc41e4f0e3ee32110640fd157ad198.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*How the count of digits L is being calculated for number N = 23''504.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We sequentially compare N to powers of 10, until N becomes less.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That happens on power 100'000 which is 10⁵, so we conclude that L=5.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pseudo-code of that function might look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: With this 2 parts we are providing complete algorithm for converting integers
+    to strings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note, as “LR printer” reports digits of *N* from left to right, there is no
+    need to do any reversing at the end. Also, in contrast to existing optimization
+    1, here we keep the ability of specifying if where in memory the first digit of
+    converted *N* should be placed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “LR printer” can be used for printing numbers in any base (not just base 10).
+    For doing so, we will only need to replace the precalculated powers of 10 with
+    precalculated powers of the new base.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation of “LR printer” in C++ language can be found on GitHub at [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Optimization 2 for “LR printer”*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: My algorithm can be enhanced with the second optimization described in “Existing
+    optimizations” section, and documented in [1] and [2]. If done, then instead of
+    printing the given number by 1 digit at a step, we will print it by 2 digits at
+    a single step.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see how it will run for example on number “*N* = 4''610''937”. Here *L*=7,
+    and we start by dividing *N* over 10^(L-2)=10''000 this time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c243cca15d3805619d805fc2b98a5f48.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Actions for printing number “4610937” with second optimization enabled for
+    “LR printer”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: 4610937 / 10⁵ = 46 (printing digits ‘46’) , 4610937–46*10⁵ = 10937
+    (continuing with number 10937),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: 10937 / 10³ = 10 (printing digits ‘10’) , 10937–10*10³ = 937 (continuing
+    with number 937),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: 937 / 10 = 93 (printing digits ‘93’) , 937–93*10 = 7 (continuing with
+    number 7),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 4: As “7 < 100”, just printing the last digit ‘7’.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By enabling this, we will spend:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1 integer division,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1 multiplication, and
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1 subtraction,
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: per 2 digits of the input number.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here again, the digits will be obtained in their natural order — from left to
+    right, so there is no need to reverse them at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation of “LR printer” with second optimization enabled can also be
+    found on GitHub at [3].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Experimental comparison with existing algorithms
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Doing experimental comparison is essential for this type of work, so in this
+    chapter I will present results of comparison between the following integer-printing
+    algorithms:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: the standard algorithm with first optimization (labeled as “Std”),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: my algorithm “LR printer” (labeled as “LR”),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: standard algorithm with second optimization too (labeled as “Std [2-dig]”),
+    and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: “LR printer” with second optimization (labeled as “LR [2-dig]”).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Each of those algorithms is tested both on 32-bit and 64-bit integers, with
+    different count of digits of the input numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Printing numbers in base=10:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Results when printing in number *base*=10 (the ordinary case) are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f3f2cda188c3dc87927d43c604a6f007.png)![](../Images/7157dd90303bf97121bc29b03eea9e1e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Time (in nanoseconds) spent to print 1 number (either 32-bit or 64-bit),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: having certain count of digits, with different algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Printing is done in base=10.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: For 32-bit integers, we can see that the gain of “LR printer” compared to standard
+    printer is around **30–38%**. The gain when printing with second optimization
+    (printing 2 digits at single step) is lower — **13–28%**. This is totally expected,
+    as overall we do only 2 or 4 steps in that case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When it comes to printing 64-bit integers, performance of my algorithm is even
+    better. “LR printer” runs around **40–50%** faster than the standard algorithm.
+    And with second optimization enabled for both, “LR printer” performs **47–58%**
+    faster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Percentage in the title of this story was chosen by addressing the most regular
+    case: when we are in *base*=10, working with 32-bit integers, and assuming they
+    have many digits. For that case performance gain of “LR printer” over standard
+    algorithm was 30–38%, so taking the average makes around 34%.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Printing numbers in base=3:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s also see if the results will differ significantly when printing integers
+    in another base. We will observe printing in number *base*=3:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c52a7f84592d708358720c41e2f11555.png)![](../Images/8b03d4fa77d6bdc865cbdc6de0a44a8e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Time (in nanoseconds) spent to print 1 number (either 32-bit or 64-bit),'
+  prefs: []
+  type: TYPE_NORMAL
+- en: having certain count of digits, with different algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Printing is done in base=3.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we can see here, for 32-bit integers performance gain of “LR-printer” over
+    the standard algorithm is around **25–33%**, which generally corresponds to the
+    difference in performance of used arithmetical operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And for 64-bit integers performance gain of “LR-printer” is around **50–55%**
+    for short numbers (8 digits), and **27–30%** for long numbers (36 digits).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Overall remarks*'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Generally, the base in which integers are printed doesn’t affect relative performance
+    gain much, as the count of operations to be performed during print is proportional
+    to the count of digits that the input numbers have, and not to the number of possible
+    values that those digits might have.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Almost always it is the case that the greater the count of digits is, that more
+    “LR-printer” (or “LR-printer [2-dig]” variation) will outperform the standard
+    printing algorithm (or its “2-dig” variation). This is also clear, because the
+    more digits we have, that less impact will have the out-of-loop instructions (like
+    calling one function from another, or placing the null-terminating character).
+  prefs: []
+  type: TYPE_NORMAL
+- en: And overall, when printing 64-bit integers, results are more impressive for
+    both “LR-printer” and “LR-printer [2-dig]” variation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Personally for me, those results as quite notable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 6\. Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We have presented a new algorithm for converting integers to strings, and called
+    it “LR printer”. It runs by **25–38%** faster for 32-bit integers, and **40–58%**
+    faster for 64-bit integers, compared to the optimized standard conversion algorithm.
+    Our algorithm can work in any number base (not only in ordinary base 10).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The algorithm which converts integers into strings is never a bottleneck for
+    applications that print only a few numbers during their lifetime. But for other
+    types of applications, which automatically generate text files such as *.csv,
+    *xml or *.json, the efficiency of the conversion algorithm matters. This is especially
+    the case if those text files are going to contain lots of numbers, as is the case
+    when exporting large datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Huge thanks for reading till the end! Will be glad to read any comments below!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I express my gratitude to David Ayrapetyan ([https://www.linkedin.com/in/davidayrapetyan/](https://www.linkedin.com/in/davidayrapetyan/)),
+    for careful reviewing the draft of this story, and proposing multiple contextual
+    enhancements and grammatical corrections.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Gratitude to Hayk Aslanyan ([https://www.linkedin.com/in/haykaslanyan/](https://www.linkedin.com/in/haykaslanyan/)),
+    for making technical review of the draft, and proposing other enhancements.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Illustrations design by Asya Papyan: [https://www.behance.net/asyapapyan](https://www.behance.net/asyapapyan)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'If you enjoyed reading this story, you can find me on LinkedIn at: [https://www.linkedin.com/in/tigran-hayrapetyan-88989b12/](https://www.linkedin.com/in/tigran-hayrapetyan-88989b12/)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] : “Integer to string conversion” — [https://tia.mat.br/posts/2014/06/23/integer_to_string_conversion.html](https://tia.mat.br/posts/2014/06/23/integer_to_string_conversion.html)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] : “Three optimization tips for C++” — [https://www.facebook.com/notes/10158791579037200/](https://www.facebook.com/notes/10158791579037200/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] : “LR printer implementation in C++ language” — [https://github.com/tigranh/lr_printer](https://github.com/tigranh/lr_printer)'
+  prefs: []
+  type: TYPE_NORMAL

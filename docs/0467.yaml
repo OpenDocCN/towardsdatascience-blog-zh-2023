@@ -1,0 +1,347 @@
+- en: 'The dynamic lot-size model: A mixed-integer programming approach'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-dynamic-lot-size-model-a-mixed-integer-programming-approach-4a9440ba124e?source=collection_archive---------8-----------------------#2023-02-01](https://towardsdatascience.com/the-dynamic-lot-size-model-a-mixed-integer-programming-approach-4a9440ba124e?source=collection_archive---------8-----------------------#2023-02-01)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The classical inventory management optimization problem solved in Python using
+    Pyomo
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bruscalia12?source=post_page-----4a9440ba124e--------------------------------)[![Bruno
+    Scalia C. F. Leite](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----4a9440ba124e--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4a9440ba124e--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4a9440ba124e--------------------------------)
+    [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----4a9440ba124e--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dynamic-lot-size-model-a-mixed-integer-programming-approach-4a9440ba124e&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----4a9440ba124e---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4a9440ba124e--------------------------------)
+    ·7 min read·Feb 1, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4a9440ba124e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dynamic-lot-size-model-a-mixed-integer-programming-approach-4a9440ba124e&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----4a9440ba124e---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4a9440ba124e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-dynamic-lot-size-model-a-mixed-integer-programming-approach-4a9440ba124e&source=-----4a9440ba124e---------------------bookmark_footer-----------)![](../Images/180753602572ed69a63534bd608ac8c3.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [CHUTTERSNAP](https://unsplash.com/ko/@chuttersnap?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lot sizing problems are production planning problems with setups between production
+    lots. By reason of these setups, it is often too costly to produce a given product
+    in every period (Suwondo & Yuliando, 2012). In contrast, fewer setups are associated
+    with higher holding inventory costs. Therefore, to obtain optimal costs, one should
+    balance these operational aspects.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout this article, the problem proposed by Wagner & Whitin (1958) will
+    be implemented using a mixed-integer programming approach. To do so, the Python
+    library [*pyomo*](http://www.pyomo.org/) (Bynum et al., 2021) will be used with
+    the [CBC solver](https://github.com/coin-or/Cbc). Personally, I find this problem
+    extremely useful to introduce notions of inventory management in discrete planning
+    horizons for numerical optimization, which is ubiquitous in more complex problems.
+    Notice that, in their original work, Wagner & Whitin (1958) developed an exact
+    algorithm for solving this problem, which differs from the approach herein adopted.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the notebook with the complete implementation of the problem [here](https://github.com/bruscalia/optimization-demo-files/blob/main/mip/dynamic_lot_size/notebooks/dynamic_lot_size.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you are unfamiliar with numerical optimization and/or mixed-integer programming,
+    you might want to see this introduction on the subject beforehand.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/an-introduction-to-mixed-integer-linear-programming-the-knapsack-problem-1445452a9fe9?source=post_page-----4a9440ba124e--------------------------------)
+    [## An introduction to mixed-integer linear programming: The knapsack problem'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learn how to solve optimization problems in Python using scipy and pyomo
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/an-introduction-to-mixed-integer-linear-programming-the-knapsack-problem-1445452a9fe9?source=post_page-----4a9440ba124e--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem statement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Suppose that, for a given horizon *T* of instants *t*, you can predict demands
+    *d* for a given product for each *t*. Furthermore, consider you can predict setup
+    costs *s* and inventory holding costs *h* for each time instant. If any amount
+    of a product is produced in a given time *t*, the corresponding setup cost *s*
+    should be incurred. Also, at the end of each period, holding inventory costs should
+    be incurred, which correspond to *h* times the final inventory at *t*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the problem is uncapacitated, as considered in Wagner & Whitin (1958), one
+    can state that every demand should be met. Moreover, consider that unitary production
+    costs are not time-dependent, although small changes in the problem structure
+    might easily introduce these costs. Your goal is to determine how many units of
+    the product are produced at each instant so that we minimize setup and holding
+    inventory costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I will describe each modeling component in detail in the next section, but the
+    complete optimization problem considered can be summarized by the following equations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8727d6deb1bb984be18f52f7da79c238.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Dynamic lot-size model as a mixed-integer programming problem. (Image by the
+    author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modeling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let us start by importing the Python libraries used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: And now, let us instantiate the dataset as in the example of the original article
+    (Wagner & Whitin, 1958).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As we are using Pyomo in this example, we must first instantiate the *pyomo*
+    model. In this example, I chose to use the *ConcreteModel* approach as I find
+    it more straightforward for simple problems. Alternatively, one could have used
+    an *AbstractModel*. Both are described in more detail [here](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The only *Set* considered in this problem is the planning horizon *T*. Let us
+    instantiate it as a pyomo object.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Next, we will instantiate model parameters imported from the problem dataset.
+    They are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*d*: demand at each time *t*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*s*: setup cost each time *t*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*h*: holding inventory cost at each time *t*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the decision variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*x*: product amount produced at each time *t*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*y*: binary variable that marks setup costs at each time *t*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*I*: final inventory at each time *t*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The inventory balance constraint states that the inventory at the end of a period
+    *t* is equal to the inventory at the end of the previous period plus the amount
+    produced minus the demand at that given period. We consider here the initial inventory
+    as equal to zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e7a4cf4a6f1a54b0f2d61417bdeb512d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inventory balance constraint. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let us formulate the *big M* constraint to identify periods with setup costs.
+    Our intention is that *y* should be 1 if any amount of the product is produced
+    at time *t* and 0 otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/030ad1874dbcc877a86b657446f09037.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Big M constraint. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In general, you might want to choose the smallest value of *M* that is large
+    enough to avoid removing feasible solutions from the integer decision space. This
+    might produce better *best-bound* values during the *branch-and-bound algorithm*
+    than choosing arbitrarily large values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this problem, it only makes sense to produce a certain demand lot *d* at
+    time *t-n*, if holding inventory costs from time *t-n* to *t* are lesser than
+    or equal to setup costs at *t*. So we can calculate the “maximum intelligent production”
+    at an instant *t* by the following lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: And now we can define a proper *M* value for each time period and instantiate
+    the *big M* constraint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: At last, the objective function sums all holding inventory and setup costs in
+    the planning horizon.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8637397fe41ec00c915e6c8d32f25b2d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Objective function. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: To solve the model I used the open-source solver CBC. You can download CBC binaries
+    from [AMPL](https://ampl.com/products/solvers/open-source-solvers/#cbc) or from
+    [this link](https://www.coin-or.org/download/binary/Cbc/). You can also find an
+    installation tutorial [here](https://github.com/coin-or/Cbc). As the CBC executable
+    is included in the PATH variable of my system, I can instantiate the solver without
+    specifying the path to an executable file. If yours is not, parse the keyword
+    argument “executable” with the path to your executable file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Alternatively, one could have used GLPK to solve this problem (or any other
+    solver compatible with *pyomo*). The latest available GLPK version can be found
+    [here](http://ftp.gnu.org/gnu/glpk/) and the Windows executable files can be found
+    [here](https://sourceforge.net/projects/winglpk/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: And we are done! The results are stored in our model and will be analyzed in
+    detail in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, let us print the naive scenario costs, in which every demand should be
+    produced in its corresponding instant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which should return 1234.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, let us obtain the new costs from the objective function and compare the
+    results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Wow! The new cost is 864.0 and savings are almost 30%!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let us include new columns in the dataset and plot production versus demand
+    to visualize the results better:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f0c7b2c6d90e6b5a2f35c81f75a2e86e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Planning horizon results. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: One can notice that, except for instant 10, which holds a single demand, other
+    demands were combined in the same production instants so that the overall setup
+    costs were significantly reduced.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, the dynamic lot-size model (Wagner & Whitin, 1958) was formulated
+    and solved as a mixed-integer programming problem. Compared to a naive solution,
+    the optimization results would reduce overall costs by 30%. In this scenario,
+    holding inventory and setup costs are adequately balanced. The complete solutions
+    are available in this [git repository](https://github.com/bruscalia/optimization-demo-files/blob/main/mip/dynamic_lot_size/notebooks/dynamic_lot_size.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Those interested in more details about integer programming can refer to Wolsey
+    (2020); for operations research, Winston & Goldberg (2004).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Branch & Bound algorithm is the most used in the solution of integer and
+    mixed-integer problems. Those interested in an introduction to its mechanisms
+    can refer to my previous [Medium article](/a-gentle-introduction-to-branch-bound-d00a4ee1cad).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Bynum, M. L. et al., 2021\. *Pyomo-optimization modeling in python.* Springer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Suwondo, E., & Yuliando, H. (2012). Dynamic lot-sizing problems: a review on
+    model and efficient algorithm. *Agroindustrial journal*, *1*(1), 36.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wagner, H. M., & Whitin, T. M. (1958). Dynamic version of the economic lot size
+    model. *Management science*, *5*(1), 89–96.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Winston, W. L. & Goldberg, J. B., 2004\. *Operations research: applications
+    and algorithms.* 4th ed. Belmont, CA: Thomson Brooks/Cole Belmont.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wolsey, L. A., 2020\. *Integer Programming.* 2nd ed. John Wiley & Sons.
+  prefs: []
+  type: TYPE_NORMAL

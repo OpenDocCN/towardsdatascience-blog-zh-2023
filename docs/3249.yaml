@@ -1,0 +1,334 @@
+- en: 'CI/CD Pipelines for Data Processing Applications on Azure Part 1: Container
+    Instances'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/ci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280?source=collection_archive---------4-----------------------#2023-10-31](https://towardsdatascience.com/ci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280?source=collection_archive---------4-----------------------#2023-10-31)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/0c7b6799dc1fa6706ea8e778ef1387dc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image generated with The AI Comic Factory: [https://huggingface.co/spaces/jbilcke-hf/ai-comic-factory](https://huggingface.co/spaces/jbilcke-hf/ai-comic-factory)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Step-by Step Guide to Deploying Docker Containers with GitHub Actions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)[![Peer
+    Christensen](../Images/270e760cccbfed0bf15cb60f968d1377.png)](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6c8ec9578280--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6c8ec9578280--------------------------------)
+    [Peer Christensen](https://peerchristensen.medium.com/?source=post_page-----6c8ec9578280--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbcb4f0f95775&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280&user=Peer+Christensen&userId=bcb4f0f95775&source=post_page-bcb4f0f95775----6c8ec9578280---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6c8ec9578280--------------------------------)
+    ·7 min read·Oct 31, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6c8ec9578280&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280&user=Peer+Christensen&userId=bcb4f0f95775&source=-----6c8ec9578280---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6c8ec9578280&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fci-cd-pipelines-for-data-processing-applications-on-azure-part-1-container-instances-6c8ec9578280&source=-----6c8ec9578280---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Manually creating and deploying resources to Azure and other cloud providers
+    is relatively easy and may, in some case, be enough. However, more often than
+    not, deployed resources will need to change over time, which in turn requires
+    a lot of extra work maintaining and redeploying resources. In order to automate
+    these tasks, developers and data professionals can instead use an infrastructure-as-code
+    (IaC) approach and create pipelines for continuous integration and deployment
+    (CI/CD). This approach enables developers to write code that automatically defines
+    and redeploys resources whenever changes are made.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this step-by-step guide, we will build pipelines for a data processing application
+    to perform the following tasks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Provision a Container registry
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: build and push a Docker Image to the registry
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: create a Container Instance that runs the data processing workload
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: enable ‘managed identity’ access to Azure Key Vault, which allows our application
+    to retrieve access keys to other resources such as storage accounts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: deploy the above resources to a test and a production environment using different
+    triggers for running the pipelines
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Getting started
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For the purpose of demonstration, the application itself consists of a very
+    simple R-script that loads a dataset, prints the first few rows and returns the
+    dataset to a storage account. Keep in mind, that the application code is not important
+    to the rest of the pipeline and can easily be substituted by your own code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get started you will need an Azure account. You may also want to [install
+    the Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+    on your local system. However, you can also choose to run Azure CLI commands through
+    the Cloud Shell found in the Azure portal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As our application transfers data to and from Azure Blob Storage and returns,
+    you may find it useful to install Azure Storage Explorer, which makes it a little
+    easier to upload files and verify that the application runs correctly and returns
+    the processed data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 1: Cloning the repo and setting up static resources.'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: First you will need to clone [this repo](https://github.com/PeerChristensen/AzureDocker-CICD-Template).
+    The README-file details how to do this using RStudio, but you’re free to use your
+    preferred IDE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, using the Azure Portal, create the following resources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: a resource group that will contain all other resources.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'a storage account with a blob container with two folders: one for input files
+    and another for output files. In our case, these should be named ‘input’ and ‘output’,
+    respectively. Store a small dataset as a csv-file named ‘input_data.csv’ inside
+    the input container.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: a key vault in which you will need to store the primary access key to your storage
+    account as a secret.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In step 3, you will need the name of your key vault as well as the name of your
+    secret containing the primary access key.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: linking GitHub to Azure'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In order to update Azure resources, we need to grant GitHub permission to do
+    so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, login to your Azure account using the Azure CLI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then copy the `id` value from the JSON output, which is the subscription id.
+    Paste the subscription id into the command below and run it. This creates a ‘service
+    principal’ with role-based access control, which may be thought of as a user acting
+    on your behalf when deploying or updating resources with a GitHub Actions workflow.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Copy the entire JSON output and go to your GitHub repo and click settings >
+    Secrets and variables > Actions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create a new repository secret and name it AZURE_CREDENTIALS. Paste in the JSON
+    output from the above command and save.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 3: modifying scripts'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this scenario, we are deploying a simple R-script that doesn’t do much. As
+    such, the Dockerfile is also kept very simple. Both these files will obviously
+    need to be modified according to your requirements and preferred programming language.
+    However, if you’re new to this, it might be useful to get your pipeline up and
+    running with the code as is before applying your own code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you choose to proceed with the current R-script (*script.R*), you will only
+    need to modify the values `{keyvault-name}` , `{access-key-name}` and `{storage-account-name}`
+    (omitting the brackets).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, modify the following values under `env:` in the two workflow files called
+    *workflow.yml* and *workflow_release_prod.yml* in the *.github/workflows/* directory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Step 4: running the pipeline and container instance'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When all relevant changes have been made and pushed to the ‘main’ branch, you
+    should see your pipeline running under the Actions pane. This is because the workflow
+    is set up with a branch trigger so that it runs when the main branch is updated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you don’t encounter any errors, your container instance should be ready to
+    run in ten minutes or so. Go to the Azure portal, find your new container instance
+    and click Start. In the Logs pane, you may see your script running in the console.
+    After completion, verify that a new cv-file called *output_data.csv* has landed
+    in your blob container’s ‘output’ folder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And that’s it! If you wish, you can now manually trigger the second workflow
+    that creates an identical container instance intended for production workloads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get an understanding of what goes on in the CI/CD pipeline, please read the
+    section below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Understanding the workflow logic
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The workflow.yml file defines five steps, or jobs, in our pipeline that deploys
+    resources to a test environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6fe04f92a99215b196b3deae95054bb8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: First we pass the previously set environment variables required for the remaining
+    steps as `outputs`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In step two, we create or update an existing container registry. Note that the
+    `needs` key indicates that this step must wait for the previous step to complete.
+    The `uses` key tells us that another file is used for this step while the `with`
+    key is used to pass required values. We also need to pass or repository secret.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: At the top of the *deploy_acr.yml file* used in this step, we see thatthe script
+    runs whenever called upon in the workflow as well as the required inputs that
+    we provided in the *workflow.yml* file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the bottom part of *deploy_acr.yml,* we have a multistep process running
+    three predefined actions. The first action checks out the repo, then we login
+    to Azure using the service principal credentials that we created and stored. Finally,
+    we use the action called *azure/arm-deploy@v1* to deploy the container registry.
+    Note that this step uses Bicep, which is a popular language for configuring and
+    deploying Azure resources. AT the bottom of this article, you can find some excellent
+    ressources to learn more about Bicep.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, a Docker Image is built and pushed to the registry in step three using
+    the file called *build_push_container.yml,* which runs Azure CLI commands to retrieve
+    crendetials for the Container registry, as well as Docker commands to build and
+    push the Docker Image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In step four, the container instance is provisioned based on our Docker image.
+    This step is carried out by means of the file called *deploy_aci.yml,* which,
+    in turn, used the predefined action called‘azure/aci-deploy@v1’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the final step using the file *kv_access.yml*, we grant the container instance
+    permission to access the key vault through a ‘managed identity’, which means that
+    the container can retrieve secrets from the key vault directly without using an
+    access key. In order to achieve this, we need to update the deployed container
+    instance using the Azure CLI command `az container create` and provide the various
+    parameters that we used earlier. In addition, we provide the following setting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`— assign-identity — scope ${{ steps.rg_id_step.outputs.rg_id }}`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a final note, you may have noticed the following lines in *workflow.yml*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: These lines indicate when and under what conditions our pipeline should run.
+    In our scenario, we want the pipeline to run when changes are pushed to the ‘main’
+    branch. In addition, we want to be able to run it manually. This is enabled by
+    adding `workflow_dispatch:` . In the production pipeline defined in *workflow_prod_release.yml,*
+    you’ll notice that releasing to production only has a manual trigger. There are
+    many other ways to configure how pipeline runs are triggered. For instance, you
+    may ignore changes in specific files or folders, such that only changes to the
+    application code will trigger new deployments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'If you want to learn more about GitHub Actions an bicep, I highly recommend
+    the following resources from the MS Learn platform:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**GitHub Actions**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://learn.microsoft.com/en-us/training/modules/introduction-to-github-actions/](https://learn.microsoft.com/en-us/training/modules/introduction-to-github-actions/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://learn.microsoft.com/en-us/training/modules/learn-continuous-integration-github-actions/](https://learn.microsoft.com/en-us/training/modules/learn-continuous-integration-github-actions/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://learn.microsoft.com/en-us/training/modules/github-actions-automate-tasks/](https://learn.microsoft.com/en-us/training/modules/github-actions-automate-tasks/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://learn.microsoft.com/en-us/training/modules/github-actions-ci/](https://learn.microsoft.com/en-us/training/modules/github-actions-ci/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://learn.microsoft.com/en-us/training/modules/github-actions-cd/](https://learn.microsoft.com/en-us/training/modules/github-actions-cd/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Bicep:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://learn.microsoft.com/en-us/training/paths/fundamentals-bicep/](https://learn.microsoft.com/en-us/training/paths/fundamentals-bicep/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://learn.microsoft.com/en-us/training/paths/bicep-github-actions/](https://learn.microsoft.com/en-us/training/paths/bicep-github-actions/)'
+  prefs: []
+  type: TYPE_NORMAL

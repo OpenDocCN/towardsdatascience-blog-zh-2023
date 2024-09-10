@@ -1,0 +1,391 @@
+- en: Implementing Soft Nearest Neighbor Loss in PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/implementing-soft-nearest-neighbor-loss-in-pytorch-b9ed2a371760?source=collection_archive---------4-----------------------#2023-11-27](https://towardsdatascience.com/implementing-soft-nearest-neighbor-loss-in-pytorch-b9ed2a371760?source=collection_archive---------4-----------------------#2023-11-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The class neighborhood of a dataset can be learned using soft nearest neighbor
+    loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@afagarap?source=post_page-----b9ed2a371760--------------------------------)[![Abien
+    Fred Agarap](../Images/8f616478044e721a31c1c1df3d8e8b62.png)](https://medium.com/@afagarap?source=post_page-----b9ed2a371760--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b9ed2a371760--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b9ed2a371760--------------------------------)
+    [Abien Fred Agarap](https://medium.com/@afagarap?source=post_page-----b9ed2a371760--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F782adfd45f71&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-soft-nearest-neighbor-loss-in-pytorch-b9ed2a371760&user=Abien+Fred+Agarap&userId=782adfd45f71&source=post_page-782adfd45f71----b9ed2a371760---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b9ed2a371760--------------------------------)
+    ·8 min read·Nov 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb9ed2a371760&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-soft-nearest-neighbor-loss-in-pytorch-b9ed2a371760&user=Abien+Fred+Agarap&userId=782adfd45f71&source=-----b9ed2a371760---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb9ed2a371760&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-soft-nearest-neighbor-loss-in-pytorch-b9ed2a371760&source=-----b9ed2a371760---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we discuss how to implement the soft nearest neighbor loss
+    which we also talked about [here](https://medium.com/towards-data-science/improving-k-means-clustering-with-disentanglement-caf59a8c57bd).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Representation learning is the task of learning the most salient features in
+    a given dataset by a deep neural network. It is usually an implicit task done
+    in a supervised learning paradigm, and it is a crucial factor in the success of
+    deep learning ([Krizhevsky et al., 2012](https://dl.acm.org/doi/abs/10.1145/3065386);
+    [He et al., 2016](https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html);
+    [Simonyan et al., 2014](https://arxiv.org/abs/1409.1556)). In other words, representation
+    learning automates the process of feature extraction. With this, we can use the
+    learned representations for downstream tasks such as classification, regression,
+    and synthesis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dffcba9ed212b05553d9160844edf567.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Figure 1\. Illustration from SNNL (*[*Frosst et al., 2019*](http://proceedings.mlr.press/v97/frosst19a/frosst19a.pdf)*).
+    By minimizing the soft nearest neighbor loss, the distances among class-similar
+    data points (as indicated by their color) are minimized while the distances among
+    class-different data points are maximized.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can also influence how the learned representations are formed to cater specific
+    use cases. In the case of classification, the representations are primed to have
+    data points from the same class to flock together, while for generation (e.g.
+    in GANs), the representations are primed to have points of real data flock with
+    the synthesized ones.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the same sense, we have enjoyed the use of principal components analysis
+    (PCA) to encode features for downstream tasks. However, we do not have any class
+    or label information in PCA-encoded representations, hence the performance on
+    downstream tasks may be further improved. We can improve the encoded representations
+    by approximating the class or label information in it by learning the neighborhood
+    structure of the dataset, i.e. which features are clustered together, and such
+    clusters would imply that the features belong to the same class as per the clustering
+    assumption in the semi-supervised learning literature ([Chapelle et al., 2009](https://ieeexplore.ieee.org/abstract/document/4787647)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To integrate the neighborhood structure in the representations, manifold learning
+    techniques have been introduced such as locally linear embeddings or LLE ([Roweis
+    & Saul, 2000](https://www.science.org/doi/abs/10.1126/science.290.5500.2323)),
+    neighborhood components analysis or NCA ([Hinton et al., 2004](https://proceedings.neurips.cc/paper_files/paper/2004/file/42fe880812925e520249e808937738d2-Paper.pdf)),
+    and t-stochastic neighbor embedding or t-SNE ([Maaten & Hinton, 2008](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf?fbcl=)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the aforementioned manifold learning techniques have their own drawbacks.
+    For instance, both LLE and NCA encode linear embeddings instead of nonlinear embeddings.
+    Meanwhile, t-SNE embeddings result to different structures depending on the hyperparameters
+    used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To avoid such drawbacks, we can use an improved NCA algorithm which is the *soft
+    nearest neighbor loss* or SNNL ([Salakhutdinov & Hinton, 2007](http://proceedings.mlr.press/v2/salakhutdinov07a/salakhutdinov07a.pdf);
+    [Frosst et al., 2019](https://proceedings.mlr.press/v97/frosst19a.html)). The
+    SNNL improves the NCA algorithm by introducing nonlinearity, and it is computed
+    for each hidden layer of a neural network instead of solely on the last encoding
+    layer. This loss function is used to optimize the *entanglement* of points in
+    a dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this context, *entanglement* is defined as how close class-similar data points
+    to each other are compared to class-different data points. A low entanglement
+    means that class-similar data points are much closer to each other than class-different
+    data points (see Figure 1). Having such a set of data points will render downstream
+    tasks much easier to accomplish with an even better performance. Frosst et al.
+    (2019) expanded the SNNL objective by introducing a temperature factor *T*. Thus
+    giving us the following as the final loss function,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a50f465990d5f1e33763426cb103a67c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 2\. The soft nearest neighbor loss function. Figure by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *d* is a distance metric on either raw input features or hidden layer
+    representations of a neural network, and *T* is the temperature factor that is
+    directly proportional to the distances among data points in a hidden layer. For
+    this implementation, we use the cosine distance as our distance metric for more
+    stable computations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b86cead71297c76297474ae763bb464a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 3\. The cosine distance formula. Figure by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of this article is to help readers understand and implement the
+    soft nearest neighbor loss, and so we shall dissect the loss function in order
+    to understand it better.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Distance Metric
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first thing we should compute are the distances among data points, that
+    are either the raw input features or hidden layer representations of the network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e85ff680e27cec97a8863df628054780.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 4\. The first step in computing SNNL is to compute the distance metric
+    for the input data points. Figure by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our implementation, we use the cosine distance metric (Figure 3) for more
+    stable computations. At the time being, let us ignore the denoted subsets *ij*
+    and *ik* in the figure above, and let us just focus on computing the cosine distance
+    among our input data points. We accomplish this through the following PyTorch
+    code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code snippet above, we first normalize the input features in lines 1
+    and 2 using Euclidean norm. Then in line 3, we get the conjugate transpose of
+    the second set of the normalized input features. We compute the conjugate transpose
+    to [account for complex vectors](https://math.stackexchange.com/questions/273527/cosine-similarity-between-complex-vectors).
+    In lines 4 and 5, we compute the cosine similarity and distance of the input features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Concretely, consider the following set of features,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Using the distance metric we defined above, we gain the following distance matrix,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sampling Probability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can now compute the matrix that represents the probability of picking each
+    feature given its pairwise distances to all other features. This is simply the
+    probability of picking *i* points based on the distances between *i* and *j* or
+    *k* points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f8b096316279538b34805a0ceec0be1b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 5\. The second step is to compute the sampling probability of picking
+    points based on their distances. Figure by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can compute this through the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code first calculates the exponential of the negative of the distance matrix
+    divided by the temperature factor, scaling the values to positive values. The
+    temperature factor dictates how to control the importance given to the distances
+    between pairs of points, for instance, at low temperatures, the loss is dominated
+    by small distances while actual distances between widely separated representations
+    become less relevant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior to the subtraction of `torch.eye(features.shape[0])` (aka diagonal matrix),
+    the tensor was as follows,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We subtract a diagonal matrix from the distance matrix to remove all self-similarity
+    terms (i.e. the distance or similarity of each point to itself).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we can compute the sampling probability for each pair of data points
+    through the following code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Masked Sampling Probability
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: So far, the sampling probability we have computed does not contain any label
+    information. We integrate the label information into the sampling probability
+    by masking it with the dataset labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/82e4c0d5d90bba3e2035e5668cff0b57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 6\. We use the label information to isolate the probabilities for points
+    belonging to the same class. Figure by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we have to derive a pairwise matrix out of the label vectors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We apply the masking matrix to use the label information to isolate the probabilities
+    for points that belong to the same class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we compute the sum probability for sampling a particular feature by computing
+    the sum of the masked sampling probability per row,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we can compute the logarithm of the sum of the sampling probabilities
+    for features for computational convenience with an additional computational stability
+    variable, and get the average to act as the nearest neighbor loss for the network,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can now string these components together in a forward pass function to compute
+    the soft nearest neighbor loss across all layers of a deep neural network,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Visualizing Disentangled Representations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We trained an autoencoder with the soft nearest neighbor loss, and visualize
+    its learned disentangled representations. The autoencoder had (x-500–500–2000-d-2000–500–500-x)
+    units, and was trained on a small labelled subset of the MNIST, Fashion-MNIST,
+    and EMNIST-Balanced datasets. This is to simulate the scarcity of labelled examples
+    since autoencoders are supposed to be unsupervised models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87e9b4cbadd1d80a4990a3e4a11f456f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure 7\. 3D visualization comparing the original representation and the disentangled
+    latent representation of the three datasets. To achieve this visualization, the
+    representations were encoded using t-SNE with perplexity = 50 and learning rate
+    = 10, optimized for 5,000 iterations. Figure by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We only visualized an arbitrarily chosen 10 clusters for easier and cleaner
+    visualization of the EMNIST-Balanced dataset. We can see in the figure above that
+    the latent code representation became more clustering-friendly by having a set
+    of well-defined clusters as indicated by cluster dispersion and correct cluster
+    assignments as indicated by cluster colors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Closing Remarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this article, we dissected the soft nearest neighbor loss function as to
+    how we could implement it in PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The soft nearest neighbor loss was first introduced by [Salakhutdinov & Hinton
+    (2007)](http://proceedings.mlr.press/v2/salakhutdinov07a.html) where it was used
+    to compute the loss on the latent code (bottleneck) representation of an autoencoder,
+    and then the said representation was used for downstream kNN classification task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Frosst, Papernot, & Hinton (2019)](https://proceedings.mlr.press/v97/frosst19a.html)
+    then expanded the soft nearest neighbor loss by introducing a temperature factor
+    and by computing the loss across all layers of a neural network.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, we employed an annealing temperature factor for the soft nearest neighbor
+    loss to further improve the learned disentangled representations of a network,
+    and also speed up the disentanglement process ([Agarap & Azcarraga, 2020](https://arxiv.org/abs/2006.04535)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The full code implementation is available in [GitLab](https://gitlab.com/afagarap/pt-snnl).
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Agarap, Abien Fred, and Arnulfo P. Azcarraga. “Improving k-means clustering
+    performance with disentangled internal representations.” *2020 International Joint
+    Conference on Neural Networks (IJCNN)*. IEEE, 2020.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Chapelle, Olivier, Bernhard Scholkopf, and Alexander Zien. “Semi-supervised
+    learning (chapelle, o. et al., eds.; 2006)[book reviews].” *IEEE Transactions
+    on Neural Networks* 20.3 (2009): 542–542.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Frosst, Nicholas, Nicolas Papernot, and Geoffrey Hinton. “Analyzing and improving
+    representations with the soft nearest neighbor loss.” *International conference
+    on machine learning*. PMLR, 2019.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Goldberger, Jacob, et al. “Neighbourhood components analysis.” *Advances in
+    neural information processing systems*. 2005.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: He, Kaiming, et al. “Deep residual learning for image recognition.” *Proceedings
+    of the IEEE conference on computer vision and pattern recognition*. 2016.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Hinton, G., et al. “Neighborhood components analysis.” *Proc. NIPS*. 2004.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Krizhevsky, Alex, Ilya Sutskever, and Geoffrey E. Hinton. “Imagenet classification
+    with deep convolutional neural networks.” *Advances in neural information processing
+    systems* 25 (2012).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Roweis, Sam T., and Lawrence K. Saul. “Nonlinear dimensionality reduction by
+    locally linear embedding.” *science* 290.5500 (2000): 2323–2326.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Salakhutdinov, Ruslan, and Geoff Hinton. “Learning a nonlinear embedding by
+    preserving class neighbourhood structure.” *Artificial Intelligence and Statistics*.
+    2007.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Simonyan, Karen, and Andrew Zisserman. “Very deep convolutional networks for
+    large-scale image recognition.” *arXiv preprint arXiv:1409.1556* (2014).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Van der Maaten, Laurens, and Geoffrey Hinton. “Visualizing data using t-SNE.”
+    *Journal of machine learning research* 9.11 (2008).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

@@ -1,0 +1,276 @@
+- en: 'Gradient-Boosted Trees: To Early Stop or Not to Early Stop?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/gradient-boosting-to-early-stop-or-not-to-early-stop-5ea67ac09d83?source=collection_archive---------3-----------------------#2023-03-23](https://towardsdatascience.com/gradient-boosting-to-early-stop-or-not-to-early-stop-5ea67ac09d83?source=collection_archive---------3-----------------------#2023-03-23)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Leveraging early stopping for LightGBM, XGBoost, and CatBoost
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@diogoleitao?source=post_page-----5ea67ac09d83--------------------------------)[![Diogo
+    Leitão](../Images/3798f5b2653d3297b1bbae9c32d16586.png)](https://medium.com/@diogoleitao?source=post_page-----5ea67ac09d83--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5ea67ac09d83--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5ea67ac09d83--------------------------------)
+    [Diogo Leitão](https://medium.com/@diogoleitao?source=post_page-----5ea67ac09d83--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7bbc4c70a28d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-to-early-stop-or-not-to-early-stop-5ea67ac09d83&user=Diogo+Leit%C3%A3o&userId=7bbc4c70a28d&source=post_page-7bbc4c70a28d----5ea67ac09d83---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5ea67ac09d83--------------------------------)
+    ·7 min read·Mar 23, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5ea67ac09d83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-to-early-stop-or-not-to-early-stop-5ea67ac09d83&user=Diogo+Leit%C3%A3o&userId=7bbc4c70a28d&source=-----5ea67ac09d83---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5ea67ac09d83&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fgradient-boosting-to-early-stop-or-not-to-early-stop-5ea67ac09d83&source=-----5ea67ac09d83---------------------bookmark_footer-----------)![](../Images/1d27206f36b52ac44e48743d3b31a241.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Julian Berengar Sölter](https://unsplash.com/photos/MFWHeS6yLAI)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient-boosted decision trees (GBDTs) currently outperform deep learning in
+    tabular-data problems, with popular implementations such as LightGBM, XGBoost,
+    and CatBoost dominating Kaggle competitions [[1](https://mlcontests.com/state-of-competitive-machine-learning-2022/)].
+    Early stopping **—** a popular technique in deep learning — can also be used when
+    training and tuning GBDTs. However, it is common to see practitioners explicitly
+    tune the number of trees in GBDT ensembles, instead of using early stopping. In
+    this article, I show that **early stopping** can **halve training time**, while
+    **maintaining the same performance** as explicitly tuning the number of trees.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By reducing training time, early stopping can **lower computational costs**
+    and **decrease practitioner downtime** while waiting for models to run. Such savings
+    are of utmost value in industries with large-scale GBDT applications, such as
+    content recommendation, financial fraud detection, or credit scoring. But how
+    does early stopping reduce training time without harming performance? Let’s dive
+    in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient-Boosted Decision Trees
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gradient-boosted decision trees (GBDTs) currently achieve state-of-the-art performance
+    in classification and regression problems based on (heterogeneous) tabular data
+    (two-dimensional datasets with diverse column types). Deep learning techniques
+    — although performant in natural language processing and computer vision— are
+    yet to steal the crown in the tabular data domain [[2](https://proceedings.neurips.cc/paper/2021/file/9d86d83f925f2149e9edb0ac3b49229c-Paper.pdf),
+    [3](https://arxiv.org/pdf/2106.03253.pdf), [4](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9998482),
+    [5](https://openreview.net/pdf?id=Fp7__phQszn)].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/956cf351e4957becbdef5eb8a54ef1b8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gradient-boosted decision trees (GBDTs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: GBDTs work by sequentially adding decision trees to an ensemble. Unlike with
+    random forests, trees in GBDTs are not independent. Instead, they are trained
+    to correct the mistakes of previous trees. As such, given enough trees, a GBDT
+    model can achieve perfect performance in the training set. Nevertheless, this
+    behavior — referred to as [overfittin](https://en.wikipedia.org/wiki/Overfitting)g
+    — is known to harm the model’s ability to generalize to unseen data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameter Tuning and Early Stopping
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'To optimize the degree of fitting to the training data, practitioners tune
+    several key hyperparameters: the number of trees, the learning rate, the maximum
+    depth of each tree, among others. To find the optimal set of values, several configurations
+    are tested in a separate validation dataset; the model performing best in the
+    holdout data is chosen as the final model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another tool that helps fight overfitting is early stopping. Common in deep
+    learning, early stopping is a technique where the **learning process is halted
+    if the performance on holdout data is not improving**. In GBDTs, this implies
+    not building more trees beyond that point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/db683b42b0addb26a3cc788ff4fbd8ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Early stopping halts training at the point where loss in the validation set
+    stops to decreasing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although ubiquitous in deep learning, early stopping is not as popular among
+    GBDT users. Instead, it is common to see practitioners tune the number of trees
+    through the aforementioned search process. But **what if using early stopping
+    amounts to the same as explicitly tuning the number of trees**? After all, both
+    mechanisms aim to find the optimal size of the GBDT ensemble, given the learning
+    rate and other hyperparameters. If that were the case, it **could mean that the
+    same performance could be achieved at greatly reduced search time** by using early
+    stopping, since it halts the training of time-consuming, unpromising iterations.
+    Let’s test this hypothesis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experimental Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To this end, with the authors’ permission, I use the [public bank-account-fraud
+    dataset](https://www.kaggle.com/datasets/sgpjesus/bank-account-fraud-dataset-neurips-2022)
+    recently published at NeurIPS ’22 [[6](https://openreview.net/pdf?id=UrAYT2QwOX8)].
+    It consists of a synthetic replica of a real fraud-detection dataset, having been
+    generated by a privacy-preserving GAN. For an implementation of GBDTs, I opt for
+    [LightGBM](https://lightgbm.readthedocs.io/) for its speed and state-of-the-art
+    performance [[1](https://mlcontests.com/state-of-competitive-machine-learning-2022/),
+    [7](https://proceedings.neurips.cc/paper/2017/file/6449f44a102fde848669bdd9eb6b76fa-Paper.pdf)].
+    All the code used in this experiment can be found in [this Kaggle notebook](https://www.kaggle.com/code/diogoleitao/lightgbm-with-early-stopping/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As mentioned above, to find the optimal set of hyperparameters, the most common
+    approach is to experiment with several configurations. Ultimately, the model that
+    performs best in the validation set is chosen as the final model. I follow this
+    approach, randomly sampling hyperparameters from sensible distributions at each
+    iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To test my hypothesis, I run two parallel random search processes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Without early stopping, the number of trees parameter is tested uniformly between
+    10 and 4000.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With early stopping, the maximum number of trees is set to 4000, but ultimately
+    defined by the early stopping criteria. Early stopping monitors cross-entropy
+    loss in the validation set. The training process is only halted after 100 non-improving
+    iterations (the patience parameter), at which point it is reset to its best version.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'The following function is used to run each random search trial within an [Optuna](https://optuna.org/#code_examples)
+    study *(truncated for clarity; full version in the* [*aforementioned notebook*](https://www.kaggle.com/code/diogoleitao/lightgbm-with-early-stopping/)*)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Performance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since early stopping monitors performance on the validation set, all models
+    are evaluated on an unseen test set, thus avoiding biased results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a9617a0efc0e8301502e2a3accef361.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results on the test set. Bottom 20% of trials removed for visualization clarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**To early stop or not to early stop? Both approaches achieve similar results.**
+    This outcome is consistent both when measuring cross-entropy loss — the metric
+    monitored by early stopping, and recall at 5% FPR — a binary classification metric
+    especially relevant in this dataset’s domain [[6](https://openreview.net/pdf?id=UrAYT2QwOX8)].
+    On the first criterion, the no-early-stopping strategy achieves marginally better
+    results, whereas on the second criteria, it is the early-stopping strategy that
+    has the edge.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In sum, the results of this experiment fail to reject my hypothesis that there
+    is no significant difference between employing early stopping and explicitly tuning
+    the number of trees in GBDTs. Naturally, a more robust evaluation would require
+    experimenting with several datasets, hyperparameter search spaces and random seeds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Time
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Part of my hypothesis was also that early stopping reduces average training
+    time by stopping the addition of unpromising trees. Can a meaningful difference
+    be measured?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0188300216ddc4aa2b66fb6dcf920060.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Distribution of training time in seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Results confirm the second part of my hypothesis: **training times are substantially
+    inferior when using early stopping**. Using this strategy — even with a high patience
+    value of 100 iterations — **halves the average training time**, from 122 seconds
+    to 58 seconds. This implies a reduction of total training time from 3 hours and
+    23 minutes to 1 hour and 37 minutes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This reduction comes in spite of the additional computation required by the
+    early stopping mechanism to monitor cross-entropy loss on the validation set,
+    which is accounted for in the measurements presented above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Gradient-boosted decision-trees (GBDTs) are currently state of the art in problems
+    involving tabular data. I find that using early stopping in the training of these
+    models **halves training times**, while **maintaining the same performance** as
+    explicitly tuning the number of trees. This makes popular GBDT implementations
+    like LightGBM, XGBoost, and CatBoost that much more powerful for applications
+    in large industries, such as Digital Marketing and Finance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the future, it would be important to corroborate the findings presented here
+    in other datasets and across other GBDT implementations. Tuning the patience parameter
+    could also prove beneficial, although its optimal value will likely vary for each
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Except where otherwise noted, all images are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[1] H. Carlens. [The State of Competitive Machine Learning in 2022.](https://mlcontests.com/state-of-competitive-machine-learning-2022/)
+    ML Contests, 2023.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Y. Gorishniy, I. Rubachev, V. Khrulkov, and A. Babenko, [Revisiting Deep
+    Learning Models for Tabular Data](https://proceedings.neurips.cc/paper/2021/file/9d86d83f925f2149e9edb0ac3b49229c-Paper.pdf),
+    35th Conference on Neural Information Processing Systems (NeurIPS 2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] R. Shwartz-Ziv, and A. Armon, [Tabular Data: Deep Learning is Not All You
+    Need](https://arxiv.org/pdf/2106.03253.pdf), Information Fusion 81 (2022): 84–90.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] V. Borisov, T. Leemann, K. Seßler, J. Haug, M. Pawelczyk, and G. Kasneci,
+    [Deep Neural Networks and Tabular Data: A Survey](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9998482),
+    IEEE Transactions on Neural Networks and Learning Systems (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] L. Grinsztajn, E. Oyallon, and G. Varoquaux, [Why do tree-based models
+    still outperform deep learning on typical tabular data?](https://openreview.net/pdf?id=Fp7__phQszn),
+    36th Conference on Neural Information Processing Systems — Datasets and Benchmarks
+    Track (NeurIPS 2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] S. Jesus, J. Pombal, D. Alves, A. Cruz, P. Saleiro, R. Ribeiro, J. Gama,
+    P. Bizarro, [Turning the Tables: Biased, Imbalanced, Dynamic Tabular Datasets
+    for ML Evaluation](https://openreview.net/pdf?id=UrAYT2QwOX8), 36th Conference
+    on Neural Information Processing Systems — Datasets and Benchmarks Track (NeurIPS
+    2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] G. Ke, Q. Meng, T. Finley, T. Wang, W. Chen, W. Ma, Q. Ye, T. Liu, [LightGBM:
+    A Highly Efficient Gradient Boosting Decision Tree](https://proceedings.neurips.cc/paper/2017/file/6449f44a102fde848669bdd9eb6b76fa-Paper.pdf),
+    31st Conference on Neural Information Processing Systems (NIPS 2017).'
+  prefs: []
+  type: TYPE_NORMAL

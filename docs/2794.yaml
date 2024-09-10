@@ -1,0 +1,326 @@
+- en: Effective Load Balancing with Ray on Amazon SageMaker
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/effective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3?source=collection_archive---------8-----------------------#2023-09-04](https://towardsdatascience.com/effective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3?source=collection_archive---------8-----------------------#2023-09-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A method for increasing DNN training efficiency and reducing training costs
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----d3b9020679d3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----d3b9020679d3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----d3b9020679d3--------------------------------)
+    ·10 min read·Sep 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fd3b9020679d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&user=Chaim+Rand&userId=9440b37e27fe&source=-----d3b9020679d3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fd3b9020679d3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Feffective-load-balancing-with-ray-on-amazon-sagemaker-d3b9020679d3&source=-----d3b9020679d3---------------------bookmark_footer-----------)![](../Images/825ef1fcbc6836470358bbe0e79c0b7f.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Fineas Anton](https://unsplash.com/@fineas_anton?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In previous posts (e.g., [here](/cloud-ml-performance-checklist-caa51e798002))
+    we expanded on the importance of profiling and optimizing the performance of your
+    DNN training workloads. Training deep learning models — especially large ones
+    — can be an expensive undertaking. Your ability to **maximize the utilization
+    of your training resources** in a manner that both accelerates your model convergence
+    and minimizes training costs, can be a decisive factor in the success of your
+    project. **Performance optimization** is an iterative process in which we identify
+    and address the **performance bottlenecks** in our application, i.e., the portions
+    in our application that are preventing us from increasing resource utilization
+    and/or accelerating the run time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This post is the third in a series of posts that focus on one of the more common
+    performance bottlenecks that we encounter when training deep learning models,
+    the [**data pre-processing bottleneck**](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851).
+    A data pre-processing bottleneck occurs when our GPU (or alternative accelerator)
+    — typically the *most expensive* resource in our training setup — finds itself
+    idle while it waits for data input from *overly tasked* CPU resources.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1cc394697bc34133fcceda418841e87.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An image from the [TensorBoard profiler](https://www.tensorflow.org/tensorboard/tensorboard_profiling_keras)
+    tab demonstrating a typical footprint of a bottleneck on the data input pipeline.
+    We can clearly see long periods of GPU idle time on every seventh training step.
+    (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In our [first post](/overcoming-ml-data-preprocessing-bottlenecks-with-grpc-ca30fdc01bee)
+    on the topic we discussed and demonstrated different ways of addressing this type
+    of bottleneck, including:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing a training instance with a CPU to GPU compute ratio that is more suited
+    to your workload,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Improving the workload balance between the CPU and GPU by moving some of the
+    CPU operations to the GPU, and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Offloading some of the CPU computation to auxiliary CPU-worker devices.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We demonstrated the third option using the [TensorFlow Data Service API](https://www.tensorflow.org/api_docs/python/tf/data/experimental/service),
+    a solution specific to TensorFlow, in which a portion of the input data processing
+    can be offloaded onto other devices using gRPC as the underlying communication
+    protocol.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our [second post](/overcoming-ml-data-preprocessing-bottlenecks-with-grpc-ca30fdc01bee),
+    we proposed a more general-purpose gRPC-based solution for using auxiliary CPU
+    workers and demonstrated it on a toy PyTorch model. Although it required a bit
+    more manual coding and tuning than the [TensorFlow Data Service API](https://www.tensorflow.org/api_docs/python/tf/data/experimental/service),
+    the solution provided much greater robustness and allowed for the same optimization
+    in training performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load Balancing with Ray
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In this post we will demonstrate an additional method for using auxiliary CPU
+    workers that aims to combine the robustness of the general-purpose solution with
+    the simplicity and ease-of-use of the TensorFlow-specific API. The method we will
+    demonstrate will use [**Ray Datasets**](https://docs.ray.io/en/latest/data/dataset.html)
+    from the [Ray Data](https://docs.ray.io/en/latest/data/dataset.html) library.
+    By leveraging the full power of Ray’s [resource management](https://docs.ray.io/en/latest/ray-core/scheduling/resources.html)
+    and [distributed scheduling](https://docs.ray.io/en/latest/ray-core/scheduling/index.html)
+    systems, Ray Data is able to run our training data input pipeline in manner that
+    is both **scalable** and **distributed**. In particular, we will configure our
+    Ray Dataset in such a way that the library will automatically detect and utilize
+    all of the available CPU resources for pre-processing the training data. We will
+    further wrap our model training loop with a [Ray AIR Trainer](https://docs.ray.io/en/latest/ray-air/trainer.html#air-trainers)
+    so as to enable seamless scaling to a multi-GPU setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploying a Ray Cluster on Amazon SageMaker
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A prerequisite for using the Ray framework and the utilities it offers in a
+    multi-node environment is the deployment of a [Ray cluster](https://docs.ray.io/en/latest/cluster/getting-started.html).
+    In general, designing, deploying, managing, and maintaining such a compute cluster
+    can be a daunting task and often requires a dedicated devops engineer (or team
+    of engineers). This can pose an insurmountable obstacle for some development teams.
+    In this post we will demonstrate how to overcome this obstacle using AWS’s managed
+    training service, Amazon SageMaker. In particular, we will create a [SageMaker
+    heterogenous cluster](https://docs.aws.amazon.com/sagemaker/latest/dg/train-heterogeneous-cluster.html)
+    with both GPU instances and CPU instances and use it to deploy a Ray cluster at
+    startup. We will then run the Ray AIR training application on this Ray cluster
+    while relying on Ray’s backend to perform effective load balancing across all
+    of the resources in the cluster. When the training application is completed, the
+    Ray cluster will be torn down automatically. Using SageMaker in this manner, enables
+    us to deploy and use a Ray cluster without the overhead that is commonly associated
+    with cluster management.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ray is a powerful framework that enables a wide range of machine learning workloads.
+    In this post we will demonstrate just a few of its capabilities and APIs using
+    Ray version 2.6.1\. This post should not be used as a replacement for the [Ray
+    documentation](https://docs.ray.io/en/latest/). Be sure to check out the official
+    [documentation](https://docs.ray.io/en/latest/) for the most appropriate and up-to-date
+    use of the Ray utilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we get started, special thanks to [Boruch Chalk](https://www.linkedin.com/in/boruch-chalk-56b28097/?originalSubdomain=il)
+    for introducing me to the Ray Data library and its unique capabilities.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To facilitate our discussion, we will define and train a simple PyTorch (2.0)
+    [Vision Transformer](https://en.wikipedia.org/wiki/Vision_transformer)-based classification
+    model that we will train on a synthetic dataset comprised of random images and
+    labels. The [Ray AIR documentation](https://docs.ray.io/en/latest/ray-air/getting-started.html)
+    includes a wide variety of [examples](https://docs.ray.io/en/latest/ray-air/examples/index.html)
+    that demonstrate how to build different types of training workloads using Ray
+    AIR. The script we create here loosely follows the steps described in the [PyTorch
+    image classifier example](https://docs.ray.io/en/latest/ray-air/examples/torch_image_example.html#).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the Ray Dataset and Preprocessor
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The [Ray AIR Trainer API](https://docs.ray.io/en/latest/train/api/doc/ray.train.trainer.BaseTrainer.html#ray.train.trainer.BaseTrainer)
+    distinguishes between the raw dataset and the preprocessing pipeline that is applied
+    to the elements of the dataset before feeding them into the training loop. For
+    our raw Ray dataset we create a simple [range of integers](https://docs.ray.io/en/latest/data/api/doc/ray.data.range.html)
+    of size *num_records*. Next, we define the [Preprocessor](https://docs.ray.io/en/latest/ray-air/preprocessors.html)
+    that we would like to apply to our dataset. Our Ray Preprocesser contains two
+    components: The first is a [BatchMapper](https://docs.ray.io/en/latest/ray-air/api/doc/ray.data.preprocessors.BatchMapper.html)
+    that maps the raw integers to random image-label pairs. The second is a [TorchVisionPreprocessor](https://docs.ray.io/en/latest/ray-air/api/doc/ray.data.preprocessors.TorchVisionPreprocessor.html)
+    that performs a [torchvision transform](https://pytorch.org/vision/0.9/transforms.html)
+    on our random batches which converts them to PyTorch tensors and applies a series
+    of [GaussianBlur](https://pytorch.org/vision/main/generated/torchvision.transforms.GaussianBlur.html)
+    operations. The [GaussianBlur](https://pytorch.org/vision/main/generated/torchvision.transforms.GaussianBlur.html)
+    operations are intended to simulate a relatively heavy data pre-processing pipeline.
+    The two Preprocessors are combined using a [Chain](https://docs.ray.io/en/latest/ray-air/api/doc/ray.data.preprocessors.Chain.html)
+    Preprocessor. The creation of the Ray dataset and Preprocessor is demonstrated
+    in the code block below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that the Ray data pipeline will automatically use all of the CPUs that
+    are available in the Ray cluster. This includes the CPU resources that are on
+    the GPU instance as well as the CPU resources of any additional auxiliary instances
+    in the cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the Training Loop
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The next step is to define the training sequence that will run on each of the
+    training workers (e.g., GPUs). First we define the model using the popular [timm](https://pypi.org/project/timm/)
+    (0.6.13) Python package and wrap it using the [train.torch.prepare_model](https://docs.ray.io/en/latest/train/api/doc/ray.train.torch.prepare_model.html#ray.train.torch.prepare_model)
+    API. Next, we extract the appropriate shard from the dataset and define an iterator
+    that yields data batches with the requested batch size and copies them to the
+    training device. Then comes the training loop itself which is comprised of standard
+    PyTorch code. When we exit the loop, we report back the resultant loss metric.
+    The per-worker training sequence is demonstrated in the code block below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Defining the Ray Torch Trainer
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once we’ve defined our data pipeline and training loop, we can move on to setting
+    up the [Ray TorchTrainer](https://docs.ray.io/en/latest/train/api/doc/ray.train.torch.TorchTrainer.html).
+    We configure the Trainer in a manner that takes into account the available resources
+    in the cluster. Specifically, we set the number of training workers according
+    to the number of GPUs and we set the batch size according to the memory available
+    on our target GPU. We build our dataset with the number of records required to
+    train for precisely 1000 steps.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Deploy a Ray Cluster and Run the Training Sequence
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We now define the entry point of our training script. It is here that we setup
+    the Ray cluster and initiate the training sequence on the head node. We use the
+    [Environment](https://github.com/aws/sagemaker-training-toolkit/blob/master/README.md#get-information-about-the-container-environment)
+    class from the [sagemaker-training](https://pypi.org/project/sagemaker-training/)
+    library to discover the instances in the heterogenous SageMaker cluster as described
+    in [this tutorial](https://docs.aws.amazon.com/sagemaker/latest/dg/train-heterogeneous-cluster.html#train-heterogeneous-cluster-modify-training-script).
+    We define the first node of the GPU instance group as our Ray cluster *head* node
+    and run the appropriate command on all of the other nodes to connect them to the
+    cluster. (See the [Ray documentation](https://docs.ray.io/en/latest/cluster/getting-started.html)
+    for more details on creating clusters.) We program the head node to wait until
+    all the nodes have connected and then start the training sequence. This ensures
+    that Ray will utilize all of the available resources when defining and distributing
+    the underlying Ray tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Training on an Amazon SageMaker Heterogenous Cluster
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: With our training script complete, we are now tasked with deploying it to an
+    Amazon SageMaker Heterogenous Cluster. To do this we follow the steps described
+    in [this tutorial](https://docs.aws.amazon.com/sagemaker/latest/dg/train-heterogeneous-cluster.html).
+    We start by creating a *source_dir* directory into which we place the our *train.py*
+    script and a *requirements.txt* file containing the two pip packages our script
+    depends on, [timm](https://pypi.org/project/timm/) and [ray[air]](https://pypi.org/project/ray/).
+    These are automatically installed on each of the nodes in the SageMaker cluster.
+    We define two SageMaker [Instance Groups](https://sagemaker.readthedocs.io/en/stable/api/utility/instance_group.html),
+    the first with a single [ml.g5.xlarge](https://aws.amazon.com/ec2/instance-types/g5/)
+    instance (containing 1 GPU and 4 vCPUs), and the second with a single [ml.c5.4xlarge](https://aws.amazon.com/ec2/instance-types/c5/)
+    instance (containing 16 vCPUs). We then use the [SageMaker PyTorch estimator](https://sagemaker.readthedocs.io/en/stable/frameworks/pytorch/sagemaker.pytorch.html)
+    to define and deploy our training job to the cloud.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the table below we compare the runtime results of running our training script
+    in two different settings: a single ml.g5.xlarge GPU instance and a heterogenous
+    cluster containing an ml.g5.xlarge instance and an ml.c5.4xlarge. We evaluate
+    the system resource utilization using [Amazon CloudWatch](https://aws.amazon.com/cloudwatch/)
+    and estimate the training cost using the [Amazon SageMaker pricing](https://aws.amazon.com/sagemaker/pricing/?p=pm&c=sm&z=4)
+    available as of the time of this writing ($0.816 per hour for the ml.c5.4xlarge
+    instance and $1.408 for the ml.g5.xlarge).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e024e2da81b7e609eb6fcc2d2112427.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparative Performance Results (By Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The relatively high CPU utilization combined with the low GPU utilization of
+    the single instance experiment indicates a performance bottleneck in the data
+    pre-processing pipeline. These are clearly addressed when moving to the heterogenous
+    cluster. Not only does the GPU utilization increase, but so does the training
+    speed. Overall, the price efficiency of training increases by 23%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We should emphasize that these toy experiments were created purely for the purpose
+    of demonstrating the automated load balancing features enabled by the Ray ecosystem.
+    It is possible that tuning of the control parameters may have led to improved
+    performance. It is also likely that choosing a different solution for addressing
+    the CPU bottleneck (such as choosing an instance from the [EC2 g5](https://aws.amazon.com/ec2/instance-types/g5/)
+    family with more CPUs) may have resulted in better cost performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have demonstrated how Ray datasets can be used to balance the
+    load of a heavy data pre-processing pipeline across all of the available CPU workers
+    in the cluster. This enables us to easily address CPU bottlenecks by simply adding
+    auxiliary CPU instances to the training environment. Amazon SageMaker’s heterogenous
+    cluster support is a compelling way to run a Ray training job in the cloud as
+    it handles all facets of the cluster management avoiding the need for dedicated
+    devops support.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keep in mind that the solution presented here is just one of many different
+    ways of addressing CPU bottlenecks. The best solution for you will highly depend
+    on the details of your project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, please feel free to reach out with comments, corrections, and questions.
+  prefs: []
+  type: TYPE_NORMAL

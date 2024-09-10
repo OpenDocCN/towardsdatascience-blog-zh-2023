@@ -1,0 +1,564 @@
+- en: Nine Rules for Creating Fast, Safe, and Compatible Data Structures in Rust (Part
+    1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3?source=collection_archive---------6-----------------------#2023-04-05](https://towardsdatascience.com/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3?source=collection_archive---------6-----------------------#2023-04-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Lessons from RangeSetBlaze
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----c0973092e0a3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----c0973092e0a3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c0973092e0a3--------------------------------)
+    ·13 min read·Apr 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc0973092e0a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----c0973092e0a3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc0973092e0a3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-1-c0973092e0a3&source=-----c0973092e0a3---------------------bookmark_footer-----------)![](../Images/77adb3f2a102655781a270954799608d.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Storing numbers in a tree — Source: Stable Diffusion'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This year, I developed a new Rust crate called `[range-set-blaze](https://crates.io/crates/range-set-blaze)`
+    that implements the range set data structure. A range set is a useful (if obscure)
+    data structure that stores sets of integers as sorted and disjoint ranges. For
+    example, it stores these three ranges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: rather than 30,220,996 individual integers. In addition to potential memory
+    savings, `range-set-blaze` provides efficient set operations such as union, intersection,
+    complement, difference, and symmetric difference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While creating `range-set-blaze`, I learned nine rules that can help you create
+    data structures in Rust. Beyond data structures, many of the rules can help you
+    improve the performance and compatibility of any Rust code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rules are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Plagiarize your API, documentation, and even code — from the standard library.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Design constructors for ease-of-use, compatibility, and speed.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Create more Rust iterators than you expect.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Make illegal values unrepresentable with traits.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define generic iterators with guaranteed properties and useful methods.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Covered in* [*Part 2*](/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7)*:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*6\. Define operators and fast operations.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*7\. Follow the “Nine Rules of Good API Design” especially “write good documentation”.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*8\. Optimize performance using representative data, Criterion Benchmarking,
+    and profiling.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*9\. Test coverage, docs, traits, compiler errors, and correctness.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before looking at the first five rules, let’s see when `range-set-blaze` might
+    be useful, how its set operations work, and how it compares to other range set
+    crates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Usefulness:** Imagine running ten billion statistical experiments on an unreliable
+    cluster. Each task on the cluster runs a few experiments. Each experiment produces
+    one line of output with an experiment number. So, one task might put this into
+    a file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/39ad3c9b2cde703e0f3e8e37d1c985c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'What data structure would you use to find which experiments are missing and
+    need to be re-submitted? One option: store the outputted experiment numbers in
+    a `[BTreeSet](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html)`
+    and then do a linear scan for gaps.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A faster and more memory-efficient option: use a range set. Eight years ago,
+    I created `[IntRangeSet](https://fastlmm.github.io/PySnpTools/#util-intrangeset)`,
+    a range set in Python to solve this problem. Now, I would use `range-set-blaze`
+    in Rust ([example code](https://github.com/CarlKCarlK/range-set-blaze/blob/main/examples/missing.rs)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Set Operations**: Here is a simple example of the union operator (`|`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c39d2fc449a075e26bc091e3cdf11e5e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Aside: See the project’s `[README.md](https://github.com/CarlKCarlK/range-set-blaze)`
+    for another set operator example from biology. That example uses the `RangeSetBlaze`
+    struct to find the intron regions of a gene from the transcription region and
+    the exon regions.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Comparison with other range-related crates**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Benefits:** Although [Rust’s crates.io already contains several range set
+    crates](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md),
+    I hoped my version could offer full set operations while being performant. Through
+    optimizations both fowl and fair, I believe it achieves these goals (see [the
+    benchmark report](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)).
+    For example, it can intake individual integers 75 times faster than the most popular
+    range set crate (because the other crate doesn’t special-case individual intake
+    — but it could easily add this optimization). On another benchmark, `range-set-blaze`
+    — using a hybrid algorithm — is 30% to 600% faster at unioning two sets.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Deficits:** Compared to other range-related crates, `range-set-blaze` has
+    two important deficits. First, it works only with Rust integer types. Most other
+    crates handle any element that can be sorted (dates, floats, IP addresses, strings,
+    etc.). Second, it only offers sets. Many other crates also handle mappings. With
+    interest (and perhaps help) these deficits might be addressed in the future.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a data structure requires many decisions. Based on my experience with
+    `range-set-blaze`, here are the decisions I recommend. To avoid wishy-washiness,
+    I’ll express these recommendations as rules. Of course, every data structure is
+    different, so not every rule will apply to every data structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article covers rules 1 to 5\. [Part 2](/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7)
+    covers rules 6 to 9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 1: Plagiarize the API, Documentation, and even Code — from the Standard
+    Library'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Find a similar data structure in the standard library and study its documentation
+    line-by-line. I picked `[BTreeSet](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html)`
+    as my model. It can store sets of integers in a cache-efficient balanced tree.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: Later, in benchmarking (Rule 8), we’ll see that `range_set_blaze::*RangeSetBlaze*`
+    can be 1000’s of times faster than `*BTreeSet*` on some ‘clumpy’ integer sets.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '`BTreeSet` offers 28 methods, for example, `[clear](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html#method.clear)`
+    and `[is_subset](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html#method.is_subset)`.
+    It also implements 18 traits, for example, `[FromIterator<T>](https://doc.rust-lang.org/std/collections/struct.BTreeSet.html#impl-FromIterator%3CT%3E-for-BTreeSet%3CT%2C%20Global%3E)`.
+    Here is the `BTreeSet` documentation for `clear` and the `RangeSetBlaze` documentation
+    for `clear`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7852ec97e3809279c5dfd01079f1fe04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'You can see that I mostly just copied. I changed “elements” to “integer elements”
+    to remind users what `RangeSetBlaze` supports. I removed `where A: Clone` because
+    all integers are necessarily cloneable. Notice that Rust documentation includes
+    a “source” link. This makes copying easy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Copying offers these advantages:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It tells you what methods to provide. In other words, it gives you a starting
+    point for your API (application programming interface). This saves design time.
+    Moreover, users will understand and expect these methods. You may even be able
+    to make your data structure a drop-in replacement for a standard data structure.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You get documentation text and documentation tests for almost free.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'You may even be able to copy code. For example, here is the code for `is_superset`
+    for `BTreeSet` and, then, `RangeSetBlaze` :'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `BTreeSet` code reminded me that superset can be defined in terms of subset
+    and that `#[must use]` is a thing and appropriate here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may *decide* not to support everything in the standard data structure. For
+    example, I skipped `new_in`, an experimental feature. Likewise, the standard library
+    supports maps (not just sets), any sortable element (not just integers), and Serde
+    serialization. For me, these are possible future features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may also *decide* to support something differently. For example, `BTreeSet::first`
+    returns an `Option<&T>` but `RangeSetBlaze::first` returns an `Option<T>`. I know
+    `T` is a cheap-to-clone integer and so it doesn’t need to be a reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: Doesn’t Rust have a generic `*Set*` trait, that tells what methods all
+    sets should implement and even provides some default implementations (for example,
+    `*is_superset*` in terms of `*is_subset*`?) No, but it is being [discussed](https://www.reddit.com/r/rust/comments/ypuf8f/generic_mapset_traits/).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You will likely also *decide* to support more methods than the standard data
+    structure. For example, `RangeSetBlaze::len`, like `BTreeSet::len`, returns the
+    number of elements in the set. However, `RangeSetBlaze` also offers `ranges_len`,
+    which returns the number of sorted, disjoint ranges in the set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 2: Design Constructors for Ease-of-Use, Compatibility, and Speed'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: If it makes sense to have an empty version of your data structure, you’ll want
+    to define a `new` method and a `[Default::default](https://doc.rust-lang.org/std/default/trait.Default.html)`
+    method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Similarly, if it makes sense to fill your data structure from an iterator,
+    you’ll want to define `[FromIterator::from_iter](https://doc.rust-lang.org/std/iter/trait.FromIterator.html)`
+    methods. These automatically define `collect` methods, too. Like `BTreeSet`, `RangeSetBlaze`
+    accepts iterators of integers and references to integers. (Accepting references
+    is important because many Rust iterators provide references.) Here is an example
+    of `from_iter` and `collect` in use:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`RangeSetBlaze` also accepts iterators of inclusive ranges and references to
+    such ranges. It places no constraints on the input ranges. They can be out-of-order,
+    overlapping, empty, or repeated.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, consider defining additional `From::from` methods. These automatically
+    define an `into` methods. For example, for compatibility with `BTreeSet`, `RangeSetBlaze`
+    defines a `From::from` method on arrays.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`RangeSetBlaze` also defines `from_sorted_disjoint/into_range_set_blaze` for
+    iterators of ranges that are guaranteed to be sorted and disjoint. (We’ll see
+    in Rule 5, how we enforce this guarantee with special traits and the Rust compiler.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Aside: Why `*from_sorted_disjoint*`/`*into_range_set_blaze*` instead of `*from_iter
+    /collect*` or `*from/into*`? See [this discussion](https://stackoverflow.com/questions/75522966/construct-a-struct-that-holds-a-generic-iterator-of-i32-from-from-iter)
+    and [this discussion](https://stackoverflow.com/questions/37347311/how-is-there-a-conflicting-implementation-of-from-when-using-a-generic-type).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'For each of your constructors, think about possible speed ups and optimizations.
+    `RangeSetBlaze` implements this optimization in `from_iter`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: collects adjacent (possibly unsorted) integers/ranges into disjoint ranges,
+    O(*n₁*)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: sort the disjoint ranges by their start, O(*n₂* log *n₂*)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: merge adjacent ranges, O(*n₂*)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: create a `BTreeMap` from the now sorted & disjoint ranges, O(*n₃* log *n₃*)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: where *n*₁ is the number of input integers/ranges, n₂ is the number of disjoint
+    & unsorted ranges, and *n*₃ is the final number of sorted & disjoint ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the effect of ‘clumpy’ integers? If *n₂* ≈ sqrt(*n₁*), then construction
+    is O(*n₁*). (Indeed, as long as *n₂* ≤ *n₁*/ln(*n₁*), construction is O(*n₁*).)
+    In benchmarks, this turns into a 700 time speed up over `HashSet` and `BTreeSet`
+    on clumpy integer iterators.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 3: Create More Rust Iterators than You Expect'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: How many different iterator types would you guess the standard `BTreeSet` defines?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The answer is eight: `Iter`, `IntoIter`, `DrainFilter`, `Range`, `Difference`,
+    `SymmetricDifference`, `Intersection`, and `Union`. Many non-Rust programming
+    languages can turn any method into an iterator/generator, with a few “yield” statements.
+    Rust, however, doesn’t offer this (but [it is under discussion](https://www.reddit.com/r/rust/comments/nsaovn/generatorsyield/)).
+    So, pretty much every method related to iteration will require you to define a
+    new iterator struct type. These structs will, at a minimum, implement a `next`
+    method that returns either `Some(`value`)` or `None`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`RangeSetBlaze` and its related types define 13 iterators structs. Let’s look
+    at two of them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, a user can call `ranges` and iterate through the integers as a sequence
+    of sorted, disjoint ranges. (Recall that `RangeSetBlaze` accepts unsorted, overlapping
+    ranges but stores sorted, disjoint ranges.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Internally, `RangeSetBlaze` uses a standard `BTreeMap` to hold the range information.
+    So, the `RangeSetBlaze::ranges` method constructs a `RangesIter` struct containing
+    a `BTreeMap::Iter`. We then have the `RangesIter::next` method call `BTreeMap::Iter`''s
+    `next` method and translates the result into the desired type. Here is the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Second, a user may want to call `iter` and iterate through the integers one
+    at a time, in sorted order. In that case, we’ll return a struct called `Iter`
+    that contains a `RangeIter` and then iterates the integers inside the ranges one
+    at a time. Here is the original code for `Iter::next`. It is followed by a discussion
+    of points of interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `SortedDisjoint` trait relates to guaranteeing that the inside iterator
+    provides sorted, disjoint ranges. We’ll discuss it in Rule 5.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `option_range` field holds the range (if any) from which we are currently
+    returning integers. We use `loop` and `continue` to fill `option_range` when it
+    is empty. This loop never loops more than twice, so I could have used recursion.
+    However, some of the other iterators recurse enough to cause a stack overflow.
+    So, …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Tail recursion optimization is not guaranteed in Rust](https://stackoverflow.com/questions/59257543/when-is-tail-recursion-guaranteed-in-rust).
+    My policy: Never use recursion in `next` functions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: Thanks to Michael Roth, the current version of `Iter::next` is now shorter.
+    His pull request is [here](https://github.com/CarlKCarlK/range-set-blaze/commit/b582f30689502993e1079520ce806c3a905e523e).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Both `BTreeSet` and `RangeSetBlaze` define an `into_iter` iterator method in
+    addition to the `iter` method. Similarly, `RangeSetBlaze` defines an `into_ranges`
+    iterator method in addition to its `ranges` method. These `into`*_whatever* methods
+    take ownership of the underlying `RangeSetBlaze` which is sometimes useful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 4: Make Illegal Values Unrepresentable with Traits'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I said that `RangeSetBlaze` only works on integers, but what stops you applying
+    it to characters like so?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The answer? The compiler stops you. It returns this error message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To make this happen, `RangeSetBlaze` defines a trait it calls `Integer`. Here
+    is that definition (with all the super traits that I found that I needed):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: I, next, implemented trait `Integer` on all the integer types of interest (`u8`
+    to `u128` including `usize`, `i8` to `i128` including `isize)`. For example,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With this, I could make the code generic on `<T: Integer>`, as seen in the
+    code sample in Rule 3.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: Why doesn’t Rust offer a single standard ‘integer’ trait that does everything?
+    [Here is a discussion](https://www.reddit.com/r/rust/comments/qlyn12/how_to_write_a_generic_function_for_only_numeric/).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Rule 5: Define Generic Iterators with Guaranteed Properties and Useful Methods'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '`RangeSetBlaze`’s `from_sorted_disjoint` constructor assumes an input of sorted
+    and disjoint ranges. This lets `RangeSetBlaze` avoid work. But what if the assumption
+    is wrong? For example, what happens if we give it unsorted ranges, like so?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As in Rule 4, the compiler catches the error and returns a useful message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To make this happen, `RangeSetBlaze` defines trait `SortedDisjoint`. Here is
+    the relevant definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says `SortedDisjoint` is generic across integers and that every `SortedDisjoint`
+    must be a `SortedStarts`. Moreover, all `SortedStarts` are iterators of ranges
+    of integers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: My project needs two new traits because I need to guarantee two different
+    properties. A project that needs to guarantee only one property will need only
+    one new trait.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'So, what’s the point? Why introduce new traits when we could just use `Iterator<Item
+    = RangeInclusive<T>` directly? As I learned from Rüdiger Klaehn’s wonderful [sorted-iter](https://docs.rs/sorted-iter/latest/sorted_iter/)
+    crate, we can use these new traits to enforce guarantees. For example, this constructor
+    function uses a `where` clause to accept only guaranteed (sorted and disjoint)
+    iterators of integers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And how do guaranteed iterators get the required `SortedDisjoint` trait? They
+    implement it! For example, we know the `RangeSetBlaze::ranges` method returns
+    a iterator `RangesIter` of sorted and disjoint ranges, so we have `RangesIter`
+    implement the `SortedDisjoint` trait like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s it. We have just marked `RangesIter` as being `SortedDisjoint`. The compiler
+    will do the rest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Not guaranteed to guaranteed**: I also marked an iterator called `CheckSortedDisjoint`
+    as being `SortedDisjoint`. Interestingly, it iterates over a *not guaranteed*
+    internal iterator. How can that be OK? Well, while it iterates, it also checks
+    — panicking if it finds any unsorted or overlapping ranges. The result is a guaranteed
+    iterator.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sometimes guaranteed outside iterators**: What about an iterator that is
+    sometimes `SortedDisjoint` and sometimes not? The popular `[Itertools::tee](https://docs.rs/itertools/latest/itertools/trait.Itertools.html#method.tee)`
+    method, for example, turns any iterator into two iterators with the same contents.
+    Here is how we say that if its input iterator is `SortedDisjoint`, its output
+    iterators will be, too:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Defining methods:** Almost as a bonus, we can define methods on the generic
+    `SortedDisjoint` iterator. For example, here we define `complement`, a method
+    that produces every range of sorted & disjoint integers *not* in the current iterator.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And here is a use example from the `complement` documentation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `complement` method uses `NotIter`, yet another iterator (see Rule 3). `NotIter`
+    also implements `SortedDisjoint`. The example additionally uses `to_string`, another
+    `SortedDisjoint` method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To use `complement` and `to_string`, the user must either
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`use range_set_blaze::SortedDisjoint;` or `use range_set_blaze::prelude::*;`.The
+    prelude works because the project’s `lib.rs` says'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`pub mod prelude;` and `prelude.rs` file contains this `pub use` that includes
+    `SortedDisjoint`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: Those are the first five rules for creating a data structure in Rust. See [Part
+    2](/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7)
+    for rules 6 to 9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: If you’re interested in future articles, please [follow me on Medium](https://medium.com/@carlmkadie).
+    I write on scientific programming in Rust and Python, machine learning, and statistics.
+    I tend to write about one article per month.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL

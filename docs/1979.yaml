@@ -1,0 +1,380 @@
+- en: 'Beware of Unreliable Data in Model Evaluation: A LLM Prompt Selection case
+    study with Flan-T5'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/beware-of-unreliable-data-in-model-evaluation-a-llm-prompt-selection-case-study-with-flan-t5-88cfd469d058?source=collection_archive---------9-----------------------#2023-06-16](https://towardsdatascience.com/beware-of-unreliable-data-in-model-evaluation-a-llm-prompt-selection-case-study-with-flan-t5-88cfd469d058?source=collection_archive---------9-----------------------#2023-06-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You may choose suboptimal prompts for your LLM (or make other suboptimal choices
+    via model evaluation) unless you clean your test data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@chrismauck10?source=post_page-----88cfd469d058--------------------------------)[![Chris
+    Mauck](../Images/d0aeb4d0458544afdfdd59915a962b18.png)](https://medium.com/@chrismauck10?source=post_page-----88cfd469d058--------------------------------)[](https://towardsdatascience.com/?source=post_page-----88cfd469d058--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----88cfd469d058--------------------------------)
+    [Chris Mauck](https://medium.com/@chrismauck10?source=post_page-----88cfd469d058--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F96a38f7ac238&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeware-of-unreliable-data-in-model-evaluation-a-llm-prompt-selection-case-study-with-flan-t5-88cfd469d058&user=Chris+Mauck&userId=96a38f7ac238&source=post_page-96a38f7ac238----88cfd469d058---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----88cfd469d058--------------------------------)
+    ·10 min read·Jun 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F88cfd469d058&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeware-of-unreliable-data-in-model-evaluation-a-llm-prompt-selection-case-study-with-flan-t5-88cfd469d058&user=Chris+Mauck&userId=96a38f7ac238&source=-----88cfd469d058---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F88cfd469d058&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbeware-of-unreliable-data-in-model-evaluation-a-llm-prompt-selection-case-study-with-flan-t5-88cfd469d058&source=-----88cfd469d058---------------------bookmark_footer-----------)![](../Images/1fba4029952f6fbbdc9ad048d189e4e1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Credit: Arthur Osipyan, Unsplash'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Authors: Chris Mauck, Jonas Mueller*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reliable **model evaluation** lies at the heart of MLops and LLMops, guiding
+    crucial decisions like which model or prompt to deploy (and whether to deploy
+    at all). In this article, we prompt the FLAN-T5 LLM from [Google Research](https://ai.googleblog.com/2021/10/introducing-flan-more-generalizable.html)
+    with various prompts in an effort to classify text as polite or impolite. Amongst
+    the prompt candidates, we find the prompts that appear to perform best based on
+    observed test accuracy are often *actually* *worse* than other prompt candidates.
+    A closer review of the test data reveals this is due to unreliable annotations.
+    **In real-world applications, you may choose suboptimal prompts for your LLM (or
+    make other suboptimal choices guided by model evaluation) unless you clean your
+    test data to ensure it is reliable.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/37a5fbd75a640b7e870f173c88982f6a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Selecting great prompts is essential for ensuring accurate responses from Large
+    Language Models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While the harms of noisy annotations are well-characterized in training data,
+    this article demonstrates their often-overlooked consequences in test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am currently a data scientist at [Cleanlab](https://cleanlab.ai/) and I’m
+    excited to share the importance of (and how you can ensure) high-quality test
+    data to ensure optimal LLM prompt selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overview
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: You can download the data [here](https://s.cleanlab.ai/stanford-politeness-prompt-selection.csv).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article studies a binary classification variant of the [Stanford Politeness
+    Dataset](https://convokit.cornell.edu/documentation/wiki_politeness.html) (used
+    under [CC BY license v4.0](https://creativecommons.org/licenses/by/4.0/)), which
+    has text phrases labeled as *polite* or *impolite*. We evaluate models using a
+    fixed test dataset containing 700 phrases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1ade1f412d93083e70b3a78a8403338e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Snapshot of the dataset showing the text and ground truth politeness label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is standard practice to evaluate how “good” a classification model is by
+    measuring the accuracy of its predictions against the given labels for examples
+    the model did not see during training, usually referred to as “test”, “evaluation”,
+    or “validation” data. This provides a numerical metric to gauge how good model
+    A is against model B — if model A displays higher test accuracy, we estimate it
+    to be the better model and would choose to deploy it over model B. Beyond model
+    selection, the same decision-making framework can be applied to other choices
+    like whether to use: hyperparameter-setting A or B, prompt A or B, feature-set
+    A or B, etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A [common problem](https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/file/f2217062e9a397a1dca429e7d70bc6ca-Paper-round1.pdf)
+    in real-world test data is some examples have incorrect labels, whether due to
+    human annotation error, data processing error, sensor noise, etc. In such cases,
+    test accuracy becomes a less reliable indicator of the **relative performance**
+    between model A and model B. Let’s use a very simple example to illustrate this.
+    Imagine your test dataset has two examples of *impolite* text, but **unknowingly
+    to you**, they are (mis)labeled as *polite*. For instance, in our Stanford Politeness
+    dataset, we see an actual human annotator mistakenly labeled this text “*Are you
+    crazy down here?! What the heck is going on?*” as *polite* when the language is
+    clearly agitated. Now your job is to pick the best model to classify these examples.
+    Model A says that both examples are *impolite* and model B says both examples
+    are *polite*. Based on these (incorrect) labels, model A scores 0% while model
+    B scores 100% — you pick model B to deploy! But wait, which model *actually* is
+    stronger?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although these implications are trivial and many are aware that real-world data
+    is full of labeling errors, folks often focus only on noisy labels in their training
+    data, forgetting to carefully curate their test data even though it guides crucial
+    decisions. Using real data, this article illustrates the importance of high-quality
+    test data to guide the choice of LLM prompts and demonstrates one way to easily
+    improve data quality via algorithmic techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observed Test Accuracy vs Clean Test Accuracy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here we consider two possible test sets constructed out of the same set of text
+    examples which only differ in some (~30%) of the labels. Representing typical
+    data you’d use to evaluate accuracy, one version has labels sourced from a single
+    annotation (human rater) per example, and we report the accuracy of model predictions
+    computed on this version as *Observed Test Accuracy*. A second *cleaner* version
+    of this same test set has high-quality labels established via consensus amongst
+    many agreeing annotations per example (derived from multiple human raters). We
+    report accuracy measured on the cleaner version as *Clean Test Accuracy*. Thus,
+    *Clean Test Accuracy* more closely reflects what you care about (actual model
+    deployment performance), but the *Observed Test Accuracy* is all you get to observe
+    in most applications — unless you first clean your test data!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Below are two test examples where the single human annotator mislabeled the
+    example, but the group of many human annotators agreed on the correct label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f46afa1e51716d912df4d0b3c5c74ae9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The orange annotations collected from a single annotator are cheaper to collect,
+    but oftentimes incorrect. The blue annotations are collected from multiple annotators
+    which are more expensive, but usually more accurate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In real-world projects, you often don’t have access to such “clean” labels,
+    so you can only measure *Observed Test Accuracy*. If you are making critical decisions
+    such as which LLM or prompt to use based on this metric, be sure to first verify
+    the labels are high-quality. Otherwise, we find you may make the **wrong decisions**,
+    as observed below when selecting prompts for politeness classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Impact of Noisy Evaluation Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a predictive model to classify the politeness of text, it is natural to employ
+    a pretrained Large Language Model (LLM). Here, we specifically use data scientists’
+    favorite LLM — the open-source FLAN-T5 model. To get this LLM to accurately predict
+    the politeness of text, we must feed it just the right prompts. Prompt engineering
+    can be very sensitive, with small changes greatly affecting accuracy!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompts A and B shown below (highlighted text) are two different examples of
+    *chain-of-thought* prompts, that can be appended in front of any **text sample**
+    in order to get the LLM to classify its politeness. These prompts combine *few-shot*
+    and *instruction* prompts (details later) that provide examples, the correct response,
+    and a justification that encourages the LLM to explain its reasoning. The only
+    difference between these two prompts is the highlighted text that is actually
+    eliciting a response from the LLM. The few-shot examples and reasoning remain
+    the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/313afddfe3d4b4c04410243235b488ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: chain-of-thought prompts provide the model with reasoning as to why the answer
+    is correct for each text example given.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The natural way to decide which prompt is better is based on their *Observed
+    Test Accuracy.* When used to prompt the FLAN-T5 LLM, we see below that the classifications
+    produced by Prompt A have higher *Observed Test Accuracy* on the original test
+    set than those from Prompt B. So obviously we should deploy our LLM with Prompt
+    A, *right*? Not so fast!
+  prefs: []
+  type: TYPE_NORMAL
+- en: When we assess the *Clean Test Accuracy* of each prompt, we find that Prompt
+    B is actually **much better** than Prompt A (by 4.5 percentage points). Since
+    *Clean Test Accuracy* more closely reflects the true performance we actually care
+    about, we would’ve made the wrong decision if we just relied on the original test
+    data without examining its label quality!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/595291e25668a8dcb82a4ad60c234202.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using the observed accuracy, you would select Prompt A as better. Prompt B is
+    actually the better prompt when evaluated on the clean test set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is this just statistical fluctuation?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[McNemar’s test](https://en.wikipedia.org/wiki/McNemar%27s_test) is a recommended
+    way to assess the statistical significance of reported differences in ML accuracy.
+    When we apply this test to assess the 4.5% difference in *Clean Test Accuracy*
+    between Prompt A vs. B over our 700 text examples, the difference is highly statistically
+    significant (p-value = 0.007, *X²* = 7.086). Thus all evidence suggests Prompt
+    B is a meaningfully better choice — we should not have failed to select it by
+    carefully auditing our original test data!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is this a fluke result that just happened to be the case for these two prompts?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s look at other types of prompts as well to see if the results were just
+    coincidental for our pair of chain-of-thought prompts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instruction Prompts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This type of prompt simply provides an *instruction* to the LLM on what it needs
+    to do with the text example given. Consider the following pair of such prompts
+    we might want to choose between.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6bb28fb6b3a06ad2cdc804d9261be357.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Few-Shot Prompts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This type of prompt uses two instructions, a *prefix,* and a *suffix,* and also
+    includes two (pre-selected) examples from the text corpus to provide clear demonstrations
+    to the LLM of the desired input-output mapping. Consider the following pair of
+    such prompts we might want to choose between.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c9c06c3ea41b82767cdb0a012772d02f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Templatized Prompts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This type of prompt uses two instructions, an optional *prefix,* and a *suffix,*
+    in addition to multiple-choice formatting so that the model performs classification
+    as a multiple-choice answer rather than responding directly with a predicted class.
+    Consider the following pair of such prompts we might want to choose between.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9cf3c405b4de34cea5b1a75e418216e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results for various types of prompts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Beyond chain-of-thought, we also evaluated the classification performance of
+    the same FLAN-T5 LLM with these three additional types of prompts. Plotting the
+    *Observed Test Accuracy* vs. *Clean Test Accuracy* achieved with all of these
+    prompts below, we see many pairs of prompts that suffer from the same aforementioned
+    problem, where relying on *Observed Test Accuracy* leads to selecting the prompt
+    that is actually worse.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/be3a032c2c15f9de4ec3702dd35c282b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: As a prompt engineer using the available test data, you would choose the gray
+    A prompt in the upper left (highest observed accuracy) yet the optimal prompt
+    is actually the gray B in the upper right (highest clean accuracy).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Based on solely the *Observed Test Accuracy*, you would be inclined to select
+    each of the “A” prompts over the “B” prompts amongst each type of prompt. However,
+    the better prompt for each of the prompt types is actually prompt B (which has
+    higher *Clean Test Accuracy*). **Each of these prompt pairs highlights the need
+    to verify test data quality, otherwise, you can make suboptimal decisions due
+    to data issues like noisy annotations.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/da676344e2573dad4730dae95fb885ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: All of the A prompts appear to be better due to their higher observed accuracy,
+    yet all of the B prompts are objectively better when evaluated on the ground truth
+    test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can also see in this graphic how all of the A prompts observed accuracies
+    are circled, meaning that they have higher accuracies than their B counterparts.
+    Similarly, all of the B prompts clean accuracies are circled, meaning that they
+    have higher accuracies than their B counterparts. Just like the simple example
+    at the beginning of this article, you would be inclined to pick all of the A prompts,
+    when in actuality the B prompts do a much better job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Improving Available Test Data for More Reliable Evaluation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Hopefully, the importance of high-quality evaluation data is clear. Let’s look
+    at a couple of ways you could go about fixing the available test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Manual Correction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The easiest way to ensure the quality of your test data is to simply review
+    it by hand! Make sure to look through each of the examples to verify it is labeled
+    correctly. Depending on the size of your test set, this may or may not be feasible.
+    If your test set is relatively small (~100 examples) you could just look through
+    them and make any corrections necessary. If your test set is large (1000+ examples),
+    this would be too time-consuming and mentally to taxing to do by hand. Our test
+    set is quite large, so we won’t be using this method!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithmic Correction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another way to assess your available (possibly noisy) test set is to use data-centric
+    AI algorithms in order to diagnose issues that can be fixed to obtain a more reliable
+    version of the same dataset (without having to collect many additional human annotations).
+    Here we use Confident Learning algorithms (via the open-source [cleanlab](https://github.com/cleanlab/cleanlab)
+    package) to check our test data, which automatically estimate which examples appear
+    to be mislabeled. We then inspect only these auto-detected label issues and fix
+    their labels as needed to produce a higher-quality version of our test dataset.
+    We call model accuracy measurements made over this version of the test dataset,
+    the *CL Test Accuracy.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/442aa7374c7c2f78afb7370499bd246c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The CL test accuracy is greater for all of the B prompts. Using CL we corrected
+    the original test data and now can trust our model and prompt decisions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using this new CL-corrected test set for model evaluation, we see that all of
+    the B prompts from before now properly display higher accuracy than their A counterparts.
+    This means we can trust our decisions made based on the CL-corrected test set
+    to be more reliable than those made based on the noisy original test data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, Confident Learning cannot magically identify all errors in any dataset.
+    How well this algorithm detects labeling errors will depend on having reasonable
+    predictions from a baseline ML model and even then, certain types of systematically-introduced
+    errors will remain undetectable (for instance if we swap the definition of two
+    classes entirely). For the precise list of mathematical assumptions under which
+    Confident Learning can be proven effective, refer to the [original paper by Northcutt
+    et al.](https://dl.acm.org/doi/10.1613/jair.1.12125) For many real-world text/image/audio/tabular
+    datasets, this algorithm appears to at least offer an effective way to focus limited
+    data reviewing resources on the most suspicious examples lurking in a large dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**You don’t always need to spend the time/resources to curate a “perfect” evaluation
+    set — using algorithms like Confident Learning to diagnose and correct possible
+    issues in your available test set can provide high-quality data to ensure optimal
+    prompt and model selections.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images unless otherwise noted are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL

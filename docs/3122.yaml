@@ -1,0 +1,590 @@
+- en: 'Vectorize and Parallelize RL Environments with JAX: Q-learning at the Speed
+    of Light⚡'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=collection_archive---------1-----------------------#2023-10-15](https://towardsdatascience.com/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=collection_archive---------1-----------------------#2023-10-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In this article, we learn to vectorize an RL environment and train 30 Q-learning
+    agents in parallel on a CPU, at 1.8 million iterations per second.
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)[![Ryan
+    Pégoud](../Images/9314b76c2be56bda8b73b4badf9e3e4d.png)](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)
+    [Ryan Pégoud](https://medium.com/@ryanpegoud?source=post_page-----49d07373adf5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F27fba63b402e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=post_page-27fba63b402e----49d07373adf5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----49d07373adf5--------------------------------)
+    ·11 min read·Oct 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F49d07373adf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=-----49d07373adf5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F49d07373adf5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5&source=-----49d07373adf5---------------------bookmark_footer-----------)![](../Images/e3dd3c8e0de078193309dd3d907fe589.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image by [Google DeepMind](https://unsplash.com/fr/@googledeepmind) on [Unsplash](https://unsplash.com/fr)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the previous story, we introduced **Temporal-Difference Learning,** particularly
+    **Q-learning**, in the context of a GridWorld.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/temporal-difference-learning-and-the-importance-of-exploration-an-illustrated-guide-5f9c3371413a?source=post_page-----49d07373adf5--------------------------------)
+    [## Temporal-Difference Learning and the importance of exploration: An illustrated
+    guide'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A comparison of model-free (Q-learning) and model-based (Dyna-Q and Dyna-Q+)
+    TD methods on a dynamic grid world.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/temporal-difference-learning-and-the-importance-of-exploration-an-illustrated-guide-5f9c3371413a?source=post_page-----49d07373adf5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: While this implementation served the purpose of demonstrating the differences
+    in performances and exploration mechanisms of these algorithms, ***it was painfully
+    slow***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Indeed, the environment and agents were mainly coded in **Numpy**, which is
+    by no means a standard in RL, even though it makes the code easy to understand
+    and debug.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we’ll see how to scale up RL experiments by **vectorizing
+    environments** and seamlessly **parallelizing** the training of dozens of agents
+    using **JAX**. In particular, this article covers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: JAX basics and useful features for RL
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Vectorized environment and why they are so fast
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Implementation of an environment, policy, and Q-learning agent in JAX
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Single-agent training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How to parallelize agent training, and how easy it is!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*All the code featured in this article is available on* [***GitHub***](https://github.com/RPegoud)*:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
+    [## GitHub - RPegoud/jym: JAX implementation of RL algorithms and vectorized environments'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'JAX implementation of RL algorithms and vectorized environments - GitHub -
+    RPegoud/jym: JAX implementation of RL…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: JAX Basics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: JAX is *yet another* Python Deep Learning framework developed by Google and
+    widely used by companies such as DeepMind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “JAX is [Autograd](https://github.com/hips/autograd) (automatic differenciation)
+    and [XLA](https://www.tensorflow.org/xla) (Accelerated Linear Algebra, a TensorFlow
+    compiler), brought together for high-performance numerical computing.” — [Official
+    Documentation](https://jax.readthedocs.io/en/latest/index.html)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As opposed to what most Python developers are used to, JAX doesn’t embrace the
+    **object-oriented programming** (OOP) paradigm, but rather **functional programming
+    (FP)[1]**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Put simply, it relies on ***pure functions*** (**deterministic** and **without
+    side effects**) and ***immutable data structures* (**instead of changing the data
+    in place, **new data structures** are **created with the desired modifications)**
+    as primary building blocks. As a result, FP encourages a more functional and mathematical
+    approach to programming, making it well-suited for tasks like numerical computing
+    and machine learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s illustrate the differences between those two paradigms by looking at
+    pseudocode for a Q-update function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The **object-oriented** approach relies on a ***class instance*** containing
+    various ***state variables*** (such as the Q-values). The update function is defined
+    as a class method that **updates the *internal state*** of the instance.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The **functional programming** approach relies on a ***pure function***. Indeed,
+    this Q-update is **deterministic** as the Q-values are passed as an argument.
+    Therefore, any call to this function with the **same inputs** will result in the
+    **same outputs** whereas a class method’s outputs may depend on the internal state
+    of the instance. Also, **data structures** such as arrays are **defined** and
+    **modified** in the **global scope**.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/56e8dbf4f2b5c86ce9ee248c52e7eea1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Implementing a Q-update in **Object-Oriented Programming** and **Functional
+    Programming** (made by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As such, JAX offers a variety of **function decorators** that are particularly
+    useful in the context of RL:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**vmap**](https://jax.readthedocs.io/en/latest/_autosummary/jax.vmap.html#jax.vmap)
+    **(vectorized map)**: Allows a function acting on a single sample to be applied
+    on a **batch**. For instance, if *env.step()* is a function performing a step
+    in a single environment, *vmap(env.step)()* is a function performing a step in
+    **multiple environments**. In other words, vmap adds a **batch dimension** to
+    a function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/087c8d85c6e7830b41797d23bccd389e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of a **step** function vectorized using **vmap** (made by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**j**[**it**](https://jax.readthedocs.io/en/latest/_autosummary/jax.jit.html#jax.jit)
+    **(just-in-time compilation)**: Allows JAX to perform a “*Just In Time compilation
+    of a JAX Python function”* making it **XLA-compatible***.* Essentially, using
+    jit allows us to **compile functions** and provides **significant speed improvements**
+    (in exchange for some additional overhead when first compiling the function).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[**pmap**](https://jax.readthedocs.io/en/latest/_autosummary/jax.pmap.html#jax.pmap)
+    **(parallel map)**: Similarly to vmap, pmap enables easy parallelization. However,
+    instead of adding a batch dimension to a function, it replicates the function
+    and executes it on **several XLA devices**. *Note: when applying pmap, jit is
+    also applied* ***automatically****.*'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/0487f82f161ef56721ef4ffb3c518b2e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Illustration of a **step** function parallelized using **pmap** (made by the
+    author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have laid down the basics of JAX, we’ll see how to obtain massive
+    speed-ups by vectorizing environments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Vectorized Environments:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, what is a vectorized environment and what problems does vectorization
+    solve?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In most cases, RL experiments are **slowed down** by **CPU-GPU data transfers**.
+    Deep Learning RL algorithms such as **Proximal Policy Optimization** (PPO) use
+    Neural Networks to approximate the policy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As always in Deep Learning, Neural Networks use **GPUs** at **training** and
+    **inference** time. However, in most cases, **environments** run on the **CPU**
+    (even in the case of multiple environments being used in parallel).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This means that the usual RL loop of selecting actions via the policy (Neural
+    Networks) and receiving observations and rewards from the environment requires
+    **constant back-and-forths** between the GPU and the CPU, which **hurts performance**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition, using frameworks such as PyTorch without *“jitting”* might cause
+    some overhead, since the GPU might have to wait for Python to send back observations
+    and rewards from the CPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63569ff4a86de897ea6ec51e9117e770.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Usual RL batched training setup in **PyTorch** (made by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, JAX enables us to easily run batched environments on the
+    GPU, removing the friction caused by GPU-CPU data transfer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Moreover, as jit compiles our JAX code to XLA, the execution is no longer (or
+    at least less) affected by the inefficiency of Python.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/409f40c6f76e51efdedbb3839402877e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: RL batched training setup in **JAX** (made by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: For more details and exciting applications to **meta-learning RL research**,
+    I highly recommend this blog post by [Chris Lu](https://chrislu.page/blog/meta-disco/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Environment, Agent, and Policy implementations:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s take a look at the implementation of the different parts of our RL experiment.
+    Here’s a high-level overview of the basic functions we’ll need:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/725493b5fac4cb5c5d9d444a489b8166.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Class methods required for a simple RL setup (made by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The environment
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This implementation follows the scheme provided by [Nikolaj Goodger](https://medium.com/@ngoodger_7766)
+    in his great article on writing environments in JAX.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ngoodger_7766/writing-an-rl-environment-in-jax-9f74338898ba?source=post_page-----49d07373adf5--------------------------------)
+    [## Writing an RL Environment in JAX'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to run CartPole at 1.25 Billion Step/Sec
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@ngoodger_7766/writing-an-rl-environment-in-jax-9f74338898ba?source=post_page-----49d07373adf5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s start with a **high-level view** of the environment and its methods.
+    This is a general plan for implementing an environment in JAX:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a closer look at the class methods *(as a reminder, functions starting
+    with “_” are* ***private*** *and shall not be called outside of the scope of the
+    class)*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**_get_obs**: This method converts the environment state to an observation
+    for the agent. In a **partially observable** or **stochastic** environment, the
+    processing functions applied to the state would go here.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**_reset**: As we’ll be running multiple agents in parallel, we need a method
+    for individual resets on the completion of an episode.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**_reset_if_done**: This method will be called at each step and trigger _reset
+    if the “done” flag is set to True.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**reset**: This method is called at the beginning of the experiment to get
+    the initial state of each agent, as well as the associated random keys'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**step**: Given a state and an action, the environment returns an observation
+    (new state), a reward, and the updated “done” flag.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'In practice, a generic implementation of a GridWorld environment would look
+    like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that, as mentioned earlier, all class methods follow the **functional
+    programming** paradigm. Indeed, we never update the internal state of the class
+    instance. Furthermore, the **class attributes** are all **constants** that won’t
+    be modified after instantiation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a closer look:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**__init__:** In the context of our GridWorld, the available actions are **[**0,
+    1, 2, 3**]**. These actions are translated into a 2-dimensional array using *self.movements*
+    and added to the state in the step function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**_get_obs:** Our environment is **deterministic** and **fully observable**,
+    therefore the agent receives the state directly instead of a processed observation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**_reset_if_done:** The argument *env_state* corresponds to the (state, key)
+    tuple where key is a [*jax.random.PRNGKey*](https://jax.readthedocs.io/en/latest/jax.random.html)*.*
+    This function simply returns the initial state if the *done* flag is set to True,
+    however, we cannot use conventional Python control flow within JAX jitted functions.
+    Using [*jax.lax.cond*](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#cond)we
+    essentially get an expression equivalent to:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**step:** We convert the action to a movement and add it to the current state
+    (*jax.numpy.clip* ensures that the agent stays within the grid). We then update
+    the *env_state* tuple before checking if the environment needs to be reset. As
+    the step function is used frequently throughout training, jitting it allows significant
+    performance gains. The *@partial(jit, static_argnums=(0, )* decorator signals
+    that the “*self”* argument of the class method should be considered **static**.
+    In other words, the **class properties are constant** and won’t change during
+    successive calls to the step function.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Q-Learning Agent
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Q-learning agent is defined by the **update** function, as well as a static
+    **learning rate** and **discount factor**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, when jitting the update function, we pass the “self” argument as
+    static. Also, notice that the *q_values* matrix is modified in place using *set()*
+    and its value is not stored as a class attribute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Epsilon-Greedy Policy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Finally, the policy used in this experiment is the standard **epsilon-greedy
+    policy**. One important detail is that it uses **random tie-breaks**, which means
+    that if the maximal Q-value is not unique, the action will be **sampled uniformly**
+    from the **maximal Q-values** *(using argmax would always return the first action
+    with maximal Q-value).* This is especially important if Q-values are initialized
+    as a matrix of zeros, as the action 0 (move right) would always be selected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Otherwise, the policy can be summarized by this snippet:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that when we use a ***key*** in JAX *(e.g. here we sampled a random float
+    and used random.choice)* it is common practice to split the key afterward *(i.e.
+    “move on to a new random state”, more details* [*here*](https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html#random-numbers-in-jax)*).*
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Single-agent training loop:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we have all the required components, let’s train a single agent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s a ***Pythonic*** training loop, as you can see we are essentially selecting
+    an action using the policy, performing a step in the environment, and updating
+    the Q-values, until the end of an episode. Then we repeat the process for ***N***
+    episodes. As we’ll see in a minute, this way of training an agent is quite **inefficient**,
+    however, it summarizes the key steps of the algorithm in a readable way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On a single CPU, we complete 10.000 episodes in 11 seconds, at a rate of 881
+    episodes and 21 680 steps per second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let’s replicate the same training loop using JAX syntax. Here’s a high-level
+    description of the **rollout** function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6e3d6e59e8ee5b273e0f2796595a0ec7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Training rollout function using **JAX syntax** (made by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To summarize, the rollout function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Initializes** the **observations**, **rewards**, and **done** flags as empty
+    arrays with a dimension equal to the number of time steps using *jax.numpy.zeros.*
+    The **Q-values** are initialized as an empty matrix with shape **[**timesteps**+1**,
+    grid_dimension_x, grid_dimension_y, n_actions**]**.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Calls the ***env.reset()*** function to get the initial state
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Uses the ***jax.lax.fori_loop()*** function to call a ***fori_body()*** function
+    ***N*** times, where ***N*** is the ***timestep*** parameter
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The ***fori_body()*** function behaves similarly to the previous Python loop.
+    After selecting an action, performing a step, and computing the Q-update, we update
+    the obs, rewards, done, and q_values arrays in place *(the Q-update targets the
+    time step* ***t+1****)*.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This additional complexity leads to an **85x speed-up**, we now train our agent
+    at roughly **1.83 million steps per second**. Note that here, the training is
+    done on a ***single CPU*** as the environment is simplistic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, **end-to-end vectorization scales even better** when applied to **complex
+    environments** and **algorithms benefitting from multiple GPUs** ([Chris Lu’s
+    article](https://chrislu.page/blog/meta-disco/) reports a whopping **4000x speed-up**
+    between a CleanRL PyTorch implementation of PPO and a JAX reproduction).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: After training our agent, we plot the maximal Q-value for each cell (i.e. *state*)
+    of the GridWorld and we observe that it has effectively learned to go from the
+    initial state (bottom right corner) to the objective (top left corner).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Heatmap representation of the maximal Q-value for each cell of the GridWorld
+    (made by the author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Parallel agents training loop:**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As promised, now that we’ve written the functions required to train a **single
+    agent**, we have little to no work left to train **multiple agents** in **parallel**
+    on batched environments!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to **vmap** we can quickly transform our previous functions to work on
+    batches of data. We only have to specify the expected input and output shapes,
+    for instance for ***env.step:***
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**in_axes** = ((0,0), 0) represents the input shape, which is composed of the
+    *env_state* tuple (dimension (0, 0)) and an *observation* (dimension 0).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**out_axes** = ((0, 0), 0, 0, 0) represents the output shape, with the output
+    being ((env_state), obs, reward, done).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now, we can call ***v_step*** on an **array** of *env_states* and *actions*
+    and receive an **array** of processed *env_states*, *observations*, *rewards*,
+    and *done flags.*
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that we also **jit** all batched functions for performance (arguably, jitting
+    *env.reset()* is unnecessary given that it is only called once in our training
+    function).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The last adjustment we have to make is to **add a batch dimension** to our arrays
+    to account for each agent’s data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By doing this, we obtain a function that allows us to train **multiple agents
+    in parallel**, with minimal adjustments compared to the single agent function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We get similar performances with this version of our training function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that’s it! Thanks for reading this far, I hope this article provided a helpful
+    introduction to implementing vectorized environments in **JAX**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you enjoyed the read, please consider **sharing** this article and **starring**
+    my GitHub repository, thanks for your support! 🙏
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
+    [## GitHub - RPegoud/jym: JAX implementation of RL algorithms and vectorized environments'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'JAX implementation of RL algorithms and vectorized environments - GitHub -
+    RPegoud/jym: JAX implementation of RL…'
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/RPegoud/jym?source=post_page-----49d07373adf5--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally, for those interested in digging a little deeper, here’s a list of
+    **useful resources** that helped me get started with JAX and redacting this article:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A curated list of awesome JAX articles and resources:'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Coderized, (functional programming) [*The purest coding style, where bugs
+    are near impossible*](https://www.youtube.com/watch?v=HlgG395PQWw&t=254s), YouTube'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Aleksa Gordić, [*JAX From Zero to Hero YouTube Playlist*](https://www.youtube.com/watch?v=SstuvS-tVc0&list=PLBoQnSflObckOARbMK9Lt98Id0AKcZurq)
+    *(2022), The AI Epiphany*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Nikolaj Goodger, [*Writing an RL Environment in JAX*](https://medium.com/@ngoodger_7766/writing-an-rl-environment-in-jax-9f74338898ba)
+    *(2021)*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Chris Lu*,* [*Achieving 4000x Speedups and Meta-Evolving Discoveries with
+    PureJaxRL*](https://chrislu.page/blog/meta-disco/) *(2023),* [University of Oxford](https://www.ox.ac.uk/),
+    [Foerster Lab for AI Research](https://www.foersterlab.com/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Nicholas Vadivelu,[*Awesome-JAX*](https://github.com/n2cholas/awesome-jax)
+    *(2020)*, a list of JAX libraries, projects, and resources'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] JAX Official Documentation, [*Training a Simple Neural Network, with PyTorch
+    Data Loading*](https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html)'
+  prefs: []
+  type: TYPE_NORMAL

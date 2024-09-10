@@ -1,0 +1,571 @@
+- en: 'Dynamic Pricing with Multi-Armed Bandits: Learning by Doing'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/dynamic-pricing-with-multi-armed-bandit-learning-by-doing-3e4550ed02ac?source=collection_archive---------1-----------------------#2023-08-16](https://towardsdatascience.com/dynamic-pricing-with-multi-armed-bandit-learning-by-doing-3e4550ed02ac?source=collection_archive---------1-----------------------#2023-08-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Applying Reinforcement Learning strategies to real-world use cases, especially
+    in dynamic pricing, can reveal many surprises
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@massi.costacurta?source=post_page-----3e4550ed02ac--------------------------------)[![Massimiliano
+    Costacurta](../Images/599c3469021c53f116cc67c390db6695.png)](https://medium.com/@massi.costacurta?source=post_page-----3e4550ed02ac--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3e4550ed02ac--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3e4550ed02ac--------------------------------)
+    [Massimiliano Costacurta](https://medium.com/@massi.costacurta?source=post_page-----3e4550ed02ac--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F233cb43234c3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-pricing-with-multi-armed-bandit-learning-by-doing-3e4550ed02ac&user=Massimiliano+Costacurta&userId=233cb43234c3&source=post_page-233cb43234c3----3e4550ed02ac---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3e4550ed02ac--------------------------------)
+    ·16 min read·Aug 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3e4550ed02ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-pricing-with-multi-armed-bandit-learning-by-doing-3e4550ed02ac&user=Massimiliano+Costacurta&userId=233cb43234c3&source=-----3e4550ed02ac---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3e4550ed02ac&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdynamic-pricing-with-multi-armed-bandit-learning-by-doing-3e4550ed02ac&source=-----3e4550ed02ac---------------------bookmark_footer-----------)![](../Images/ee7ee77f9d7a623044975573c7cd42b4.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dynamic Pricing, Reinforcement Learning and Multi-Armed Bandit
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In the vast world of decision-making problems, one dilemma is particularly
+    owned by Reinforcement Learning strategies: exploration versus exploitation. Imagine
+    walking into a casino with rows of slot machines (also known as “one-armed bandits”)
+    where each machine pays out a different, unknown reward. Do you explore and play
+    each machine to discover which one has the highest payout, or do you stick to
+    one machine, hoping it’s the jackpot? This metaphorical scenario underpins the
+    concept of the Multi-armed Bandit (MAB) problem. The objective is to find a strategy
+    that maximizes the rewards over a series of plays. While exploration offers new
+    insights, exploitation leverages the information you already possess.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, transpose this principle to dynamic pricing in a retail scenario. Suppose
+    you are an e-commerce store owner with a new product. You aren’t certain about
+    its optimal selling price. How do you set a price that maximizes your revenue?
+    Should you explore different prices to understand customer willingness to pay,
+    or should you exploit a price that has been performing well historically? Dynamic
+    pricing is essentially a MAB problem in disguise. At each time step, every candidate
+    price point can be seen as an “arm” of a slot machine and the revenue generated
+    from that price is its “reward.” Another way to see this is that the objective
+    of dynamic pricing is to swiftly and accurately measure how a customer base’s
+    demand reacts to varying price points. In simpler terms, the aim is to pinpoint
+    the demand curve that best mirrors customer behavior.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we’ll explore four Multi-armed Bandit algorithms to evaluate
+    their efficacy against a well-defined (though not straightforward) demand curve.
+    We’ll then dissect the primary strengths and limitations of each algorithm and
+    delve into the key metrics that are instrumental in gauging their performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Modeling The Demand Curve
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Traditionally, demand curves in economics describe the relationship between
+    the price of a product and the quantity of the product that consumers are willing
+    to buy. They generally slope downwards, representing the common observation that
+    as price rises, demand typically falls, and vice-versa. Think of popular products
+    such as smartphones or concert tickets. If prices are lowered, more people tend
+    to buy, but if prices skyrocket, even the ardent fans might think twice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Yet in our context, we’ll model the demand curve slightly differently: we’re
+    putting price against probability. Why? Because in dynamic pricing scenarios,
+    especially digital goods or services, it’s often more meaningful to think in terms
+    of the likelihood of a sale at a given price than to speculate on exact quantities.
+    In such environments, each pricing attempt can be seen as an exploration of the
+    likelihood of success (or purchase), which can be easily modeled as a Bernoulli
+    random variable with a probability *p* depending on a given test price.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s where it gets particularly interesting: while intuitively one might
+    think the task of our Multi-armed Bandit algorithms is to unearth that ideal price
+    where the probability of purchase is highest, it’s not quite so straightforward.
+    In fact, our ultimate goal is to maximize the revenue (or the margin). This means
+    we’re not searching for the price that gets the most people to click ‘buy’ — we’re
+    searching for the price that, when multiplied by its associated purchase probability,
+    gives the highest expected return. Imagine setting a high price that fewer people
+    buy, but each sale generates significant revenue. On the flip side, a very low
+    price might attract more buyers, but the total revenue might still be lower than
+    the high price scenario. So, in our context, talking about the ‘demand curve’
+    is somewhat unconventional, as our target curve will primarily represent the probability
+    of purchase rather than the demand directly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, getting to the math, let’s start by saying that consumer behavior, especially
+    when dealing with price sensitivity, isn’t always linear. A linear model might
+    suggest that for every incremental increase in price, there’s a constant decrement
+    in demand. In reality, this relationship is often more complex and nonlinear.
+    One way to model this behavior is by using logistic functions, which can capture
+    this nuanced relationship more effectively. Our chosen model for the demand curve
+    is then:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe4cc4f9e4698afc79a0ff4ee39a1cc6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Here, *a* determines the maximum achievable probability of purchase, while *b*
+    modulates the sensitivity of the demand curve against price changes. A higher
+    value of *b* means a steeper curve, approaching more rapidly to lower purchase
+    probabilities as the price increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/53098370c4b84e88030173af66333f01.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Four examples of demand curves with different combinations of parameters a and
+    b
+  prefs: []
+  type: TYPE_NORMAL
+- en: For any given price point, we’ll be then able to obtain an associated purchase
+    probability, *p*. We can then input *p* into a Bernoulli random variable generator
+    to simulate the response of a customer to a particular price proposal. In other
+    words, given a price, we can easily emulate our reward function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we can multiply this function by the price in order to get the expected
+    revenue for a given price point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/11ee2d7e1a22d6a93d5a9092c4bef301.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unsurprisingly, this function does not reach its maximum in correspondence with
+    the highest probability. Also, the price associated with the maximum does not
+    depend on the value of the parameter *a*, while the maximum expected return does.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3676422659c3945a959f3ddd154b8a0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Expected revenue curves with related maxima
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With some recollection from calculus, we can also derive the formula for the
+    derivative (you’ll need to use a combination of both the product and the chain
+    rule). It’s not exactly a relaxing exercise, but it’s nothing too challenging.
+    Here is the analytical expression of the derivative of the expected revenue:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b4aca3305e35203517b213539b0380d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: This derivative allows us to find the exact price that maximizes our expected
+    revenue curve. In other words, by using this specific formula in tandem with some
+    numerical algorithms, we can easily determine the price that sets it to 0\. This,
+    in turn, is the price that maximizes the expected revenue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And this is exactly what we need, since by fixing the values of *a* and *b*,
+    we’ll immediately know the target price that our bandits will have to find. Coding
+    this in Python is a matter of a few lines of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our use case, we’ll set *a* = 2 and *b* = 0.042, which will give us a target
+    price of about 30.44, associated with an optimal probability of 0.436 ( → optimal
+    average reward is 30.44*0.436=13.26). This price is obviously unknown in general
+    and it is exactly the price that our Multi-armed Bandit algorithms will seek.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Multi-armed Bandit Strategies
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now that we’ve identified our objectives, it’s time to explore various strategies
+    for testing and analyzing their performance, strengths, and weaknesses. While
+    several algorithms exist in MAB literature, when it comes to real-world scenarios,
+    four primary strategies (along with their variations) predominantly form the backbone.
+    In this section, we’ll provide a brief overview of these strategies. We assume
+    the reader has a foundational understanding of them; however, for those interested
+    in a more in-depth exploration, references are provided at the end of the article.
+    After introducing each algorithm, we’ll also present its Python implementation.
+    Although each algorithm possesses its unique set of parameters, they all commonly
+    utilize one key input: the `arm_avg_reward` vector. This vector denotes the average
+    reward garnered from each arm (or action/price) up to the current time step *t*.
+    This critical input guides all the algorithms in making informed decisions about
+    the subsequent price setting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithms I am going to apply to our dynamic pricing problem are the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Greedy**: This strategy is like always going back to the machine that gave
+    you the most coins the first few times you played. After trying out each machine
+    a bit, it sticks with the one that seemed the best. But there might be a problem.
+    What if that machine was just lucky at the start? The Greedy strategy might miss
+    out on better options. On the bright side, the code implementation is really simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s essential to differentiate the initial scenario (when all rewards are 0)
+    from the regular one. Often, you’ll find only the ‘else’ part implemented, which
+    indeed works even when all rewards are at 0\. Yet, this approach can lead to a
+    bias toward the first element. If you make this oversight, you might end up paying
+    that bias, particularly if the optimal reward happens to be tied to the first
+    arm (yes, I’ve been there). The Greedy approach is typically the least-performing
+    one and we’ll primarily use it as our performance baseline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***ϵ*-greedy**: The ε-greedy (epsilon-greedy) algorithm is a modification to
+    tackle the main drawback of the greedy approach. It introduces a probability *ε*
+    (epsilon), typically a small value, to select a random arm, promoting exploration.
+    With a probability 1−*ε*, it chooses the arm with the highest estimated reward,
+    favoring exploitation. By balancing between random exploration and exploitation
+    of known rewards, the ε-greedy strategy aims to achieve better long-term returns
+    compared to purely greedy methods. Again, the implementation is immediate, it’s
+    simply an additional ‘if’ on top of the Greedy code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**UCB1 (Upper Confidence Bound)**: The UCB1 strategy is like a curious explorer
+    trying to find the best restaurant in a new city. While there’s a favorite spot
+    they’ve enjoyed, the allure of potentially discovering an even better place grows
+    with each passing day. In our context, UCB1 combines the rewards of known price
+    points with the uncertainty of those less explored. Mathematically, this balance
+    is achieved through a formula: the average reward of a price point plus an “uncertainty
+    bonus” based on how long since it was last tried. This bonus is calculated as'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/78e04b458368a5ab1e4de22f9a30bdf3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: and represents the “growing curiosity” about the untried price. The hyperparameter
+    *C* controls the balance between exploitation and exploration, with higher values
+    of *C* encouraging more exploration of less-sampled arms. By always selecting
+    the price with the highest combined value of known reward and curiosity bonus,
+    UCB1 ensures a mix of sticking to what’s known and venturing into the unknown,
+    aiming to uncover the optimal price point for maximum revenue. I’ll start with
+    the by-the-book implementation of this approach, but we’ll soon see that we need
+    to tweak it a bit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Thompson Sampling**: This Bayesian approach addresses the exploration-exploitation
+    dilemma by probabilistically selecting arms based on their posterior reward distributions.
+    When these rewards adhere to a Bernoulli distribution, representing binary outcomes
+    like success/failure, Thompson Sampling (TS) employs the Beta distribution as
+    a conjugate prior (see [this table](https://en.wikipedia.org/wiki/Conjugate_prior)
+    for reference). Initiating with a non-informative Beta(1,1) prior for every arm,
+    the algorithm updates the distribution’s parameters upon observing rewards: a
+    success increases the alpha parameter, while a failure augments the beta. During
+    each play, TS draws from the current Beta distribution of each arm and opts for
+    the one with the top sampled value. This methodology allows TS to dynamically
+    adjust based on gathered rewards, adeptly balancing between the exploration of
+    uncertain arms and the exploitation of those known to be rewarding. In our specific
+    scenario, although the foundational reward function follows a Bernoulli distribution
+    (1 for a purchase and 0 for a missed purchase), the actual reward of interest
+    is the product of this basic reward and the current price under test. Hence, our
+    implementation of TS will need a slight modification (which will also introduce
+    some surprises).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The change is actually pretty simple: to determine the most promising next
+    arm, samples extracted from the posterior estimates are multiplied by their respective
+    price points (line 3). This modification ensures decisions are anchored on the
+    anticipated average revenue, shifting the focus from the highest purchase probability.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do we evaluate the results?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'At this point, having gathered all the key ingredients to construct a simulation
+    comparing the performance of the four algorithms in our dynamic pricing context,
+    we must ask ourselves: what exactly will we be measuring? The metrics we choose
+    are pivotal, as they will guide us in the process of both comparing and improving
+    the algorithm implementation. In this endeavor, I’m zeroing in on three key indicators:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Regret**: This metric measures the difference between the reward obtained
+    by the chosen action and the reward that would have been obtained by taking the
+    best possible action. Mathematically, regret at time *t* is given by: Regret(*t*)=Optimal
+    Reward(*t*)−Actual Reward(*t*). Regret, when accumulated over time, provides insight
+    into how much we’ve “lost” by not always choosing the best action. It is preferred
+    over cumulative reward because it provides a clearer indication of the algorithm’s
+    performance relative to the optimal scenario. Ideally, a regret value close to
+    0 indicates proximity to optimal decision-making.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Reactivity**: This metric gauges the speed at which an algorithm approaches
+    a target average reward. Essentially, it’s a measure of the algorithm’s adaptability
+    and learning efficiency. The quicker an algorithm can achieve the desired average
+    reward, the more reactive it is, implying a swifter adjustment to the optimal
+    price point. In our case the target reward is set at 95% of the optimal average
+    reward, which is 13.26\. However, initial steps can exhibit high variability.
+    For instance, a lucky early choice might result in a success from a low probability
+    arm associated with a high price, quickly achieving the threshold. Due to such
+    fluctuations, I’ve opted for a stricter definition of reactivity: the number of
+    steps required to attain 95% of the optimal average reward ten times, excluding
+    the initial 100 steps.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Arms Allocation**: This indicates the frequency with which each algorithm
+    utilizes the available arms. Presented as a percentage, it reveals the algorithm’s
+    propensity to select each arm over time. Ideally, for the most efficient pricing
+    strategy, we’d want an algorithm to allocate 100% of its choices to the best-performing
+    arm and 0% to the rest. Such an allocation would inherently lead to a regret value
+    of 0, denoting optimal performance.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Running the simulation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Evaluating MAB algorithms poses challenges due to the highly stochastic nature
+    of their outcomes. This means that because of the inherent randomness in determining
+    quantities, the results can greatly vary from one run to another. For a robust
+    evaluation, the most effective approach is to execute the target simulation multiple
+    times, accumulate the results and metrics from each simulation, and then compute
+    the average.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The initial step involves creating a function to simulate the decision-making
+    process. This function will implement the feedback loop represented in the below
+    image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b6378902599171138a32c2348195064.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Feedback loop implemented in the simulation function
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the implementation of the simulation loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The inputs to this function are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`prices`: A list of candidate prices we wish to test (essentially our "arms").'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`nstep`: The total number of steps in the simulation.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`strategy`: The algorithm we aim to test for making decisions on the next price.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Lastly, we need to write the code for the outer loop. For every target strategy,
+    this loop will call `run_simulation` multiple times, collect and aggregate the
+    results from each execution, and then display the outcomes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For our analysis, we’ll use the following configuration parameters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`prices`: Our price candidates → [20, 30, 40, 50, 60]'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`nstep`: Number of time steps for every simulation → 10000'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`nepoch`: Number of simulation executions → 1000'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Furthermore, by setting our price candidates, we can promptly obtain the associated
+    purchase probabilities, which are (approximately) [0.60, 0.44, 0.31, 0.22, 0.15].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'After running the simulation we are finally able to see some results. Let’s
+    start from the plot of the cumulative regret:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/38f0d7ed5a3eb34de655707750566df7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: From the graph, we can see that TS is the winner in terms of mean cumulative
+    regret, but it takes around 7,500 steps to surpass ε-greedy. On the other hand,
+    we have a clear loser, which is UCB1\. In its basic configuration, it essentially
+    performs on par with the greedy approach (we’ll get back to this later). Let’s
+    try to understand the results better by exploring the other available metrics.
+    In all four cases, the reactivity shows very large standard deviations, so we’ll
+    focus on the median values instead of the means, as they are more resistant to
+    outliers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6c7e6a229b568b00c4e47f91f695a5c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The initial observation from the plots reveals that while TS surpasses ε-greedy
+    in terms of the mean, it slightly lags behind in terms of the median. However,
+    its standard deviation is smaller. Particularly interesting is the reactivity
+    bar plot, which shows how TS struggles to rapidly achieve a favorable average
+    reward. At first, this was counterintuitive to me, but the mechanism behind TS
+    in this scenario clarified matters. We previously mentioned that TS estimates
+    purchase probabilities. Yet, decisions are made based on the product of these
+    probabilities and the prices. Having knowledge of the real probabilities (that,
+    as mentioned, are [0.60, 0.44, 0.31, 0.22, 0.15]) allows us to calculate the expected
+    rewards TS is actively navigating: [12.06, 13.25, 12.56, 10.90, 8.93]. In essence,
+    although the underlying probabilities differ considerably, the expected revenue
+    values are relatively close from its perspective, especially in proximity to the
+    optimal price. This means TS requires more time to discern the optimal arm. While
+    TS remains the top-performing algorithm (and its median eventually drops below
+    that of the ε-greedy one if the simulation is prolonged), it demands a longer
+    period to identify the best strategy in this context. Below, the arm allocation
+    pies show how TS and ε-greedy do pretty well in identifying the best arm (price=30)
+    and using it most of the time during the simulation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0770e428e56f9412f7911d1c7db5aa75.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Now let’s get back to UCB1\. Regret and reactivity confirm that it’s basically
+    acting as a fully exploitative algorithm: quick to get a good level of average
+    reward but with big regret and high variability of the outcome. If we look at
+    the arm allocations that’s even more clear. UCB1 is only slightly smarter than
+    the Greedy approach because it focuses more on the 3 arms with higher expected
+    rewards (prices 20, 30, and 40). However, it essentially doesn’t explore at all.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter hyperparameter tuning. It’s clear that we need to determine the optimal
+    value of the weight *C* that balances exploration and exploitation. The first
+    step is to modify the UCB1 code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this updated code, I’ve incorporated the option to normalize the average
+    reward before adding the “uncertainty bonus”, which is weighted by the hyperparameter
+    *C*. The rationale for this is to allow for a consistent search range for the
+    best hyperparameter (say 0.5–1.5). Without this normalization, we could achieve
+    similar results, but the search interval would need adjustments based on the range
+    of values we’re dealing with each time. I’ll spare you the boredom of finding
+    the best *C* value; it can be easily determined through a grid search. It turns
+    out that the optimal value is 0.7\. Now, let’s rerun the simulation and examine
+    the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1c0d6f4f7ab70cd702cb46024b5a8901.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: That’s quite the plot twist, isn’t it? Now, UCB1 is clearly the best algorithm.
+    Even in terms of reactivity, it has only slightly deteriorated compared to the
+    previous score.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a4bfe414b0688683ed47a0492273c623.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Additionally, from the perspective of arm allocation, UCB1 is now the undisputed
+    leader.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d80c8f229fe5c8e1288b4b104da06de9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Lessons learned and next steps
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Theory vs. Experience**: Starting with book-based learning is an essential
+    first step when delving into new topics. However, the sooner you immerse yourself
+    in hands-on experiences, the faster you’ll transform information into knowledge.
+    The nuances, subtleties, and corner cases you encounter when applying algorithms
+    to real-world use cases will offer insights far beyond any data science book you
+    might read.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Know Your Metrics and Benchmarks**: If you can’t measure what you’re doing,
+    you can’t improve it. Never begin any implementations without understanding the
+    metrics you intend to use. Had I only considered regret curves, I might have concluded,
+    “UCB1 doesn’t work.” By evaluating other metrics, especially arm allocation, it
+    became evident that the algorithm simply wasn’t exploring sufficiently.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No One-Size-Fits-All solutions**: While UCB1 emerged as the top choice in
+    our analysis, it doesn’t imply it’s the universal solution for your dynamic pricing
+    challenge. In this scenario, tuning was straightforward because we knew the optimal
+    value we sought. In real life, situations are never so clear-cut. Do you possess
+    enough domain knowledge or the means to test and adjust your exploration factor
+    for the UCB1 algorithm? Perhaps you’d lean towards a reliably effective option
+    like ε-greedy that promises immediate results. Or, you might be managing a bustling
+    e-commerce platform, showcasing a product 10000 times per hour, and you’re willing
+    to be patient, confident that Thompson Sampling will attain the maximum cumulative
+    reward eventually. Yeah, life ain’t easy.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, let me say that if this analysis seemed daunting, unfortunately, it
+    already represents a very simplified situation. In real-world dynamic pricing,
+    prices and purchase probabilities don’t exist in a vacuum — they actually exist
+    in ever-changing environments and they’re influenced by various factors. For example,
+    it’s highly improbable that purchase probability remains consistent throughout
+    the year, across all customer demographics and regions. In other words, to optimize
+    pricing decisions, we must consider our customers’ contexts. This consideration
+    will be the focal point of my next article, where I’ll delve deeper into the problem
+    by integrating customer information and discussing Contextual Bandits. So, stay
+    tuned!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Here](https://medium.com/towards-data-science/dynamic-pricing-with-contextual-bandits-learning-by-doing-b88e49f55894)
+    is the continuation to this article about Contextual Bandits!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code Repository
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://github.com/massi82/multi-armed-bandit](https://github.com/massi82/multi-armed-bandit)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[https://www.amazon.it/Reinforcement-Learning-Introduction-Richard-Sutton/dp/0262039249](https://www.amazon.it/Reinforcement-Learning-Introduction-Richard-Sutton/dp/0262039249)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://www.geeksforgeeks.org/epsilon-greedy-algorithm-in-reinforcement-learning/](https://www.geeksforgeeks.org/epsilon-greedy-algorithm-in-reinforcement-learning/)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://towardsdatascience.com/multi-armed-bandits-upper-confidence-bound-algorithms-with-python-code-a977728f0e2d](/multi-armed-bandits-upper-confidence-bound-algorithms-with-python-code-a977728f0e2d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://towardsdatascience.com/thompson-sampling-fc28817eacb8](/thompson-sampling-fc28817eacb8)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/watch?v=e3L4VocZnnQ](https://www.youtube.com/watch?v=e3L4VocZnnQ)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/watch?v=e3L4VocZnnQ](https://www.youtube.com/watch?v=e3L4VocZnnQ)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[https://www.youtube.com/watch?v=Zgwfw3bzSmQ&t=2s](https://www.youtube.com/watch?v=Zgwfw3bzSmQ&t=2s)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Did you enjoy this article? If you’re looking for applications of AI, NLP, Machine
+    Learning and Data Analytics in solving real-world problems, you’ll likely enjoy
+    my other work as well. My goal is to craft actionable articles that show these
+    transformative technologies in practical scenarios. If this is also you, follow
+    me on Medium to stay informed about my latest pieces!
+  prefs: []
+  type: TYPE_NORMAL

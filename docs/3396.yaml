@@ -1,0 +1,387 @@
+- en: Researching a Humanitarian Disaster Situation Report Chatbot — Using GPT-4-Turbo
+    and full-context prompting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/researching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a?source=collection_archive---------7-----------------------#2023-11-15](https://towardsdatascience.com/researching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a?source=collection_archive---------7-----------------------#2023-11-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)[![Matthew
+    Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f742203d495a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f742203d495a--------------------------------)
+    [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----f742203d495a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----f742203d495a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f742203d495a--------------------------------)
+    ·16 min read·Nov 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff742203d495a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----f742203d495a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff742203d495a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fresearching-a-humanitarian-disaster-situation-report-chatbot-using-gpt-4-turbo-and-full-context-f742203d495a&source=-----f742203d495a---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: TL;DR
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In this article we explore OpenAI’s brand new GPT-4-Turbo model, using its
+    increased 128k token context window to pass in a full document corpus for information
+    retrieval. This crude brute force method — only possible with larger context windows
+    — is simple to implement and doesn’t require document embeddings and semantic
+    search as used in Retrieval Augmented Generation (RAG). Applied to humanitarian
+    disaster situation reports published on the amazing ReliefWeb platform — compressed
+    using Sparse Priming Representations (SPR)— we show that GPT-4-Turbo is able to
+    answer basic questions about recent disasters. However, even with the recent decrease
+    in OpenAI’s token costs, this approach is prohibitively expensive and prompting
+    the preview GPT-4-Turbo model is very slow, sometimes taking up to a minute to
+    respond. As with all LLM information retrieval patterns, it of course crucial
+    to implement a validation framework to ensure hallucination and information ommision
+    are controlled. That said, GPT-4-Turbo offers a great step forward in capabilities,
+    especially as performance improves and costs come down, adding to the rapidly
+    expanding LLM toolkit.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b9ce334d1988ebcccc7aa01a3ad3d2d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The new GPT-4-Turbo has a larger context window of 128k tokens. Image generated
+    by GPT-4 + Dall-E-3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given the frantic pace of developments in the last couple of months with the
+    release of [autogen](https://github.com/microsoft/autogen), [memgpt](https://memgpt.ai/),
+    [Semantic Kern](https://github.com/microsoft/semantic-kernel)el, and [OpenAI’s
+    GPTs and GPT-4-Turbo](https://openai.com/blog/new-models-and-developer-products-announced-at-devday),
+    I thought I would do a series of articles which compare some of the techniques
+    these new tools offer for conversational information retrieval. Each has its own
+    advantages and disadvantages, and some present a potential paradigm shift in how
+    we use Large Language Models (LLMs). It’s a pretty amazing time, but using these
+    new techniques in real-world applications isn’t always as easy as initial exploration
+    sometimes suggests.
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI Release GPT-4-Turbo (Preview)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: OpenAI’s [recent announcement at DevDay](https://openai.com/blog/new-models-and-developer-products-announced-at-devday)
+    included a few new features that could potentially change the Generative AI landscape.
+    One of these was the release (in preview) of [GPT-4-Turbo](https://help.openai.com/en/articles/8555510-gpt-4-turbo)
+    with an increased context window (prompt) limit of 128k tokens, compared to 32k
+    previously. Previously [Claude AI](https://www.anthropic.com/index/claude-2) offered
+    the largest commercial context limit of 100k tokens, so GPT-4-Turbo is a step
+    beyond this. Additionally, OpenAI maintains that their new model is more proficient
+    at instruction following and will be 3 times cheaper than GPT-4\. As the lead
+    in many LLM benchmarks, any advance of GPT-4 is important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Increasing model token limits for an increased context
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: So why are increased token limits a big deal? When prompting an LLM you can
+    include past conversation, so one immediate benefit is that it remembers what
+    you were talking about earlier if you provide conversation history in every prompt.
+    This is useful in order to reference facts in earlier conversations that might
+    be important right now. A larger context window means you can also ‘Preload’ the
+    chat with supporting information, such as document content and data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But there is a downside.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More tokens mean higher cost and slower performance because with the transformer
+    architecture memory and computational requirements increase quadratically (much
+    faster than a simple straight line). Also, there is some research that suggests
+    that longer context windows degrade LLM accuracy ([Liu et al, 2023](https://arxiv.org/abs/2307.03172)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using GPT-4-Turbo
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At time of writing, GPT-4-Turbo is in preview mode only, available as model
+    ‘gpt-4–1106-preview’. To call it we will use the openai Python pakage like this
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Analyzing ReliefWeb Disaster Situation Reports
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will explore GPT-4-Turbo’s increased token limit by using it to analyze [Humanitarian
+    Disaster Situation Reports on the amazing ReliefWeb](https://reliefweb.int/disasters)
+    platform. These reports (known as ‘Sitreps’) are vital for monitoring and reacting
+    to humanitarian disasters around the world. They also provide a text corpus of
+    data which can be compressed (summarized) to fit into GPT-4-Turbo’s context window
+    for our analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Building a Corpus of Disaster Reports
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: ReliefWeb has a [really great API](https://reliefweb.int/help/api) for accessing
+    content, so we will use this to extract a list of disasters and situation reports
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the above functions, some points of interest …
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the ReliefWeb content refers to a PDF, we extract the text from that
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Any text is auto-translated to English using Google Translate API
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We always capture sources for attribution
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We haven’t bothered with API response pagination for this quick analysis
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Here is how we call the function to get disaster situation reports since the
+    1st of November 2023 …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The situation reports are saved to the file system as text files …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compressing Content Using Sparse Priming Representations (SPR)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We could just prompt GPT-4-Turbo with raw text from the situation reports. However,
+    much of that text is irrelevant — such as stop words, headers, and footers — so
+    including all of it would very quickly exceed even the increased token limits
+    of GPT-4-Turbo. We will instead use a technique called [Sparse Priming Representations
+    (SPR)](https://github.com/daveshap/SparsePrimingRepresentations) to compress documents
+    to their key facts, modified a little to try and preserve quantitative information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the system prompt we’ll provide to GPT-4-Turbo to compress our documents
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This will summarize a raw text status report into something like this for a
+    situation report titled “African Polio Laboratory Network Bulletin (week 1–42,
+    2023)” …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which is of course much less text than the original document.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I wouldn’t advise using this compression without significant analysis and checks
+    to control for information omission, but for our tests, it will suffice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the code for compressing reports …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: You’ll notice in the above we added some metadata about the report plus the
+    SPR summary returned by GPT-4-Turbo. The compressed reports are then saved as
+    text files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extracting a high-level List of Disasters
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will also extract a high-level list of disasters from ReliefWeb to use in
+    our system prompt, as an aid to information requests …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: This gives us a concise list …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/008e025214645e66b0e5c853c919fa92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: List of disasters as extracted using ReleiefWeb API disasters endpoint
+  prefs: []
+  type: TYPE_NORMAL
+- en: Creating a prompt for GPT-4-Turbo
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now have a list of disasters and compressed situation reports — from Nov
+    1st to Nov 10th — listing key facts from those disasters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s combine them into one text file for use as part of the system prompt for
+    GPT-4-Turbo …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: How many tokens and what’s the cost?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: So given the cost of [$0.01 per 1,000 tokens input](https://openai.com/pricing),
+    the text created above comes out at $0.82 a prompt. There is also some completion
+    token cost, $0.03 per 1000 tokens, but this should be much less than input cost
+    as there are far fewer tokens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ouch!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We knew this brute force technique isn’t the best way to tackle our particular
+    task, but the high cost is another reason.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have our text, we can build a system prompt …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: You’ll notice that the system prompt includes instructions about which sections
+    in the concatenated text to use for different types of information. Through some
+    quick prompt experimentation — I wouldn’t really call it ‘engineering’ — this
+    produced better results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Testing our Humanitarian Disaster Situation Report Bot
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: OK, here goes …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: On the whole, this is a pretty good summary of the disaster. The facts agree
+    well compared with the [ReliefWeb disaster page](https://reliefweb.int/disaster/eq-2023-000214-npl)
+    (note this page may change since this article, as the disaster evolves) and the
+    [latest situation report](https://reliefweb.int/report/nepal/nepal-western-nepal-earthquake-2023-situation-report-no-02-10-november-2023)
+    used for this study.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One fact though is very slightly misaligned, the data said that tragically 153
+    people died, whereas the model returned 154.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: So it is ‘known’ but hallucinated in the first prompt. As with all applications
+    of LLM, validation and checks are key to catching issues like this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s get some information about the organizations creating situation reports
+    (for the period November 1st-10th) …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Compared to the [same query in ReliefWeb](https://reliefweb.int/updates?advanced-search=%28D51797%29_%28F10%29_%28DA20231101-20231110%29)
+    this seems correct.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s ask some more nuanced questions …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looking at the situation reports, I was unable to find this information either.
+    A more detailed back-check is required to establish this is true though.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s ask about potential disease and health impacts …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Looking at the [UNICEF report](https://reliefweb.int/report/nepal/unicef-nepal-humanitarian-situation-report-no-1-earthquake-08-november-2023)
+    in the data, even with our SPF summarization the above seems to capture the main
+    points. However, we only have report number 1 in the data used here, but the above
+    mentions report number 2\. Another minor hallucination, again illustrating that
+    any LLM responses need automatic back-checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This is a very quick analysis to get an idea of how well GPT-4-Turbo — with
+    its increased 128k context window and improved instruction following — performs
+    by including all the text data needed for information retrieval as a system prompt,
+    without any other processing. Is this brute force approach the best technique
+    for our task?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Probably not, at least not yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Performance is a serious consideration. The prompts were taking 30 seconds or
+    longer, not great for a delightful user experience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cost is also prohibitive. With more tokens needed to provide a full corpus with
+    each prompt, there is increased cost — in this analysis $0.82 for every prompt!
+    — so other techniques will undoubtedly be more attractive to many organizations,
+    at least while LLM costs are at a premium. That said, I am reminded of the [cost
+    of storage over the years](https://ourworldindata.org/grapher/historical-cost-of-computer-memory-and-storage),
+    and maybe we will see the same decrease for LLMs over time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alternatives such as generating code to query data, using functions registered
+    with the LLM, and multiple agents for validating results may offer cheaper and
+    more accurate options. They would also eliminate the need to compress documents
+    in order to fit the corpus in the context window, thus avoiding information loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, we were able to show that prompting GPT-4-Turbo can support basic
+    information retrieval on a corpus of compressed documents provided in the system
+    prompt. This has some benefits in being very straightforward to implement - you
+    just give the LLM all your stuff and ask questions. As AI advances and costs decrease
+    this may become a very common technique in the future.
+  prefs: []
+  type: TYPE_NORMAL

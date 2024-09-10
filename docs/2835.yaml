@@ -1,0 +1,406 @@
+- en: 'The Facility Dispersion Problem: Mixed-Integer Programming Models'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26?source=collection_archive---------2-----------------------#2023-09-09](https://towardsdatascience.com/the-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26?source=collection_archive---------2-----------------------#2023-09-09)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A comprehensive Python tutorial on the p-dispersion and maxisum models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)[![Bruno
+    Scalia C. F. Leite](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)[](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------)
+    [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----98ffdb56cd26--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----98ffdb56cd26---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----98ffdb56cd26--------------------------------)
+    ·10 min read·Sep 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F98ffdb56cd26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----98ffdb56cd26---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F98ffdb56cd26&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-facility-dispersion-problem-mixed-integer-programming-models-98ffdb56cd26&source=-----98ffdb56cd26---------------------bookmark_footer-----------)![](../Images/bdc6d779cd05ff45c825c69eb52247bd.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Z](https://unsplash.com/@dead____artist?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In some facility location problems, facilities need to be positioned so that
+    the influence of one doesn’t overshadow or adversely affect the others. Whether
+    driven by motives of risk mitigation, avoidance of competition, or other considerations,
+    mastering the solutions to these challenges is a crucial skill in the operations
+    research toolkit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kuby (1987) proposed two distinct mixed-integer programming (MIP) formulations
+    for these problems: the *p*-*dispersion* problem and the *maxisum* problem. In
+    this article, both will be implemented using the Python library Pyomo and the
+    HiGHS solver.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Besides the two models, some useful modeling resources will be presented. First,
+    a strategy for linearizing the product of binary variables in the context of MIP,
+    although considering the maximization objectives, doesn’t need to be explicit
+    in this problem. Second, a max-min MIP formulation, which intends to maximize
+    something smaller than any parameter of a set of items if the item is selected.
+    Finally, a strategy for solving multiple objectives with a well-defined hierarchy
+    of priorities that combines elements of the two models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those interested not yet familiar with numerical optimization might find it
+    helpful to take a look at my previous stories about[*Linear Programming*](https://medium.com/towards-data-science/linear-programming-theory-and-applications-c67600591612)and
+    the [*Branch & Bound*](/a-gentle-introduction-to-branch-bound-d00a4ee1cad) method
+    before proceeding with this one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, you can find the complete code in this [git repository](https://github.com/bruscalia/optimization-demo-files/tree/28266b5e2cc90b9e39f6f72322d3008fd211f1d8/mip/dispersion).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which of these locations would you choose to place 5 facilities?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87fd3855217c72e990af4bcd0823c7b4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Possible locations in facility dispersion problem. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The product of binary variables
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When defining the basic elements of this problem, one can use binary variables
+    that assume the value of 1 if a location is selected and 0 otherwise. Let us denote
+    these variables *xᵢ*. Suppose the distances (or some other dispersion metric)
+    between two locations are computed in advance and let us denote these as *dᵢⱼ*.
+    How could we calculate the dispersion of any pair of facilities selected?
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is somehow intuitive in such a situation to formulate it using the product
+    of the binary variables *xᵢ* and *xⱼ* to compute the dissimilarity obtained when
+    they are both included in the solution. This approach is equivalent to a logical
+    AND statement. However, this would lead to a quadratic formulation, therefore
+    one wouldn’t be able to apply linear solvers. Fortunately, there is a way to formulate
+    the product of binary variables in MIP using a few constraints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider a directed graph *G*(*V*, *A*) and *zᵢⱼ* a new binary variable that
+    indicates both nodes *i* and *j* are selected. If either *i* or *j* is not selected,
+    *zᵢⱼ* must be 0\. This leads to the first group of constraints:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95020fb434def6a19defe6d774334276.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: First group of constraints in linearized form of the product of binary variables.
+    (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far, even if both *i* and *j* are selected, *zᵢⱼ* can assume the value of
+    0\. Therefore we must include an additional constraint such that when *i* and
+    *j* are selected *zᵢⱼ* becomes 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/035c954cc0b3690494b37a9d141cfd4a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Second group of constraints in linearized form of the product of binary variables.
+    (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: When maximizing something proportional to *zᵢⱼ*, as in the *maxisum* problem,
+    the second constraint group presented is unnecessary, as it would make no sense
+    not to compute a gain proportional to *zᵢⱼ* if it is feasible. However, this can
+    be useful when formulating other MIP models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following section, let us apply these concepts to the *maxisum* problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The maxisum model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The discrete *maxisum* problem must define the location of *p* facilities among
+    *N* discrete nodes to maximize the sum of distances (or the average of distances)
+    computed between all pairs of selected facilities. Therefore, consider the facilities
+    are nodes displaced in a directed graph *G*(*V*, *A*). The weight of each arc
+    from *i* to *j* is the distance (dispersion) metric *dᵢⱼ* known in advance. Also,
+    consider binary variables *xᵢ* to indicate if a location *i* is selected and *zᵢⱼ*
+    to indicate if both *i* and *j* are selected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The objective can be stated as the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aea7aaef5823c8b3c1c208438670c977.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Besides the constraints to linearize the product of binary variables presented
+    in the previous section, it is necessary to include a constraint to guarantee
+    that *p* locations are selected.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thus, we can state the constraints of the problem as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5085eb75d16c6f01f378c013bc40cd4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let us put that into code using Python. To do so, we must start by importing
+    the libraries which will be used. The library *numpy* will be used for linear
+    algebra calculations and to create random coordinate points; the functions *squareform*
+    and *pdist* from scipy will be used to compute distances given a matrix of coordinates;
+    *matplotlib* will be our visualization tool; and *pyomo* the algebraic modeling
+    language (AML) (with solver HiGHS).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We must create *N* points and define how many of those must be selected as facility
+    locations. By fixing the random seed (12) in every code execution the points represented
+    in the introduction should be obtained.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have the necessary elements to start our *pyomo* model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two approaches for modeling a problem in *pyomo*: *Abstract* and
+    *Concrete* models. In the first approach, the algebraic expressions of the problem
+    are defined before some data values are supplied, whereas, in the second, the
+    model instance is created immediately as its elements are defined. You can find
+    more about these approaches in the [library documentation](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)
+    or in the book by Bynum et al. (2021). Throughout this article, we will adopt
+    the *Concrete* model formulation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this model, we have two *sets*: nodes and arcs. As we are considering a
+    complete directed graph, there exist arcs between every pair of two nodes except
+    from the node to itself.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The parameters provided beforehand are the number of nodes that must be selected
+    and the distances between pairs of nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then, let us include the decision variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the constraints…
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Finally, we must create the objective function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now the *maxisum* model is ready to be solved. We must then instantiate a solver
+    compatible with *pyomo* to handle it. The *Highs* solver is available in *Pyomo*
+    (check the imports) since version 6.4.3 if the *highspy* package is installed.
+    So make sure to run a `pip install highspy` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And, after approximately 120s of computing time, we have the following results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6098128728c99bfb5ea47c4f4464594a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Maxisum model results. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice that, even though the total dispersion is maximized, two facilities in
+    the upper left corner are still quite close to each other, which can be undesirable.
+    Thus, alternatively to the *maxisum* formulation we have the *p*-*dispersion*
+    model in which we maximize the minimum distance between any pair of selected nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The p-dispersion model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the *p*-*dispersion* model, we need an additional decision variable to compute
+    the minimum distance between all pairs of selected nodes, which is our goal to
+    maximize. Let us denote this variable *D*. We must create a big M constraint that
+    ensures that if both *i* and *j* are selected, *D* is lesser than or equal to
+    *dᵢⱼ*; otherwise, we must ensure that *D* is unlimited. If we keep the formulation
+    with *zᵢⱼ* as the product of binary variables, we can formulate this additional
+    constraint as the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/658a74a84500ca65fcf09d3239d6b32a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Max-min constraint with product of binary variables. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this formulation, *M* is a fixed parameter arbitrarily large used to formulate
+    a disjunctive rule. A good choice of *M* should be large enough to guarantee the
+    feasibility of the constraint (*i*, *j*) for any value of *D* when *zᵢⱼ* is zero,
+    but as small as possible so that the linear relaxation of the model is similar
+    to the integer version, which makes convergence easier. In this problem, the largest
+    value of *dᵢⱼ* can be an interesting alternative.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Although this formulation would work well for this model, a more concise approach
+    can be used, in which variables *zᵢⱼ* are not even included in the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7adbefd60f390dd42a01011d095c54f3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Max-min constraint with node variables. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this formulation, either *xᵢ* or *xⱼ* equal to zero is a sufficient condition
+    to guarantee that the inequality is valid for any value of *D*. And the objective
+    becomes simply maximizing *D.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Python code next, consider we have a new model with the same sets and parameters
+    of the previous one as well as the group of decisionvariables *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: And after calling the solver it took less than 1.2s to obtain the following
+    results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/92419e3d732d5483c4196eb3a44ef178.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: p-dispersion model results. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Which seems great as the locations are well distributed in space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Is there a way to improve this distribution?
+  prefs: []
+  type: TYPE_NORMAL
+- en: A multicriteria approach
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Remember the objective function of the *p*-*dispersion* model depends only on
+    the minimum distance between any pair of nodes selected. Therefore several solutions
+    can be obtained using combinations of the two points defining this distance and
+    others with distances to each other greater than or equal to the objective itself.
+    Can we refine our solution by selecting the best of these alternatives? That leads
+    to the *two-step* “multicriteria approach” proposed by Kuby (1987).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the first step, the *p*-*dispersion* model is solved to optimality, and the
+    current objective is stored in a parameter *d_opt*. Then, a *maxisum* model with
+    an additional constraint ensuring that *D* ≥ *d_opt* is solved to obtain, among
+    the optimal solutions to the *p*-*dispersion* model, the one with the maximum
+    total dispersion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To do that in Python, consider you have a *p*-*dispersion* model instantiated
+    with also decision variables and constraints of the *maxisum* model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: And this is surprisingly fast because when the solver enters the second objective
+    the space of feasible alternatives is substantially small. In less than one (additional)
+    second, it leads to the following results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f520995b99e6f26fba8e053f009c44c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Multicriteria problem: p-dispersion model followed by maxisum objective. (Image
+    by the author).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When customers aren’t uniformly distributed, facilities have a limited capacity,
+    or perhaps the adequate number of facilities is unknown beforehand, probably you
+    are facing a different *Facility Location Problem*. You can find the formulation
+    of Balinski (1965) implemented in Python using PuLP in this amazing story by [Nicolo
+    Cosimo Albanese](https://medium.com/u/7430df412ec?source=post_page-----98ffdb56cd26--------------------------------).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/optimization-capacitated-facility-location-problem-in-python-57c08f259fe0?source=post_page-----98ffdb56cd26--------------------------------)
+    [## Optimization: Capacitated Facility Location Problem in Python'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Find the optimal number and location of warehouses to reduce costs and meet
+    demand
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/optimization-capacitated-facility-location-problem-in-python-57c08f259fe0?source=post_page-----98ffdb56cd26--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, two mixed-integer programming models for the facility dispersion
+    problem were implemented in Python using Pyomo. As previously verified in the
+    literature, the *maxisum* model can lead to an uneven distribution of elements
+    in space whereas the *p*-*dispersion* model produced solutions with locations
+    well spread in space and evenly distributed. A *maxisum* objective can be used
+    to refine solutions of the *p*-*dispersion* model by selecting the one with the
+    greatest total dispersion from the set of optimal solutions. The [complete code](https://github.com/bruscalia/optimization-demo-files/tree/28266b5e2cc90b9e39f6f72322d3008fd211f1d8/mip/dispersion)
+    used in these examples is available for further use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Balinski, M. L. 1965\. Integer programming: methods, uses, computations. *Management
+    science*, *12*(3), 253–313.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bynum, M. L., Hackebeil, G. A., Hart, W. E., Laird, C. D., Nicholson, B. L.,
+    Siirola, J. D., … & Woodruff, D. L. 2021\. *Pyomo-optimization modeling in python*
+    (Vol. 67). Berlin/Heidelberg, Germany: Springer.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kuby, M. J. 1987\. Programming models for facility dispersion: The p‐dispersion
+    and maxisum dispersion problems. *Geographical Analysis*, *19*(4), 315–329.'
+  prefs: []
+  type: TYPE_NORMAL

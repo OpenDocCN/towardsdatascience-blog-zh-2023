@@ -1,0 +1,631 @@
+- en: NT-Xent (Normalized Temperature-Scaled Cross-Entropy) Loss Explained and Implemented
+    in PyTorch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/nt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848?source=collection_archive---------1-----------------------#2023-06-13](https://towardsdatascience.com/nt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848?source=collection_archive---------1-----------------------#2023-06-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An intuitive explanation of the NT-Xent loss with a step-by-step explanation
+    of the operation and our implementation in PyTorch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dhruvbird?source=post_page-----cc081f69848--------------------------------)[![Dhruv
+    Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----cc081f69848--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cc081f69848--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cc081f69848--------------------------------)
+    [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----cc081f69848--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----cc081f69848---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc081f69848--------------------------------)
+    ·14 min read·Jun 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcc081f69848&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848&user=Dhruv+Matani&userId=63f5d5495279&source=-----cc081f69848---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcc081f69848&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848&source=-----cc081f69848---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Co-authored with [Naresh Singh](https://medium.com/u/1e659a80cffd).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f1a271acfecfd43c4d250941c7754440.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Formula for NT-Xent loss. Source: [Papers with code](https://paperswithcode.com/method/nt-xent)
+    (CC-BY-SA)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Recent advances in [self-supervised learning](https://neptune.ai/blog/self-supervised-learning)
+    and [contrastive learning](/understanding-contrastive-learning-d5b19fd96607) have
+    excited researchers and practitioners in Machine Learning (ML) to explore this
+    space with renewed interest.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, the [SimCLR](https://arxiv.org/pdf/2002.05709.pdf) paper that
+    presents a simple framework for contrastive learning of visual representations
+    has gained a lot of attention in the self-supervised and contrastive learning
+    space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The central idea behind the paper is very simple — allow the model to learn
+    if a pair of images were derived from the same or different initial image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/04e9c2852b2200c323cdbabca0b3e988.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 1: The high-level idea behind SimCLR. Source: [SimCLR paper](https://arxiv.org/pdf/2002.05709.pdf)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The SimCLR approach encodes each input image ***i*** as a feature vector ***zi***.
+    There are 2 cases to consider:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Positive Pairs**: The same image is augmented using a different set of augmentations,
+    and the resulting feature vectors ***zi*** and ***zj*** are compared. These feature
+    vectors are forced to be similar by the loss function.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Negative Pairs**: Different images are augmented using a different set of
+    augmentations, and the resulting feature vectors ***zi*** and ***zk*** are compared.
+    These feature vectors are forced to be dissimilar by the loss function.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The rest of this article will focus on explaining and understanding this loss
+    function, and its efficient implementation using PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The NT-Xent Loss
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: At a high level, the contrastive learning model is fed 2N images, originating
+    from N underlying images. Each of the N underlying images is augmented using a
+    random set of image augmentations to produce 2 augmented images. This is how we
+    end up with 2N images in a single train batch fed to the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0e24735fcc69c1116d2734e8f11df06e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 2: A batch of 6 images in a single training batch for contrastive learning.
+    The number below each image is the index of that image in the input batch when
+    fed into a contrastive learning model. Image Source: [Oxford Visual Geometry Group](https://www.robots.ox.ac.uk/~vgg/data/pets/)
+    (CC-SA).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the following sections, we will dive deep into the following aspects of the
+    NT-Xent loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The effect of temperature on SoftMax and Sigmoid](#8cb8)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A simple and intuitive interpretation of the NT-Xent loss](#40d2)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A step-by-step implementation of NT-Xent in PyTorch](#29d4)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[Motivating the need for a multi-label loss function (NT-BXent)](#f004)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[A step-by-step implementation of NT-BXent in PyTorch](#242d)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: All the code for steps 2–5 can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/NT-Xent%20Loss.ipynb).
+    The code for step-1 can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/SoftMax%20and%20Sigmoid%20with%20temperature.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The effect of temperature on SoftMax and Sigmoid
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To understand all the moving parts of the contrastive loss function we’ll be
+    studying in this article, we need to first understand the effect of temperature
+    on the SoftMax and Sigmoid activation functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Typically, temperature scaling is applied to the input to SoftMax or Sigmoid
+    to either smooth out or accentuate the output of those activation functions. The
+    input logits are divided by the temperature before passing into the activation
+    functions. You can find all the code for this section in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/SoftMax%20and%20Sigmoid%20with%20temperature.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**SoftMax**: For SoftMax, a high temperature reduces the variance in the output
+    distribution which results in softening of the labels. A low temperature increases
+    the variance in the output distribution and makes the maximum value stand out
+    over the other values. See the charts below for the effect of temperature on SoftMax
+    when fed with the input tensor [0.1081, 0.4376, 0.7697, 0.1929, 0.3626, 2.8451].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2bd5edcd98118bea0c576c1e7b3ada7f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 3: Effect of temperature on SoftMax. Source: Author(s)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Sigmoid**: For Sigmoid, a high-temperature results in an output distribution
+    that is pulled towards 0.0, whereas a low temperature stretches the inputs to
+    higher values, stretching the outputs to be closer to either 0.0 or 1.0 depending
+    on the unsigned magnitude of the input.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0d7036a7fb298c646e1652f03d546b79.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 4: Effect of temperature on Sigmoid. Source: Author(s)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we understand the effect of various temperature values on the SoftMax
+    and Sigmoid functions, let’s see how this applies to our understanding of the
+    NT-Xent loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Interpreting the NT-Xent loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The NT-Xent loss is understood by understanding the individual terms in the
+    name of this loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Normalized: Cosine similarity produces a normalized score in the range [-1.0
+    to +1.0]'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Temperature-scaled: The all-pairs cosine similarity is scaled by a temperature
+    before computing the cross-entropy loss'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Cross-entropy loss: The underlying loss is a multi-class (single-label) cross-entropy
+    loss'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As mentioned above, we assume that for a batch of size 2N, the feature vectors
+    at the following indices represent positive pairs (0, 1), (2, 3), (4, 5), (6,
+    7), … and the rest of the combinations represent negative pairs. This is an important
+    factor to keep in mind throughout the interpretation of the NT-Xent loss as it
+    relates to SimCLR.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we understand what the terms mean in the context of the NT-Xent loss,
+    let’s take a look at the mechanical steps needed to compute the NT-Xent loss on
+    a batch of feature vectors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The all-pairs Cosine Similarity score is computed for each of the 2N vectors
+    produced by the SimCLR model. This results in (2N)² similarity scores represented
+    as a 2N x 2N matrix
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Comparison results between the same value (i, i) are discarded (since a distribution
+    is perfectly similar to itself and can’t possibly allow the model to learn anything
+    useful)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Each value (cosine similarity) is scaled by a temperature parameter 𝜏 (which
+    is a hyper-parameter)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Cross-entropy loss is applied to each row of the resulting matrix above. The
+    following paragraph explains more in detail
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Typically, the mean of these losses (one loss per element in a batch) is used
+    for backpropagation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The way that the cross-entropy loss is used here is semantically slightly different
+    from how it’s used in standard classification tasks. In classification tasks,
+    a final “classification head” is trained to produce a one-hot-probability vector
+    for each input, and we compute the cross-entropy loss on that one-hot-probability
+    vector since we’re effectively computing the difference between 2 distributions.
+    [This video](https://www.youtube.com/watch?v=Pwgpl9mKars) explains the concept
+    of cross-entropy loss beautifully. In the NT-Xent loss, there isn’t a 1:1 correspondence
+    between a trainable layer and the output distribution. Instead, a feature vector
+    is computed for each input, and we then compute the cosine similarity between
+    every pair of feature vectors. The trick here is that since each image is similar
+    to exactly 1 other image in the input batch (positive pair) (if we ignore the
+    similarity of a feature vector with itself), we can consider this to be a classification-like
+    setting where the probability distribution of the similarity probability between
+    images represents a classification task where one of them will be close to 1.0
+    and the rest will be close to 0.0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have a solid overall understanding of the NT-Xent loss, we should
+    be in great shape to implement these ideas in PyTorch. Let’s get going!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation of NT-Xent loss in PyTorch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All the code in this section can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/NT-Xent%20Loss.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Code Reuse**: Many [implementations](https://github.com/KevinMusgrave/pytorch-metric-learning/blob/master/src/pytorch_metric_learning/losses/ntxent_loss.py)
+    of the NT-Xent loss seen online implement all the operations from scratch. Furthermore,
+    some of them implement the loss function inefficiently, preferring to use [for
+    loops instead of GPU parallelism](https://stackoverflow.com/questions/62793043/tensorflow-implementation-of-nt-xent-contrastive-loss-function).
+    Instead, we will use a different approach. We’ll implement this loss in terms
+    of the standard cross-entropy loss that PyTorch already provides. To do this,
+    we need to massage the predictions and ground-truth labels in a format that cross_entropy
+    can accept. Let’s see how to do this below.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Predictions Tensor**: First, we need to create a PyTorch tensor that will
+    represent the output from our contrastive learning model. Let’s assume that our
+    batch size is 8 (2N=8), and our feature vectors have 2 dimensions (2 values).
+    We’ll call our input variable *“x”*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Cosine Similarity**: Next, we’ll compute the all-pairs cosine similarity
+    between every feature vector in this batch and store the result in the variable
+    named *“xcs”*. If the line below seems confusing, please read the details on [this
+    page](https://medium.com/@dhruvbird/all-pairs-cosine-similarity-in-pytorch-867e722c8572).
+    This is the “normalize” step.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: As mentioned above, we need to ignore the self-similarity score of every feature
+    vector since it doesn’t contribute to the model’s learning and will be an unnecessary
+    nuisance later on when we want to compute the cross-entropy loss. For this purpose,
+    we’ll define a variable *“eye”* which is a matrix with the elements on the principal
+    diagonal having a value of 1.0 and the rest being 0.0\. We can create such a matrix
+    using the following command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let’s convert this into a boolean matrix so that we can index into the *“xcs”*
+    variable using this mask matrix.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s clone the tensor *“xcs”* into a tensor named *“y”* so that we can reference
+    the “xcs” tensor later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we will set the values along the principal diagonal of the all-pairs cosine
+    similarity matrix to *-inf* so that when we compute the softmax on each row, this
+    value will contribute nothing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The tensor *“y”* scaled by a temperature parameter will be one of the inputs
+    (predictions) to the [cross-entropy loss API in PyTorch](https://pytorch.org/docs/stable/generated/torch.nn.functional.cross_entropy.html#torch.nn.functional.cross_entropy).
+    Next, we need to compute the ground-truth labels (target) that we need to feed
+    to the cross-entropy loss API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ground Truth labels (Target tensor)**: For the example we are using (2N=8),
+    this is what the ground-truth tensor should look like.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: tensor([1, 0, 3, 2, 5, 4, 7, 6])
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: That’s because the following index pairs in the tensor *“y”* contain positive
+    pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (0, 1), (1, 0)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: (2, 3), (3, 2)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: (4, 5), (5, 4)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: (6, 7), (7, 6)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To interpret the index pairs above, we look at a single example. The pair (4,
+    5) means that column 5 at row 4 is supposed to be set to 1.0 (positive pair),
+    which is what the tensor above is also saying. Great!
+  prefs: []
+  type: TYPE_NORMAL
+- en: To create the tensor above, we can use the following PyTorch code, which stores
+    the ground-truth labels in the variable *“target”*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**cross-entropy Loss**: We have all the ingredients we need to compute our
+    loss! The only thing that remains to be done is to call the cross_entropy API
+    in PyTorch.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: The variable “loss” now contains the computed NT-Xent loss. Let’s wrap all the
+    code in a single python function below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code above works as long as each feature vector has exactly one positive
+    pair in the batch when training our contrastive learning model. Let’s take a look
+    at how to handle multiple positive pairs in a contrastive learning task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A multi-label loss for contrastive learning: NT-BXent'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the SimCLR paper, every image ***i*** has exactly 1 similar pair at index
+    ***j***. This makes cross-entropy loss a perfect choice for the task since it
+    resembles a multi-class problem. Instead, if we have M > 2 augmentations of the
+    same image fed into the contrastive learning model’s single training batch, then
+    each batch would have image M-1 similar pairs for image ***i***. This task would
+    resemble a multi-label problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The obvious choice would be to replace *cross-entropy loss* with *binary cross-entropy
+    loss*. Hence the name NT-BXent loss, which stands for Normalized Temperature-scaled
+    Binary cross-entropy Loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The formulation below shows the loss ***Li*** for the element ***i***. The σ
+    in the formula below stands for the [Sigmoid function](https://en.wikipedia.org/wiki/Sigmoid_function).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/923d835482d9a31dafa43fe719a94d34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure 5: Formulation for the NT-BXent loss. Image source: Author(s) of this
+    article'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To avoid the class imbalance problem, we weigh the positive and negative pairs
+    by the inverse of the number of positive and negative pairs in our mini-batch.
+    The final loss in the mini-batch used for backpropagation will be the mean of
+    the losses of each sample in our mini-batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, let’s focus our attention on our implementation of the NT-BXent loss in
+    PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation of NT-BXent loss in PyTorch
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: All the code in this section can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/NT-Xent%20Loss.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Code Reuse**: Similar to our implementation of the NT-Xent loss, we shall
+    re-use the Binary Cross-entropy (BCE) loss method provided by PyTorch. The setup
+    of our ground-truth labels will be similar to that of a multi-label classification
+    problem where BCE loss is used.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Predictions Tensor**: We’ll use the same (8, 2) predictions tensor as we
+    used for the implementation of the NT-Xent loss.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Cosine Similarity**: Since the input tensor ***x*** is same, the all-pairs
+    cosine similarity tensor ***xcs*** will also be the same. Please see [this page](https://medium.com/@dhruvbird/all-pairs-cosine-similarity-in-pytorch-867e722c8572)
+    for a detailed explanation of what the line below does.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: To ensure that the loss from the element at position ***(i, i)*** is ***0***,
+    we’ll need to perform some gymnastics to have our ***xcs*** tensor contain a value
+    ***1*** at every index ***(i, i)*** after Sigmoid is applied to it. Since we’ll
+    be using BCE Loss, we will mark the self-similarity score of every feature vector
+    with the value ***infinity*** in tensor ***xcs***. That’s because applying the
+    sigmoid function on the ***xcs*** tensor, will convert infinity to the value ***1***,
+    and we will set up our ground-truth labels so that every position ***(i, i)***
+    in the ground-truth labels has the value ***1***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s create a masking tensor that has the value ***True*** along the principal
+    diagonal (***xcs*** has self-similarity scores along the principal diagonal),
+    and ***False*** everywhere else.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s clone the tensor *“xcs”* into a tensor named *“y”* so that we can reference
+    the *“xcs”* tensor later.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we will set the values along the principal diagonal of the all-pairs cosine
+    similarity matrix to *infinity* so that when we compute the sigmoid on each row,
+    we get 1 in these positions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: The tensor *“y”* scaled by a temperature parameter will be one of the inputs
+    (predictions) to the [BCE loss API](https://pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy.html)
+    in PyTorch. Next, we need to compute the ground-truth labels (target) that we
+    need to feed to the BCE loss API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Ground Truth labels (Target tensor)**: We will expect the user to pass to
+    us the pair of all (x, y) index pairs which contain positive examples. This is
+    a departure for what we did for the NT-Xent loss, since the positive pairs were
+    implicit, whereas here, the positive pairs are explicit.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to the locations provided by the user, we will set all the diagonal
+    elements as positive pairs as explained above. We will use the PyTorch tensor
+    indexing API to pluck out all the elements at those locations and set them to
+    1, whereas the rest are initialized to 0.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Binary cross-entropy (BCE) Loss**: Unlike the NT-Xent loss, we can’t simply
+    call the torch.nn.functional.binary_cross_entropy_function, since we want to weigh
+    the positive and negative loss based on how many positive and negative pairs the
+    element at index i has in the current mini-batch.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first step though is to compute the element-wise BCE loss.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ll create a binary mask of positive and negative pairs and then create 2
+    tensors, loss_pos and loss_neg that contain only those elements from the computed
+    loss that correspond to the positive and negative pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we’ll sum up the positive and negative pair loss (separately) corresponding
+    to each element i in our mini-batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: To perform weighting, we need to track the number of positive and negative pairs
+    corresponding to each element i in our mini-batch. Tensors *“num_pos”* and *“num_neg”*
+    will store these values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: We have all the ingredients we need to compute our loss! The only thing that
+    we need to do is weigh the positive and negative loss by the number of positive
+    and negative pairs, and then average the loss across the mini-batch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Prints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Temperature: 0.01, Loss: 62.898780822753906'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Temperature: 0.10, Loss: 4.851151943206787'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Temperature: 1.00, Loss: 1.0727109909057617'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Temperature: 10.00, Loss: 0.9827173948287964'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Temperature: 20.00, Loss: 0.982099175453186'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Self-supervised learning is an upcoming field in deep learning and allows one
+    to train models on unlabeled data. This technique lets us work around the requirement
+    of labeled data at scale.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we learned about loss functions for contrastive learning. The
+    first one, named NT-Xent loss, is used for learning on a single positive pair
+    per input in a mini-batch. We introduced the NT-BXent loss which is used for learning
+    on multiple (> 1) positive pairs per input in a mini-batch. We learned to interpret
+    them intuitively, building on our knowledge of cross-entropy loss and binary cross-entropy
+    loss. Finally, we implemented them both efficiently in PyTorch.
+  prefs: []
+  type: TYPE_NORMAL

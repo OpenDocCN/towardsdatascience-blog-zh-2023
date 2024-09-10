@@ -1,0 +1,431 @@
+- en: Classifying Source Code using LLMs — What and How
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/classifying-source-code-using-llms-what-and-how-f04c7dbcba9b?source=collection_archive---------2-----------------------#2023-12-28](https://towardsdatascience.com/classifying-source-code-using-llms-what-and-how-f04c7dbcba9b?source=collection_archive---------2-----------------------#2023-12-28)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Sharing our experience at making LLM-based Source Code classifier
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)[![Ori
+    Abramovsky](../Images/28b758ecfc0d759584913be5feb6a72a.png)](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------)
+    [Ori Abramovsky](https://medium.com/@oriabramovski?source=post_page-----f04c7dbcba9b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa6b24a84c43&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&user=Ori+Abramovsky&userId=a6b24a84c43&source=post_page-a6b24a84c43----f04c7dbcba9b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f04c7dbcba9b--------------------------------)
+    ·14 min read·Dec 28, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff04c7dbcba9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&user=Ori+Abramovsky&userId=a6b24a84c43&source=-----f04c7dbcba9b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff04c7dbcba9b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fclassifying-source-code-using-llms-what-and-how-f04c7dbcba9b&source=-----f04c7dbcba9b---------------------bookmark_footer-----------)![](../Images/b6d8df4044604cfbc0b0fd8b2f8d4edc.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Iurii Ivashchenko](https://www.pexels.com/photo/shallow-focus-photo-of-two-brown-lions-3498323/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Source Code AI has become a common use case with many practical and varied implementations
+    (defects detection, [code completion](https://github.com/features/copilot) and
+    much more). One of the most interesting aspects of Source Code AI is the major
+    transformations it faces; if not so long ago the common approaches for Source
+    Code classification were to train a custom DNN, to rely on [Embeddings](https://code2vec.org/)
+    or even using classic NLP techniques such as [Bag Of Words (BOW](https://en.wikipedia.org/wiki/Bag-of-words_model)),
+    these days Large Language Models (LLMs) have become the major go-to tool. And
+    more specifically, the use of ‘[In Context Learning](https://arxiv.org/pdf/2109.01652.pdf)’
+    quickly shines out; feed LLM ([instructions tuned](https://arxiv.org/abs/2308.10792))
+    with a prompted input and receive a classification, (theoretically) no extra tuning
+    is required. [ChatGPT](https://chat.openai.com/) is such a demonstration, super
+    simplifying ML apps development through its API. But hidden complexity keeps the
+    distance to production-ready apps to remain quite high. Summarized below are important
+    highlights from our journey to classify Source Code using LLMs. Let’s begin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing the right LLM
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Consider Open Source
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The first important checkpoint is the LLM to rely on. While commercial services
+    like ChatGPT are great for ‘5 minutes hackathon POCs’, for Source Code applications,
+    most likely your customers won’t like the idea of their (or your internal company’s)
+    code being sent elsewhere. And while [on-premise](https://en.wikipedia.org/wiki/On-premises_software)
+    deployments exist ([Claude on AWS](https://www.anthropic.com/index/anthropic-amazon)
+    and [ChatGPT on Azure](https://azure.microsoft.com/en-us/blog/chatgpt-is-now-available-in-azure-openai-service/)),
+    in order to gain full control of your LLM consider shifting to one of the Open
+    Source, Source Code LLMs (like [CodeLlama](https://huggingface.co/codellama/CodeLlama-7b-Instruct-hf)
+    and [WizardCoder](https://github.com/nlpxucan/WizardLM/tree/main/WizardCoder)).
+    Keep in mind though that while commercial LLMs spend much effort on techniques
+    such as ‘Reinforcement Learning From Human Feedback’ ([RLHF](https://en.wikipedia.org/wiki/Reinforcement_learning_from_human_feedback))
+    to make their API super robust and easy to use, Open Source LLMs don’t have such
+    a luxury. They will be more sensitive (having less RLHF cycles) and therefore
+    will require more prompting efforts; making for example WizardCoder to respond
+    with well formatted Json will be more challenging than doing the same on ChatGPT.
+    For some the added value of using Open Source can easily explain the extra investment
+    and for some it will be not that important. A classic matter of tradeoffs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lightweight from the outset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Assuming you decide to internally deploy your LLM, soon you’ll find that LLMs
+    are expensive. While at first glance they look like the ‘cheaper nephew’ of classic
+    ML (theoretically removing the need for collecting datasets and training models,
+    all you need is a prompt to send to an API) the hosting requirements are quite
+    high. Consider for example a classic use case — Spam Detection; the base approach
+    will be to [train a simple BOW classifier](https://en.wikipedia.org/wiki/Naive_Bayes_spam_filtering)
+    which can be deployed on weak (and therefore cheap) machines or even just to inference
+    on edge devices (totally free). Now compare it to a moderate size LLM such as
+    [StarCoder](https://arxiv.org/abs/2305.06161); having 16B parameters, even its
+    [quantized version](https://huggingface.co/blog/4bit-transformers-bitsandbytes)
+    requires a GPU with a price tag starting from a dollar per hour. This is why it’s
+    important to verify if LLMs are truly required (for Spam Detection as example,
+    BOW may be good enough). If LLM is mandatory consider using batch instead of online
+    inference (remove the need for constant endpoints) and to prioritize smaller LLMs
+    which are capable of edge inference (using packages like [cTransformers](https://github.com/marella/ctransformers)
+    or by relying on super small LLMs such as [Refact](https://refact.ai/blog/2023/introducing-refact-code-llm/)).
+    Keep in mind though that there is no such thing as a free lunch; similar to when
+    shifting from commercial to Open Source LLMs, the smaller the LLM, the more sensitive
+    it will be, requiring more prompting efforts to properly tune its outputs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompt sensitivity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given that prompts are the main ingredient for in-context classification, finding
+    the right prompt will be our initial and most critical task. The common strategy
+    would be to collect a few gold standard samples and then to iterate the prompt
+    while validating its classification performance on these samples. For some LLMs
+    (especially ones without too many RLHF cycles) small prompt changes can make a
+    huge difference; Something as minor as the addition of a ‘-’ sign can dramatically
+    change the output. This is a real issue for classification which is supposed to
+    be as coherent as possible. A simple test to validate how sensitive LLM is, would
+    be to inference the same sample with small variations while comparing to what
+    level its responses differ. Keep in mind though that given the inherent non-determinism
+    of LLMs (more on it ahead) we should anticipate non-identical responses. At the
+    same time we should distinguish label differences (‘*this is spam*’ VS ‘*ham*’)
+    from explanation differences (*‘this is spam since the capital letters it uses’*
+    VS *‘since the suspicious URLs it uses’*). While explanation differences can be
+    valid to some level (depends on the use case), label differences are the major
+    issue to watch. Fuzzy LLM will require more prompt engineering and therefore will
+    be less recommended for classification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input maximum length
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Each LLM has an input maximum length which was set during its training phase.
+    Falcon for example is a huge Open Source LLM ([180B parameters in its biggest
+    version](https://huggingface.co/tiiuae/falcon-180B)). So big, its inference requires
+    400GB memory and a few GPUs, a real behemoth. At the same time Falcon’s default
+    input maximum length is only 2048 tokens, which is probably not enough for Source
+    Code analysis (do a small exercise; check the mean file size on your repository).
+    The common technique to handle too-long inputs, starts with [sub windows splitting](https://python.langchain.com/docs/modules/data_connection/document_transformers/)
+    (we found [code splitter](https://python.langchain.com/docs/modules/data_connection/document_transformers/text_splitters/code_splitter)
+    to outperform other implementations for Source Code classification), then apply
+    the LLM on the sub windows, and finally merge their classifications using ensemble
+    rules. But the issue is it will always be worse than when the input fully fits
+    the maximum size; through our research we faced huge performance drops when the
+    input was bigger than max length, regardless of the LLM in use. This is why deeply
+    verifying such configuration as early as possible is important in-order to avoid
+    wasting your time on non relevant directions. Keep in mind though that such comparison
+    points commonly won’t be available on the LLMs leaderboards.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some LLMs are just not good enough
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Starting to evaluate LLMs, we can easily dive into an endless voyage of iterating
+    and pivoting different prompts until concluding that the LLM we’re using is just
+    not good enough for our needs. But we could spare that effort by making some initial
+    validations; too small context size can generate a too small POV. Low parameters
+    count can indicate an LLM that is too weak for the domain understanding we’re
+    looking for. A simple test to verify if the LLM is capable of dealing with our
+    case would be to start with a super simple prompt (‘*please describe what this
+    code does*’) before iterating to the more specific questions (‘*please classify
+    if this code seems malicious*’). The idea is to verify if the LLM is capable of
+    correctly processing our domain before asking more complicated questions regarding
+    it. If the LLM fails the initial and more simple questions (in our example, not
+    capable of correctly understanding what a snippet does), most likely it’s not
+    feasible to handle the more complicated questions and therefore we can spare it
+    and move forward to the next LLM to verify.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Phrasing the prompt
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Determinism
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of classification key requirements is determinism; making sure the same
+    input will always get the same output. What contradicts it is the fact that [LLMs’
+    default use generates non-deterministic outputs](https://arxiv.org/pdf/2308.02828.pdf#:~:text=In%20order%20to%20put%20LLM,determinism%20in%20drawing%20their%20conclusions.&text=LLMs%20are%20nondeterministic%20by%20nature,by%20a%20sample%20of%20words.).
+    The common way to fix it is to set the LLM [temperature to 0 or top_k to 1](https://www.promptingguide.ai/introduction/settings)
+    (depending on the platform and the architecture in use), limiting the search space
+    to the next immediate token candidate. The problem is we commonly set temperature
+    >> 0 since it helps the LLM to be more creative, to generate richer and more valuable
+    outputs. Without it, the responses are commonly just not good enough. Setting
+    the temperature value to 0 will require us to work harder at directing the LLM;
+    using more declarative prompting to make sure it will respond in our desired way
+    (using techniques like role clarification and rich context. More on it ahead).
+    Keep in mind though that such a requirement is not trivial and it can take many
+    prompt iterations until finding the desired format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Labelling is not enough, ask for a reason
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Prior to the LLMs era, classification models’ API was labelling — given input,
+    predict its class. The common ways to debug model mistakes were by analysing the
+    model (white box, looking at aspects like feature importance and model structure)
+    or the classifications it generated (black box, using techniques like [Shap](https://shap.readthedocs.io/en/latest/),
+    adjusting the input and verifying how it affects the output). LLMs differ by the
+    fact they enable free style questioning, not limiting to a specific API contract.
+    So how to use it for classification? The naive approach will follow classic ML
+    by asking solely for the label (such as *if a code snippet is* [*Client or Server-side*](https://en.wikipedia.org/wiki/Client-side)).
+    It’s naive since it doesn’t leverage the LLMs ability to do much more, like to
+    explain the predictions, enabling to understand (and fix) the LLM mistakes. Asking
+    the LLM for the classification reason (‘*please classify and explain why*’) enables
+    an internal view of the LLM decision making process. Looking into the reasons
+    we may find that the LLM didn’t understand the input or maybe just the classification
+    task wasn’t clear enough. If for example, it seems the LLM fully ignores critical
+    code parts, we could ask it to generally describe what this code does; If the
+    LLM correctly understands the intent (but fails to classify it) then we probably
+    have a prompt issue, if the LLM doesn’t understand the intent then we should consider
+    replacing the LLM. Reasoning will also enable us to easily explain the LLM predictions
+    to end users. Keep in mind though that without framing it with the right context,
+    [hallucinations](https://arxiv.org/abs/2311.05232) can affect the application
+    credibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reusing the LLM wordings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Reasoning side effect is the ability to gain a clear view of how the LLMs think
+    and more specifically the wording they use and the meaning they give to specific
+    terms. It is quite important given that LLMs main API is textual based; while
+    we assume it to be just English, LLMs have their own POV (based on their training
+    data) which can lead to discrepancies in some phrases’ understanding. Consider
+    for example that we’ve decided to ask the LLM if a ‘*code snippet is malicious*’;
+    some LLMs will use the word *malware* instead of *malicious* to describe such
+    cases, others may include *security vulnerabilities* under the *malicious* labelling.
+    Both cases can result with different outputs than what we’ve anticipated given
+    our prompts. A simple coping technique is to define the prompt using the LLM’s
+    wording. If for example the LLM called a malicious snippet *‘malware’*, using
+    that term (*malware*) will generate more coherent results than when using our
+    initially intended term — ‘*malicious’*. Moreover, during our research, the more
+    we followed the LLM wording, the less hallucinations we faced. On the other side
+    we should remember that the LLM wording is probably not fully tuned with our needs
+    (like our previous example, assuming that security vulnerabilities are malicious
+    while we may have a different view on that). Another tradeoff for you to decide
+    which approach benefits you most.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Beware of too wide context
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Iterating prompts can end up with a super detailed classification context;
+    trying to nail edge cases, to better describe our intent, like in our previous
+    example, not to rely on the LLM definition for ‘*malicious’* but instead to explain
+    how we see malicious snippets. But the issue is, the longer the prompt the more
+    likely it to generate ambiguities — simply since we’re using more terms (like
+    in our example, asking if a snippet is *malicious* while stating that *vulnerabilities*
+    are not malicious will confuse LLMs which think differently). Asking the LLM how
+    to prompt given our specific case may enable to better nail such cases (even tough
+    on our research we didn’t find it beneficial; while the LLM suggested prompts
+    which were supposed to solve such issues, they turned out to be super similar
+    to our intuitive tries and in general didn’t help). Detailed context will help
+    the LLM to better understand the intent but may generate confusion and hallucinations
+    as well. Another tradeoff to consider. Adding below some hallucination examples
+    from our research:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The file appears to be malicious based on its contents. It contains several
+    functions which draw various shapes onto the screen using PyGame. However, upon
+    closer inspection some of these shapes appear to form an image of a bird. This
+    could indicate that this Python script intends to perform malicious activities
+    by disguising itself as an innocent looking application. Based on all of these
+    factors I would recommend classifying this file as* ***MALICIOUS***.(**False-Positive,
+    assuming malicious snippets hide their intent by picturing birds on screen**).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*The file appears to be* ***benign*** *based on initial analysis. The only
+    potential concern I see with this code is the use of `requests` library to download
+    an executable from an untrusted source (`XXXXX.com`). However, since the downloaded
+    file is saved to disk with randomized name and executed using system shell command,
+    there does not appear to be any direct risk associated with this behavior.* (**False-Negative,
+    assuming clearly malicious downloaded executable is benign since its randomized
+    naming**).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consistent wording
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the most common issues we found during our LLM debug sessions was inconsistent
+    wording. Consider for example the following prompt- *‘please classify if the following*
+    ***file*** *is malicious.* ***Code*** *is considered malicious when it actively
+    has nefarious intent. The* ***snippet*** *— …*’. A quick observation will reveal
+    it includes 3 different terms to describe the very same entity (file, code, snippet).
+    Such behavior seems to highly confuse LLMs. A similar issue may appear when we
+    try to nail LLM mistakes but fail to follow the exact wording it uses (like for
+    example if we try to fix the LLM labelling of ‘*potentially malicious*’ by referring
+    to it on our prompt as ‘*possibly malicious’*). Fixing such discrepancies highly
+    improved our LLM classifications and in general made them more coherent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input pre-processing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Previously we’ve discussed the need of making LLMs responses deterministic,
+    to make sure the same input will always generate the same output. But what about
+    similar inputs? How to make sure they will generate similar outputs as well? Moreover,
+    given that many LLMs are input sensitive, even minor transformations (such as
+    blank lines addition) can highly affect the output. To be fair, this is a known
+    issue in the ML world; image applications for example commonly use [data augmentation](https://en.wikipedia.org/wiki/Data_augmentation)
+    techniques (such as [flip and rotations](https://github.com/aleju/imgaug)) to
+    reduce overfitting by making the model less sensitive to small variations. Similar
+    augmentations exist on the textual domain as well (using techniques such as [synonyms
+    replacement and paragraphs shuffling](https://github.com/makcedward/nlpaug)).
+    The issue is it doesn’t fit our case where the models (instructions tuned LLMs)
+    are already fine-tuned. Another, more relevant, classic solution is to pre-process
+    the inputs, to try to make it more coherent. Relevant examples are redundant characters
+    (such as blank lines) removal and text normalisation (such as making sure it’s
+    all UTF-8). While it may solve some issues, the down side is the fact such approaches
+    are not scalable ([strip](https://www.w3schools.com/python/ref_string_strip.asp)
+    for example will handle blank lines at the edges, but what about within paragraph
+    redundant blank lines?). Another matter of tradeoff.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Response formatting
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the simplest and yet important prompting techniques is response formatting;
+    to ask the LLM to respond in a valid structure format (such as JSON of {‘classification’:..,
+    ‘reason’:…}). The clear motivation is the ability to treat the LLMs outputs as
+    yet another API. Well formatted responses will ease the need for fancy post processing
+    and will simplify the LLM inference pipeline. For some LLMs like ChatGPT it will
+    be as simple as directly asking it. For other, lighter LLMs such as Refact, it
+    will be more challenging. Two workarounds we found were to split the request into
+    two phases (like ‘*describe what the following snippet does*’ and only then ‘*given
+    the snippet description, classify if its server side’*) or just to ask the LLM
+    to respond in another, more simplified, format (like *‘please respond with the
+    structure of “<if server> — <why>*”). Finally, a super useful hack was to append
+    to the prompt suffix the desired output prefix (on [StarChat](https://huggingface.co/blog/starchat-alpha)
+    for example, add the statement *‘{“classification”:’* to the *‘<|assistant|>’*
+    prompt suffix), directing the LLM to respond with our desired format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Clear context structure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: During our research we found it beneficial to generate prompts with a clear
+    context structure (using text styling formats such as bullets, paragraphs and
+    numbers). It was important both for the LLM to more correctly understand our intent
+    and for us to easily debug its mistakes. Hallucinations due to typos for example
+    were easily detected once having well structured prompts. Two techniques we commonly
+    used were to replace super long context declarations with bullets (though for
+    some cases it generated another issue — attention fading) and to clearly mark
+    the prompt’s input parts (like for example; framing the Source Code to analyse
+    with clear signs “ *—* ***‘****{source_code}****’***”).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Attention fading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Like humans, LLMs pay [more attention to the edges](https://arxiv.org/abs/2307.03172)
+    and tend to forget facts seen in the middle ([GPT-4 for example seems to experience
+    such behavior](https://twitter.com/GregKamradt/status/1722386725635580292), especially
+    for the longer inputs). We faced it during our prompt iteration cycles when we
+    noticed that the LLM was biassed towards declarations that were on the edges,
+    less-favouring the class whose instructions were in the middle. Moreover, each
+    re-ordering of the prompt labelling instructions generated different classification.
+    Our coping strategy included 2 parts; first try in general to reduce the prompt
+    size, assuming the longer it is the less the LLM is capable to correctly handle
+    our instructions (it meant to prioritise which context rules to add, keeping the
+    more general instructions, assuming the too specific ones will be ignored anyway
+    given a too long prompt). The second solution was to place at the edges the class
+    of interest instructions. The motivation was to leverage the fact that LLMs will
+    bias towards the prompt edges, together with the fact that almost every classification
+    problem in the world has a class of interest (which we prefer not to miss). For
+    the spam-ham for example it can be the spam class, depending on the business case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Impersonation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One of the most trivial and common instructions’ sharpening techniques: adding
+    to the prompt’s system part the role that the LLM should play while answering
+    our query, enabling to control the LLM bias and to direct it towards our needs
+    (like when asking ChatGPT to answer in [Shakespeare-style responses](https://www.zdnet.com/article/i-used-chatgpt-to-rewrite-my-text-in-the-style-of-shakespeare-c3po-and-harry-potter/)).
+    In our previous example (‘*does the following code malicious’*), declaring the
+    LLM as ‘*security specialist’* generated different results than when declaring
+    it as ‘*coding expert’*; the *‘security specialist’* made the LLM biassed towards
+    security issues, finding vulnerabilities at almost every piece of code. Interestingly,
+    we could increase the class bias by adding the same declaration multiple times
+    (placing it for example at the user part as well). The more role clarifications
+    we added, the more biassed the LLM was towards that class.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ensemble it
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One of the key benefits of role clarification is the ability to easily generate
+    multiple LLM versions with different conditioning and therefore different classification
+    performance. Given sub classifiers classifications we can aggregate it into a
+    merged classification, enabling to increase precision (using majority vote) or
+    recall (alerting for any sub classifier alert). [Tree Of Thoughts](https://arxiv.org/pdf/2305.10601.pdf)
+    is a prompting technique with a similar idea; asking the LLM to answer by assuming
+    it includes a group of experts with different POVs. While promising, we found
+    Open Source LLMs to struggle to benefit from such more complicated prompt conditions.
+    Ensemble enabled us to implicitly generate similar results even for light weight
+    LLMs; deliberately making the LLM to respond with different POVs and than merge
+    it to a single classification (moreover, we could further mimic the Tree Of Thoughts
+    approach by asking the LLM to generate a merged classification given the sub classifications
+    instead of relying on more simple aggregation functions).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time (and attention) is all you need
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The last hint is maybe the most important one — smartly manage your prompting
+    efforts. LLMs are a new technology, with new innovations being published almost
+    on a daily basis. While it’s fascinating to watch, the downside is the fact generating
+    a working classification pipeline using LLMs could easily become a never ending
+    process, and we could spend all our days trying to improve our prompts. Keep in
+    mind that **LLMs** **are the real innovations** and prompting is basically just
+    the API. Spending too much time prompting you may find that replacing the LLM
+    with a new version could be more beneficial. Pay attention to the more meaningful
+    parts, try not to drift into never ending efforts to find the best prompt in town.
+    And may the best Prompt (and LLM) be with you 🙂.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,387 @@
+- en: Hyperparameter Tuning of HuggingFace Models with AWS Sagemaker SDK
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/hyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36?source=collection_archive---------7-----------------------#2023-01-30](https://towardsdatascience.com/hyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36?source=collection_archive---------7-----------------------#2023-01-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Optimizing deep neural networks with the HuggingFace Estimator and Sagemaker
+    Tuner
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)[![Ciarán
+    Cooney](../Images/94d79e4ac477343c919a80fe124a96c9.png)](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------)
+    [Ciarán Cooney](https://ciaranfcooney.medium.com/?source=post_page-----f727ac06cf36--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc6421cc0e5d6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&user=Ciar%C3%A1n+Cooney&userId=c6421cc0e5d6&source=post_page-c6421cc0e5d6----f727ac06cf36---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f727ac06cf36--------------------------------)
+    ·8 min read·Jan 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff727ac06cf36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&user=Ciar%C3%A1n+Cooney&userId=c6421cc0e5d6&source=-----f727ac06cf36---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff727ac06cf36&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhyperparameter-tuning-of-huggingface-models-with-aws-sagemaker-sdk-f727ac06cf36&source=-----f727ac06cf36---------------------bookmark_footer-----------)![](../Images/9dd34e6c9734edf67315988646a63a25.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image from pexels.com ([https://www.pexels.com/photo/person-holding-volume-knob-1345630/](https://urldefense.com/v3/__https:/www.pexels.com/photo/person-holding-volume-knob-1345630/__;!!MjIf2fY!myN_3VIbtds_D5dJELsjpVxU_DWxOfCYWeJ5xf3jHZaMREVimOZ7tDN0hKn1VEzEFG4JFDzJp_GlVhgBCv1M6Q$))
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Even in the era of enormous pretrained neural networks, hyperparameter tuning
+    offers the opportunity to maximize model performance for a specific downstream
+    task. Fine-tuning, just like training from scratch, requires a reasonable set
+    of initial hyperparameters to enable efficient and optimal training, so finding
+    an effective method for tuning these parameters is an important piece of the deep
+    learning jigsaw.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameter tuning is an important concept to think about when working with
+    some of the large pre-trained models available on HuggingFace, such as [BERT](https://huggingface.co/bert-base-uncased),
+    [T5](https://huggingface.co/t5-base), [wav2vec](https://huggingface.co/facebook/wav2vec2-large-960h-lv60-self)
+    or [ViT](https://huggingface.co/google/vit-base-patch16-384). It is easy to think
+    that most of the potential of these models has already been exhausted through
+    large-scale pretraining, but hyperparameters such as learning rate, number of
+    warmup steps, weight decay, and the type of learning rate scheduler can have a
+    significant effect on the ultimate objective of your fine-tuning task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, there are several strategies for searching for optimal hyperparameter
+    configurations (e.g., grid search or bayesian), with varying levels of sophistication
+    behind their approaches. In addition, deep learning frameworks and cloud providers
+    are doing more and more to make it easy for practitioners to integrate hyperparmeter
+    tuning into their ML workflow. One of these is Amazon Web Service’s (AWS) Sagemaker
+    [HyperparameterTuner](https://sagemaker.readthedocs.io/en/stable/api/training/tuner.html).
+    In this article, I am going to do a code walk-through of how to use Sagemaker
+    to fine-tune a HuggingFace transformer using its hyperparameter tuner and the
+    Sagemaker HuggingFace Estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notebooks and scripts are available [here](https://github.com/cfcooney/sagemaker_sdk_examples/tree/main/hyperparameter_tuning),
+    and are part of a [repo](https://github.com/cfcooney/sagemaker_sdk_examples) being
+    written to demonstrate the utility of Sagemaker training, evaluating, and deploying
+    deep learning models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameter Tuner and HuggingFace Estimator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Sagemaker’s HyperparameterTuner makes running hyperparameter jobs easy to maintain
+    and cost effective. This class takes a Sagemaker [estimator](https://sagemaker.readthedocs.io/en/stable/api/training/estimators.html)
+    — the base class for running machine learning training jobs in AWS — and configures
+    a tuning job based on arguments provided by the user. The user can specify the
+    tuning strategy, the metric to maximize or minimize, hyperparameter ranges to
+    search through, and several other arguments. You call `.fit()` on the tuner just
+    like you would with a standard estimator, and it also provides functionality for
+    deployment after training is complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am going to demonstrate the HyperparameterTuner alongside the Sagemaker HuggingFace
+    Estimtor. This is a bespoke estimator for working with HuggingFace models in AWS.
+    In this example, I am going to fine-tune [DistilBERT](https://huggingface.co/docs/transformers/model_doc/distilbert)
+    on the [tweet_eval](https://huggingface.co/datasets/tweet_eval#licensing-information)
+    dataset for a sentiment classification task. The dataset is provided under a [Creative
+    Commons Attribution 3.0 Unported License](https://groups.google.com/g/semevaltweet/c/k5DDcvVb_Vo/m/zEOdECFyBQAJ).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Follow along with code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Following some imports, we need to set up a Sagemaker session and initialize
+    a S3 bucket that we can read from and write to. A [session](https://sagemaker.readthedocs.io/en/stable/api/utility/session.html)
+    in Sagemaker is a super convenient class utilizing the resources and entities
+    Sagemaker typically uses; things such as endpoints and data in S3\. If you do
+    not specify a bucket, the session will assign a default bucket.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the initial admin complete, the next thing to do is get the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To demonstrate hyperparameter tuning with the HuggingFace estimator, we’re going
+    to use the [tweet_eval](https://huggingface.co/datasets/tweet_eval#licensing-information)
+    dataset and download it directly from the datasets library.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Load the dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following a few tokenization and processing steps, we want to convert the dataset
+    to tensors and then store the train and test sets in the bucket we defined for
+    our Sagemaker session.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fortunately, HuggingFace datasets and Sagemaker have made saving data relatively
+    simple since a datasets object provides us with a `save_to_disk()` method which
+    allows us to pass in a file system argument that takes care of moving the data
+    to S3 using `s3fs.S3FileSysteM`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Store datasets in S3 with save_to_disk() method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we have our train and test data stored in an S3 location where are training
+    job can access it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3794284b7c795cf8c59addc641668fbc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: S3 locations for train and test sets. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameter Settings
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before running a tuning job, we want to think about the hyperparameters we want
+    to optimize and the range of values we think might be appropriate. Common hyperparameters
+    that get optimized by tuning include learning rate, weight decay, dropout probability,
+    or even structural parameters like the number of layers in a neural network or
+    the pooling strategy. In the scenario I am demonstrating here, the base model
+    itself could even be tuned as a hyperparameter as we could load in several HuggingFace
+    models for comparison.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, for this example we will fine-tune DistilBERT tuned for four hyperparameters.
+    These are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning rate
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Number of warm up steps
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Optimizer
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Weight decay
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Initialize Estimator and Tuner
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Before we initialize our tuning job, we need to initialize our estimator. An
+    estimator is a class in Sagemaker that handles end-to-end training and deployment
+    tasks. The HuggingFace estimator allows us to run custom HuggingFace code in a
+    Sagemaker training environment by using a pre-built docker container developed
+    specifically for the task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We pass the estimator our training script using the `entry_point` argument.
+    We also pass several additional parameters to configure the environment, the package
+    versioning, and the instance settings. The `hyperparameters` argument passed to
+    the estimator does not contain the parameters to be tuned, but arguments to be
+    passed to our training script.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize the HuggingFace estimator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The training script `training_script.py` contains our code for fine-tuning DistilBERT,
+    [here](https://github.com/cfcooney/sagemaker_sdk_examples/blob/main/hyperparameter_tuning/scripts/training_script.py).
+    HuggingFace provides a `Trainer` class that handles virtually all of the training
+    setup and procedures, and there are examples of tuning using that approach [here](https://github.com/cfcooney/sagemaker_sdk_examples/blob/main/hyperparameter_tuning/tuning_with_hf_trainer.ipynb).
+    However, this is not always desirable and there are advantages to having more
+    direct control over the training loop. For that reason, I have written a [custom
+    training loop](https://github.com/cfcooney/sagemaker_sdk_examples/blob/main/hyperparameter_tuning/scripts/training_script.py)
+    in PyTorch for this task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check out the custom training loop if it helps, but here are a couple of snippets
+    showing the dataloader and the model training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pytorch dataloader for training set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training loop in native Pytorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The snippet below shows the configuration of our hyperparameter ranges. The
+    Sagemaker tuner comes with a suite of classes for representing parameter ranges.
+    `ContinuousParameter` allows us to set a range between which we can search for
+    continuous values. Here, it is used for learning rate and weight decay. `IntegerParameter`
+    provides the same functionality for ints and we use it for warmup steps. Finally,
+    `CategoricalParameter` allows us to pass a list of variables to tune — here, this
+    is used for optimizer type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The tuner also requires an objective metric and an objective type — something
+    to tune the model towards and the direction we want to tune it. The `metric_definitions`contains
+    the name of one or more metrics, and a regular expression used to extract the
+    metric from Cloudwatch logs (this is a common feature of the Sagemaker sdk).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Define hyperparameter ranges and objective metric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can define the `HyperparameterTuner` before beginning our tuning jobs.
+    As well as the HuggingFace estimator, metric arguments, and hyperparameter ranges
+    we also need to setup the maximum number of jobs and the number of parallel jobs
+    we want to run. This is what makes the Sagemaker tuner so great and so easy to
+    use. Then we call `tuner.fit()` to start the tuning job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize HyperparameterTuner and call .fit() to begin tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compare tuned hyperparameters
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The tuning job ends and we have our tuned hyperparameters. The tuner comes with
+    a `tuner.analytics()` method for displaying summarized results in a pandas dataframe.
+    The FinalObjectiveValue is the loss metric we established when configuring the
+    tuning job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5979b4cd28f15f5279f2cc8af8941fff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results DataFrame from tuner analytics. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The optimal hyperparameters are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning rate = 0.000175
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Optimizer = Adafactor
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Warmup_steps = 192
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Weight decay = 0.000111
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: …and a cursory glance at the results suggests that learning rate is probably
+    the most significant factor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Of course, we can go ahead and plot our results directly from the dataframe,
+    but there is another way. From the Sagemaker console, we can click-through the
+    Training and Hyperparameter tuning jobs tabs. From there, we can find our completed
+    jobs and click on the `View algorithm metrics` link. This takes us to AWS CloudWatch
+    where we can see various interactive plots and perform queries on the data returned
+    from our tuner. The plot below is an example line plot show the test loss over
+    two epochs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b05b700b83611446d17926eeaae747dd.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: AWS CloudWatch. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we can view the results, we have a few options for using the tuned values.
+    First, we could simply take the model trained with these parameters as our final
+    model for inference. Second, we could use the optimal parameters to perform a
+    longer training run in order to improve our model. Third, we could reset out hyperparameter
+    ranges based on these results and run another tuning job to get a more granular
+    result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For now, I am just going to use the best model achieved by the training job
+    to deploy and perform inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploy Endpoint and predict
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To select the best model, our tuner object has a `best_estimator()`method. Having
+    initialized the best performing model, it is very simple to deploy it to a Sagemaker
+    Endpoint using the `deploy()`method. Here, I am specifying the number of instances
+    to use for inference (1), and the instance type (‘ml.g4dn.xlarge’ for accelerated
+    computing). Deployment can take a few minutes to complete, and when it is down
+    you have your model endpoint hosted on Sagemaker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Deploy model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With the model deployed, we can make predictions of the sentiment of some input
+    text. If I input the sentence, “Best thing ever!” I would expect a positive sentiment
+    prediction with a very high confidence value. That is what we get. However, the
+    output labels are generically set to ‘LABEL_0’ and ‘LABEL_1’, so I’ve written
+    a little post-processing code to give us more meaningful outputs and you can see
+    that we end up with a ‘positive’ result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Make a prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1b499fcf7d9c4426ed241cc909fc593d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Using the deployed model to make predictions. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predict a class label.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/881736cfdfadeb55de3ccb46093f4638.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Formatting predictions to be readable. Image by author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, if we no longer require use of the model for inference we can delete
+    the endpoint so that it is no longer hosted (your mode artefacts are still stored
+    in S3).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Delete endpoint when all tasks are complete.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Overall, my experience of using Sagemaker HyperparameterTuner has been very
+    positive but there are a few potential downsides that you might have to consider.
+    As with all cloud services, one of the things to be aware of is cost. This is
+    particularly salient for a service like this in which multiple jobs, including
+    parallelization and GPUs, are being used. Another potential downside is the high-level
+    nature of HyperparameterTuner and the Sagemaker sdk. Some people would prefer
+    to have more control over their programs, and for this something like boto3 may
+    be preferable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This post demonstrates how to perform hyperparameter tuning in AWS Sagemaker
+    using the HuggingFace estimator. I hope the code walkthough shows just how easy
+    it is to tune hyperparameters using the Sagemaker sdk and that there is a lot
+    to be gained in model development by using it. Jupyter Notebooks for using the
+    hyperparameter tuner are available [here](https://github.com/cfcooney/sagemaker_sdk_examples/blob/main/hyperparameter_tuning/hyperparameter_tuning.ipynb)
+    and [here](https://github.com/cfcooney/sagemaker_sdk_examples/blob/main/hyperparameter_tuning/tuning_with_hf_trainer.ipynb).
+    The main github repository for Sagemaker examples is [here](https://github.com/cfcooney/sagemaker_sdk_examples).
+  prefs: []
+  type: TYPE_NORMAL

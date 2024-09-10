@@ -1,0 +1,507 @@
+- en: Predicting Metadata for Humanitarian Datasets Using GPT-3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d?source=collection_archive---------4-----------------------#2023-01-18](https://towardsdatascience.com/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d?source=collection_archive---------4-----------------------#2023-01-18)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)[![Matthew
+    Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------)
+    [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----b104be17716d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----b104be17716d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b104be17716d--------------------------------)
+    ·19 min read·Jan 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb104be17716d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----b104be17716d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb104be17716d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpredicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d&source=-----b104be17716d---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Responding to humanitarian disasters quickly, better still, anticipating them
+    can [save lives](https://reliefweb.int/report/world/mark-lowcock-under-secretary-general-humanitarian-affairs-and-emergency-relief)
+    [1]. Data is key to this, not just having *lots* of data, but [clean data which
+    is well understood](https://www.devex.com/news/opinion-humanitarian-world-is-full-of-data-myths-here-are-the-most-popular-91959)
+    [2] in order to create a clear view of the situation on the ground. In many cases
+    this critical data is stored in hundreds of small spreadsheets, so piecing them
+    altogether can be time consuming and difficult to maintain as new data comes in
+    during a humanitarian incident. Automating the process of data discovery would
+    potentially speed responses and improve outcomes for affected people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One way to make discovery easier is to ensure that tabular data has metadata
+    describing each column. This can help in linking together datasets, for example
+    knowing that a column in a table of landmine locations specifies longitude and
+    latitude, similar to a column in another table locating field hospitals. It’s
+    not always obvious from column names what data they might contain, which can be
+    in many languages adhering to varying standards. In an ideal world such metadata
+    is provided with the data, but as we will see below this isn’t typically the case.
+    Doing it manually can be a BIG job.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article I look at how we might help automate this process by using [OpenAI’s
+    GPT-3](https://openai.com/blog/gpt-3-apps/) Large Language Model to predict metadata
+    attributes of Humanitarian datasets, and improve on the performance of previous
+    work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Humanitarian Data Exchange (HDX)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The [Humanitarian Data Exchange](https://data.humdata.org/) (HDX) is a fantastic
+    platform which aims to address some of these issues by bringing humanitarian datasets
+    together in a standardized way. As I write this there are 20,403 datasets globally,
+    that cover a wide range of domains and file types. CSV and Excel files in these
+    datasets result in about 148,000 distinct tables, lots of lovely data!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4bf351851393834c447cc8b83c2844b5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Types of files on the [Humanitarian Data Exchange](https://data.humdata.org/)
+    (HDX) Platform. See [this notebook](https://github.com/datakind/gpt-3-meta-data-discovery/blob/main/hdx_gpt-3_tag_prediction.ipynb)
+    for how the data was collated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Humanitarian Exchange Language (HXL)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: One great thing about the HDX platform is that it encourages data owners to
+    tag their data with tags in the [Humanitarian Exchange Language](https://hxlstandard.org/?_gl=1*p7ffaf*_ga*OTc2MzE0MTI5LjE2NzAxMDE2NjE.*_ga_E60ZNX2F68*MTY3MzQ5NDk2NS4xOC4xLjE2NzM0OTUzNjQuNjAuMC4w)
+    (HXL) format. This metadata makes it easier to combine and use data in a meaningful
+    way, speeding things up when time is important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'HXL Tags come in two forms, those set at the dataset level, and field-level
+    tags which apply to columns in tabular data. The latter look like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac56a776af2eb693400af0f63fb15ee0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of a table with HXL tags on the second row [[#HXL Standards examples](https://hxlstandard.org/hxlexample/)
+    ]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notice the second row just below the column headers, those are HXL tags. They
+    consist of the tag which is prefixed with a ‘#’ (e.g ‘#adm1’) and in some cases
+    attributes, eg ‘+name’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The challenge is that these field-level tags are not always set on datasets
+    in HDX, making it harder to use the amazing data there. Looking at CSV and Excel
+    data for Kenya, most tables appear to be missing column HXL tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d797dbe8f75ae6c6827659970a062991.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Analysis of data files for Kenya on the [Humanitarian Data Exchange](https://data.humdata.org/)
+    (HDX) Platform, to see which have HXL column tags. See [this notebook](https://github.com/datakind/gpt-3-meta-data-discovery/blob/main/hdx_gpt-3_tag_prediction.ipynb)
+    for how data was collated.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wouldn’t it be great if we could fill in those blanks and populate HXL tags
+    for columns that don’t yet have them?
+  prefs: []
+  type: TYPE_NORMAL
+- en: There has already been some really fantastic work by Microsoft on predicting
+    HXL tags using [fastText](https://fasttext.cc/) embedding, see [this notebook](https://github.com/humanitarian-data-collaboration/hdx-python-model)
+    and corresponding [paper](https://www.kdd.org/kdd2019/docs/Humanitarian_Data_tagging_KDD2019_SocialImpactTrack_HXLTagPrediction.pdf)
+    [3]. The authors achieved 95% accuracy predicting tags and 92% predicting attributes,
+    really great performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, I wondered if we might use another technique now that there are some
+    new kids on the block …
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPT-3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As I mentioned in [a previous article](https://medium.com/@astrobagel/2022-the-year-superstar-ai-models-stepped-onto-the-stage-90eefa95d9b6),
+    there seems to be a real buzz around generative AI in the last year. One of the
+    stars of this story has been Open AI’s [GPT-3](https://openai.com/blog/gpt-3-apps/)
+    Large Language Model (LLM) which has some pretty amazing capabilities. Importantly
+    it can be fine-tuned to learn patterns in special applications of language such
+    [as computer code](https://openai.com/blog/openai-codex/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: So it occurred to me that HXL tags are just another type of language ‘Special
+    case’ and that it might be possible to fine-tune GPT-3 with some HXL tag examples,
+    then see if it can predict them on new data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting some training data from HDX
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: First, it’s worth clarifying some HDX hierarchy of datasets, resources and tables.
+    A ‘Dataset’ can include a set of ‘Resources’ which are files. Datasets have their
+    own page like [this one](https://data.humdata.org/dataset/mli-vegetation-indicators-dekad-admin2)
+    which provide lots of useful information about history, who uploaded it and dataset-level
+    tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/add9842a1f5e62a1255154ef3ee78352.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of an HDX Dataset on the HDX platform
+  prefs: []
+  type: TYPE_NORMAL
+- en: The example above has two CSV file resources, which if you select **More > Preview
+    on HDX** display the HXL tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fe0c06003bbc3ef33a58457108499182.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An [example resource](https://data.humdata.org/dataset/mli-vegetation-indicators-dekad-admin2/resource/be4ec19e-046f-4df2-8772-5615a06aef03)
+    for a dataset on the HDX Platform
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s a super cool platform!
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will be downloading resources like the one above for our analysis. HDX provides
+    a [python library for interacting with their API](https://hdx-python-api.readthedocs.io/en/latest/),
+    which can be installed with …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: You will then need to set up the connection. As we are only downloading open
+    datasets we don’t need to set up an API key …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: After some experimentation, I wrote a little wrapper to download resources (files)
+    for each dataset. It supports CSV, TSV, XLS and XLSX file types, which should
+    include enough tables for our model fine-tuning. It also saves the dataset and
+    resource HDX JSON metadata along with each file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The above is a bit long-winded because I wanted to be able to restart the download
+    and have the process continue where it left off. Also, the API seemed to error
+    from time to time, likely due to my internet connection, so there are some Try/Excepts
+    in there. Not a fan of Try/Excepts usually but the aim is to create a training
+    dataset, so I don’t mind some missing resources as long as I have a representative
+    sample to train GPT-3.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the search HDX API we search for ‘HXL’ to find datasets which are likely
+    to have HXL tags, then download files for those …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: This can take a while (a few hours) so get yourself a nice cup of tea!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Column HXL tags are not listed in HDX resource metadata as far as I could tell,
+    so to extract these we will have to analyze our downloaded files. After a bit
+    of experimentation I wrote a few helper functions …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can run it on our previously downloaded datafiles …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This dataframe has 25,695 rows for each tabular dataset found when scanning
+    CSV and Excel files for datasets on HDX found searching for ‘HXL’, along with
+    a data preview, columns names and in some cases HXL tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Train/Test split
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Normally, I would simply use [Scikit learn’s train_test_split](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html)
+    on the data to be used with the model. However, in doing this I noticed that often
+    repeat resources (files) from the same dataset might occur in both training and
+    test sets. For example, an organization might provide files for multiple airports,
+    each being in exactly the same format with the same HXL tags. If we generate a
+    prompts dataframe then split, airports from this dataset will appear in both the
+    training and test set, which wouldn’t reflect very well our problem where we need
+    to predict HXL tags for brand new datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To get around this I did the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Split the HDX ‘datasets’ into train/test (remember a dataset can have multiple
+    resource files)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using each I created dataframes of resources, one row per data file
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then using these train/test resources dataframes, I created train/test dataframes,
+    one row per *column*. These are the GPT-3 prompts needed for fine-tuning
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Creating GPT-3 fine-tuning prompts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In order to [fine tune GPT-3](https://beta.openai.com/docs/guides/fine-tuning),
+    we need to provide a prompt and response training file in JSONL format. For the
+    prompt I decided to use (i) Column name; (ii) A sample of data from that column.
+    The Completion will be the HXL tag and attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is an example …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: The format for GPT-3 is very particular and took a while to get right! Things
+    like having a space at the start of completion are recommended by OpenAI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: You’ll notice in the above that I exclude any prompts where there are NaNs in
+    the data. I figured we’d start with good data samples but this is something to
+    be revisited in future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now generate a training dataset and save to a file for GPT-3 …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is what the training data looks like …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: There were 139,503 rows in this training dataset, one row per column as found
+    in the tabular data we downloaded from HDX, specifically for cases where the column
+    had HXL tags.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generating an OpenAI API Key
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before we can do anything, you will need to [sign up for an OpenAI account](https://auth0.openai.com/u/signup/identifier?state=hKFo2SBHOUJWNE9YNnVfbnFxQWJTbXhESW5SNlpsNlFBNzFPaaFur3VuaXZlcnNhbC1sb2dpbqN0aWTZIFdJa0xtVTAxV21POU1WbWRVNmNGVmxvWkwyMDBGY1pVo2NpZNkgRFJpdnNubTJNdTQyVDNLT3BxZHR3QjNOWXZpSFl6d0Q).
+    Once that’s done, you should have [$18 of free credits](https://openai.com/api/pricing/).
+    If using a small amount of data, this should suffice, but for this analysis and
+    a few model trainings I racked up a bill of $50, so you may need to attach a credit
+    card to your account.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once you have an account you can [generate an API key](https://beta.openai.com/account/api-keys).
+    I opted to save this to a local file and referenced the file in code, but the
+    [OpenAI Python library](https://github.com/openai/openai-python) support using
+    environment variables also.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning GPT-3
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Right, here comes the exciting bit! With our nice training data, we can fine-tune
+    GPT-3 as follows …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the above we submit the fine-tuning model run to OpenAI, we can then see
+    status with …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: I opted to keep things simple, but you can also submit to OpenAI and monitor
+    status via a stream as shown [here](https://github.com/openai/openai-cookbook/blob/main/examples/azure/finetuning.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the status is ‘succeeded’ you can now get a model ID to use for predictions
+    (completions) …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Predicting HXL tags with our fine-tuned GPT-3 model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now have a model, let’s see what it can do!
+  prefs: []
+  type: TYPE_NORMAL
+- en: To call GPT-3 you can use the [Open AI Python library ‘create’ method](https://beta.openai.com/docs/api-reference/completions/create).
+    It’s worth checking out the documentation to see what parameters you can tune.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which we call with the following, limiting to 500 prompts …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: This yields the following results …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Uhhhh!? That’s, well …. terrible. Predicting just the HXL tag worked really
+    well, but predicting tag and attributes, not so much.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at some of the failed predictions …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Interesting. It seems the model completed and captured the correct tag and attributes
+    almost perfectly, then added some extra attributes at the end. So for example
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see how often the expected tags and attributes occurred in the first half
+    of the predictions …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Out of 500 predictions, the expected tags and attributes were in the predicted
+    tags and attributes **99%** of the time. Put another way, the expected values
+    were the first part of most predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So GPT-3 has great accuracy for predicting tags and attributes but adds extra
+    attributes at the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, how to exclude those extra tokens?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, it turns out that the GPT-3 returns log probabilities for each token.
+    As you will notice above, we also calculated a prediction assuming we stopped
+    completing tokens if the log probability was above some cutoff value …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let’s see how that performed, assuming a cutoff of -0.001 ..
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s pretty good, 0.94 for tags and attributes. Since we know that the correct
+    tags and attributes occur in the prediction 99% of the time, we should be able
+    to do a little better with some tuning of the log probability cutoff and maybe
+    with some post-processing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions and Future Work
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The above is a quick analysis to see how GPT-3 might be applied for predicting
+    meta data, specifically HXL tags on humanitarian datasets. It performs really
+    well on this task and has a lot of potential for similar metadata prediction tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More work is needed to refine the approach of course, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trying other models (I used 'ada' above) to see if this improves performance
+    (though it will cost more)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Model hyperparameter tuning. The log probability cutoff will likely be very
+    important
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More prompt engineering to perhaps include column list on the table might provide
+    better context, we well as overlying columns on two-row header tables.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: More preprocessing. Not much was done for this article, blindly taking tables
+    extracted from CSV files, so the data is can be a bit messy
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: That said, some great potential here I feel for using GPT-3 to predict metadata
+    on datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More to follow soon!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Mark Lowcock, Under-Secretary-General for Humanitarian Affairs and Emergency
+    Relief Coordinator, [Anticipation saves lives: How data and innovative financing
+    can help improve the world’s response to humanitarian crises](https://reliefweb.int/report/world/mark-lowcock-under-secretary-general-humanitarian-affairs-and-emergency-relief)
+    (2019)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Sarah Telford, [Opinion: Humanitarian world is full of data myths. Here
+    are the most popular](https://www.devex.com/news/opinion-humanitarian-world-is-full-of-data-myths-here-are-the-most-popular-91959)
+    (2018)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Vinitra Swamy et al, [Machine Learning for Humanitarian Data: Tag Prediction
+    using the HXL Standard](https://www.kdd.org/kdd2019/docs/Humanitarian_Data_tagging_KDD2019_SocialImpactTrack_HXLTagPrediction.pdf)
+    (2019)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A notebook used for this analysis can be found [here](https://github.com/datakind/gpt-3-meta-data-discovery).
+  prefs: []
+  type: TYPE_NORMAL

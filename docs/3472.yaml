@@ -1,0 +1,294 @@
+- en: Supercharge Training of Your Deep Learning Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/supercharge-training-of-your-deep-learning-models-7168ff81a042?source=collection_archive---------7-----------------------#2023-11-22](https://towardsdatascience.com/supercharge-training-of-your-deep-learning-models-7168ff81a042?source=collection_archive---------7-----------------------#2023-11-22)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Super convergence with one-cycle learning rates
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)[![Raghav
+    Bali](../Images/49fea68f38f59d0bc39dab484b55684f.png)](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7168ff81a042--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7168ff81a042--------------------------------)
+    [Raghav Bali](https://medium.com/@Rghv_Bali?source=post_page-----7168ff81a042--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdff4008c1908&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-training-of-your-deep-learning-models-7168ff81a042&user=Raghav+Bali&userId=dff4008c1908&source=post_page-dff4008c1908----7168ff81a042---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7168ff81a042--------------------------------)
+    ·7 min read·Nov 22, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7168ff81a042&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-training-of-your-deep-learning-models-7168ff81a042&user=Raghav+Bali&userId=dff4008c1908&source=-----7168ff81a042---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7168ff81a042&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsupercharge-training-of-your-deep-learning-models-7168ff81a042&source=-----7168ff81a042---------------------bookmark_footer-----------)![](../Images/f3668520565b60e31f7dacbe8189e9fa.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Philip Swinburn](https://unsplash.com/@pjswinburn?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you come across scenarios when it is easy to get an initial burst in accuracy
+    but once you reach 90%, you have to push really really hard to squeeze out any
+    improvement in performance? Does your model take too long to train?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, we will look at an interesting technique to supercharge your
+    training setup and get that extra bit of performance you have been looking for
+    and train faster. Essentially, we will work towards dynamically changing the learning
+    rate over epochs using a policy called the ***One-Cycle Learning Rate***.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Originally mentioned in a paper by Leslie Smith, the **one-cycle learning rate
+    schedule**[[1](https://arxiv.org/abs/1803.09820)], [[2](https://arxiv.org/abs/1708.07120)]
+    focuses on a unique strategy to dynamically update the learning rate during the
+    training process. Sounds like a mouthful of terms, don’t worry, let’s first start
+    with a typical training setup and then we will gradually understand how we can
+    improve results using one-cycle learning rate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training a Image Classifier
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we are working towards learning a neat trick (cycle-rate) to improve model
+    performance, why not do it while enjoying the classic ***rock-paper-scissors***
+    game.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/69028e843abe371779ee844df84ddd0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Problem Statement
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*The game of rock-paper-scissors is a classic child’s game involving two players
+    using hand gestures (for rock, paper or scissors) competing to over-power their
+    opponent. For instance, the rock gesture wins over scissors but the paper gesture
+    wins over the rock. Interesting, isn’t it?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our objective here, is to train an image classification model which can detect
+    one of the three gestures. We can then leverage such a trained model to develop
+    an end-to-end game. For the purpose of this article, we will limit the scope towards
+    training a classifier itself, the end-to-end game complete with a deployable model
+    is for another article probably.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Dataset
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We are lucky that we already have a labelled dataset which we can leverage
+    to train a classification model to great effect. The dataset is hosted on [TensorFlow
+    dataset](https://www.tensorflow.org/datasets/catalog/rock_paper_scissors) catalog
+    made available by [Laurence Moroney](https://laurencemoroney.com/datasets.html#rock-paper-scissors-dataset)
+    (CC BY 2.0). It has the following attributes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Number of data points: 2800'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Number of classes : 3'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Available train-test split: Yes'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Dataset size: 220 MiB'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: TensorFlow provides a nice and clean API to access such datasets, the following
+    snippet allows us to download the train and validation splits
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The following are a few sample images from this dataset itself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fa32543b74881bdc796de9ca4f8bcc04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Figure:Sample data points in the Rock Paper Scissors Dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: Learning Rate
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Learning Rate is one of the key hyper-parameters which can make or break a setup
+    yet it is one which is typically overlooked. The reason it is overlooked is because
+    most libraries/packages come with good enough defaults to begin with. But these
+    defaults can take you only so far.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting the correct learning rate for a bespoke use case such as ours is very
+    important. It is a tricky trade-off to find the optimal value. Go too slow (or
+    small) with the learning rate and your model will hardly learn anything. Go too
+    fast (or large) and it will overshoot the ever so mysterious minima all neural
+    networks aim to find. The same is depicted in the below illustration for a better
+    understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c7f45ab8d5b0617894d110992ebd4064.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Figure:Impact of Learning Rate towards Model’s ability to learn the objective
+    (minima). Souce: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Gradient Descent & Optimizers**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gradient descent is the standard way to train/optimise neural networks. It works
+    by minimizing the objective function by updating the parameters of the network
+    in the opposite direction of the gradient. Without going into much details, it
+    helps in travelling downhill along the slope of the objective function. A detailed
+    introduction to gradient descent is available [here](https://cs231n.github.io/optimization-1/)
+    for reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The deep learning community has come a long way since the initial models were
+    trained with vanilla gradient descent. Over the years a number of improvements
+    have helped train faster and avoid obvious pitfalls. Briefly, some of the notable
+    and most popular ones are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**AdaGrad** [Adaptive Gradient algorithm](https://www.jmlr.org/papers/volume12/duchi11a/duchi11a.pdf)
+    is an optimization algorithm which adapts the learning rates of individual parameters
+    based on their historical gradients, allowing for larger updates for infrequent
+    parameters and smaller updates for frequent ones. It is designed to handle sparse
+    data efficiently. It is well-suited when dealing with sparse data.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**RMSProp** [Root Mean Square Propagation](https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)
+    optimises the learning by adjusting the learning rates for each parameter individually.
+    It addresses the diminishing learning rates problem in AdaGrad by using a moving
+    average of squared gradients. This helps adaptively scale the learning rates based
+    on recent gradient magnitudes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**ADAM** [Adaptive Moment Estimation](https://arxiv.org/pdf/1412.6980.pdf)
+    is an optimization algorithm that combines ideas from both RMSProp and momentum
+    methods. It maintains exponentially decaying averages of past gradients and squared
+    gradients, using them to adaptively update parameters. ADAM is known for its efficiency
+    and effectiveness in training deep neural networks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One-Cycle Learning Rate and Super Convergence
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'One-Cycle Learning Rate is a simple two-step process to improvise upon the
+    learning rate and the momentum as the training progresses. It works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 1**: We start by ramping up the learning rate initially from a lower
+    to a higher value in a linear incremental fashion for a few epochs'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Step 2**: We maintain the highest value of learning rate for a few epochs'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Step 3**: We then go back to a lower learning rate decaying over time'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: During these three steps, the momentum is updated in the exact opposite direction,
+    i.e. when the learning rate goes up, the momentum goes down and vice-versa.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**One-Cycle Learning Rate in Action**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us first work our way through a simple implementation for one-cycle learning
+    rate and then use it for training our model. We will leverage a ready-to-use implementation
+    for the one-cycle LR schedule from [Martin Gorner’s 2019 talk at *TensorFlow World*](https://docs.google.com/presentation/d/e/2PACX-1vRqvlSpX5CVRC2oQ_e_nRNahOSPoDVL6I36kdjuPR_4y_tCPb-_k98Du1QXBwx4sBvVrzsCPulmuPn8/pub?slide=id.g50ba8fd3eb_0_0)
+    as depicted in listing 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: We execute this function(*see* *listing 2)* for a fixed number of epochs to
+    showcase how the learning rate changes as per the two steps we discussed earlier.
+    Here we start with an initial learning rate of **1e-3** and ramp it up to **2e-3**
+    in the first few epochs. It is then reduced again back to **1e-3** over the course
+    of the remaining epochs. This dynamic learning rate curve is depicted with a sample
+    run of 24 epochs in following figure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/160baa91c3ce99fdf821cce2bbfb6683.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'One-cycle learning rate policy over 24 epochs. Learning rate is ramped up linearly
+    , followed by a slow decay over remaining epochs. Image Source: Author'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We will now put our one-cycle learning rate scheduler to the test by applying
+    it when using a MobileNetV2 model as a feature extractor while training a classification
+    head for our current case of rock-paper-scissors. We will then be comparing it
+    against a simple CNN as well as MobileNetV2+classification head with standard
+    Adam optimiser. The complete notebook is available for reference on [github](https://github.com/raghavbali/python_notebooks/blob/master/supercharge_series/supercharge_learning_lr.ipynb).
+    For a quick overview, the following snippet outlines how we use TensorFlow callbacks
+    to plug-in our 1-cycle-rate utility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We train all 3 models for 24 epochs with a batch size of 64\. The following
+    figure showcases the impact of 1 cycle learning rate. It is able to assist our
+    model to achieve convergence in just 5 epochs as compared to the other two models.
+    The super-convergence phenomenon is visible for validation dataset as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f97ad1bd91456177a4c935ba16b42d0a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: MobileNetV2 with 1 cycle learning rate (mobileNetV2_lr) outperforms MobileNetV2
+    and simple CNN architectures by achieving converge is just 5 epochs
+  prefs: []
+  type: TYPE_NORMAL
+- en: We reach consistent values of validation accuracies ranging between 90–92% within
+    10 epochs which is so far the best we have seen across all our models. On evaluation
+    the model performance on the test dataset also depicts the same story, i.e. MobileNetV2_lr
+    outperforms the other two very easily.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Overcoming the plateau in model performance beyond 90% accuracy and optimizing
+    training time can be achieved through the implementation of the One-Cycle Learning
+    Rate. This technique, introduced by Leslie Smith and team, dynamically adjusts
+    the learning rate during training, offering a strategic approach to supercharging
+    the model performance. By adopting this method, you can efficiently navigate the
+    complexities of training setups and unlock the potential for faster and more effective
+    deep learning models. Embrace the power of One-Cycle Learning Rate to elevate
+    your training experience and achieve superior results!
+  prefs: []
+  type: TYPE_NORMAL

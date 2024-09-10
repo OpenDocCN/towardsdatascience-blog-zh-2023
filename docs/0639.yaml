@@ -1,0 +1,314 @@
+- en: When Milliseconds Matter — My Journey to Performance Improvement
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/when-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4?source=collection_archive---------19-----------------------#2023-02-15](https://towardsdatascience.com/when-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4?source=collection_archive---------19-----------------------#2023-02-15)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Lessons Learned From a Latency Improvement Project
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)[![Naomi
+    Kriger](../Images/14839f859e1375965c046912f00df5b9.png)](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------)
+    [Naomi Kriger](https://naomikriger.medium.com/?source=post_page-----5a3cd69754c4--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fce7969d594d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&user=Naomi+Kriger&userId=ce7969d594d&source=post_page-ce7969d594d----5a3cd69754c4---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5a3cd69754c4--------------------------------)
+    ·7 min read·Feb 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5a3cd69754c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&user=Naomi+Kriger&userId=ce7969d594d&source=-----5a3cd69754c4---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5a3cd69754c4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fwhen-milliseconds-matter-my-journey-to-performance-improvement-5a3cd69754c4&source=-----5a3cd69754c4---------------------bookmark_footer-----------)![](../Images/129986d3e73ac8cfaf2312955a537bf7.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: picture by [Giallo](https://www.pexels.com/@giallo/) from [Pexels](https://www.pexels.com/photo/assorted-silver-colored-pocket-watch-lot-selective-focus-photo-859895/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Working under a strict SLA, where milliseconds matter, while maintaining a
+    complex system with multiple dependencies — can expose us to many challenges and
+    non-trivial investigations when latency-related issues occur.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In this article, I will walk you through my journey to improve our system’s
+    performance, initiated by a problem of the type described above, and the lessons
+    learned along the way.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 1 — Expected Behavior and Problem’s Description
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The company’s product handles transactions, and for each transaction received
+    — we either approve or decline it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For some of the transactions, we go through a data enrichment step, to obtain
+    more information for our real-time decisions, and future transactions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, for tens of thousands of transactions per day — the enrichment process
+    simply did not take place, and it wasn’t clear why.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 2 — Searching for a Lion In the Desert
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s look at a simplified view of the relevant systems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/605c2309f1d294ebe750048534e3d0e5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: sketch by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: As this was an enrichment issue, the first question was — did the problem occur
+    within the enrichment service, or even before we got there? And apparently, for
+    these problematic transactions, we never even sent a fetch request to the Enrichment
+    service. One suspect down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 3 — Getting to Know Our Topology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s take a break from our story. I want to introduce you to the Decision-Making
+    system’s topology. This system is based on [Apache Storm](https://storm.apache.org/releases/2.2.0/Concepts.html),
+    which is designed to process unbounded streams of data in real time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/42e343f65beb71f9073f7722a1a645ab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: sketch by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a nutshell, the Spout receives the data from a data source (e.g. Kafka /
+    RabbitMQ) and outputs streams into the topology. Each Bolt is a component in the
+    topology, which receives and emits one or more streams. A Bolt conducts simple
+    logic to process the stream such as filtering, aggregating, reading from DBs and
+    writing to them, and more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some Bolts run in parallel, while others are dependent on one another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Some Bolts will anchor a relative timeout value, after which they will proceed
+    (process streams and emit them) whether or not they received all the inputs they
+    have been waiting for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The usage of timeouts prevents Bolts and components from delaying the topology
+    for too long, thus enabling us to meet the expected SLA.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step **4 — Why No Enrichment?**
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Back to our story. Why didn’t the Decision-Making system execute the calls to
+    the Enrichment service? I added some metrics and found out that an important condition
+    was met for the problematic transactions — the spare time that was left for the
+    Enrichment process was not enough, so the fetch call wasn’t executed in order
+    to leave enough time for future Bolts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This was surprising. Enrichment is a core component in the flow and takes place
+    relatively at the beginning of the topology. How come we don’t have enough time
+    left to execute this call?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step **5 — Dependencies and Latencies**
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To understand why we’re out of (relative) time, I dug into a view provided by
+    an internal tool and looked backward at the Bolts my Enrichment-Bolt was dependent
+    on.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I found an earlier Bolt which consistently took about 100 milliseconds. Considering
+    our SLA, and the average time a Bolt is supposed to take, this was considered
+    A LOT.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What happened in this parent Bolt that took so long?
+  prefs: []
+  type: TYPE_NORMAL
+- en: When diving into the parent Bolt’s code, I saw an elasticsearch query and wondered
+    if this could be the reason for our bottleneck.
+  prefs: []
+  type: TYPE_NORMAL
+- en: And it was — when looking at the relevant dashboards, I found a correlation
+    between the hours in the day my Bolt had high latency, and when this cluster had
+    high CPU usage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After syncing with the team that maintains this cluster, I learned they were
+    familiar with its long-standing performance issues, and its gradual degradation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 6 — Is This Dependency Necessary?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Why is the Enrichment-Bolt dependent on this elasticsearch query? Is it justifying
+    the price we’re paying in the form of unenriched transactions?
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the Enrichment context — we were waiting for this query’s results for a specific
+    feature, but further investigation showed that the given feature had a bug, God
+    knows for how long, so we weren’t making use of the feature’s desired output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/469ba91929ea1e4a3dcafcbedfdf8da1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: sketch by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we delete this feature, we can disconnect the dependency between Enrichment
+    and the Bolt that calls the problematic elasticsearch cluster. If we fix the bugged
+    feature — we’ll get back to receiving the data someone intended to make use of,
+    but keep our high-latency-dependency and will need to look for alternative solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After considering a few potential paths for resolution — effort, and cost-effectiveness
+    of each such path, and having received the bugged-feature-owners blessing to delete
+    this piece of code — I removed the bugged feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 7 — Time to Make Delicate Changes to Our Topology
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Decision-Making system is dependencies-based, and at this point, I wanted
+    to have the Enrichment component dependent on a component that took place earlier
+    than the one which called the problematic cluster. Such a change would save the
+    time we were waiting for the high-latency query, and the earlier our new-depending-component
+    takes place — the more spare time will be left for Enrichment and its subsequent
+    components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After investigating the code, and choosing the new parent component with the
+    higher-ups, I made this delicate change and monitored the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/417d38b557468ae61dd8c183ead358c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: sketch by author
+  prefs: []
+  type: TYPE_NORMAL
+- en: Step 8 — What Are the Results?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At first, no dramatic improvement was seen after my changes were in prod. What
+    a bummer! Months of investigation and anticipation, and the change in rate was
+    minor. But we shall not despair!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I checked the unenriched transactions and saw they also met the timeout condition.
+    I investigated the dependencies view and saw that via a different path — they
+    are still dependent on the problematic component!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reason for that was that the Enrichment Bolt waited for a few fields whose
+    parent Bolts were leading, again, to our high-latency-Bolt that queried the high-latency-cluster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But these fields were not used in the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I deleted those fields, and was glad to see the results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The daily rate of unenriched transactions was reduced from 26K to 200.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Also, at the beginning — for some merchants, the percentage of such problematic
+    transactions was up to 20%, and after my changes — all merchants had no more than
+    1% of their transactions with this issue.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Great success!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Lessons Learned:**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I learned a lot along the way. I investigated, using various technologies,
+    dug into complex code that is also based on a complex architecture, analyzed latencies,
+    and considered different trade-offs to resolve the problem. But here are some
+    tips I want to share with you today:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Deleting Code Is Good** A good software engineer is not measured by the amount
+    of new code she writes. Deleting code is an important task, and deleting deprecated
+    code that overloads the system can be crucial to improve the system’s performance.
+    Taking the time to investigate may require patience and resilience, but it could
+    lead to precious results.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Code Deletion Should Be Done Thoroughly**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One of the reasons for having component A dependent on component B was due to
+    input fields that weren’t used within the component. As we delete code, it is
+    a good practice to take the time to ask ourselves if we deleted everything related
+    to it, and left no trailing tails.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Invest in Profiling Tools**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: One of the things that enabled me to detect the high-latency component was an
+    internal profiling tool. We need visibility into our components, their dependencies,
+    and their latencies, and we need such a tool to be intuitive and comfortable to
+    use.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Consider Monitoring Latency of Specific Components In Your Flows**'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: When milliseconds matter, monitoring the latency of each component could be
+    the key to identifying the sources of your bottlenecks. Consider adding metrics
+    to measure your components’ latencies upon creating them, to have this data accessible
+    when you need it.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Master the Technologies You Work With, Learn How to Investigate with Them**
+    Each technology our team uses has its powers and tricks. As we encounter a new
+    technology or new tool, we might learn what we need for our daily use, and move
+    on. But investing the time to learn which additional insights can be derived using
+    the tool might come in handy when we are swamped with questions to investigate.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Consult and Brainstorm** Complex investigations can be hard, and a colleague
+    might be familiar with investigation tools we weren’t aware of, or suggest a different
+    perspective on our problem. Keep in mind that your project’s success is your team’s
+    and company’s success, and loop colleagues in if you feel stuck or in need of
+    another opinion.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

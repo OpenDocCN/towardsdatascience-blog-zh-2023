@@ -1,0 +1,632 @@
+- en: Nine Rules to Formally Validate Rust Algorithms with Dafny (Part 1)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/nine-rules-to-formally-validate-rust-algorithms-with-dafny-part-1-5cb8c8a0bb92?source=collection_archive---------3-----------------------#2023-10-04](https://towardsdatascience.com/nine-rules-to-formally-validate-rust-algorithms-with-dafny-part-1-5cb8c8a0bb92?source=collection_archive---------3-----------------------#2023-10-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Lessons from Verifying the range-set-blaze Crate**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@carlmkadie?source=post_page-----5cb8c8a0bb92--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----5cb8c8a0bb92--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5cb8c8a0bb92--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5cb8c8a0bb92--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----5cb8c8a0bb92--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-to-formally-validate-rust-algorithms-with-dafny-part-1-5cb8c8a0bb92&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----5cb8c8a0bb92---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5cb8c8a0bb92--------------------------------)
+    ·14 min read·Oct 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5cb8c8a0bb92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-to-formally-validate-rust-algorithms-with-dafny-part-1-5cb8c8a0bb92&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----5cb8c8a0bb92---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5cb8c8a0bb92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-to-formally-validate-rust-algorithms-with-dafny-part-1-5cb8c8a0bb92&source=-----5cb8c8a0bb92---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By Carl M. Kadie and Divyanshu Ranjan
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4b175b7d615204b0c7333b51b9ec5f88.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Crab proving Pythagoras’ theorem — Source: [https://openai.com/dall-e-2/](https://openai.com/dall-e-2/)
+    & [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/) [File:Pythagorean.svg](https://commons.wikimedia.org/wiki/File:Pythagorean.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: My Rust crate `[range-set-blaze](https://crates.io/crates/range-set-blaze)`
+    depends on a critical function named `internal_add`. The function is supposed
+    to insert a range of integers into the crate’s data structure. But does it do
+    so *correctly*? Of course, I test, but testing can miss bugs. Ideally, I want
+    mathematical certainty of correctness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: As Rust programmers, we appreciate certainty. The Rust type system guarantees
+    we won’t dereference null pointers. The Rust borrow checker guarantees we won’t
+    use memory after it is freed. Tools such as the [Kani Rust crate](https://medium.com/@carlmkadie/check-ai-generated-code-perfectly-and-automatically-d5b61acff741)
+    guarantee — in some cases — that arithmetic will not overflow. But what if we
+    want certainty that an algorithm is correct?'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: To achieve this certainty, Divyanshu Ranjan and I ported `internal_add`'s algorithm
+    to the Dafny language. We then validated the Dafny-version of the algorithm. (We
+    chose Dafny for its combination of power and ease of use. We’ll talk a little
+    more about this choice, presently.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over the course of the validation, we learned nine rules that can help you validate
+    algorithms — written in Rust or other languages — with Dafny. You may also find
+    these rules interesting as a way to gauge the ease or difficulty of such verification
+    using modern tools.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The rules are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Don’t Learn Dafny.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Learn Dafny.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Define Your Algorithm’s Basic Concepts.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Specify Your Algorithm.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Get Help from the Dafny Community.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Validate a Different, Easier, Algorithm.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*See* [*Part 2*](https://medium.com/towards-data-science/nine-rules-to-formally-validate-rust-algorithms-with-dafny-part-2-f2a279686700)
+    *for these rules:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*7\. Port your Real Algorithm to Dafny.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*8\. Validate the Dafny Version of Your Algorithm.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*9\. Rework Your Validation for Reliability.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: To avoid wishy-washiness, we call these “rules”, but they are, of course,
+    just suggestions.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The `internal_add` function tries to efficiently insert a new range of integers
+    into an existing list of sorted and disjoint integer ranges. For example, if we
+    started with `[101..=102, 400..=402, 404..=405]` and added `402..=404`, we expect
+    a result of `[101..=102, 400..=405]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a1ad08fd33646c38e30b09a37afecdb3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: This and all following images by author.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, I’d formally verify this algorithm with Rust-specific tools [[1](https://rust-formal-methods.github.io/tools.html),[2](https://alastairreid.github.io/automatic-rust-verification-tools-2021/)].
+    Those tools, however, seem hard to use. Instead, I chose [Dafny](https://dafny.org/).
+    Dafny is a language and verification system. It is taught to undergraduates at
+    universities around the world. It is used in industry. I find it to be addictively
+    interactive and programmer friendly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: Dafny creator, Dr. Rustan Leino has a connection to Rust beyond the
+    coincidence of his first name. He helped create Spec#, the first language to use
+    a type system to avoid null pointers. Rust, of course, adopted this idea to great
+    success.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This article covers rules 1 to 6\. [Part 2](https://medium.com/towards-data-science/nine-rules-to-formally-validate-rust-algorithms-with-dafny-part-2-f2a279686700)
+    covers rules 7 to 9.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 1: Don’t Learn Dafny.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Before trying to prove the mathematical correctness of your algorithm, decide
+    if the effort is worth the benefit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dafny is not Rust. Using Dafny requires porting algorithms of interest from
+    Rust to Dafny. This port can miss details and introduce errors. Given this risk,
+    should *you* use Dafny to verify Rust algorithms? I boldly claim that “it depends”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How important is your algorithm’s correctness? If you are printing a report
+    and it looks right, it probably is right. The `internal_add` algorithm relates
+    to a data structure that I’d like others to use with confidence, giving me extra
+    motivation to verify it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maybe all formal verification, with current tools, is too hard. I believe, however,
+    that Dafny makes formal verification as easy as currently possible. You will find
+    formally verifying code easier if you are already familiar with types (for example,
+    from Rust) and recursion/induction (used infrequently in Rust). You can read this
+    article and decide for yourself if/when formal verification is easy enough to
+    be valuable to you.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maybe fuzzing (such as `[cargo-fuzz](https://github.com/rust-fuzz/cargo-fuzz)`)
+    and property-based testing (such as `[QuickCheck](https://github.com/BurntSushi/quickcheck)`)
+    are good enough. Although these methods do not provide mathematical certainty,
+    they are clever, useful, and easy to use. (The `range-set-blaze` crate already
+    uses `QuickCheck. See` [Rule 9.5 in a previous article](https://medium.com/towards-data-science/nine-rules-for-creating-fast-safe-and-compatible-data-structures-in-rust-part-2-da5e6961a0b7)
+    for details).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maybe formal verification is and will always be doomed because writing a specification
+    is as hard as writing code. I disagree. Think about [refactoring](https://en.wikipedia.org/wiki/Code_refactoring).
+    I often start coding by writing something simple. I then refactor this simple
+    code for efficiency. For `internal_add`, I found the specification to be simpler
+    than any code. (You can judge this for yourself in Rule 4.)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Aside: Verification then becomes a computer-checked refactoring from a simple
+    specification to a final, efficient algorithm.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Maybe formal verification is and will always be doomed because the [halting
+    problem](https://en.wikipedia.org/wiki/Halting_problem) tells us formally that
+    formality isn’t generally possible. The halting problem does not doom us. While
+    we can’t always understand *arbitrary* code, we don’t need to. We only need to
+    understand our own code, which we (hopefully) wrote to be understandable. Starting
+    in Rule 2, we’ll see how Dafny easily verifies that *specific* loops and recursions
+    halt.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Maybe porting to Dafny is too hard. This has not been my experience. Like Rust,
+    Dafny mixes and matches imperative and functional programming. I found porting
+    my algorithm to be straightforward.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Assuming you still want to verify your algorithm with Dafny, your next step
+    is to learn Dafny.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Step 2: Learn Dafny.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Dafny is both a programming language and an interactive verification system.
+    I recommend you [install it as a VS Code extension](https://marketplace.visualstudio.com/items?itemName=dafny-lang.ide-vscode).
+  prefs: []
+  type: TYPE_NORMAL
+- en: To learn it, start at [https://dafny.org/](https://dafny.org/). Of special interest
+    is the [Online Tutorial](http://dafny.org/dafny/OnlineTutorial/guide.html) and
+    the [Reference Manual](https://dafny.org/latest/DafnyRef/DafnyRef). I also found
+    the [Verification Corner videos](https://www.youtube.com/watch?v=oLS_y842fMc&t=823s)
+    on YouTube helpful. (Of possible interest is the college textbook, *Program Proofs,*
+    $49 for the Kindle Edition). I found the programming language part of Dafny easier
+    to learn than Rust, perhaps similar in difficulty to C#.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Dafny, like Rust, is fully typed. Dafny, like Python, is garbage collected.
+    Here is [a “Hello World”](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Dafny, also like Python, offers integers of arbitrary size. Here is [a program](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal)
+    that *provably* adds two natural numbers by repeatedly incrementing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/65fa551d245c131a4c8f8e31020e69a1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Some points of interest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dafny coding guidelines follow C#, not Rust. So, we name the function `SlowAdd`
+    not `slow_add` (although either will run).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dafny supports subtypes. For example, any `int` that can be shown to be non-negative
+    is also a `nat`.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Assignment is `:=` and equality is `==` . (There is no `=` .)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Function parameters, for example, `x` and `y` above, are immutable.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dafny uses `ensures` and `invariant` statements to verify the code at compile-type.
+    It then removes these statements to finish compiling.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The green check mark shows that this code verifies. Dafny’s VS Code extension
+    will, by default, continuously try to validate each method. This adds an almost
+    gambling-like excitement to working with Dafny. In the example above, if I make
+    `y` an `int` rather than a `nat`, then validation should and will fail. (Can you
+    figure out why?) Dafny will mark my function with a red X and tell me “`This postcondition
+    might not hold: r == x + y`”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Dafny knows some of the mathematics of integers, arrays, sets, maps, sequences,
+    etc. This often allows it to finish the last details of validation by itself.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Now that you know about Dafny, you should let it know about your algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 3: Define Your Algorithm’s Basic Concepts.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The `range-set-blaze` crate represents sets of integers as sorted, disjoint
+    ranges. For example, this list of three ranges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`100..=2_393, 20_303..=30_239_000, 501_000_013..=501_000_016`'
+  prefs: []
+  type: TYPE_NORMAL
+- en: represents a set of 30,220,996 integers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Rust, the `RangeSetBlaze` struct represents this data structure internally
+    with a standard `[BTreeMap](https://doc.rust-lang.org/std/collections/struct.BTreeMap.html).`
+    Recall that a `BTreeMap` represents a list of key/value pairs, sorted by key.
+    Here, our keys are the ranges’ starts (for example, `100`, `20_303`, `501_000_013`)
+    and the values are the ranges’ inclusive ends (for example, `2_393`, `30_239_000,
+    501_000_016`. `RangeSetBlaze` stores the list with a `BTreeMap` rather than a
+    `vec` to make key look up more cache friendly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`RangeSetBlaze` depends on `BTreeMap`, so must we implement `BTreeMap` in Dafny?
+    Happily, no. We can, instead, use Dafny’s `vec`-like `seq` data type. This substitution
+    works because `BTreeMap`, `vec`, and `seq` can all represent sorted lists — just
+    with different efficiencies. For the purpose of formal verification, we only care
+    about correctness and can ignore efficiency.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`RangeSetBlaze` requires the list of ranges be sorted and disjoint. How do
+    we say “sorted and disjoint” in Dafny? We can say it via this [*ghost predicate*
+    (and related code](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: A *predicate* is another name for a method that returns `bool`. A *ghost* method
+    (or predicate) is one that can only be used for validation, not for running the
+    final code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At a high level, the `ValidSeq` predicate takes as input a sequence of non-empty
+    integer ranges. It then tests that the start values are sorted and that the ranges
+    don’t touch. Specifically,
+  prefs: []
+  type: TYPE_NORMAL
+- en: An `IntRange` is a tuple of two `int` values.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: An `IntRange` `IsEmpty` exactly when its start is greater than its end. (This
+    follows [Rust’s convention](https://doc.rust-lang.org/std/ops/struct.RangeInclusive.html).)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A `NeIntRange` (non-empty integer range) is an `IntRange` that is not empty,
+    for example, `(0,0)`. [All our ranges are end inclusive.]
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This expression tests that the start values are sorted:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: It can be read as “for all natural numbers *i* and *j* — such that *i* is less
+    than *j* and *j* is less than the length of the sequence — test that the start
+    value at index *i* is less than the start value as index *j*”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: Note that a Rust `BTreeMap` doesn’t support (random-access) indexing
+    but here we are using such indexing. This is OK because `*ValidSeq*` is a ghost
+    predicate and so will only be used for validation.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'This expression tests that the ranges are disjoint:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: It can be read as “for all natural numbers *i* and *j* — such that *i* is less
+    than *j* and *j* is less than the length of the sequence — test that the range
+    at index *i* does not touch the range at index *j*. But what is `Touch`?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll define `Touch` on two-levels. On a mathematical level, a range *i* is
+    said to touch a range *j* if there exists an integer *i0* in range *i* and an
+    integer *j0* in range *j* such that *i0* and *j0* are within a distance of one
+    of each other. On an efficient programming level, we want to avoid definitions
+    depending on “there exists”. [Here is a Dafny predicate](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal)
+    that is both mathematical and efficient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Some points of interest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Touch` is not a ghost. In other words, we can use it in both regular code
+    and validation code.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `assert` statements help Dafny prove that the regular code meets the mathematical
+    `ensures` statement.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For efficiency, the Dafny prover validates the inside of a `method` separately
+    from its outside. Only the `ensures` (and the yet-to-be-seen, `requires`) statements
+    cross this border. In contrast to a `method`, a Dafny `function` is transparent
+    to the validator. (I think of it as inlining code with respect to validation.)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With concepts such as `ValidSeq` and `Touch` defined, we next move onto specifying
+    what our algorithm is supposed to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 4: Specify Your Algorithm.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Ultimately, I want to prove that my specific Rust algorithm for inserting a
+    new range into a `RangeSetBlaze` is correct. Before we do that, however, let’s
+    define [what “correct” range insertion is](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says that `InternalAdd` is a method that takes `xs`, a sequence of non-empty
+    integer ranges, and `a`, an integer range (that could be empty). The method outputs
+    `rs`, a new sequence of non-empty integer ranges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We need to say that `xs` and `rs` must be sorted and disjoint. That is easily
+    done with the `ValidSeq`’s in the `requires` and first `ensures`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also need to say that `rs` contains the right stuff. Is this hard? It is
+    not. We just say that the set of integers in `rs` must equal the set of integers
+    in `xs` unioned with the integers in `a`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: In Dafny, “+” when applied to sets is “union”.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The set of integers in a range is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the set of integers in a sequence of non-empty ranges can be define inductively
+    (that is, recursively):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Some points of interest:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The line: `assume false; // cheat for now` [makes validation work even if it
+    really shouldn’t](https://www.oxfordreference.com/display/10.1093/oi/authority.20110803095804354).
+    We use it as a temporary placeholder.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We make `RangeToSet` and `SeqToSet` *ghosts* to stop us from using them in regular
+    code. We make them *functions* (instead of *methods*)to inline them with respect
+    to validation.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Because Dafny knows a lot about creating and manipulating sets and sequences,
+    we often profit by using sets and sequences in our specification.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Even if our regular code uses loops instead of recursion, our validation code
+    will often use recursive-like induction.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The `{:autotriggers false}` relates to avoiding a warning message. For more
+    information see this [Stack Overflow answer](https://stackoverflow.com/a/50671326/5976009)
+    by Prof. James Wilcox.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We now have a formal specification of `InternalAdd`. I find this specification
+    short and intuitive. But what if you need help figuring out a specification or
+    other Dafny code?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 5: Get help from the Dafny Community.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The main forum for Dafny questions is [Stack Overflow](https://stackoverflow.com/).
+    To my surprise, I actually received much useful help there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I recommend starting your question’s title with “Dafny:”. Also, be sure to tag
+    your question with `dafny` and, perhaps, `formal-verification`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Aside: On the site, you can see [my 11 questions](https://stackoverflow.com/users/5976009/carl?tab=questions&sort=newest)
+    and [Divyanshu Ranjan’s 48 Dafny-related answers](https://stackoverflow.com/search?q=user%3A14413069+%5Bdafny%5D).'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: As an open-source project on GitHub, [Dafny](https://github.com/dafny-lang)
+    also hosts GitHub Discussions and Issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Dafny community is small but seems enthusiastic about helping users and
+    improving the project.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With help at hand, we must next find an algorithm that meets the specification.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rule 6: Validate a Different, Easier, Algorithm.'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As a novice to formal verification, I decided to postpone work on the real
+    `internal_add` used in my Rust code. Instead, I started work on an `InternalAdd`
+    algorithm that I hoped would be easier to validate. I ended up with [this](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The idea is that if range `a` is empty, we return the input sequence unchanged.
+    Otherwise, we divide the work into three steps, which we can validate independently.
+    The first step, `PartitionAndMerge,` returns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`notTouching`, a sequence of ranges that don’t touch range `a`, and'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`merged`, a single range created from `a` and everything it touches.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Here is an example input and output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d57b46a89432c5cb675479012d53208.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '`InternalAdd` next finds where to insert `merged` and, finally, inserts it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is the [code for](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal)
+    `[PartitionAndMerge](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal):`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: This says that `PartitionAndMerge` `requires` that `xs` be a valid sequence
+    of non-empty integer ranges and that `a` be a non-empty integer range. It ensures
+    that `nonTouching` is another valid sequence of non-empty integer ranges. It ensures
+    that the integers in range `merged` are a superset of those in range `a`. It ensures
+    that no range in `notTouching` touches range `merged`. And finally, it ensures
+    that the integers in `xs` and `a` are exactly the same as the integers in `notTouching`
+    and `merged`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`PartitionAndMerge` also divides the work, this time into two steps (`Partition`
+    and `UnionSeq`) that can be validated independently. Those steps continue to subdivide
+    their work. Where does it end? Let’s look at one example.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The method `UnionSeq` calls `[UnionRange](https://github.com/CarlKCarlK/range-set-blaze/tree/oct23/tests/formal)`
+    which merges two ranges:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The `UnionRange` code handles the empty cases and then returns the minimum
+    bounding range. (The minimum bounding range is the range from the smaller of the
+    two starts to the larger of the two ends.) But how can this be correct? In general,
+    a minimum bounding range of two ranges might include extra integers. We might
+    get something bigger than the union of the inputs, like so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f643b34856c60798dac71de4a6a99ad7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The code is correct because it `requires` that the two input ranges touch or
+    are empty. This `ensures` that the union of the integers in range `x` with the
+    integers in range `y` are exactly the integers in the output range.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At compile time, Dafny proves this function correct. Beyond that, it proves
+    that everything that calls this function provides inputs that are empty or touching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think of this as a generalization of Rust’s borrow checker. At compile-time
+    Rust checks that we are safe from many memory errors. At compile time, verification
+    systems, such as Dafny, can prove almost arbitrary properties. Of course, as we
+    are seeing, this ability comes at the cost of complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[The full code for this verified algorithm](https://github.com/CarlKCarlK/range-set-blaze/blob/oct23/tests/formal/Rule6.dfy)
+    is about 200 lines, organized into about a dozen methods and functions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This rule shows that we can verify *an* algorithm for `InternalAdd`, but it
+    is not the algorithm I used in Rust. We will turn to that next.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Those are the first six rules for validating Rust algorithms with Dafny.
+    See** [**Part 2**](/nine-rules-to-formally-validate-rust-algorithms-with-dafny-part-2-f2a279686700)
+    **for rules 7 to 9.**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Please* [*follow Carl on Medium*](https://medium.com/@carlmkadie)*. I write
+    on scientific programming in Rust and Python, machine learning, and statistics.
+    I tend to write about one article per month.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Read more of Divyanshu Ranjan’s work on* [*his blog*](https://rdivyanshu.github.io/)*.
+    In addition to formal methods, the blog touches on geometry, statistics, and more.*'
+  prefs: []
+  type: TYPE_NORMAL

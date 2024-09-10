@@ -1,0 +1,317 @@
+- en: 'Data Engineering: Fast Spatial Joins Across ~2 Billion Rows on a Single Old
+    GPU'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/data-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed?source=collection_archive---------11-----------------------#2023-05-30](https://towardsdatascience.com/data-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed?source=collection_archive---------11-----------------------#2023-05-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Comparing the performance of ORC and Parquet on spatial joins across 2 Billion
+    rows on an old Nvidia GeForce GTX 1060 GPU on a local machine
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)[![Daniel
+    Voyce](../Images/be0549f7c48a07ad7d99cee391d8688c.png)](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------)
+    [Daniel Voyce](https://medium.com/@voycey?source=post_page-----c6cb531949ed--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F558f3984efd6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&user=Daniel+Voyce&userId=558f3984efd6&source=post_page-558f3984efd6----c6cb531949ed---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c6cb531949ed--------------------------------)
+    ·7 min read·May 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc6cb531949ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&user=Daniel+Voyce&userId=558f3984efd6&source=-----c6cb531949ed---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc6cb531949ed&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-engineering-fast-spatial-joins-across-2-billion-rows-on-a-single-old-gpu-c6cb531949ed&source=-----c6cb531949ed---------------------bookmark_footer-----------)![](../Images/b96575517eb800b777c0a570c3f64ca0.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Clay Banks](https://unsplash.com/@claybanks?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Over the past few weeks I have been digging a bit deeper into the advances that
+    GPU data processing libraries have made since I last focused on it in 2019.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In 4 years I have found that many of the libraries that were in early alpha
+    in 2019 have matured into solid projects that are being used in real world situations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I have spent many years in Data Engineering on Big Data solutions, and one of
+    the tasks that we had do regularly was to perform spatial joins of human movement
+    data through multiple polygons. It was a great use case that had numerous layers
+    of potential optimisation, but the simple act of a “point in polygon” test was
+    at the core of everything.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/aa5530ce890f63e4bc4caebe59260699.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg](https://en.wikipedia.org/wiki/Point_in_polygon#/media/File:RecursiveEvenPolygon.svg)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Previously, we explored various methods to accomplish this, including PostGIS,
+    Redshift, and BigQuery. We ultimately established pipelines to process 200 billion
+    rows daily through approximately 140 million polygons on BigQuery.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With recent advancements in GPU processing, I was intrigued to re-evaluate this
+    task and assess the processing time feasible on a GPU using my laboratory machine.
+    This article details the process of conducting this task on a consumer GPU (GeForce
+    GTX 1060) and the duration it took to execute it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The setup
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'You can read about the setup, data-preprocessing, and the rest here :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@voycey/gpu-data-engineering-csv-to-parquet-orc-using-dask-rapids-ai-2d68f7912458?source=post_page-----c6cb531949ed--------------------------------)
+    [## GPU Data Engineering, CSV to Parquet & ORC using Dask & RAPIDS.ai'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Up until recently the majority of my data engineering work was around designing
+    and deploying Data pipelines in either…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: medium.com](https://medium.com/@voycey/gpu-data-engineering-csv-to-parquet-orc-using-dask-rapids-ai-2d68f7912458?source=post_page-----c6cb531949ed--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset used in this experiment consists of CSV latitude and longitude points
+    and a single polygon representing Las Vegas. The dataset was converted to Parquet
+    and ORC to evaluate the performance differences between these formats.
+  prefs: []
+  type: TYPE_NORMAL
+- en: CuSpatial, a library built on rapids.ai specialising in geospatial and GIS applications,
+    was used for the actual performance test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://github.com/rapidsai/cuspatial?source=post_page-----c6cb531949ed--------------------------------)
+    [## GitHub - rapidsai/cuspatial: CUDA-accelerated GIS and spatiotemporal algorithms'
+  prefs: []
+  type: TYPE_NORMAL
+- en: cuSpatial accelerates vector geospatial operations through GPU parallelization.
+    As part of the RAPIDS libraries…
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: github.com](https://github.com/rapidsai/cuspatial?source=post_page-----c6cb531949ed--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: I intentionally avoided utilising any spatial indexing or other methods to enhance
+    performance. This experiment should be considered as a baseline performance, which
+    can be significantly improved through various techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The dataset is approximately 400GB uncompressed and contains 2.8 billion rows
+    of point data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Code
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The code provided below relies on Rapids.ai and Dask (specifically *dask_cudf*)
+    to process the data on a GPU and divide the data to fit the limited GPU memory.
+    This process involved a significant amount of tweaking and format-specific error
+    messages (e.g., issues working on Parquet but not on ORC, and vice versa).
+  prefs: []
+  type: TYPE_NORMAL
+- en: ChatGPT and the NVIDIA team were instrumental in completing this task, I love
+    that everyone is so willing to help in the data community! ChatGPT was useful
+    for understanding some of the features around Dask and chunking the data by providing
+    some workarounds to various errors I unearthed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The basic setup for each of the experiments is as follows, the only difference
+    is how the *ddf* is created (*read_orc* vs *read_parquet*):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results & File Types
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For the results and file types, I chose ORC and Parquet as the export file types
+    in the previous article since they are two of the most widely-used file formats
+    in the big data ecosystem. ORC is often overlooked in favour of Parquet but offers
+    features that can outperform Parquet on certain systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I ran the same code on both ORC and Parquet files and obtained the following
+    results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parquet Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***3 minutes 9 seconds — Impressive!***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***Total Parquet time from CSV to Result = 23m 04s***'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Orc Results
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '***6 minutes 18 seconds — Double the time of Parquet but still*** *remarkable****!***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '***Total ORC time from CSV to Result = 17m 55s***'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Overall, Parquet took 23 minutes for the total time versus 18 minutes for ORC.
+    However, the best file format will depend on your use case and the systems you
+    are using.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Pain Points
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: During this process, I encountered some challenges, such as handling dataframe
+    sizes, limited GPU memory, and dataset size and type issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Despite these obstacles, the conclusion drawn from this experiment is that Parquet,
+    although taking longer to convert, was more performant once converted. ORC, on
+    the other hand, was slower in calculations but faster in conversion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both formats demonstrated impressive performance on limited hardware, and with
+    basic optimisations, both could be substantially improved.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Challenges in Dask Distributed Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In order to utilise CuSpatial’s spatial join function “*point_in_polygon*”,
+    the latitude and longitude points must be stored in an interleaved array format:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: This specific arrangement is likely due to the efficiency of GPU stream processing
+    for such data structures. The main challenge was handling a dataframe larger than
+    the GPU memory and transforming it into the required interleaved array format.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initially, I attempted to use *dask_cudf* to partition the points data I was
+    reading, hoping that it would be sufficient to execute the *point_in_polygon*
+    function. However, I soon realised that the need to interleave the points made
+    it impossible unless the points (10GB) could fit into the GPU memory (6GB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: In retrospect, the solution was to use *map_partitions* to process the data
+    in the *dask_cudf* frame. The interleaving needed to occur within the map_partitions
+    function, rather than prior to passing it, so that only each partition was interleaved
+    instead of the entire dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This was not as straightforward as it seemed due to issues with Pickle serialisation
+    of the function, ultimately requiring the creation of the “*wrapped_spatial_join*”
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In hindsight it was an obvious solution, I would have to use *map_partitions*
+    to chunk through the data in the *dask_cudf* frame, the interleave needed to be
+    done within the *map_partitions* function instead of prior to passing it to *map_partitions*
+    so that only each chunk was interleaved instead of the whole dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This also wasn’t as simple as described because *dask* didn’t like having other
+    functions inside the *map_partitions* function (it causes problems with Pickle
+    serialisation of the function — hence the final “*wrapped_spatial_join*” function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data size and type challenges
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Another issue encountered was the size limitation of the dataset for *cuDF*,
+    which is restricted by the size of *INT_32* (2,147,483,647). My dataset consisted
+    of approximately 2.3 billion records, exceeding this limit.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This meant it was impossible to process the entire dataset at once, necessitating
+    the completion of all operations on data partitions. One example of this was the
+    final count of points within and outside polygons. A straightforward *result.value_counts()*
+    could not be employed, and a separate calculation needed to be performed for each
+    partition before aggregating the results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This consideration becomes particularly important for larger or wider datasets
+    that require complex calculations across them, as working on the full dataset
+    might not be feasible. This was really the main focus of this experiment, as now
+    this works on a small GPU, you can be sure that the same processes can be applied
+    to larger GPU’s and much larger datasets!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In terms of performance, Parquet took longer to convert but was more efficient
+    once the conversion was complete. Depending on the workflow, this may be a critical
+    factor to consider. Generally, data only needs to be converted once but may be
+    subjected to multiple analyses, making Parquet the more suitable option.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the other hand, ORC conversion was faster but less efficient during calculations.
+    For more ad-hoc computations, ORC may be preferable, especially when used with
+    a tool like TrinoDB that has a highly efficient ORC engine.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both formats exhibited strong performance on limited hardware. With some basic
+    optimisations, it is likely that their performance could be further enhanced.
+    It is valuable to observe the baseline performance of each format.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Future Experiments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In the future, I aim to run the same experiment on multiple polygons and explore
+    methods for handling them. For instance, I will perform a spatial join on a dataset
+    of zip codes in the Las Vegas area to examine the feasibility of processing multiple
+    polygons. Additionally, I plan to utilise a spatial indexing solution such as
+    Uber’s H3 to index the data and assess its impact on the final results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: About the author
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Dan Voyce
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/859d5503d457e18d3d762af37aa69ece.png)'
+  prefs: []
+  type: TYPE_IMG

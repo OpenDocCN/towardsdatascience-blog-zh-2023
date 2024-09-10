@@ -1,0 +1,303 @@
+- en: 'Reprompting: Automated Problem-solving Optimization for LLMs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/reprompting-automated-problem-solving-optimization-for-llms-53a0a2f9db38?source=collection_archive---------9-----------------------#2023-05-30](https://towardsdatascience.com/reprompting-automated-problem-solving-optimization-for-llms-53a0a2f9db38?source=collection_archive---------9-----------------------#2023-05-30)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Automated Chain-of-Thought Prompt Inference Through Gibbs Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://crodriguez1a.medium.com/?source=post_page-----53a0a2f9db38--------------------------------)[![Carlos
+    Rodriguez (he/him)](../Images/f93397a05d50935e2f7eb83e79dbddc6.png)](https://crodriguez1a.medium.com/?source=post_page-----53a0a2f9db38--------------------------------)[](https://towardsdatascience.com/?source=post_page-----53a0a2f9db38--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----53a0a2f9db38--------------------------------)
+    [Carlos Rodriguez (he/him)](https://crodriguez1a.medium.com/?source=post_page-----53a0a2f9db38--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F8b0823c53807&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freprompting-automated-problem-solving-optimization-for-llms-53a0a2f9db38&user=Carlos+Rodriguez+%28he%2Fhim%29&userId=8b0823c53807&source=post_page-8b0823c53807----53a0a2f9db38---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----53a0a2f9db38--------------------------------)
+    ·8 min read·May 30, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F53a0a2f9db38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freprompting-automated-problem-solving-optimization-for-llms-53a0a2f9db38&user=Carlos+Rodriguez+%28he%2Fhim%29&userId=8b0823c53807&source=-----53a0a2f9db38---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F53a0a2f9db38&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Freprompting-automated-problem-solving-optimization-for-llms-53a0a2f9db38&source=-----53a0a2f9db38---------------------bookmark_footer-----------)![](../Images/03f49f72985605aa965c929aadfbf318.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reprompting personified — Author + Open Journey
+  prefs: []
+  type: TYPE_NORMAL
+- en: Large language models (LLMs) have shown astonishing progress in natural language
+    understanding using few-shot prompting, where models accomplish exceedingly difficult
+    tasks, having seen only a few examples that demonstrate how to solve a given problem.
+    However, the same LLMs often stumble with tasks requiring complex or multi-step
+    logic (e.g., the Big-Bench Hard benchmark) and have difficulty propagating rules
+    or constraints to subsequent steps. For humans, these kinds of tasks require logical
+    deduction and reasoning. Although we understand these models are incapable of
+    either (in a human sense), researchers at Microsoft hope to teach LLMs to be increasingly
+    better at exhibiting these notions. As such, Xu et al. propose “Reprompting,”
+    an automated approach to prompt optimization for multi-step problem-solving.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prior research involving engineered prompts has shown that providing LLMs with
+    chain-of-thought (CoT) prompting can improve performance along dimensions like
+    deduction and perceived reasoning. Chain-of-thought prompting is a technique that
+    enables large language models to tackle complex arithmetic and symbolic reasoning
+    tasks by guiding a model with intermediate steps (Wei et al., 2022).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As an evolution of CoT, this research introduces Reprompting, an iterative sampling
+    algorithm that automatically discovers the most effective CoT prompts for a model
+    from a given a set of question-answer pairs (i.e., few-shot in-context examples).
+    The research promises to improve performance for state-of-the-art LLMs and transfer
+    gains from one model to the next (Xu et al., 2023). However, before diving into
+    a deconstruction of Reprompting, we should highlight a few of the concepts that
+    have led to this novel approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Few-Shot Prompting**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In practice, the concept of few-shot prompting (i.e., in-context learning) is
+    straightforward. Supplying example prompts that contain questions and the corresponding
+    correct answer allows the model to better learn the given context and formulation
+    of the answer simultaneously. As a result, LLMs improve generalization and adapt
+    to new tasks more efficiently, requiring relatively little input and supervision
+    compared to traditional (and often costly) fine-tuning (i.e., additional supervised
+    model training).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d41bdd7015b0d43ec65712ed510c3352.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A very simple example of few-shot prompting — Author
+  prefs: []
+  type: TYPE_NORMAL
+- en: A standard LLM is pre-trained to optimize the probability of generating the
+    correct next token (word or subword) in a sequence given the context (Brown et
+    al., 2020). Generally, the model learns an approximate probability distribution
+    *P(y|x)* of the next token *y* given the context *x*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Additionally, the model can be conditioned on a tokenized sequence containing
+    the example question and answer pairs. Then, during inference, the model uses
+    its learned parameters θ to generate an output sequence of tokens y* by conditioning
+    on the additional context from the exemplar *Exmp*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***P(y_t | y_1, …, y_(t-1), Exmp; θ)***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where *y_t* is the probability distribution for the *t-th* token in the output
+    conditioned on the previously generated tokens *(y_1, …, y_(t-1))* and the exemplar
+    sequence (*Exmp*). Typically, at inference, autoregressive transformers will sample
+    a token *y_t* from the distribution at each step, and the process repeats (token-by-token)
+    until the model generates a stop token or reaches a predefined maximum output
+    length, resulting in a generated response that should apply the context and constraints
+    learned from the provided examples. (Wei et al., 2022; Vaswani et al., 2017; Xu
+    et al., 2023).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Chain-of-Thought Prompting**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Chain-of-thought prompting evolves the idea of few-shot prompting, concentrating
+    on tasks that require multi-step logic by guiding the model towards a sequence
+    of intermediate logical steps. This approach emulates human-like problem-solving
+    and, in some ways, common sense reasoning (Wei et al., 2022). For example, each
+    generated token *y_t* now resolves to become part of the larger formulation needed
+    to answer correctly. This enables the model to solve the given problem and others
+    like it more efficiently. An oversimplified formulation of inferencing applying
+    CoT is given as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***P(y_t | y_1, …, y_(t-1), {Exmp_1, Exmp_2, …, Exmp_N}; θ)***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the model generates token y_t by also conditioning on the concatenated
+    exemplar tokenized sequences *{Exmp_1, Exmp_2, …, Exmp_N}*, each containing distinct
+    intermediate steps (as illustrated).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5882b7279f4c8cdc2b97c792c729e317.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Standard Few-Shot Prompting vs. Chain-of-Thought Prompting (Wei et al., 2022)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Reprompting**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: With that context, we can discuss the proposed Reprompting, an iterative sampling
+    algorithm that automatically discovers effective CoT prompts without human intervention.
+    The primary goal of the algorithm is to infer a set of “recipes” that consistently
+    perform well as few-shot examples for solving problems that typically require
+    deductive reasoning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The researchers primarily focus on the problem of resampling from the joint
+    distribution of chain-of-thought recipes. Remember, at inference, the model samples
+    the next token y_t from the probability distribution at each step until it reaches
+    a stopping condition. However, with CoT, the model is now sampling from a joint
+    probability distribution that combines the learned probabilities and the contextual
+    information provided by CoT. While it is impossible to characterize this distribution
+    directly, the researchers employ the Gibbs sampling strategy to approximate it
+    effectively (Wei et al., 2022). In this way, the sampling process can now be influenced
+    by both the previously generated tokens and the prompts designed to guide subsequent
+    tokens' generation. With each iteration, the algorithm optimizes for solutions
+    from the training set that serve as effective CoT recipes for solving test set
+    problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**An Aside on Gibbs Sampling**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The Gibbs sampler (introduced in 1984) provides an alternative approach for
+    obtaining marginal distributional characteristics (e.g., mean or variance) when
+    direct calculations are complex. For example, given a joint distribution *f(x,
+    y, …, y_n)*, instead of directly computing *f(x)*, the Gibbs sampler generates
+    a sample from *f(x)* without requiring its explicit form. After generating a sufficiently
+    large sample, the Gibbs strategy can approximate marginal distribution without
+    directly computing *f(x)* (Casella & George, 1992).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Automatic Discovery of CoT Recipes**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Reprompting uses Gibbs sampling to approximate a joint distribution of CoT
+    recipes that perform well on problems that require logical deduction when solved
+    by humans. The process initially samples the recipes by zero-shot prompting and
+    then iteratively samples recipes by concatenating a few prior recipes as the prompt,
+    eventually converging into a set of recipes that share similar chains of thought
+    and will include intermediate instruction or step-by-step formulation of the problem.
+    Xu et al. characterize the algorithm as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8aecd095588eca8aa9c83c31ded94e2c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reprompting Algorithm (Xu et al., 2023)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, the algorithm should converge in such a way that the probability of
+    generating a step-by-step solution *z_j* followed by the correct answer *y_j*
+    is high and agnostic to the choice of S_j; where S_j is a subset of indices chosen
+    to correspond to the CoT recipe tuples {x_i, z_i, y_i}.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***pLLM(z_j, y_j | {x_i, z_i, y_i}_i ∈ S_j, x_j, m)***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This will result in a set of {z_j} that works as prompts for solving similar
+    problems in the test set (Xu et al., 2023).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Combining Models**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Additionally, Reprompting facilitates combining models by utilizing different
+    LLMs for initialization and sampling. Empirically, using ChatGPT to generate initial
+    recipe samples for InstructGPT led to meaningful improvement compared to using
+    InstructGPT or ChatGPT alone on specific tasks. However, results also indicated
+    that performant CoT recipes for one model could perform poorly on another, despite
+    the latter achieving similar performance using human-optimized prompts. This suggests
+    that CoT recipes must be composed with model combinations in mind.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Benchmark Results**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A comparison of the performance of Reprompting against prior state-of-the-art
+    prompting techniques confirms that, when using Reprompting, LLMs can achieve better
+    performance (without human intervention) compared to the existing chain-of-thought
+    prompts. For example, Reprompting combined with ChatGPT often achieves higher
+    scores on all tasks compared to human-written CoT prompts (Suzgun et al., 2022).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d060b86d3ed5d639d4e8c6f753638eff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Gibbs Sampling, denoted as RePrS (Wei et al., 2022)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In practice, we can observe the evolution of CoT recipes through Reprompting
+    as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c8d62ad6e74e8ff251ff9e35c493dd16.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Reprompting evolves CoT recipes to better solve complex problems (Wei et al.,
+    2022)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initially, ChatGPT prioritizes constraints, focusing on absolute ranking positions
+    first (in dark blue). Next, the model attempts to deduce objects at specific positions
+    but makes a mistake (in red). However, the recipe still provides a helpful strategy
+    for solving similar problems. When applied to a new problem, the model adopts
+    the same reordering strategy and proposes an alternative method to handle constraints
+    (in orange). Despite some errors, this recipe improves the solution for this specific
+    problem. Finally, when used as a new prompt, the model follows the same formula
+    and correctly deduces the answer for a new problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The introduction of Reprompting likely marks another milestone in developing
+    large language models, particularly for tasks requiring multi-step logic and constraint
+    propagation. Leveraging chain-of-thought prompting and Gibbs sampling, Reprompting
+    can automatically discover effective CoT prompts without human intervention. As
+    a result, LLMs can achieve better performance on complex tasks when compared to
+    zero-shot or traditional few-shot prompting techniques. Additionally, with optimization,
+    Reprompting has shown the potential to transfer gains between different LLMs.
+    Ultimately, this approach may bring us closer to the goal of arriving at LLMs
+    that exhibit human-like logical deduction and a semblance of reasoning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Brown TB, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, Neelakantan A, Shyam
+    P, Sastry G, Askell A, et al. 2020\. Language Models are Few-Shot Learners. arXiv
+    [csCL]. [http://arxiv.org/abs/2005.14165](http://arxiv.org/abs/2005.14165.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Casella G, George EI. 1992\. Explaining the Gibbs Sampler. Duke.edu. [accessed
+    2023 May 29]. [http://www2.stat.duke.edu/~scs/Courses/Stat376/Papers/Basic/CasellaGeorge1992.pdf](http://www2.stat.duke.edu/~scs/Courses/Stat376/Papers/Basic/CasellaGeorge1992.pdf.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Geman S, Geman D. 1984\. Stochastic relaxation, Gibbs distributions, and the
+    Bayesian restoration of images. IEEE Trans Pattern Anal Mach Intell. PAMI-6(6):721–741\.
+    doi:10.1109/tpami.1984.4767596\. [accessed 2023 May 29]. [http://image.diku.dk/imagecanon/material/GemanPAMI84.pdf](http://image.diku.dk/imagecanon/material/GemanPAMI84.pdf.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suzgun M, Scales N, Schärli N, Gehrmann S, Tay Y, Chung HW, Chowdhery A, Le
+    QV, Chi EH, Zhou D, et al. 2022\. Challenging BIG-Bench tasks and whether chain-of-thought
+    can solve them. arXiv [csCL]. [http://arxiv.org/abs/2210.09261](http://arxiv.org/abs/2210.09261)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vaswani A, Shazeer N, Parmar N, Uszkoreit J, Jones L, Gomez AN, Kaiser L, Polosukhin
+    I. 2017\. Attention is all you need. arXiv [csCL]. [http://arxiv.org/abs/1706.03762](http://arxiv.org/abs/1706.03762)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Wei J, Wang X, Schuurmans D, Bosma M, Ichter B, Xia F, Chi E, Le Q, Zhou D.
+    2022\. Chain-of-thought prompting elicits reasoning in large language models.
+    arXiv [csCL]. [http://arxiv.org/abs/2201.11903](http://arxiv.org/abs/2201.11903)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Xu W, Banburski-Fahey A, Jojic N. 2023\. Reprompting: Automated Chain-of-Thought
+    prompt inference through Gibbs sampling. arXiv [csLG]. [http://arxiv.org/abs/2305.09993](http://arxiv.org/abs/2305.09993)'
+  prefs: []
+  type: TYPE_NORMAL

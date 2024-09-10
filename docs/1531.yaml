@@ -1,0 +1,411 @@
+- en: Train Image Segmentation Models to Accept User Feedback via Voronoi Tiling,
+    Part 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9?source=collection_archive---------7-----------------------#2023-05-05](https://towardsdatascience.com/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9?source=collection_archive---------7-----------------------#2023-05-05)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to train an off-the-shelf image segmentation model to respond to user feedback
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)[![Florin
+    Andrei](../Images/372ac3e80dbc03cbd20295ec1df5fa6f.png)](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------)
+    [Florin Andrei](https://florin-andrei.medium.com/?source=post_page-----1f02eebbddb9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Faeaeb9d7d248&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9&user=Florin+Andrei&userId=aeaeb9d7d248&source=post_page-aeaeb9d7d248----1f02eebbddb9---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1f02eebbddb9--------------------------------)
+    ·9 min read·May 5, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1f02eebbddb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9&user=Florin+Andrei&userId=aeaeb9d7d248&source=-----1f02eebbddb9---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1f02eebbddb9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ftrain-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-2-1f02eebbddb9&source=-----1f02eebbddb9---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is Part 2 of a series of articles about training image segmentation models
+    so that the models respond to user feedback and adjust their predictions based
+    on the feedback (mouse clicks).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[In Part 1](https://medium.com/towards-data-science/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29)
+    we’ve described the general strategy for training off-the-shelf image segmentation
+    models to respond to user feedback. The problem identified at the end of [Part
+    1](https://medium.com/towards-data-science/train-image-segmentation-models-to-accept-user-feedback-via-voronoi-tiling-part-1-8ab85d410d29)
+    was that manually generating the clicks needed to train the models is tedious,
+    time-consuming, and may not be feasible at all if the datasets are very large
+    and/or the models need to be re-trained often. Generating the clicks needs to
+    be automated — this is the topic of this article.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Problem
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Let’s take a look again at the problem we’re trying to solve:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8a8ae7bf47de6111503eb31dd631d71e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The left-hand frame is the image with the ground-truth label; the region of
+    interest (RoI) was marked in yellow by a human expert; this is the ideal shape
+    of the prediction we expect from the model. The center frame is the actual prediction
+    from the model. The right-hand frame shows true positive areas (where the label
+    and the prediction coincide), false positive areas (where the model predicts an
+    RoI but there is no such thing in the label), and false negative areas (where
+    the model predicts nothing, but there is an actual RoI). TP areas are shown in
+    white, FP in green, and FN in red.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To steer the model’s predictions, we’ve placed positive (green) clicks in the
+    TP and FN areas, and negative (red) clicks in the FP areas, and then trained new
+    models with the clicks included in the images.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Placing the clicks is intuitively easy for a human operator. But if you break
+    down the process into separate logical steps and criteria, it gets quite convoluted:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: split TP, FP, FN areas into separate contiguous segments
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: discard very small segments as irrelevant
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: for each remaining segment, decide on the total number of clicks that will be
+    placed within, based on the segment area
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the clicks cannot be placed too close to each other
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: the clicks cannot be placed too close to the edge of the segment
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The last two criteria are hard. The ambiguity (“not too close”) and the fact
+    that these two criteria contradict each other, make it seem like it would be difficult
+    to generate the clicks in a way that is guaranteed to converge to a solution that
+    imitates what a human operator would do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, we will show there is such a method, which combines a mathematical
+    concept (Voronoi tesselation) with hints from physics (energy, and simulated annealing)
+    to produce the desired result.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Voronoi Tesselation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[The Wikipedia page](https://en.wikipedia.org/wiki/Voronoi_diagram) explains
+    the concept quite well, and this may seem familiar if you’ve studied the algorithm
+    behind [k-means clustering](https://en.wikipedia.org/wiki/K-means_clustering),
+    but let me add a few words here as well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3cab9b1020ca213a09e02274f0b7db8f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In the left-hand frame, we have a square area with a few seed points. For any
+    seed point, there must be a region in the frame (a tile) in which all pixels are
+    closer to that seed than to all the other seeds. In the right-hand frame we show
+    these tiles, color-coded to match the seeds. Each tile is called a Voronoi cell,
+    and the result of the process of finding the tiles is called Voronoi tesselation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The seeds in this example are chosen randomly. The tesselation we get is not
+    uniform. To get a uniform tesselation, the seeds would have to also be the centroids
+    of their corresponding tiles (or close to the centroids) — this is called [centroidal
+    Voronoi tesselation](https://en.wikipedia.org/wiki/Centroidal_Voronoi_tessellation).
+    Here is a very trivial example out of many possible examples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/fae8daec08441cf7d34fbc971216a2b6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'To find the click coordinates (the seeds) that would lead to a centroidal Voronoi
+    tesselation of an area, or an approximation, something like [Lloyd’s algorithm](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm)
+    could be used, and it’s very fast (it is the standard solver for [k-means clustering](https://en.wikipedia.org/wiki/K-means_clustering)).
+    Here is [a simulator for Lloyd’s algorithm](http://www.bitbanging.space/posts/lloyds-algorithm)
+    which works in your browser in real time. But there are two problems:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lloyd’s algorithm is generally used to tile rectangular areas. It is not clear
+    how (or whether) it would generalize to the arbitrary area shapes we need to tile
+    for our models.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: We only want centroidal tiling when the shapes (area and tiles) are convex.
+    When the shapes are concave, the centroids may fall outside the area we’re tiling,
+    and that’s not what we want at all (the clicks would be outside the area).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So we need something that works with arbitrary shapes, keeps the clicks inside
+    the area even when the shapes are concave, and behaves like Lloyd’s algorithm
+    for trivial rectangular areas. A generalization of centroidal Voronoi tiling,
+    that works with arbitrary areas, even with concave shapes. That’s the topic of
+    the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simulated Annealing for Energy
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Consider this tiling:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a3a4211bf55591d53f1e04fff47ddc9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The click distribution is uniform enough, and the click coordinates are not
+    far from the centroids (all shapes are convex). It’s not a bad distribution for
+    our purposes. Can we find an objective function, corresponding to the click coordinates,
+    that we could try to maximize or minimize, iteratively, that would lead us to
+    such a distribution?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s look at the space around the clicks:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e9ac35976c0792a2f744c61f498d4b8d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: heat map of pixel energy
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imagine every pixel in the image is assigned an “energy”. Only one click contributes
+    to the pixel’s energy — the closest click. All other clicks do not contribute
+    at all. The energy of any pixel is inversely proportional to its distance to its
+    nearest click. So to find the energy of any pixel, we need to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: find the nearest click
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate the distance from the pixel to the click
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: calculate the inverse of the distance, which is the pixel’s energy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The image shown above is just the heat map of pixel energies, given the click
+    distribution. The edges of the Voronoi tiles are already suggested by the darkest
+    areas mid-way between neighboring clicks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we calculate the total energy of all pixels, and then move the clicks around,
+    seeking the click positions that give the highest total energy, would that lead
+    to a uniform tiling of the area? As a matter of fact, that’s exactly how the click
+    distribution shown above was obtained:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: start with completely random click coordinates
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: compute the total energy of all pixels in the region of interest
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: apply [simulated annealing](https://en.wikipedia.org/wiki/Simulated_annealing)
+    to the click coordinates, so as to find the coordinates that maximize total energy
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The full code [is shown here](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/uniform_clicks.py).
+    The algorithm is robust and can handle concave shapes just fine — here is an example
+    of placing clicks in a visually uniform way within a sickle-shaped segment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/24776028c12c4a5ee29a732567d07c34.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: placing clicks in a concave shape
+  prefs: []
+  type: TYPE_NORMAL
+- en: The segment is the lighter shade of blue, the shape of a sickle, that stands
+    in contrast with the dark background. The clicks are the brightest spots.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The clicks do not get too close to the edge of the segment, because that would
+    reduce the total energy (pixels beyond the segment’s edge have no energy). They
+    do not get too close to each other, because that would not “energize” pixels far
+    from the tight group of clicks. The algorithm is self-regulating.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: this problem has similarities to the cell phone tower coverage problem,
+    where you try to place N cell phone towers on a map such that the signal is as
+    strong as possible in most areas.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to Segmentation Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'To recap, we’re trying to train image segmentation models to make them responsive
+    to user feedback (mouse clicks). [The overall process](https://github.com/FlorinAndrei/segmentation_click_train/blob/main/train_models.ipynb)
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: split the image dataset into 5 folds
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: train a segmentation model for each fold; this produces the set of 5 **baseline
+    models**
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: use the baseline models to make predictions on all images; each model makes
+    predictions on images it has not seen in training
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: compare predictions with labels; extract all areas containing true positive,
+    false positive, false negative predictions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: split the TP, FP, FN areas into contiguous segments; discard the smallest segments
+    (less than 100 pixels or so)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'for each segment, generate uniform clicks as shown in this article; the number
+    of clicks depends on the area of the segment: bigger segments receive more clicks,
+    up to a reasonable limit (4 … 5 or so, for images 512x512 pixels in size)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: move all image information into the B channel, vacate the R and G channels,
+    embed the clicks into the R and G channels; clicks for the TP and FN areas are
+    in the G channel (positive clicks); clicks for the FP areas are in the R channel
+    (negative clicks)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: using the click-augmented images, train a new set of 5 models on the same folds;
+    these are the **click-trained models**, which are the final artifact of this whole
+    project
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Here are some examples of uniform clicks generated for image segments from the
+    actual baseline model predictions. We’ve picked 3 images from the dataset, made
+    predictions with the baseline models, and we look at each image’s TP, FP, FN segments.
+    Each segment is a lighter shade of blue than the background, and the clicks are
+    the brightest spots in each segment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/638f6400223efec0ebcd0f6f61ddc3ed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'source: Dataset of Breast Ultrasound Images'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The clicks end up being placed more or less where a human operator would place
+    them: not too close to each other, not too close to the edge, favoring bulk or
+    wide areas in each segment. The click distribution appears to be visually uniform.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final Thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’ve trained off-the-shelf image segmentation models to respond to user feedback,
+    without altering their architecture in any way, and without re-training them from
+    scratch on ImageNet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The click-trained models do not necessarily perform better than the baseline
+    models. Training with clicks as shown here only enables the models to respond
+    to user feedback. Sure, the click-trained models will outperform the baseline
+    models by a large margin on the dataset used to create the 5 training folds. That’s
+    because creating the clicks essentially leaks data between training and testing.
+    On data that is 100% previously unseen, the click-trained models and the baseline
+    models perform the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here are a couple more examples of the way the click-trained models respond
+    to user feedback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Two different images are shown in the video. In both images you can see the
+    model has high confidence in its predicted RoI. Attempts to place negative clicks
+    in the predicted RoI are not very successful — the model continues to predict
+    that region as an RoI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model does accept suggestions for other areas as potential RoIs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In both cases you can see two kinds of outputs from the model: pure segmentation,
+    and heat map. The heat map is simply a map of likelihood for the RoI.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Links, Citations, Comments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'This project is an extension of my capstone project from the final semester
+    of my MS in Data Science studies: [https://github.com/FlorinAndrei/datascience_capstone_project](https://github.com/FlorinAndrei/datascience_capstone_project)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Both the capstone and this work were done within the Computer Aided Diagnosis
+    for Breast Ultrasound Imagery (CADBUSI) project at the University of Wisconsin-La
+    Crosse, under the supervision of Dr. Jeff Baggett. [https://datascienceuwl.github.io/CADBUSI/](https://datascienceuwl.github.io/CADBUSI/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The GitHub repository with code for this article: [https://github.com/FlorinAndrei/segmentation_click_train](https://github.com/FlorinAndrei/segmentation_click_train)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All ultrasound images used in this article are part of the Dataset of Breast
+    Ultrasound Images, available under the CC BY 4.0 license. Citation link:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Al-Dhabyani, W., Gomaa, M., Khaled, H., & Fahmy, A. (2019). Dataset of Breast
+    Ultrasound Images. *ResearchGate*. Retrieved May 1, 2023 from [https://www.sciencedirect.com/science/article/pii/S2352340919312181](https://www.sciencedirect.com/science/article/pii/S2352340919312181)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Other links, citations and comments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Liu, Q., Zheng, M., Planche, B., Karanam, S., Chen, T., Niethammer, M., & Wu,
+    Z. (2022). PseudoClick: Interactive Image Segmentation with Click Imitation. *arXiv.org*.
+    Retrieved May 1, 2023, from [https://arxiv.org/abs/2207.05282](https://arxiv.org/abs/2207.05282)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Xie, E., Wang, W., Yu, Z., Anandkumar, A., Alvarez, J. M., & Luo. P. (2021).
+    SegFormer: Simple and Efficient Design for Semantic Segmentation with Transformers.
+    arXiv.org. Retrieved May 1, 2023, from [https://arxiv.org/abs/2105.15203](https://arxiv.org/abs/2105.15203)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pretrained SegFormer models at HuggingFace: [https://huggingface.co/docs/transformers/model_doc/segformer](https://huggingface.co/docs/transformers/model_doc/segformer)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Images in this article that are not part of the Dataset of Breast Ultrasound
+    Images are created by the author.
+  prefs: []
+  type: TYPE_NORMAL

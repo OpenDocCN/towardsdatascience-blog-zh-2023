@@ -1,0 +1,400 @@
+- en: A Python Tool for Fetching Air Pollution Data from Google Maps Air Quality APIs
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/a-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb?source=collection_archive---------0-----------------------#2023-10-16](https://towardsdatascience.com/a-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb?source=collection_archive---------0-----------------------#2023-10-16)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to fetch rich, real time air quality data from all over the world
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)[![Robert
+    Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------)
+    [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----7cf58a7c63cb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----7cf58a7c63cb---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7cf58a7c63cb--------------------------------)
+    ·16 min read·Oct 16, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7cf58a7c63cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb&user=Robert+Martin-Short&userId=83d38eb39498&source=-----7cf58a7c63cb---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7cf58a7c63cb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-python-tool-for-fetching-air-pollution-data-from-google-maps-air-quality-apis-7cf58a7c63cb&source=-----7cf58a7c63cb---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This article details how we can use the Google Maps Air Quality APIs in Python
+    to fetch and explore live air pollution data, time series and maps. Check out
+    the full code** [**here.**](https://github.com/rmartinshort/air_quality_mapper)'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1\. Background
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In August 2023, Google announced the addition of an air quality service to its
+    list of mapping APIs. You can read more about that [here](https://cloud.google.com/blog/products/maps-platform/introducing-air-quality-api-promoting-resilience-changing-climate).
+    It appears this information is now also available from within the Google Maps
+    app, though the data obtainable via the APIs turned out to be much richer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: According the announcement, Google is combining information from many sources
+    at different resolutions — ground-based pollution sensors, satellite data, live
+    traffic information and predictions from numerical models — to produce a dynamically
+    updated dataset of air quality in 100 countries at up to 500m resolution. This
+    sounds like a very interesting and potentially useful dataset for all sorts of
+    mapping, healthcare and planning applications!
+  prefs: []
+  type: TYPE_NORMAL
+- en: When first reading about this I was planning to try it out in a “talk to your
+    data” application, using some of the things learned from building this [travel
+    mapper](https://medium.com/towards-data-science/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74)
+    tool. Maybe a system that can plot a time series of air pollution concentrations
+    in your favorite city, or perhaps a tool to help people plan hikes in their local
+    area as to avoid bad air?
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are [three API tools](https://developers.google.com/maps/documentation/air-quality)
+    that can help here — a “current conditions” service, which provides current air
+    quality index values and pollutant concentrations at a given location; a “historical
+    conditions” service, which does the same but at hourly intervals for up to 30
+    days in the past and a “heatmap” service, which provides current conditions over
+    a given area as an image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Previously, I had used the excellent `[googlemaps](https://github.com/googlemaps/google-maps-services-python)`package
+    to call Google Maps APIs in Python, but these new APIs are not yet supported.
+    Surprisingly, beyond the official documentation I could find few examples of people
+    using these new tools and no pre-existing Python packages designed to call them.
+    I would be happily corrected though if someone knows otherwise!
+  prefs: []
+  type: TYPE_NORMAL
+- en: I therefore built some quick tools of my own, and in this post we walk through
+    how they work and how to use them. I hope this will be useful to anyone wanting
+    to experiment with these new APIs in Python and looking for a place to start.
+    All the code for this project can be found [here](https://github.com/rmartinshort/air_quality_mapper),
+    and I’ll likely be expanding this repo over time as I add more functionality and
+    build some sort of mapping application with the air quality data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Get the current air quality at a given location
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s get started! In this section we’ll go over how to fetch air quality data
+    at a given location with Google Maps. You’ll first need an API key, which you
+    can generate via your Google Cloud account. They have a [90-day free trial period](https://cloud.google.com/free/docs/free-cloud-features?_ga=2.153672123.-2071471501.1688189408),
+    after which you’ll pay for API services you use. Make sure you enable the “Air
+    Quality API”, and be aware of the pricing policies before you start making a lot
+    of calls!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1d30574e462e50678d0a6601a47d2aff.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Screenshot of the Google Cloud API library, from where you can activate the
+    air quality API. Image generated by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I usually store my API key in an `.env` file and load it with `dotenv` using
+    a function like this
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Getting current conditions requires a POST request as detailed [here](https://developers.google.com/maps/documentation/air-quality/current-conditions).
+    We’re going to take inspiration from the [googlemaps](https://github.com/googlemaps/google-maps-services-python)
+    package to do this in a way that can be generalized. First, we build a client
+    class that uses `requests` to make the call. The goal is quite straightforward
+    — we want to build a URL like the one below, and include all the request options
+    specific to the user’s query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `Client`class takes in our API key as `key` and then builds the `request_url`
+    for the query. It accepts request options as a `params` dictionary and then puts
+    them in the JSON request body, which is handled by the `self.session.post()` call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can make a function that helps the user assemble valid request options
+    for the current conditions API and then uses this Client class to make the request.
+    Again, this is inspired by the design of the googlemaps package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The options for this API are relatively straightforward. It needs a dictionary
+    with the longitude and latitude of the point you want to investigate, and can
+    optionally take in various other arguments that control how much information is
+    returned. Lets see it in action with all the arguments set to `True`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: A lot of interesting information is returned! Not only do we have the air quality
+    index values from the Universal and US-based AQI indices, but we also have concentrations
+    of the major pollutants, a description of each one and an overall set of health
+    recommendations for the current air quality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 3\. Get a timeseries of air quality at a given location
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Wouldn’t it be nice to be able to fetch a timeseries of these AQI and pollutant
+    values for a given location? That might reveal interesting patterns such as correlations
+    between the pollutants or daily fluctuations caused by traffic or weather-related
+    factors.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can do this with another POST request to the [historical conditions AP](https://developers.google.com/maps/documentation/air-quality/history)I,
+    which will give us an hourly history. This works in much the same way as current
+    conditions, the only major difference being that since the results can be quite
+    long they are returned as several `pages` , which requires a little extra logic
+    to handle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s modify the `request_post` method of `Client` to handle this.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: This handles the case where `response_body` contains a field called `nextPageToken`,
+    which is the id of the next page of data that’s been generated and is ready to
+    fetch. Where that information exists, we just need to call the API again with
+    a new param called `pageToken` , which directs it to the relevant page. We do
+    this repeatedly in a while loop until there are no more pages left. Our `final_response`
+    dictionary therefore now contains another layer denoted by page number. For calls
+    to `current_conditions` there will only ever be one page, but for calls to `historical_conditions`
+    there may be several.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With that taken care of, we can write a `historical_conditions` function in
+    a very similar style to `current_conditions` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: To define the historical period, the API can accept a `lag_time` in hours, up
+    to 720 (30 days). It can also accept a `specific_period`dictionary, with defines
+    start and end times in the format described in the comments above. Finally, to
+    fetch a single hour of data, it can accept just one timestamp, provided by `specific_time`
+    . Also note the use of the `pageSize` parameter, which controls how many time
+    points are returned in each call to the API. The default here is 100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s try it out.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: We should get a long, nested JSON response that contains the AQI index values
+    and specific pollutant values at 1 hour increments over the last 720 hours. There
+    are many ways to format this into a structure that’s more amenable to visualization
+    and analysis, and the function below will convert it into a pandas dataframe in
+    “long” format, which works well with `seaborn`for plotting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Running this on the output of `historical_conditions` will produce a dataframe
+    whose columns are formatted for easy analysis.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/e61f549b85d8ef15bd87561c93a6329b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example dataframe of historical AQI data, ready for plotting
+  prefs: []
+  type: TYPE_NORMAL
+- en: And we can now plot the result in `seaborn` or some other visualization tool.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0af9f30aa8a88be751ddf642189e34a7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Universal AQI, US AQI, pm25 and pm10 values for this location in LA over a 30
+    day period. Image generated the the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is already very interesting! There are clearly several periodicities in
+    the pollutant time series and it’s notable that the US AQI is closely correlated
+    with the pm25 and pm10 concentrations, as expected. I am much less familiar with
+    the Universal AQI that Google is providing here, so can’t explain why appears
+    anti-correlated with pm25 and p10\. Does smaller UAQI mean better air quality?
+    Despite some searching around I’ve been unable to find a good answer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. Get air quality heatmap tiles**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now for the final use case of the Google Maps Air Quality API — generating heatmap
+    tiles. The [documentation](https://developers.google.com/maps/documentation/air-quality/reference/rest/v1/mapTypes.heatmapTiles/lookupHeatmapTile)
+    about this a sparse, which is a shame because these tiles are a powerful tool
+    for visualizing current air quality, especially when combined with a `Folium`
+    map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We fetch them with a GET request, which involves building a URL in the following
+    format, where the location of the tile is specified by `zoom` , `x` and `y`
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: What do`zoom` , `x` and `y` mean? We can answe this by learning about how Google
+    Maps converts coordinates in latitude and longitude into “tile coordinates”, which
+    is described in detail [here](https://developers.google.com/maps/documentation/javascript/coordinates).
+    Essentially, Google Maps is storing imagery in grids where each cell measures
+    256 x 256 pixels and the real-world dimensions of the cell are a function of the
+    zoom level. When we make a call to the API, we need to specify which grid to draw
+    from — which is determined by the zoom level — and where on the grid to draw from
+    — which is determined by the `x` and `y` tile coordinates. What comes back is
+    a bytes array that can be read by Python Imaging Library (PIL) or similiar imaging
+    processing package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Having formed our `url` in the above format, we can add a few methods to the
+    `Client` class that will allow us to fetch the corresponding image.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is good, but we what we really need is the ability to convert a set of
+    coordinates in longitude and latitude into tile coordinates. The documentation
+    explains how — we first convert to coordinates into the [Mercator projection](https://en.wikipedia.org/wiki/Mercator_projection),
+    from which we convert to “pixel coordinates” using the specified zoom level. Finally
+    we translate that into the tile coordinates. To handle all these transformations,
+    we can use the `TileHelper` class below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can see that `location_to_tile_xy` is taking in a location dictionary and
+    zoom level and returning the tile in which that point can be found. Another helpful
+    function is `tile_to_bounding_box` , which will find the bounding coordinates
+    of a specified grid cell. We need this if we’re going to geolocate the cell and
+    plot it on a map.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lets see how this works inside the `air_quality_tile` function below, which
+    is going to take in our `client` , `location` and a string indicating what type
+    of tile we want to fetch. We also need to specify a zoom level, which can be difficult
+    to choose at first and requires some trial and error. We’ll discuss the `get_adjoining_tiles`
+    argument shortly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'From reading the code, we can see that the workflow is as follows: First, find
+    the tile coordinates of the location of interest. This specifies the grid cell
+    we want to fetch. Then, find the bounding coordinates of this grid cell. If we
+    want to fetch the surrounding tiles, find the nearest corner of the bounding box
+    and then use that to calculate the tile coordinates of the three adjacent grid
+    cells. Then call the API and return each of the tiles as an image with its corresponding
+    bounding box.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can run this in the standard way, as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: And then plot with folium for a zoomable map! Note that I’m using leafmap here,
+    because this package can generate Folium maps that are compatible with gradio,
+    a powerful tool for generating simple user interfaces for python applications.
+    Take a look at [this article](http://owardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb)
+    for an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Perhaps disappointingly, the tile containing our location at this zoom level
+    is mostly sea, although its still nice to see the air pollution plotted on top
+    of a detailed map. If you zoom in, you can see that road traffic information is
+    being used to inform the air quality signals in urban areas.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/226deb38f0141cebb237f03aaa962717.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Plotting an air quality heatmap tile on top of a Folium map. Image generated
+    by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Setting `get_adjoining_tiles=True` gives us a much nicer map because it fetches
+    the three closest, non-overlapping tiles at that zoom level. In our case that
+    helps a lot to make the map more presentable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96e16d56618c326b7d8ab1149ac07ece.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When we also fetch the adjacent tiles, a much more interesting result is produced.
+    Note that the colors here show the Universal AQI index. Image generated by the
+    author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I personally prefer the images generated when `pollutant=US_AQI`, but there
+    are several different options. Unfortunately the API does not return a color scale,
+    although it would be possible to generate one using the pixel values in the image
+    and knowledge of what the colors mean.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e38041c08b2bc942c16c5feba779dc1f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The same tiles as above colored according to the US AQI. This map was generated
+    on 10/12/2023 and the bright red spot in central CA appears to be prescribed fire
+    in the hills near Coalinga, according to this tool [https://www.frontlinewildfire.com/california-wildfire-map/](https://www.frontlinewildfire.com/california-wildfire-map/).
+    Image generated by the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Thanks for making it to the end! Here we explored how to use the Google Maps
+    Air Quality APIs to deliver results in Python, which could be used in manner of
+    interesting applications. In future I hope to follow up with another article about
+    the [air_quality_mapper](https://github.com/rmartinshort/air_quality_mapper) tool
+    as it evolves further, but I hope that the scripts discussed here will be useful
+    in their own right. As always, any suggestions for further development would be
+    much appreciated!
+  prefs: []
+  type: TYPE_NORMAL

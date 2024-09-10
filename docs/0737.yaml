@@ -1,0 +1,808 @@
+- en: Parsing Irregular Spreadsheet Tables in Humanitarian Datasets (with Some Help
+    from GPT-3)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45?source=collection_archive---------2-----------------------#2023-02-24](https://towardsdatascience.com/parsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45?source=collection_archive---------2-----------------------#2023-02-24)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Processing Irregular Excel Tables Without Using Hard-coded Rules
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)[![Matthew
+    Harris](../Images/4fa3264bb8a028633cd8d37093c16214.png)](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)[](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------)
+    [Matthew Harris](https://medium.com/@astrobagel?source=post_page-----57efb3d80d45--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F4a2cd25b8ff9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&user=Matthew+Harris&userId=4a2cd25b8ff9&source=post_page-4a2cd25b8ff9----57efb3d80d45---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----57efb3d80d45--------------------------------)
+    ·26 min read·Feb 24, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F57efb3d80d45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&user=Matthew+Harris&userId=4a2cd25b8ff9&source=-----57efb3d80d45---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F57efb3d80d45&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fparsing-irregular-spreadsheet-tables-in-humanitarian-datasets-with-some-help-from-gpt-3-57efb3d80d45&source=-----57efb3d80d45---------------------bookmark_footer-----------)![](../Images/0fbcce7550af12dc6d701ff00255fbc1.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Created by DALL-E2 with prompt “A painting of 10 wood tables”. There are 9 tables
+    in the image above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***TL;DR***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*As part of a* [*previous study*](/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d)
+    *using data from the* [*Humanitarian Data Exchange*](https://data.humdata.org/)*,
+    I had to analyze thousands of Excel files where tables within those files were
+    often difficult to parse into database tables. Irregular layouts with merged cells,
+    hierarchical columns, and annotations are difficult to anticipate with rule-based
+    parsing when files originate from hundreds of organizations across the world.
+    In this article, I explore using GPT-3 zero- single- and single-shot with reasoning
+    completion to reformat irregular (small) tables, as well as fine-tuning the model
+    to predict table attributes which can then be used for accurate parsing.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There have been quite a few times on my travels when I’ve needed to review a
+    large number of Excel files to understand what data they contain, how well it
+    is structured, and the work required to clean it into a form where we can get
+    to the juicy stuff like training models. For the most part this is fairly straightforward,
+    as long as the data is regular with nice neat column headings. However, life is
+    never that easy and it’s often the case the tables in these files can be in a
+    less-than-perfect format to parse into neat data frames that can be uploaded into
+    relational databases. Excel supports a lot of features such as pivot tables and
+    cell merging, which human beings use to create a wide variety of layouts, with
+    blank rows, random text here and there, and more!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is an example to illustrate …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b8a93c73e798926ce23cb65154d977a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of an irregular table in Excel, with blank top rows, labels and merged
+    cells. Perfectly readable for humans, but a challenge to parse for data science.
+    This file was sourced from the [Humanitarian Data Exchange](https://data.humdata.org/dataset/kenya-number-of-acreage-under-irrigation-in-bomet-county)
+  prefs: []
+  type: TYPE_NORMAL
+- en: If we read the above file directly into Pandas …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We get this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5089756e01020858fd71468ba8fd5fab.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example of Pandas dataframe after parsing a table on an Excel sheet, where there
+    are blank rows and merged cells to indicate hierarchical columns. Example data
+    from the [Humanitarian Data Exchange](https://data.humdata.org/dataset/kenya-production-of-rice-in-irrigation-schemes)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading this into a database would result in near-unusable data because …
+  prefs: []
+  type: TYPE_NORMAL
+- en: There is a table title in the top-right cell
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Column ‘Unnamed: 1’ title is actually what’s in the first column row 5 “What
+    is the average size of land you own that …”'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Columns ‘Unnamed:2’ and ‘Unnamed:3’ are aggregate totals split into ’N’ numeric
+    and ‘%’ percentage values
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Most columns are hierarchical, with merged cells above unmerged cells
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: It’s not *that* bad, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is of course possible to provide parameters to [Pandas read_excel](https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html)
+    that will convert hierarchical columns to indexes, which can then be collapsed
+    into a single row. Alternatively, we might manipulate in [Openpxyl](https://openpyxl.readthedocs.io/en/stable/)
+    using information from Excel itself about merged cells. However, these methods
+    require knowledge of the table — specifically where the headings finish and the
+    data starts and how hierarchical columns are structured — a luxury we might not
+    always have if processing thousands of spreadsheets. Maintaining rule-based parsing
+    for large volumes of files can be time-consuming and brittle, requiring continued
+    maintenance as new layouts appear on the scene.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As it happens, I am not alone! Parsing irregular tables is a challenge being
+    actively researched. For example, Microsoft authors have shown some great results
+    using Convolutional Neural Networks to develop an algorithm called ‘TableSense’
+    [[1](https://arxiv.org/abs/2106.13500)]. This technique treats Excel sheets in
+    a similar way to images but with richer featurization as each cell can have a
+    range of attributes and data types, as well as formatting and merging characteristics.
+    Very cool. I hope fantastic work like this will be included in Microsoft’s products
+    soon, but until then I wanted to explore some other approaches.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s also worth noting that my use-case is not just to identify the range in
+    a sheet where the table is (see [training data for the Microsoft paper above](https://github.com/microsoft/TableSense/blob/main/dataset/Table%20range%20annotations.txt)),
+    but elements in the table so irregular formats can be converted to something that
+    can be easily imported into a database. The main challenge is hierarchical columns
+    in Excel, flattening these into a single row that captures information from overlying
+    merged cells. Sounds simple to fix, but the challenge is: where do the headings
+    stop and the data start? This is obvious to us humans, but it’s surprising how
+    something so simple can be quite noisy in the real world when processing sheets
+    using code.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given all the recent attention for generative AI and Large Language Models (LLMs),
+    I wondered if perhaps [OpenAI’s GPT-3](https://openai.com/blog/gpt-3-apps/) might
+    be up to the challenge. These models are trained on huge amounts of data extracted
+    from the internet, which includes tables and CSV files, so they might be useful
+    in handling some of the nuances of tables put together by us crazy humans.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompting GPT-3 to Tidy Up (a Small) Table
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We will first try to solve our problem as zero- and few-shot tasks for GPT-3,
+    before moving on to using fine-tuning techniques.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/23eef763f4af285bab56ce5104601dbc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Zero-shot, one-shot and few-shot tasks, contrasted with traditional fine-tuning.
+    The panels above show four methods for performing a task with a language model.
+    From Brown et al [[2](https://arxiv.org/pdf/2005.14165.pdf)]
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPT-3 is trained on text scraped from the web, so we cannot prompt it with Excel
+    (yet!), therefore we first have to convert our sheet into a form that is occurs
+    on the web, CSV string …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Side note**: I also tried with Markdown and HTML tables, but got best results
+    for my use-case with CSV.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s worth noting that for this analysis the tables we are dealing with are
+    *thin,* ie having < 100 columns. This means the first 10 rows can be represented
+    easily in a GPT-3 prompt. This is fine for most of the Excel tables I have been
+    analyzing for the Humanitarian Data Exchange, but might not extend to other scenarios.
+    Also, this analysis doesn’t consider cases where there are multiple tables on
+    the same Excel sheet … that is for a later blog post. 🙂
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Zero-Shot Prompt**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s now see if GPT-3 can reformat our untidy table with just a single prompt,
+    a [zero-shot task](https://arxiv.org/pdf/2005.14165.pdf) [2] where we are providing
+    no examples, just a CSV file of the table we want to be reformatted …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d0bff692e6f0aa17d92fe2902f2d8efe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: It discarded unnecessary rows and converted the data to a nice regular table
+    with column headings, but look closely and you’ll see it’s lost some key information,
+    such as the breakdown by Male/Female. Classic [hallucination](https://en.wikipedia.org/wiki/Hallucination_(artificial_intelligence))
+    territory, it looks very plausible but is wrong.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s play with the [temperature](https://platform.openai.com/docs/api-reference/completions/create)
+    parameter. Lower values make the model more deterministic (giving the same results
+    every time for the same prompt) whereas higher values are more random. With a
+    higher temperature value, we get …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/f9ec19a4d12334d819089ceb85fdbbad.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '*Looks* nice! Almost all of the correct column headings from merged cells in
+    our CSV, which is pretty amazing actually. However, spot-checking a few cells
+    shows that though many are correct, some are not. Also, ‘Overall’ has been split
+    into Male and Female in the above which is incorrect.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another issue here is that calling GPT-3 exactly the same prompt will produce
+    different results because of the high temperature value …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/7274d124424e64c6d953449273ad69d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Not unreasonable, albeit with incorrect values, but an entirely different layout.
+    Reproducibility is very important for our task, we should be able to process the
+    tabular data in exactly the same way with each processing run.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So high temperatures are not a good option for this use-case it seems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What about if we provide more context in the table? CSV isn’t very expressive,
+    for example, merged columns in hierarchical headers tell humans that the columns
+    are grouped, but a CSV file doesn’t capture this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3e5d8eb9550c0dd1d246816daeccfb5d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the above example, GPT-3 must infer that blank columns to the right of merged
+    row titles correspond with those titles, and many times it actually does this.
+    However, we can help a little since we know whether a cell is merged in our Excel
+    file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To represent this in CSV we can unmerge merged cells and populate with their
+    merged value …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/1790b27c754b07ba4517a577447e222c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table where merged cells are unmerged and populated with merged value, to provide
+    context in CSV file format
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The CSV file now captures overlying merged column headings. Let’s see if this
+    improves things, first with temperature=0.0 …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/780e6bd57ae7ca6db636a442ddae67c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: And the same, but with temperature=1.0, just for fun …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2a7e421879c0e4b08e1525b6576b50e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A bit better, but there is always *something* a bit off. A missing category,
+    cell values shifted, and neither table is usable if we require an accurate representation
+    of the source data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this point, I experimented with various combinations of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Prompts
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Temperature
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Using Markdown, HTML, and CSV to define the input table
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Prompting GPT-3 to generate the python for parsing rather than parsing the tables
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Occasionally the process was able to generate a table where column heading and
+    values were perfect, but typically this required high temperature values and so
+    wasn’t reproducible. For the most part, results looked plausible but the data
+    was incorrect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fairness, we are really asking a lot of GPT-3 with what is a complicated
+    zero-shot task. I am really impressed at how well it did, and perhaps with some
+    better prompting and reframing of the problem — or GPT-4! — results may improve,
+    but I wasn’t able to achieve what was required.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Single-Shot Prompt**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now, let’s provide an example in the prompt. I took a similar Excel file from
+    the Humanitarian Data Exchange …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b6734984ce006423ea85a20d05d2a155.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Table we will use for our example in single-shot prompt. This file was sourced
+    from the [Humanitarian Data Exchange](https://data.humdata.org/dataset/kenya-production-of-rice-in-irrigation-schemes)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We want this to be processed to look like this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ee9f834c88fea08684d2810cfe5bd4f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: What our sample file should like after reformatting
+  prefs: []
+  type: TYPE_NORMAL
+- en: Obviously, this is an unrealistic ‘Real world’ example, as the format and content
+    are very similar to the table we are trying to process, but it’s a good first
+    test.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Converting our input table to CSV and unmerging merged cells as described above,
+    we get …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f68f7f17e4a196691c5f3dd6e854da4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We can now construct our single-shot prompt (assuming a temperature of zero
+    for reproducibility) …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is the generated prompt …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: And here is the completion from GPT-3 converted to a dataframe for easier display
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/dce195b89914d22ee19d93cb75f89cf2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Generated table from single-shot prompt to reformat table with hierarchical
+    headers (completion was a CSV, converted to a pandas dataframe here for easier
+    display)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Nice! When provided an example, GPT-3 was able to reformat our new table perfectly.
+    However, this isn’t a great test because the example and test tables were very
+    similar in structure and content, but it’s interesting to note that even though
+    the example did not have the Male/Female hierarchy, GPT-3 was able to collapse
+    this extra level correctly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s use the same example table to reformat a table that has a different layout
+    and content data …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9e175fd03da4432492fa789dfb8f5f06.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: When processed with the same code results in this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4362466354eb63c092183ca9952b5ba1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Which is close, the headings are spot on, but the farm column has shifted to
+    the left. Our single-shot prompt does quite well for reformatting very similar
+    tables, but slight variation leads to poor results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Single-Shot, with reasoning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There has been quite a bit of research already around prompt engineering. A
+    really great resource can be found in the OpenAI Cookbook’s [Techniques to Improve
+    Reliability](https://github.com/openai/openai-cookbook/blob/main/techniques_to_improve_reliability.md)
+    [3]. One of the most effective methods to improve results is to include reasoning
+    in the example prompt [[4](https://arxiv.org/abs/2205.11916)]. Using our previous
+    table, let’s adjust the prompt to include reasoning …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: The full prompt looks like this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which results in this completion from GPT-3 for our input table …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: It’s correct! The reformatted table is exactly what we wanted …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b44674a075c338a587502b102c6d2ca1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results are improved if we provide reasoning in the single-shot prompt
+  prefs: []
+  type: TYPE_NORMAL
+- en: That said, the task we have provided isn’t that great because even though the
+    content is different to the provided example, the heading layout is still quite
+    similar. In fact, if we tweak the table we want to reformat a little and add an
+    extra column ‘Organic’ …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/886cf8bea9babb627b68d1e2fa6fb8d2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Adding an extra column to the input
+  prefs: []
+  type: TYPE_NORMAL
+- en: The prediction is now incorrect …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cbfa4266f749d5f3981baee97d382890.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Only off by just *one* extra comma in the title row, but this results in everything
+    being shifted to the right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We might continue to engineer the prompt with more reasoning or apply [more
+    advanced techniques](https://github.com/openai/openai-cookbook/blob/main/techniques_to_improve_reliability.md)
+    to automatically structure our prompt workflow, but the real issue is that one
+    example isn’t really enough to capture all the variations of table formats we
+    might encounter. It’s amazing how well GPT-3 does even with one example, but it’s
+    not yet good enough for production for this task (at least how it has been framed
+    so far).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Few-Shot …. err, or not
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The next approach might be to provide more than a single example. However, table
+    excerpts require a lot of tokens (more on this later), so if we have to provide
+    multiple examples in a prompt, plus the tokens in the result, we start to hit
+    the Open APIs token limits. For the davinci model this is currently set at [4,000](https://platform.openai.com/docs/models/gpt-3)
+    tokens. Also, since we are charged by token it can get expensive to send and receive
+    a lot of tokens for a small non-profit like [DataKind](https://www.datakind.org/).
+    There are also performance implications with longer prompts, so few-shot prompts
+    were not explored for this task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So I decided to skip few-shot for now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fine-tuning
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It was interesting to explore zero- and single-shot prompts, and had that worked
+    for this use-case it would have been an amazing result. In future, as models improve
+    this may well become a viable option, but for now, it might make sense to reframe
+    the task a little.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another approach is to provide *lots* of examples through [fine-tuning](https://platform.openai.com/docs/guides/fine-tuning).
+    As OpenAI note:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Fine-tuning lets you get more out of the models available through the API
+    by providing:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Higher quality results than prompt design*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Ability to train on more examples than can fit in a prompt*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Token savings due to shorter prompts*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Lower latency requests*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: At first, I considered fine-tuning by providing GPT-3 (i) prompts of the raw
+    table (with merged cells unmerged) and; (ii) completions being the reformatted
+    table. The challenge with this approach however is that it still uses a lot of
+    tokens, especially as we are now going to use hundreds of examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of passing in raw table excerpts, let’s try using attributes of that
+    table and have GPT-3 predict key further attributes which we can use for parsing
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reframing the Task — Using Table Attributes as Prompts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As a human (well, *mostly* human), when I scan a table in Excel I am able to
+    pick out the structure by looking at the values and making a decision about where
+    the data resides.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0b92fbbdfffa07263c0ca4bafb60f3c6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Identifying the data section in a table is key to parsing into a regular tabular
+    structure
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once I know the row at which data begins, it’s straightforward to deduce heading
+    hierarchies from the rows above and collapse them into a single header row in
+    order to create a nice, regular table to use …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/81f481c588bb27c7779ca9dfc6c34b54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Processed table with flat headings, easily imported into a relational database
+  prefs: []
+  type: TYPE_NORMAL
+- en: Identifying where the data begins at first seems trivial with a bit of manipulation
+    in [openpyxl](https://openpyxl.readthedocs.io/en/stable/) or [pandas.read_excel](https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html).
+    However, if working through tens of thousands of spreadsheets with different heading
+    layouts, blank rows, and more, it can be challenging to develop a set of rules
+    which can be used to identify exactly where the data starts in every sheet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s complicated because:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Column headings can have a high degree of variability and look like data
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Blank cells and annotations can confusing parsing rules easily
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data isn’t always numeric, it can be categorical and look a lot like column
+    headings
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Some column headings are numbers and can look like data, for example, years
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: So what table attributes/features should we use to predict the row number where
+    data first occurs?
+  prefs: []
+  type: TYPE_NORMAL
+- en: I came up with a short list of table attributes I thought might might be useful
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which gives output like this …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: These will be our prompts for fine-tuning the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To create completions for the fine-tuning file, I used the Humanitarian Data
+    Exchange dataset for Kenya (see [here](/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d)
+    for more details of how I extracted Excel files). Parsing files and looping through
+    sheets in each, I generated prompts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I used the following logic to create estimates of the row data starts on a sheet
+    using the table parameters above …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: This rule-based approach actually does a pretty good job, but it is not perfect,
+    hence the need for GPT-3\. However, it’s handy for creating a test set where most
+    of the completions are accurate, I then only have to adjust a few where the logic
+    above does not hold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For my training set, I used one table per organization from multiple Excel sheets
+    labelled ‘Kenya’ from 10 humanitarian provider organizations, where the prediction
+    of the first data row was made using the rule-based approach above. I then reviewed
+    this list and compared with the actual sheets to make corrections where the spreadsheet
+    table started on a different row. I excluded cases where there were multiple tables
+    on a sheet for this study, after which I had 232 fine-tuning prompts like this
+    …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Side Note**: In the above you might notice I’ve added a ‘meta_data’ element
+    to each prompt. This isn’t part of the required JSONL prompt record, but I include
+    this to be able to easily associate each prompt with a file for debugging. The
+    prompt file still seems to be accepted by OpenAI with this extra data, I think
+    as long as there are ‘prompt’ and ‘completion’ elements, it’s happy!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I then fine-tuned a DaVinci model …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: I manually checked fine-tuning status as follows …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then once finished, retrieved the model …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: For the test set I used one table from each Excel file sourced from organizations
+    not in the training set (labeled ‘Kenya’), first running the rule-based prediction
+    above to generate prompts and completions and then correcting where this returned
+    incorrect values. Again, excluding cases where multiple tables were specified
+    on an excel sheet. This gave me a test set of 72 prompts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Side Note:** In [my previous blog post](https://medium.com/towards-data-science/predicting-metadata-for-humanitarian-datasets-using-gpt-3-b104be17716d)
+    to predict HXL tags, I had to filter completions by log probability, but in this
+    study it wasn’t required.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPT-3 predicted the first data row on sheets in our test set with the following
+    results …
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: So GPT-3 does a nice job of predicting where the first data row is.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Putting it All Together
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Step 1 — Read in our data**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9f631ffdb4c440854098cc64a07b849b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Example spreadsheet, with varying hierarchical headers and notes in cells
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 2 — Unmerge merged columns and populate with merged value**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e9623db509bee6348ad8d47e1441e67a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Pandas dataframe of sheet after being processed by function ‘pad_merged_cells’
+    to unmerge and fill with merged values
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Step 3 — Calculate table parameters to generate GPT-3 prompt**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 4 — Call GPT-3 to predict where the data row starts**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE25]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Step 5 — now we have the row data begins, concatenate column headings above
+    this into one row**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/457ae2d038f5792578767b18b888aef2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Parsed sheet, with collapsed hierarchical columns, no random labels. This can
+    now be imported into a database
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a nice table we can upload into a relational database. See references
+    section below for the full code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Admittedly, it would be easy to manually parse this sheet manually, even specify
+    some rules related to the table parameters we found, but the point of the above
+    process is that it can be applied to a wide range of table layouts needed for
+    analyzing the thousands of Excel sheets in the Humanitarian Data Exchange datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions and Future Work
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Though there is great potential in zero- and single-shot prompting in general,
+    they did not work out just yet for this particular task when prompted with CSV
+    tables. As Large Language Models advance this will likely change — I’m excited
+    to see what GPT-4 might be capable of — but for now, it seems that fine-tuning
+    is a better option, predicting key table attributes which can be used in reformatting.
+    This method does of course require some pre-processing in order to determine table
+    parameters for the prompt. It’s also worth noting that in using table ‘features’
+    it starts to look more like a classification task than text completion, and might
+    be better framed that way. Irrespective, the technique performs well using the
+    Humanitarian Data Exchange Excel files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I think it would be really interesting to extend this work to also handle cases
+    where Excel sheets have multiple tables on any given sheet. This would require
+    more table features than I’ve used in this study, such as cell formatting and
+    column (rather than row) attributes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More fun ahead!
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Haoyu Dong et al, [TableSense: Spreadsheet Table Detection with Convolutional
+    Neural Networks](https://arxiv.org/abs/2106.13500) (2021)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Brown et al, [Language Models are Few Shot Learners](https://arxiv.org/pdf/2005.14165.pdf)
+    (2020).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [OpenAI Cookbook: Techniques to improve reliability](https://github.com/openai/openai-cookbook/blob/main/techniques_to_improve_reliability.md)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Kojima et al, [Large Language Models are Zero-shot reasoners](https://arxiv.org/abs/2205.11916)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Code for this analysis can be found in [this notebook](https://github.com/datakind/gpt-3-meta-data-discovery/blob/main/gpt-3-table-parsing.ipynb).
+  prefs: []
+  type: TYPE_NORMAL

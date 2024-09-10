@@ -1,0 +1,898 @@
+- en: 'Monte Carlo Approximation Methods: Which one should you choose and when?'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/monte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b?source=collection_archive---------5-----------------------#2023-08-25](https://towardsdatascience.com/monte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b?source=collection_archive---------5-----------------------#2023-08-25)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Is it Inverse Transformation, Random Walk Metropolis-Hastings, or Gibbs? An
+    analysis focusing on the mathematical foundation, Python implementation from scratch,
+    and pros/cons of each method
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)[![Suyang
+    Li](../Images/9612066e1b048c1289f133e909cb21e8.png)](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------)
+    [Suyang Li](https://susiesyli.medium.com/?source=post_page-----886a379fb6b--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2b9882509386&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b&user=Suyang+Li&userId=2b9882509386&source=post_page-2b9882509386----886a379fb6b---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----886a379fb6b--------------------------------)
+    ·12 min read·Aug 25, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F886a379fb6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b&user=Suyang+Li&userId=2b9882509386&source=-----886a379fb6b---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F886a379fb6b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmonte-carlo-approximation-methods-which-one-should-you-choose-and-when-886a379fb6b&source=-----886a379fb6b---------------------bookmark_footer-----------)![](../Images/a69c02e7513a5252713b3e1deb243285.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Joakim Honkasalo](https://unsplash.com/@jhonkasalo?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction to Approximation Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: For most probabilistic models of practical interest, exact inference is intractable,
+    and so we have to resort to some form of approximation.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: — Pattern Recognition and Machine Learning¹
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Since deterministic inference is often intractable with probabilistic models
+    as we saw just now, we now turn to approximation methods based on numerical sampling,
+    which are known as **Monte Carlo** techniques. The key question we will look at
+    with these methods is computing the expectation of a target function *f(z)* given
+    a probability distribution *p(z)*. Recall that the simple definition of expectation
+    is given as an integral:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e9e87120954cc0e72e3fbda6c6d18435.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Source: PRML¹ Eq. 11.1'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As we will see, these integrals are too **computationally complex**, so we will
+    turn to **sampling methods** in this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this article, we will look at 3 core sampling methods: **inverse transformation**,
+    Markov chain Monte Carlo (MCMC), and **Gibbs** Sampling. By understanding the
+    underlying statistical properties and computational requirements of these methods,
+    we will learn that:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Inverse transformation sampling** is best for simulating data with high accuracy
+    from known and simple distributions, particularly in low dimensions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Random Walk Metropolis-Hastings** is best for complex, multi-modal, or unknown
+    distributions, where global exploration and/or convergence is a priority; specifically,
+    the **Metropolis** algorithm — a specific instance of Metropolis-Hastings — can
+    be used for symmetric distributions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Gibbs Sampling** is best for high-dimensional problems where conditional
+    distributions are easy to sample from, and efficiency is a priority.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Table of Contents
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Inverse Transform Sampling](#e96f)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: • [How does the algorithm work?](#93fc)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • [Python Implementation](#d1ff)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • [Prerequisites](#c20f)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • [Pros & cons](#9cdd)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[Markov Chain Monte Carlo](#d20d)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: • [Metropolis-Hastings Algorithm](#2847)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '• [Special Instance: Metropolis Algorithm for Symmetrical Distribution](#bfed)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • [Pros/Cons](#76a3)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[Gibbs](#c3b6)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: • [Algorithm](#42ee)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • [Conditions](#cf29)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • [Gibbs’ relationship with Metropolis-Hastings](#0cf9)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[Comparison: Pros/Cons of Transformation vs. Met-Hastings vs. Gibbs](#e6ac)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '1\. Transformation Method: Inverse CDF'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Inverse Transform Sampling, as its name suggests, uses the inverse cumulative
+    distribution function (CDF) of a target distribution to generate random numbers
+    that follow a desired distribution. The basic idea is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Generate a Uniform Random Number**: We draw a number *U* from a uniform distribution
+    between 0 and 1.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Apply the Inverse CDF**: Using the inverse of the target distribution’s CDF,
+    transform *U* into a sample that follows the target distribution.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Here’s a quick illustration of how the samples (blue) are drawn from the distribution
+    (red):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8e5d2b1707e1d71d1887eeaec4b24878.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inverse CDF is a **computationally** **simple and generalizable** method to
+    sample from distributions for which **we know the CDF**, such as the normal, exponential,
+    gamma or beta distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: PDF, CDF, and Inverse CDF
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/30e9376ff43939896930449104c0eb74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '(From left to right): PDF, CDF, and Inverse CDF of the standard normal distribution'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In intuitive terms, the CDF is the cumulative value of the PDF, which is equal
+    to the integral of the PDF; then we take the inverse of the CDF function to get
+    the final inverse CDF used for this method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Formally, if *a* is a random variable, then the CDF of *a* is given by:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e5505c7ce4a106b209e247f362f59bd8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PRML, Eq. 11.5–11.6
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A CDF *F* has the following key properties:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*F* is continuous'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*F* is non-decreasing'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*F* has range 0 ≤ cdf(*a*) ≤ 1 for all *a* ∈ R'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: How does the inverse CDF algorithm work?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The algorithm consists of the following ingredients:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`U`: *U* is a uniform random variable drawn between 0 and 1.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This serves as the input probability for the inverse CDF and is what will be
+    transformed into a sample from the desired distribution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Parameter**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`*F:*`the CDF of the target distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: With *F,* we can simply compute its inverse, *F*^-1, and use it to map an input
+    value to the desired domain
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Output**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`x`: a random sample drawn from the target distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: This is generated by applying the inverse CDF to the random number from the
+    uniform distribution (input).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Python Implementation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Now, let’s implement this method from scratch. We will use the exponential
+    function since it will be easy to visualize our samples drawn by inverse CDF and
+    compare them to the exact distribution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8af34e7ef1b6f16d77f29a6bcf53a72f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PDF of the exponential function (target distribution)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By standard calculus integration techniques, we find that the target CDF *F(x)*
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/664a8e1ee0c2a55acb775c804eb7eade.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: CDF of the exponential function
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The inverse of this CDF is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b54a28e59301732af785e77bcb20428.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Inverse CDF of the exponential function
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We will generate 5000 samples using the Inverse CDF method:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/8e5d2b1707e1d71d1887eeaec4b24878.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Requirements for the inverse CDF algorithm to work
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The inverse CDF method makes a key assumption:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**CDF *F* is invertible**: The CDF *F* must be **invertible**, meaning that
+    each input to *F* must have a unique output'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'This constraint rules out a number of functions. For example, below are a few
+    function types that are common but **non-invertible** (and thus would **not work
+    with inverse CDF)**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Constant functions**: Any constant function in the form of *f(x) = c* where
+    *c* is a constant is not invertible since every input maps to the same output
+    and thus the function is **not one-to-one**.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/f63ff25af3ce705bdb89e0ff2d1d784c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The red dots show two of the many x values that map to the same y value in f(x)
+    = 5, making it non-invertible
+  prefs: []
+  type: TYPE_NORMAL
+- en: '2. **Certain quadratic functions**: For example *f(x) = x^2* is non-invertible
+    since it’s many-to-one (consider *f(x) = 1*, *x* could be *1* or *-1*).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/59146469e51e069c4e325cca1b4509db.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The red dots show one of the many pairs of x values that map to the same y value
+    in f(x) = x²
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3\. **Certain trigonometric functions**: For example *f(x) = sin(x)* is not
+    invertible over their entire domain since they are periodic, although with **restricted
+    domains** they may be made invertible.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eec4b28788026f8b59493e8bd239dbbe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The red dots show one of the many sets of x values that map to the same y value
+    in f(x) = sin(x) due to its periodicity over the given domain
+  prefs: []
+  type: TYPE_NORMAL
+- en: Why does inverse CDF work?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The key idea is that a **random variable uniformly distributed between 0 and
+    1** can be transformed into a **random variable with a certain distribution**
+    by applying the inverse of the target distribution’s CDF, which is assumed to
+    be known and tractable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advantages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Algorithmic simplicity**: it’s very easy to implement with lower-dimensional
+    data, thus having a wide application area across different fields and tasks.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Sample accuracy:** assuming the CDF and its inversion represents the exact
+    target distribution, the method yields a relatively high exactness compared to
+    other methods such as MCMC which we will see soon.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Disadvantages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Computational complexity**: For some distributions, the inverse CDF may not
+    have a closed-form expression, making computation challenging or expensive.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Difficulty with high dimensionality**: It can be difficult to apply in high-dimensional
+    spaces, especially with dependencies between variables.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Invertibility constraint**: Anytime a CDF is non-invertible, this method
+    becomes invalid. This excludes a number of functions as we saw above.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Limited to known distributions**: Inverse CDF requires the exact form of
+    the CDF, limiting its application to known distributions only.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Taking all these limitations into account, there are only a few categories of
+    distributions that we can apply inverse CDF to. In reality, with Big Data and
+    unknown distributions, this method can quickly become unavailable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With these advantages and disadvantages in mind, let’s now look at another
+    random sampling framework that tackles these limitations: **Markov Chain Monte
+    Carlo (MCMC).**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Markov Chain Monte Carlo (MCMC)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As we saw just now, the inverse CDF transformation method is **highly limited**,
+    especially with **high dimensional** sample spaces. Markov Chain Monte Carlo (MCMC),
+    on the other hand, scales well with dimensionality, enabling us to sample from
+    a much larger family of distributions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7aadb0e9bfad08606a83b2bcb0f4a4a4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of Metropolis-Hastings exploring a mixed Gaussian (left), generating
+    samples (right)
+  prefs: []
+  type: TYPE_NORMAL
+- en: How does the Metropolis-Hastings algorithm work?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In intuitive terms, the algorithm works in the following steps: Similar to
+    inverse CDF, we have a **target distribution** that we’re sampling from. However,
+    we need an additional ingredient: the current state `z*`, and *q(z|z*)* depends
+    on `z*`, creating a Markov chain with samples z¹, z², z³,. Each sample is accepted
+    into the chain only if it satisfies a certain criterion, which we will define
+    below since this criterion differs across variations of the algorithm.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s formalize it into a more algorithmic structure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The algorithm runs in cycles, and each cycle follows these steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generate a sample *z** from the proposal distribution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Accept the sample with probability Then we will accept this value with an **acceptance
+    probability,** which in Metropolis-Hastings is defined as:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/9f5b7dd83e528a0a8d399046030d7b8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PRML¹ Eq 11.44
+  prefs: []
+  type: TYPE_NORMAL
+- en: where
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*z** is the current state.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*z^T* is the proposed new state.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*p(z*)* is the probability of state z* according to the desired distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*p(z^T)* is the probability of state *z^T* according to the desired distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The logic behind this acceptance threshold is that it ensures that the **more
+    probable states** (according to the desired distribution) are **visited more often**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, this is the most generalized version of the algorithm; if the proposal
+    distribution is known to be symmetric, meaning that the probability of proposing
+    a move from state *x* to *x*′ is the same as proposing a move from *x*′ to *x,*
+    i.e. *q*(*x′*|*x*) = *q*(*x|x′*), then we can use a special case of Metropolis-Hastings
+    that requires a simpler acceptance threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metropolis algorithm for Symmetric Distributions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This is a specific MCMC algorithm that we choose to use **if the proposal distribution
+    is symmetric**, i.e. q(z⁰ | z¹) = q(z¹ | z⁰) for all values of 1 and 0, interpreted
+    as “the probability of transitioning from any state A to state B is equal to the
+    probability of transitioning from B to A”. So, each step of the algorithm becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generate a sample z* from the proposal distribution.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Accept the sample with probability:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/7e41da8ba42ba27d11ab1bd9c3318a73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Metropolis algorithm acceptance threshold. Src: PRML¹ Eq. 11.33'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Metropolis-Hastings and Metropolis Algorithms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s look at the algorithms side by side. As we saw before, the only difference
+    is the acceptance threshold; all other steps of the algorithms run identically:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c99439fa15f3dea42cd2a269f6eefcb4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Metropolis vs Metropolis-Hastings Algorithm
+  prefs: []
+  type: TYPE_NORMAL
+- en: Advantages
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Convergence to Equilibrium Distribution**: In certain cases, the random walk
+    can converge to a desired equilibrium distribution although it likely takes a
+    long time in high-dimensional spaces.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Low Computational Cost**: Random walk often requires fewer computational
+    resources compared to other complex sampling methods, making it suitable for problems
+    where computational efficiency is a priority.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Versatility of application**: Due to its high similarity to naturally occurring
+    patterns, Random Walk has applications in a wide variety of fields:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '• Physics: Brownian motion of molecules in liquids and gases.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • Network Analysis
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '• Financial Markets: to model stock price movements'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: • Population Genetics
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Disadvantages**:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Sensitive to initialization**: The algorithm’s performance can be sensitive
+    to the choice of the starting values, especially if the initialized values are
+    far from the high-density areas.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Locality traps**: Depending on the complexity of the proposal distribution,
+    the algorithm could get stuck in local optima and have difficulty traversing to
+    other areas along the distribution.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, keeping the Metropolis-Hastings algorithm in mind, let’s look at another
+    special instance of it: Gibbs Sampling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Gibbs Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Gibbs Sampling is a special instance of Metropolis-Hastings where **each step
+    is always accepted**. Let’s first look at the Gibbs sampling algorithm itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**How does the Gibbs algorithm work?**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The idea is relatively simple and is best illustrated by first zooming in on
+    a micro example involving sampling from a distribution *p(z1, z2, z3)* over 3
+    variables. The algorithm would run in the following steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At timestep *T,* initialize the starting values to:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/7cd087dce3e8d6677b236c4ea8bd4024.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PRML¹
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Draw the new value for *z1:*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9d86e1bd0dfd60f0945c508585063b76.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PRML¹ Eq 11.46
+  prefs: []
+  type: TYPE_NORMAL
+- en: '3\. Draw a new value for the second position, *z2* from the conditional:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d756a4f209a7d918c9a6d2bd55ce730b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PRML¹ Eq 11.47
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4\. Finally draw a new value for the last position, *z3*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/88460e00830181cceb0d2031ec0023b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: PRML¹ Eq 11.48
+  prefs: []
+  type: TYPE_NORMAL
+- en: 5\. Repeat this process, cycling through the three variables *z1…z3* until it
+    reaches a certain satisfactory threshold.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generalized algorithm
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Formally, the algorithm is represented by first initializing the starting positions,
+    and then taking *T* consecutive steps
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5b2d3cf7ff76b0588770593aac58b413.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Image source: PRML¹ Ch11.3 Gibbs Sampling'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conditions for Gibbs to sample from a target distribution correctly
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Invariance**. The target distribution *p(z)* is invariant of each Gibbs step,
+    and therefore *p(z)* is invariant of the entire Markov chain.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Ergodicity**. If the conditional distributions are all non-zero, then ergodicity
+    is implied since any point in *z* space is reachable in a finite number of steps.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Sufficient burn-in**. As we saw with any method that requires random initialization,
+    the first few samples are dependent on the initialization, and the dependence
+    weakens after many iterations.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How does this relate to Metropolis-Hastings?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In Metropolis-Hastings, we defined the acceptance threshold to be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c30ed153ca1b1cac19f0606319abe736.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Thus, the Metropolis-Hastings proposal steps are always accepted, as we saw
+    in the Gibbs algorithm.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Variations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since the Gibbs method updates one variable at a time, there are strong dependencies
+    between consecutive samples. To overcome this, we could use an intermediate strategy
+    to sample from **groups of variables** instead of **individual variables,** known
+    as [blocking Gibbs](https://www.sciencedirect.com/science/article/pii/S0002929707623398).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similarly, by the nature of Markov chains, the examples drawn successively will
+    be correlated. To generate independent samples, we could use sub-sampling within
+    the sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '4\. Pros/Cons: Inverse CDF vs Metropolis-Hastings vs Gibbs'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now that we’ve walked through how each algorithm works and its application areas,
+    let’s summarize the defining characteristic of each method.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Inverse Transformation Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data Size**: Best for moderate-sized datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Time**: Generally efficient for univariate distributions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data Complexity**: Use for simple distributions where the cumulative distribution
+    function (CDF) and its inverse are known and easy to compute.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Consider avoiding if:** Sampling high-dimensional variables/distributions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Biggest Advantage**: High accuracy if the CDF accurately reflects the target
+    distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Requirement:** The CDF must be known and invertible.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 2\. Metropolis-Hastings (MCMC)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data Size**: Scalable and suitable for large datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Time**: Can be computationally intensive, depending on the complexity of
+    the target distribution.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data Complexity**: Ideal for complex or multi-modal distributions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Biggest Advantages**:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- Can sample from a distribution without knowing its normalization constant
+    (the full form)'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Great for exploring the global structure of a distribution and guarantees
+    convergence'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Disadvantage:** May suffer from very slow convergence with'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- complex or multimodal target distribution, since the algorithm may be stuck
+    in local modes and have difficulty transitioning between them;'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- the variables are highly correlated;'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- high dimensional spaces;'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- poor initial values or step size choices'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 3\. Gibbs Sampling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**Data Size**: Suitable for both small and large datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Time**: Often more efficient than Random Walk Metropolis-Hastings since it
+    doesn’t require acceptance/rejection steps.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Data Complexity**: Best used when dealing with high-dimensional distributions
+    where you can sample from the conditional distribution of each variable.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Biggest Advantages**:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- Can easily compute conditional distributions;'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- Less prone to local minima traps compared to Random Walk.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '**Requirements**:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '- Markov chain ergodicity'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '- The full conditional distributions must be known and tractable'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'In summary:'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/67e33e80ecf03e5ed1c319ef7a79cb45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Summary table of pros and cons of inverse CDF, Metropolis-Hastings, and Gibbs
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Thanks for sticking with me this far! In this article, we looked at 3 key approximation
+    sampling methods: Inverse CDF, Metropolis Hastings MCMC, and Gibbs Sampling MCMC.
+    We explored how each algorithm functions, their respective advantages and disadvantages,
+    and typical use-cases.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Inverse CDF** provides a straightforward method to sample from a known distribution
+    when its CDF is invertible. It’s computationally efficient but is less suitable
+    for high-dimensional or complex distributions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Metropolis Hastings MCMC** offers a more general approach that allows for
+    sampling from distributions that are difficult to tackle otherwise. However, it
+    does require more computational resources and may be sensitive to tuning parameters
+    like the proposal distribution.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Gibbs Sampling MCMC** is specifically efficient when the joint distribution
+    is complex but can be broken down into simpler conditional distributions. It’s
+    widely used in machine learning, although it can be slow to converge and memory-intensive
+    for high-dimensional problems.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Bishop, C. M. (2016). *Pattern Recognition and Machine Learning* (Softcover
+    reprint of the original 1st edition 2006 (corrected at 8th printing 2009)). Springer
+    New York.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Images by author unless otherwise stated,*'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,356 @@
+- en: Multilevel Regression Models and Simpson’s paradox
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/multilevel-regression-models-and-simpsons-paradox-acb9820e836d?source=collection_archive---------2-----------------------#2023-08-08](https://towardsdatascience.com/multilevel-regression-models-and-simpsons-paradox-acb9820e836d?source=collection_archive---------2-----------------------#2023-08-08)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Avoiding false conclusions with the proper tooling
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)[![Dorian
+    Drost](../Images/1795395ad0586eafd83d3e2f7b975ca8.png)](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)[](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------)
+    [Dorian Drost](https://medium.com/@doriandrost?source=post_page-----acb9820e836d--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F1d49ea537d1c&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&user=Dorian+Drost&userId=1d49ea537d1c&source=post_page-1d49ea537d1c----acb9820e836d---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----acb9820e836d--------------------------------)
+    ·10 min read·Aug 8, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Facb9820e836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&user=Dorian+Drost&userId=1d49ea537d1c&source=-----acb9820e836d---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Facb9820e836d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmultilevel-regression-models-and-simpsons-paradox-acb9820e836d&source=-----acb9820e836d---------------------bookmark_footer-----------)![](../Images/bf46d552f917233411d7ae5b8eb33e09.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Analysis influences our conclusions, but we should use the proper tooling
+    to take the right path. Photo by [Brendan Church](https://unsplash.com/@bdchu614?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Analysis is — as indicated by that profession’s name — an integral part
+    of a Data Scientist’s work, ranging from descriptive statistics and simple regression
+    models to sophisticated machine learning approaches. However, those approaches
+    have to be handled with care, and selecting the right approach is far away from
+    being trivial. Complex data often includes hidden structures that, if not considered
+    appropriately, can lead to fallacies that may end up in invalid conclusions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this article, I want to give an example of *Simpson’s paradox* and show how
+    a simple yet shortsighted analysis can lead to false conclusions that appear to
+    be backed by the data, although they are not more than a misinterpretation. Thereby
+    I demonstrate the usage of *multilevel regression models* as an appropriate way
+    of data analysis for hierarchical, i.e. nested, data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Let’s start already! Say we have published a smartphone app and want to learn
+    more about our users and how satisfied they are. Hence we perform a small survey
+    and ask some of our users to tell us how satisfied they are with our app on a
+    scale from 1 (very unhappy) to 4 (very happy). Additionally, we measured how much
+    time they spent in our app in the last week, and to get a rich sample, we asked
+    users in different countries. Then our data may look like this (I am using generated
+    data for this article):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We are interested in the relationship between the time spent in our app and
+    the reported satisfaction. To be precise, we want to know whether spending more
+    time in our app is associated with more satisfaction or less, and we want to quantify
+    that association, i.e. we want to make a statement like “*spending one hour more
+    in our app is associated with being x times more/less satisfied*”. When we look
+    at the data, we might have a first intuition already, that more time spent in
+    the app is correlated with lower satisfaction:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0c2c20cb95ae60624e40b327fedba30.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Linear regression
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s do a linear regression to see if we are right. With linear regression,
+    we try to predict satisfaction given the time spent as a linear function of the
+    form *satisfaction = intercept + regression_coefficient * time_spent.* We can
+    easily do that with the *statsmodels* package using the OLS (Ordinary Least Squares)
+    function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The *add_constant* method is just a technical detail we use to tell the model,
+    that we want to have an intercept in our equation (which is required, as long
+    as our data is not standardized). The *result.params* gives us two values, namely
+    the *intercept* (*const*) and the *regression_coefficient* for the variable *Time_spent*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That is, our model tells us, that satisfaction can be predicted as *3.229 –0.655*time_spent*.
+    In other words, one hour more time spent in the app leads to a decrease of 0.655
+    points in satisfaction (because of the minus sign). However, one doesn’t start
+    from zero, but the mean satisfaction of a person just from their first impression
+    (i.e. *time_spent=0*) is 3.229\. We can also make that visible as a line with
+    intercept 3.229 and slope -0.665:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ecde136448a59f995e18a6292460751.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Of course, this prediction is not perfect, but at least it gives us a trend.
+    Okay, so the case is clear, right? Spending more time in the app leads to a decrease
+    in satisfaction, and we can even quantify that decrease. We could now draw our
+    conclusions from that and think about how to improve the app (we want our users
+    to be more satisfied as they use the app more, of course), or do a more detailed
+    survey to find out why the users are not satisfied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Well, not so fast!**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Grouping per country
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Remember, that we collected data from users in different countries? What happens,
+    if we take a look at the data separated by country? In the following plot, we
+    see the very same data points as before, but now we highlighted each country in
+    a different color.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ddd206361a3f0dfe4831e0647a266f07.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: There are two observations we can make from that plot. First, the countries
+    seem to differ in their satisfaction and their time spent in the app. The subjects
+    from the blue country spend more time in the app but are less satisfied than subjects
+    from the other countries, on average. Even more, when we take a look at the three
+    countries in separation, we might think that the association between time spent
+    in the app and satisfaction is indeed positive. Isn’t that contradicting our previous
+    analysis?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simpson’s paradox
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '![](../Images/3aef7cab259c0a8f5e95326b9c8a2d69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Well, it is actually not named after those Simpsons…Photo by [Stefan Grage](https://unsplash.com/@stefangrage?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The effect we just saw is called *Simpson’s paradox*. It occurs when a correlation
+    in data is different across groups vs. within groups. While being very counterintuitive,
+    this can happen indeed (as we just saw), and the reason for that is confounding
+    variables. Let’s explain that with our example above. When looking at each country
+    in isolation, we see a positive trend: more time spent in the app is associated
+    with higher satisfaction. However, as we already saw, the countries differ in
+    their mean satisfaction and time spent in the app. In the blue country, the mean
+    satisfaction is lower but the mean time spent in the app is higher than in the
+    orange or green country; a trend that is opposing the trend within the countries.
+    However, there may be another variable causing this. E.g. one could imagine, that
+    in the blue country, more people are bored more often, leading to less satisfaction
+    in general (and hence less positive mood towards our app) but more time to spend
+    in the app. Of course, that is just one possible explanation and there can be
+    many others. However, the correct explanation doesn’t matter too much at the moment.
+    For us, it is important to understand, that there are systematic differences between
+    the countries.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, why didn’t we find that out in our previous analysis? Did we do a mistake
+    when performing the linear regression? Well, yes, as it was wrong to perform a
+    linear regression at all because one of the core assumptions of the linear regression
+    was violated: A linear regression assumes, that all data points are sampled independently
+    and from the same distribution. That is not the case in our example, though! Obviously,
+    the distributions of time spent in the app and satisfaction are different across
+    the different countries. Now, if the assumptions of linear regression are violated,
+    linear regression is not the right tool for data analysis.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hierarchical models
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: What can we do now, to analyze our data in a more appropriate way? Luckily,
+    statistical models are available that extend the idea of linear regression to
+    hierarchical data. We speak of hierarchical data if the data points we sampled
+    are nested in a hierarchical structure, like in our case, where the people we
+    asked are nested in the countries. Those statistical models are called *hierarchical
+    linear models*, *multilevel models*, or *linear mixed effect models*. Such models
+    account for the group structures by introducing so-called *fixed effects* and
+    *random effects*. In a simple example, where we want to predict one variable given
+    a single other variable (as we want to predict satisfaction given the time spent
+    in the app), the *fixed effects* consist of one intercept and one slope for all
+    groups together. So far that is the very same as in the linear regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now the *random effects* can introduce a deviation from that intercept **for
+    each group separately**. For example, the intercept for the blue country may be
+    a little lower and the intercept for the green country may be a little higher
+    than the fixed intercept. That would account for the differences in the countries’
+    mean levels of satisfaction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, the *random effects* can introduce a deviation of the slope f**or
+    each group**. For example, in the orange group, the slope may be higher than the
+    fixed slope (i.e. the association between satisfaction and time spent is stronger),
+    and in the green country, it may be lower.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hierarchical models in action
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Let’s see that in action to understand what really happens. We conduct a new
+    analysis, but now we use statsmodels’ *mixedlm* function. We clarify that we want
+    to predict *satisfaction* given the *time_spent* (and not vice versa) by the formula
+    *“Satisfaction ~ Time_spent”* and we indicate that the “*Country*” column of our
+    dataframe is determining the different groups. Additionally, the parameter *re_formula=”Time_spent”*
+    tells the model that we want to have a separate slope for each group. Without
+    that, the random effects would consider a group-specific intercept only, but not
+    a group-specific slope.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If we print the *fixed_effects* (*fe_params*) and the *random_effects*, we
+    get values like these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: So, what does that mean? For the fixed effects, we have one value for the intercept
+    and one value for our variable time_spent. For the random effects, however, we
+    have two values **per country (0,1,2):** one for the intercept (*Group*), and
+    one for the slope of our variable (*Time_spent*). As we saw above, the random
+    effects describe the **deviation** from the mean effects for each group. For our
+    three groups, we can construct three different linear equations by adding the
+    random effects to the fixed effects for the intercept and the slope each.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We see that the random intercept for group 0 is negative (-0.958) and the random
+    intercept for group 2 is positive (0.803), so group 0 is below the fixed intercept,
+    and group 2 is above. Consequently, group 0 has the lowest intercept in its linear
+    function (1.327) and group 2 has the highest (3.090). In other words, in country
+    0, satisfaction starts at a lower level than in country 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We also see that the slopes differ between the groups. In group 1, the slope
+    is highest with 0.771, while for group 2 it is only 0.241\. That means the association
+    between satisfaction and time spent in the app is much higher in country 1 than
+    in country 2\. In other words, in country 1 an increase of one hour of time spent
+    in the app leads to 0.771 points more in satisfaction (in the mean), while for
+    country 2 it only adds another 0.241 points in satisfaction. In addition, all
+    slopes are positive, which we expected from the plot above, but which is contradicting
+    the negative slope of the linear regression we did at the beginning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can plot one regression line for each country now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6b16860efac8c8bfa9d5f2a7c532399a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now we clearly see the positive trend in each country and the different intercepts
+    (i.e. the positions where the lines would be at *time_spent*=0).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the above example, we saw how a short-sighted analysis can easily lead us
+    to false conclusions. Ignoring the nested structure of the data, i.e. users coming
+    from different countries, we could have easily stopped after the linear regression
+    and would have concluded, that more time spent in the app was associated with
+    lower satisfaction. Only by understanding that our data is not fulfilling the
+    core assumptions of linear regression, as the data points are not sampled from
+    the same distribution, we were motivated to do further analyses that revealed,
+    that indeed the opposite is the case: More time spent in the app is indeed associated
+    with higher satisfaction.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, let’s formulate some takeaways from this example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before using a statistical method for analysis, its assumptions should be validated
+    with the data.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For nested data, the assumption that all data points are sampled from the same
+    distribution may not always be the case.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It can happen, that a trend in the data overall is different from a trend inside
+    single groups that form that data altogether. This is called Simpson’s paradox.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Multilevel linear models are one way to cope with nested data structures and
+    avoid false conclusions from Simpson’s paradox.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Further reading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We used the following implementation of hierarchical models in *statsmodels*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[https://www.statsmodels.org/stable/mixed_linear.html](https://www.statsmodels.org/stable/mixed_linear.html)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: I used the following statistics textbook (which is only available in German,
+    unfortunately).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Eid, M., Gollwitzer, M., & Schmitt, M. (2017). *Statistik und Forschungsmethoden*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Background information about multilevel models can also be found here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Snijders, T. A. B.; Bosker, R. J. (2011). [*Multilevel Analysis: an Introduction
+    to Basic and Advanced Multilevel Modeling*](https://books.google.com/books?id=N1BQvcomDdQC)
+    (2nd ed.). London: Sage. [ISBN](https://en.wikipedia.org/wiki/ISBN_(identifier))
+    [9781446254332](https://en.wikipedia.org/wiki/Special:BookSources/9781446254332).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'If you want to reproduce the results, this is how the data was generated:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Like this article?* [*Follow me*](https://medium.com/@doriandrost) *to be
+    notified of my future posts.*'
+  prefs: []
+  type: TYPE_NORMAL

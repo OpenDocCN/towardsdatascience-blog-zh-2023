@@ -1,0 +1,559 @@
+- en: Data-Driven Dispatch
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/data-driven-dispatch-76b7e998a7a7?source=collection_archive---------4-----------------------#2023-08-04](https://towardsdatascience.com/data-driven-dispatch-76b7e998a7a7?source=collection_archive---------4-----------------------#2023-08-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using supervised learning to predict service callouts to Chicago car collisions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@john_lenehan?source=post_page-----76b7e998a7a7--------------------------------)[![John
+    Lenehan](../Images/addeeb0bacca7ddec928aa12c2a4fc53.png)](https://medium.com/@john_lenehan?source=post_page-----76b7e998a7a7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----76b7e998a7a7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----76b7e998a7a7--------------------------------)
+    [John Lenehan](https://medium.com/@john_lenehan?source=post_page-----76b7e998a7a7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F2eb00da71bb6&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-driven-dispatch-76b7e998a7a7&user=John+Lenehan&userId=2eb00da71bb6&source=post_page-2eb00da71bb6----76b7e998a7a7---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----76b7e998a7a7--------------------------------)
+    ·13 min read·Aug 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F76b7e998a7a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-driven-dispatch-76b7e998a7a7&user=John+Lenehan&userId=2eb00da71bb6&source=-----76b7e998a7a7---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F76b7e998a7a7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdata-driven-dispatch-76b7e998a7a7&source=-----76b7e998a7a7---------------------bookmark_footer-----------)![](../Images/c2c5a6ca3ae97936c5c408411e705545.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Sawyer Bengtson](https://unsplash.com/@sawyerbengtson?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In today’s fast-paced world, the need for data-driven decisions in dispatch
+    response systems is becoming essential. Dispatchers will perform a kind of triage
+    when listening to calls, prioritising cases based on severity and time sensitivity
+    among other factors. There is potential in optimising this process by leveraging
+    the power of supervised learning models, to make more accurate predictions of
+    case severity in tandem with a human dispatcher’s assessment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I’m going to run through one solution I developed to improve predictions
+    of casualties and/or serious vehicular damage from car collisions in Chicago.
+    Factors such as crash location, road conditions, speed limit, and time of occurrence
+    were taken into account to answer a simple yes or no question — *will this car
+    crash require an ambulance or tow truck?*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1a30aa5c17291cf500139dfce5f2094d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Photo by [Chris Dickens](https://unsplash.com/@chrisdickens?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In a nutshell, this machine learning tool’s primary objective is to classify
+    collisions that will most likely require a callout (medical, tow, or both) based
+    on other known factors. By leveraging this tool, responders would be able to efficiently
+    allocate their resources across different parts of the city, based on various
+    conditions such as weather and time of day.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For such a tool to be accurate and effective, a large data source would be needed
+    to make predictions from the historical data — thankfully the city of Chicago
+    already has such a resource (the [**Chicago Data Portal**](https://data.cityofchicago.org/)**),**
+    so this data will be used as the test case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementing these kinds of predictive models would certainly improve preparedness
+    and response time efficiency when dealing with collisions on city streets. By
+    gaining insights into the underlying patterns and trends within the collision
+    data, we can work towards fostering safer road environments and optimising emergency
+    services.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I go into the details of data cleaning, model building, fine tuning and evaluation
+    below, before analysing the model’s results and drawing conclusions. A link to
+    the github folder for this project, which includes a jupyter notebook and a more
+    comprehensive report on the project, can be found [**here**](https://github.com/jlenehan/Chicago_Dispatch_Classification).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Collection and Preparation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Initial Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I’ve listed the basic data analysis libraries used in the project below; standard
+    libraries such as pandas and numpy were used throughout the project, along with
+    matplotlib’s pyplot and seaborn for visualisation. Additionally, I used the missingno
+    library to identify gaps in the data — I find this library incredibly useful for
+    visualising missing data in a dataset, and would recommend it for any data science
+    project involving dataframes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Functions from the machine learning module SciKit learn (sklearn) were imported
+    to build the machine learning engine. these functions are shown here — I will
+    describe the purpose of each of these functions in the Classification Model section
+    later:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The data for this project were all imported from the Chicago Data Portal, from
+    two sources:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Traffic Crashes**](https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if)**:**
+    Live dataset of vehicle collisions in the Chicago area. The features of this dataset
+    are conditions recorded at the time of the collision, such as weather conditions,
+    road alignment, latitude and longitude data, among other details.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[**Police Beats Boundaries**](https://data.cityofchicago.org/Public-Safety/Boundaries-Police-Beats-current-/aerh-rz74)**:**
+    A static dataset indicating the boundaries of CPD beats; this dataset is used
+    to supplement district information to the traffic crashes dataset. This can be
+    joined to the original dataset to run analysis on districts with the most frequent
+    collisions.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Data Cleaning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With both datasets imported, they can now be merged to add district data to
+    the final analysis. This is done using the .merge() function in pandas — I used
+    an inner join on both dataframes to capture all information in both, using the
+    beat data in both as the join key (listed as beat_of_occurrence in the traffic
+    crashes dataset, and BEAT_NUM in the police beats dataset):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A quick look at the information provided from the .info() function shows a
+    number of columns with sparse data. This can be visualized using the missingno
+    matrix function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This displays a matrix of missing data in all columns, as can be seen here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ddefcffff4587b8760e38a75063522a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unrefined dataset, with multiple columns containing a large number of null values
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'By dropping columns with sparse data, a much cleaner dataset can be extracted;
+    the columns to drop are defined in a list and then removed from the dataset using
+    the .drop() function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This leads to a much cleaner msno matrix:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/86afb14e5fbe44f518d42995e2a3cafe.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: msno matrix of the pruned dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking at the data for latitude and longitude, a small handful of rows had
+    null values, and others mistakenly had zero values (most likely a reporting error):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9560f62ade6057976786637b088d1019.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Both the latitude and longitude columns contain zero values (see min and max
+    of each)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These would cause errors in training the model, so I removed them:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the data adequately cleaned, I was able to progress with developing the
+    classification model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classification Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Exploratory Data Analysis
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Before proceeding with the machine learning model some exploratory data analysis
+    (EDA) needs to be performed — each of the columns of the data frame are plotted
+    on a histogram, with bins of 50 to show the distribution of the data. Histograms
+    are useful in the EDA step for a number of reasons, namely that they give an overview
+    of the data distribution, help to identify outliers, and ultimately assist in
+    making decisions on feature engineering:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/dabb1f342e2339419ce97928a009e5c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Histograms of columns in the final dataset
+  prefs: []
+  type: TYPE_NORMAL
+- en: A cursory look at the column histograms indicates that the latitude data is
+    bimodal, while the longitude data is rightly skewed. This will need to be standardized
+    so that it can be better applied for machine learning purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/58122511ccb77af36d3f28cdc50dfa73.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Latitude-longitude data without scaling
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally, it appears the crash hour column is cyclic in nature — this can
+    be transformed using a trigonometric function (for example sine).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bca2dc70a0a58594ad142e00fc5d70c1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Unscaled crash hour data
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scaling and Transformation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Scaling is a technique used in data preprocessing to standardise features so
+    they have similar magnitudes. This is particularly important for machine learning
+    models, since models are generally sensitive to the scale of input features. I’ve
+    defined the StandardScaler() function to act as the scaler in this model — this
+    scaling function transforms the data so that it has a mean of 0 and standard deviation
+    of 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For data with a skewed or bimodal distribution, scaling can be done using logarithmic
+    functions. Log functions make skewed data more symmetrical and reduce the tail
+    on the data — this is useful when dealing with outlier values. I scaled the latitude
+    and longitude data in this way; as the longitude data is all negative, the negative
+    log was calculated and then scaled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This produces the desired effect, as can be seen below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d40c2792cadb8aa7ed521ec34a48a922.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaled latitude-longitude data
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In comparison, cyclic data is usually scaled using trigonometric functions
+    such as sine and cos. The crash hour data looks roughly cyclic based on earlier
+    observations, so I applied a sine function to the data as below — since numpy’s
+    sin() function is in radians, I first converted the input to radians before calculating
+    the sine of the input:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A histogram of the transformed data can be seen below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/430743b8c2856810abdecffc1247a433.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Scaled crash hour data
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Finally I removed the unscaled data from the model to avoid this interfering
+    with model predictions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Data Encoding
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another important step in data preprocessing is data encoding — this is where
+    non-numerical data (for example categories) are represented in numerical format,
+    to make it compatible with machine learning algorithms. For categorical data in
+    this model, I used a method called label encoding — each category in a column
+    is given a numerical value before it’s inputted to the model. A diagram of this
+    process is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/99c8167d785b05fe41467a25090b78d1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An example of label encoding (credits to Zach M—[source](https://www.statology.org/label-encoding-in-python/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I encoded the columns in the dataset, first segmenting out the columns I wanted
+    to keep from the original dataset and making a copy of the dataframe (collisions_ml).
+    I then defined the categorical columns in a list, and used the LabelEncoder()
+    function from sklearn to fit and transform the categorical columns:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: With the data now sufficiently preprocessed, the data can now be split into
+    train and test data, and a classification model can be fitted to the data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Splitting the Train & Test Data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: It’s important to separate data into a training and test sets when building
+    a machine learning model; the training set is a fraction of the initial data which
+    is used to train the model on the right responses, whereas the test set is used
+    to evaluate model performance. Keeping these separate is necessary to reduce the
+    risk of overfitting and model bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I separated out the crash_type column using the drop() function (the remaining
+    features will be used as the variables to predict crash_type), and defined crash_type
+    as the y result to be predicted using the model. The train_test_split function
+    from sklearn was used to take 20% of the initial dataset as training data, with
+    the rest to be used for model testing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: K-Nearest Neighbors Classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For this project, a K-Nearest Neighbors (KNN) classification model is used to
+    predict results from the features. KNN models work by checking the value of the
+    K nearest known values around an unknown data point, then classifying the data
+    point based on the values of those “neighbor” points. It’s a non-parametric classifier,
+    meaning it doesn’t make any assumptions about the underlying data distribution;
+    however it is computationally expensive, and can be sensitive to outliers in the
+    data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I instantiated the KNN classifier with an initial n_neighbors equal to 3, using
+    Euclidean metrics, before fitting the model to the training data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Once the model was fitted to the training data, I made predictions on the test
+    data as below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Evaluation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Evaluation of a machine learning model is typically done using four metrics;
+    accuracy, precision, recall, and F1 score. The differences between these metrics
+    are very subtle, but in plain English these terms can be defined as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Accuracy:***the percentage of true positive predictions out of all model
+    predictions. Typically the accuracy of both the train and test data should be
+    measured to evaluate model fit.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***Precision:***the percentage of true positive predictions out of all *positive*
+    model predictions.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***Recall:***the percentage of true positive predictions out of all *positive
+    cases in the dataset*.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***F1 Score:***An overall metric of the model’s ability to identify positive
+    instances in the data, combining the precision and recall scores.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'I computed the metrics of the KNN model using the below code snippet — I also
+    calculated the difference between the model’s accuracy on the train and test set,
+    to assess fit:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The initial metrics of the KNN model are given below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/17700f1bc58bfc9e8bd2aea18151e5d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Metrics of the KNN model on the 1st iteration
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model scored well on test accuracy (79.6%), precision (82.1%), recall (91.1%),
+    and F1 score (86.3%) — however the test accuracy was much higher than the train
+    accuracy at 93.1%, a 13.5% difference. This indicates the model is overfitting
+    the data, which means it would struggle to accurately make predictions on unseen
+    data. Therefore the model needs to be adjusted for a better fit — this can be
+    done using a process called hyperparameter tuning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hyperparameter Tuning
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Hyperparameter tuning is the process of selecting the best set of hyperparameters
+    for a machine learning model. I fine-tuned the model using *k-fold cross-validation*
+    — this is a resampling technique where the data is split into *k* subsets (or
+    *folds*), then each fold in turn is used as the validation set while the remaining
+    data is used as the training set. This method is effective at reducing the risk
+    of bias being introduced to the model by a particular choice of training/test
+    set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The hyperparameters for the KNN model are number of neighbors (*n_neighbors*)
+    and the distance metric. There are a number of different ways to measure distance
+    in a KNN classifier, but here I focused on two options:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '***Euclidean:*** This can be thought of as the straight-line distance between
+    two points — it’s the most commonly used distance metric.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '***Manhattan:*** Also called “city block” distance, this is the sum of absolute
+    differences between the coordinates of 2 points. If you imagine standing at the
+    corner of a city building and trying to get to the opposite corner — you wouldn’t
+    cross through the building to get to the other side, but instead go up one block,
+    then across one block.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Note that I could have also fine-tuned the weight parameter (which determines
+    whether all neighbors vote equally or if the closer neighbors are given more importance),
+    but I decided to keep the voting weight uniform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I defined a parameter grid with n_neighbors of 3, 7, and 10, as well as metrics
+    of Euclidean or Manhattan. I then instantiated a *RandomizedSearchCV* algorithm,
+    passing in the KNN classifier as the estimator, along with the parameter grid.
+    I set the algorithm to split the data into 5 folds by setting the *cv* parameter
+    to 5; this was then fit to the training set. A snippet of the code for this can
+    be seen below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The best accuracy and classifier were retrieved from the algorithm, indicating
+    the classifier performs best with n_neighbors set to 10 while using the Manhattan
+    distance metric, and that this would lead to an accuracy score of 74.0%:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9963e8e45180eccf9d1164261b6bec92.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Results of cross-validation — the random search classifier recommends n_neighbors=10
+    using the manhattan distance metric
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'as such these parameters were inputted to the classifier, and the model was
+    retrained:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Performance metrics were again extracted from the classifier, in the same manner
+    as before — a screengrab of the metrics for this iteration can be seen below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/74133d0794d4f83f0e6c7c3c131f0ad6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Metrics of the tuned KNN model
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cross-validation led to slightly poorer results for all metrics; test accuracy
+    dropped by 2.6%, precision by 1.5%, recall by 0.5%, and F1 score by 1%. however
+    the training-test accuracy difference dropped to 3.8%, where it was initially
+    13.5%. This indicates the model is no longer overfitting the data, and is therefore
+    more suitable for predicting unseen data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In summary, the KNN classifier performed well in predicting whether a collision
+    would require a tow or ambulance. Initial metrics from the model’s first iteration
+    were impressive, however the disparity between test and training accuracy indicated
+    overfitting. Hyperparameter tuning allowed for the model to be optimised, which
+    significantly reduced the gap in accuracies between the two datasets. While performance
+    metrics did take a small hit during this process, the benefit of a model with
+    better fit outweighs these concerns.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Levy, J. (n.d.). Traffic Crashes — Crashes [Dataset]. Retrieved from Chicago
+    Data Portal. Available at: [https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if](https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if)
+    (Accessed: 14th May 2023).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Chicago Police Department. (n.d.). Boundaries — Police Beats (current) [Data
+    set]. Retrieved from Chicago Data Portal. Available at: [https://data.cityofchicago.org/Public-Safety/Boundaries-Police-Beats-current-/aerh-rz74](https://data.cityofchicago.org/Public-Safety/Boundaries-Police-Beats-current-/aerh-rz74)
+    (Accessed: 14th May 2023).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Zach M. (2022). “How to Perform Label Encoding in Python (With Example).” [Online].
+    Available at: [https://www.statology.org/label-encoding-in-python/](https://www.statology.org/label-encoding-in-python/)
+    (Accessed: July 19th, 2023).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

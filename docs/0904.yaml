@@ -1,0 +1,479 @@
+- en: Uplift Modeling with Cost Optimization
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/uplift-modeling-with-cost-optimization-1c67a4e13f2?source=collection_archive---------0-----------------------#2023-03-10](https://towardsdatascience.com/uplift-modeling-with-cost-optimization-1c67a4e13f2?source=collection_archive---------0-----------------------#2023-03-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to adjust CATE to consider costs associated with your treatments
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@smsmith714?source=post_page-----1c67a4e13f2--------------------------------)[![Sean
+    Smith](../Images/611395d113b10ec4bbfaf781301139c7.png)](https://medium.com/@smsmith714?source=post_page-----1c67a4e13f2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c67a4e13f2--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c67a4e13f2--------------------------------)
+    [Sean Smith](https://medium.com/@smsmith714?source=post_page-----1c67a4e13f2--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6957f6523097&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuplift-modeling-with-cost-optimization-1c67a4e13f2&user=Sean+Smith&userId=6957f6523097&source=post_page-6957f6523097----1c67a4e13f2---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c67a4e13f2--------------------------------)
+    ·13 min read·Mar 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c67a4e13f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuplift-modeling-with-cost-optimization-1c67a4e13f2&user=Sean+Smith&userId=6957f6523097&source=-----1c67a4e13f2---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c67a4e13f2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fuplift-modeling-with-cost-optimization-1c67a4e13f2&source=-----1c67a4e13f2---------------------bookmark_footer-----------)![](../Images/b7069a8c656faba937338481613d7455.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Remy Gieling](https://unsplash.com/@gieling?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Getting customers to come back to your business is hard. In the age of competitive
+    industry incentives, brands are spending loads of money to get customers to come
+    back in the door. One way of convincing customers to come back to your company
+    is by interacting with them, exposing them to different advertisements in the
+    hopes of a new conversion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sometimes these advertisements work, other times a customer needs more of an
+    incentive. This is where we can introduce discounts to the customer in order for
+    them to perceive additional value in interacting with the brand and abandon our
+    equal costs advertisement approach. The obvious challenge with these discounts
+    is that the brand will lose value on the transaction. This is the challenge we
+    will focus on: **how do we know which (if any) discount to send to the customer
+    to increase their conversion probability?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some readers may have noticed this problem is close to the typical Uplift modelling
+    scenario. We take some observed treatments, compare them against a control, and
+    pick the treatment with the maximum Conditional Average Treatment Effect (CATE).
+    When we don’t have both the treatment and control observed we estimate the counterfactual
+    (what didn’t happen). To fit the Uplift framework we can rework the previous question
+    to: **how do we adjust the CATE to consider the costs associated with each treatment?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a problem that falls on us as Data Scientists. We can help the seasoned
+    advertiser sort through a collection of advertisements and discounts and figure
+    out what each customer should see given previously observed interactions. Leading
+    on this observed data, we can help a business or brand decide what the optimal
+    strategy is for interacting with customers in the scenario outlined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start with a whirlwind introduction to Uplift Modeling and Meta Learners,
+    learning what each of those are and how they solve the equal costs problem. We
+    then introduce the net value CATE and show the minor modification we need to make
+    to our Meta Learners to account for our costs. In addition to the Meta Learner
+    adjustment, we also look at a solution from CausalML called the Counterfactual
+    Value Estimator (CVE) and how this approach solves the net value problem. Finally
+    we look at some experiments and discuss some practicalities of how this would
+    work in a production environment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Whirlwind Tour of Uplift Modelling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To make sure we’re all aligned on uplift modelling I’ve dedicated this space
+    to a brief overview. Uplift Modelling is a framework under Causal Inference that
+    focuses on determining the best treatment for individual subjects. The advantage
+    to Uplift Modelling over traditional statistical learning techniques is that we
+    estimate the counterfactual effects, the results for a scenario that didn’t happen.
+    Using this estimation we can predict the treatment effects for treatments the
+    subject didn’t receive, allowing us to answer the “What would have happened if
+    we did X?” question.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This measure of the difference between the treatment and the control group is
+    referred to as the Conditional Average Treatment Effect (CATE). To formalize this
+    idea I’ll turn to some equations. We denote the outcome for the subject as Y,
+    the treatment as t, and the treatment identifier as j, with the special case of
+    j=0 as the control group. In our case Y is a binary variable that indicates if
+    the user converted or not. We condition the difference on a column vector x which
+    contains subject information, most important of which would be purchasing behaviors.
+    Using this notation we have the formula presented below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Formula for CATE
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now that we have a desired value to learn, we need a method that can estimate
+    this value. The most popular approach to solve this problem in the context of
+    Uplift Modelling is through the use of Meta Learners. Meta Learners make use of
+    the statistical models we are all familiar (i.e. Logistic Regression, LinearRegerssion,
+    XGBoost, etc.) but reformat the problem to learn an approach to solve for the
+    CATE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At their core, Meta Learners attempt to learn the psuedo-effects for each treatment
+    and wrap their learning around that estimate. The psuedo-effects are learned by
+    taking the difference between estimates of each treatment from statistical learning
+    models and making comparisons against observed values and estimated values. At
+    the end of the Meta Learner workflow we output the CATE for each treatment.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For this article, it is only important to understand what CATE, not as much
+    how you learn to estimate CATE. This explanation of traditional uplift modelling
+    to estimate the CATE is really quick and not comprehensive enough for a practical
+    application of the approach. I would suggest [this](/understanding-meta-learners-8a9c1e340832)
+    article for a good introduction and for a comprehensive introduction for all things
+    related to causal inference I suggest [Causal Inference for the Brave and True.](https://matheusfacure.github.io/python-causality-handbook/landing-page.html)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Extending CATE to Capture Net Value
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As shown above, our value of CATE was only capturing the conversion probabilities.
+    Here we shift perspectives to consider a CATE that could be used to consider the
+    total value of the conversion as well as the cost of the treatment used to activate
+    the conversion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to consider the value, we need to introduce some new notation from
+    Zhao and Harinen [1]. We introduce v as the expected value of the transaction,
+    s as the conversion cost (i.e. the cost of the treatment/discount when activated),
+    and c as the impression cost (i.e. the cost to show the treatment/discount to
+    the consumer). Again t represents a treatment and j represents the specific treatment,
+    with j=0 being the special case of the control group. Below we can see how we
+    use these values to update the CATE formula to account for total net value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equation for Net Value CATE
+  prefs: []
+  type: TYPE_NORMAL
+- en: This formula gives us some new flexibility in considering how to apply treatments
+    that have associated costs. We can see that when we make comparisons of the Net
+    Value CATE, we have treatment effects that factor in pricing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering Net Value with the X-Learner
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Based on our above notion of net value CATE, it is quite trivial to extend
+    the X-Learner to handle this new foundation of CATE. When using the X-Learner
+    one of the primary steps is to learn the pseudo-effects for the treatments given
+    a prediction and the ground truth. To do this we fit a response model (denoted
+    by mu) for each treatment and calculate the difference between the treatment group
+    and the control group. For the values we don’t have (the counterfactuals) we estimate
+    with a trained response model using a set of features for each individual in the
+    data set. The standard pseudo effects look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pseudo-Effects without net value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As discussed above we want to capture net value in our pseudo-effects. We can
+    accomplish this the way that Zhao and Harinen [1] proposed with the same modification
+    we made to CATE above. If you notice, the pseudo-effects are an estimate of CATE,
+    how much better the treatment is than another given a set of features about the
+    subject. By making the same modification to the expectation we did above we can
+    rework the net-value pseudo-effects as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pseudo-Effects with net value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A nice result of modelling net value through the CATE is that this is the only
+    adjustment to the X-Learner we need to make. Since CATE is already a continuous
+    variable the subsequent models that need to be trained to preidct CATE are equipped
+    to handle the regression task.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considering Net Value with the Counterfactual Value Estimator
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: There are some other approaches to consider net value in the comparison. One
+    which we will consider here is the solution implemented in CausalML, a python
+    library maintained by Uber. Their solution, the Counterfactual Value Estimator
+    (CVE), innovates on the same idea of calculating net value CATE, but takes a slightly
+    different approach to where the calculation happens.
+  prefs: []
+  type: TYPE_NORMAL
+- en: CVE is a post modelling optimizer that takes inputs from a few models to estimate
+    the net value CATE. The first model used is a conversion probability model. This
+    model is used to predict the probability the subject will convert given their
+    features and the treatment they receive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next model trained for the CVE is any learner that can predict CATE. The
+    CATE is combined with the conversion probabilities to determine what the convergence
+    probability is under the treatment scenario against the counterfactual. This calculation
+    looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Equation for CATE in CVE. Equation taken from [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next model trained for the CVE is the expected conversion value predictor.
+    Depending on the scenario this model might not be necessary. If you can easily
+    sub historic spending for how much the user will spend then that is a viable option.
+    However, if you have some information on how the user interacts with your brand
+    or how much they are likely to spend on their next transaction then you can model
+    that through a regression problem.
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point we have all of the predicted values we need to use the net value
+    CATE described above to optimize which treatment is likely to give the largest
+    net value payout. For more information on this approach you can look at the information
+    provided in [2]. Latter in the article we will explore the concept further with
+    code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here we’ll step through an example of how you can apply the methods discussed
+    so far. We’ll make use of some helper functions from CausalML and also adapt one
+    of their notebooks for the example. We’ll also evaluate exactly as they did in
+    their notebook. To see their demo, check out this [link](https://github.com/uber/causalml/blob/master/examples/counterfactual_value_optimization.ipynb).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The metric we’ll use is a potential earnings heuristic for what our average
+    earnings would have been if we had employed this treatment assignment policy on
+    the previous batch of data. On the hold out data we match all cases where our
+    treatment is equal to the observed treatment. When those are equal we find the
+    average value of those individuals. To further clarify I wrote some hypothetical
+    SQL below that would show how this is calculated, with the column names following
+    the variables we’ve discussed throughout the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: First thing we need to do is create our data. For this example we’ll use two
+    treatments and a control group. I set the `positive_class_proportion=0.1` which
+    represents a conversion rate of 10%. This number may be different based on your
+    scenario so if you’re simulating make sure to pick this accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The next thing we’ll do here is create our cost related functions. The first
+    will be the expected value, which I created as a function of one of the irrelevant
+    features. This feature has no impact on the conversion, so it tests our methods
+    ability to calculate expected spend when making the optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we’ll create all of the cost information using the helper functions from
+    CausalML. We’ll create our conversion cost array `cc_array` , our impression cost
+    array `ic_array` , and get the conditions (our treatments). The conversion value
+    array is just the expected value we created above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next we can create the actual value array. This is the value of the transaction
+    following the same formula for our expectation above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Random Policy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'The first policy we’ll look at is randomly assigning treatments to different
+    subjects. This could look something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Best Treatment Policy
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next policy is taking the treatment that has the highest Average Treatment
+    Effect (ATE). This doesn’t consider context of the subject at all.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Best Possible
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The best possible policy is an oracle we can look towards to judge how our models
+    compare. This model is one that considers only cases in which we lost no value.
+    This is the case when the subject was in the control group or they converted when
+    we sent them one of two treatments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: X Learner
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here we’ll use just a plain X Learner with no cost optimization. The X Learner
+    I use here is one that I implemented, so if you would like to experiment with
+    that I included a link below to my repo below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: To get the best treatment according to the XLearner we can get the predicted
+    CATE values and take the treatment with the max value through an argmax on the
+    dataframe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Counterfactual Value Estimator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To use the CVE from CausalML we need to first train a few models. The first
+    model is the conversion classifier. This is just a straight forward classification
+    problem. We use the classifier to predict the probability of converting given
+    their treatment exposure and other information we may know about them.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The next model we need to train is a model to predict the expected value of
+    the guest’s conversion. This is another straight forward problem, this time regression.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The other value we use for this model is the predicted CATE values. In the previous
+    step we fit an X-Learner, which predicted the CATE for us. Now we can optimize
+    our actions using the CVE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: CVE is a non-parametric optimizer. This means that we don’t learn any weights
+    when we use the CVE. Instead, we take the values we have already learned and optimize
+    them for external costs when predicting the action. Below is an example of how
+    we can get the best actions from CVE.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Net Value Optimized X-Learner
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The next policy we will look at is the X-Learner again, but this time one that
+    considers the Net Value CATE instead of the vanilla CATE. This is the same X-Learner
+    from before, the one from my repo. If you would like to experiment with it please
+    look at the repo linked below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Comparing Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Below we can see the results of each policy for mean value in the testing set.
+    As we expected the methods that optimized value in the distribution of treatments
+    outperformed those that did not consider value. Random Allocation and Best Treatment
+    serve as good baseline measures but do not provide performance that make them
+    a competitive naive method. The X-learner is a good improvement over the naive
+    methods but does to perform as well as the methods that factor in net value. The
+    best performance comes from the Net Value Optimized (NVO) X-Learner and the CVE.
+    This is because these methods are optimized for the net value which is the metric
+    we are measuring them against.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/816e8a2add918cc588e261819b3ee94a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Mean value for each subject on testing set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To measure success in a formal campaign I would recommend a slightly more involved
+    approach following a backtesting paradigm. For those unfamiliar, backtesting involves
+    testing an algorithm on historical data using a holdout set on a cutoff date.
+    Suppose you have 90 days of data. A backtesting review of a strategy/algorithm
+    would involve training on 45 and testing on the next 45 days, then incrementing
+    the training set by some fixed value of days and repeating the training and validation
+    problem. Here we can take the same approach with our method and test how the algorithm
+    performs on historic increments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Considerations on Data Collection and Validation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: When executing a campaign like this, your models are only as good as your data.
+    Random data is expensive and likely not feasible for the whole of your data, but
+    it is important to have some random data. When distributing your treatments, be
+    sure to collect some subsample that is randomly assigned. This data is best to
+    use for validation purposes to make sure that the algorithm you trained hasn’t
+    learned any trends that come from imbalances in how the treatments are distributed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For those concerned about training on observational data there are a few natural
+    ways it is accounted for. In the X-Learner we learn a propensity model for treatment
+    assignment. When considering the treatment effect we learn a weighted average
+    over the likelihood the individual was assigned to that treatment group. For more
+    information I would suggest looking at formulas (10), (11) and (12) from [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: Observational data imbalances can also be accounted for in the conversion model
+    and the regression model. By measuring accuracy within treatment groups for the
+    conversion and expected value models, we can make sure the data isn’t biased to
+    any one group. If the results do become biased there are plenty of sampling techniques
+    that could be used to fix this problem ([this](/having-an-imbalanced-dataset-here-is-how-you-can-solve-it-1640568947eb)
+    is a good example of something easy.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Here we saw an introduction on how to optimize value when distributing treatments.
+    We discussed how this problem is usually handled, which included a whirlwind tour
+    of Uplift Modelling and introduced ATE and CATE. Then we modified how CATE was
+    calculated to include value, conversion cost, and impression cost in the expectation
+    to learn the net value CATE. We moved on to look at an existing solution provided
+    by CausalML called the Counterfactual Value Estimator and saw how that accounted
+    for net value CATE. Finally we stepped through the notebook from CausalML and
+    extended with our Net Value Optimized X-Learner.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can access my repo* [*here*](https://github.com/sms1097/uplift-optimization)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*You can access the original notebook from CausalML* [*here*](https://github.com/uber/causalml/blob/master/examples/counterfactual_value_optimization.ipynb)*!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images belong to the Author unless otherwise noted.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] Zhao, Z., & Harinen, T.. (2019). Uplift Modeling for Multiple Treatments
+    with Cost Optimization.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Huigang Chen, Totte Harinen, Jeong-Yoon Lee, Mike Yung, & Zhenyu Zhao.
+    (2020). CausalML: Python Package for Causal Machine Learning.'
+  prefs: []
+  type: TYPE_NORMAL

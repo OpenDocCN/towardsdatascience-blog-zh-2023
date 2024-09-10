@@ -1,0 +1,1008 @@
+- en: How I Turned ChatGPT into an SQL-Like Translator for Image and Video Datasets
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a?source=collection_archive---------1-----------------------#2023-06-08](https://towardsdatascience.com/how-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a?source=collection_archive---------1-----------------------#2023-06-08)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A process of prompt engineering, software engineering, trial and error, and
+    elbow grease
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)[![Jacob
+    Marks, Ph.D.](../Images/94d9832b8706d1044e3195386613bfab.png)](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------)
+    [Jacob Marks, Ph.D.](https://medium.com/@jacob_marks?source=post_page-----7b22b318400a--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Ff7dc0c0eae92&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=post_page-f7dc0c0eae92----7b22b318400a---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7b22b318400a--------------------------------)
+    ·21 min read·Jun 8, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7b22b318400a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&user=Jacob+Marks%2C+Ph.D.&userId=f7dc0c0eae92&source=-----7b22b318400a---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7b22b318400a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-i-turned-chatgpt-into-an-sql-like-translator-for-image-and-video-datasets-7b22b318400a&source=-----7b22b318400a---------------------bookmark_footer-----------)![](../Images/4a82e88fc3efdca9105841c859778660.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: VoxelGPT using natural language to query an image dataset. Image courtesy of
+    the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unlike tabular data, datasets for *computer vision tasks* are unstructured —
+    think gobs of pixels, heaps of labels, bags of tags, and some sometimes-structured
+    metadata. Nevertheless, those of us working in computer vision still need to be
+    able to efficiently sift through those troves of data in order to *understand*
+    the dataset, prepare train and test sets, find patterns, identify edge cases,
+    and evaluate model performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I need to understand visual data, (which is basically all the time), I
+    use the open source library FiftyOne, which defines a powerful Python syntax for
+    querying computer vision data. It’s kind of like SQL for the unstructured world
+    of computer vision data, and it allows me to programmatically filter, sort, and
+    semantically slice datasets consisting of images, videos, and even 3D point clouds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A few months back, with the ChatGPT craze in full swing, I saw an example application
+    on OpenAI’s website of [translating natural language input into SQL queries](https://platform.openai.com/examples/default-sql-translate).
+    While this application was quite basic, and computer vision data is *much* more
+    complex, it got me thinking: could something similar be done for datasets of images
+    and videos? In other words:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Can we harness the versatility of large language models (LLMs) to translate
+    natural language queries into filtered views of unstructured computer vision datasets?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The answer? Yes we can!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Combining the general linguistic and inference capabilities of LLMs with FiftyOne’s
+    query language, our team at Voxel51 built [**VoxelGPT**](https://github.com/voxel51/voxelgpt):
+    an open source AI Assistant which lets you comprehensively query your computer
+    vision datasets *without writing a single line of code*!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We did it using [langchain](https://github.com/hwchase17/langchain), [tiktoken](https://github.com/openai/tiktoken),
+    and [fiftyone](https://github.com/voxel51/fiftyone).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can try it for free at [gpt.fiftyone.ai](https://gpt.fiftyone.ai)!
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This post will walk you through the prompt engineering, software engineering,
+    and copious trial and error that went into building a domain-specific LLM application.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many times throughout the process, we hit a wall, and feared that the task was
+    infeasible. If you are trying and struggling to build an LLM-powered application,
+    I hope this post gives you the inspiration you need to break through your own
+    walls!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The post is structured as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[SQL-like queries for images and videos](#6677)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Defining the overarching task](#2386)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Giving the model context](#ccee)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Generating and utilizing examples](#61fc)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Breaking down the problem](#547d)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[Getting to production](#62a5)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The Query Language
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/77fa4667a6edcd4ac1d4c93c8e576db4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: VoxelGPT using natural language to query an image dataset. Image courtesy of
+    the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we dive into how we used an LLM to generate queries, it’s worth taking
+    a moment to describe the query language we want the model to translate. Here’s
+    the bare bones info you will need. For a more thorough overview, see the [FiftyOne
+    User Guide](https://docs.voxel51.com/user_guide/basics.html). If you’re already
+    familiar with the language, feel free to skip to the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Dataset:** A `Dataset` is the computer vision analog of a `Table` in SQL,
+    or a `DataFrame` in pandas. It contains all of the information related to a collection
+    of media files.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Sample**: A `Sample` is analogous to a row in a data table. Samples are the
+    atomic elements of a `Dataset`. Each sample has a `filepath`, which points to
+    a media file, and stores all other info associated with that piece of data.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Field:** A `Field` is analogous to a column in a data table in that it defines
+    a property of samples (for example, image width, height, and filepath). However,
+    fields are flexible in that they can contain other fields (see `Label` below).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Label:** A `Label` is a `Field` that stores semantic ground truth or prediction
+    info. For instance, object detections are stored in `Detections` label fields,
+    and classifications are stored in `Classification` label fields.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'As in SQL or pandas, you can filter your data with query operations. For example,
+    you may want to query a data table for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All rows with an entry in column “A” greater than 0.5*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, whereas data tables lend themselves to numeric slicing and filtering,
+    unstructured computer vision data lends itself to *semantic slicing*, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Retrieving the high confidence “dog” predictions with large bounding boxes
+    in images with at least 3 non-”dog” ground truth detections*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Semantically slicing unstructured data requires far more flexibility.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To achieve this level of flexibility, FiftyOne defines a set of `ViewStage`methods,
+    which encapsulate allowed query operations like filtering, matching, selecting,
+    sorting, and excluding. These methods are loosely analogous to `SELECT`, `WHERE`,
+    and `ORDER BY` in SQL, but because the space of queries is much larger, there
+    are far more methods, and each of these methods has many use cases. See this [Views
+    Cheat Sheet](https://docs.voxel51.com/cheat_sheets/views_cheat_sheet.html) for
+    a comprehensive discussion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can obtain an arbitrary subset of a `Dataset`, called a `DatasetView`, by
+    composing multiple `ViewStage` operations in sequence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s what the query language looks like in action: given a dataset named
+    `my_dataset`, if we wanted to get all “dog” detections in the `"predictions”`
+    label field of 10 random images in that contain a “cat” (in their `"ground_truth”`
+    label field), we could use the following query:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`match()` restricts to images with a “cat” in their `"ground_truth”` detections
+    field, then `filter_labels()` reaches inside the `"predictions”` field and retrieves
+    only the “dog” detections, and finally `take()` randomly selects a subset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Defining the Task
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'When we started this journey, we didn’t know what was possible with LLMs. Back
+    in December 2022, I had played around with ChatGPT and even wrote an article [Tunnel
+    Vision in Computer Vision: Can ChatGPT See?](https://medium.com/voxel51/tunnel-vision-in-computer-vision-can-chatgpt-see-e6ef037c535)
+    probing the chatbot’s understanding of computer vision concepts. At the time,
+    it was impressive that a general purpose language model could write *mostly* correct
+    Python code for basic image processing tasks, but the thought of using GPT-generated
+    code (*without human verification*) in computer vision applications seemed far-fetched.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After seeing the text-to-SQL example, and reading about GPT-4 reportedly passing
+    the BAR (among other exams) with flying colors, I decided to give GPT-for-CV another
+    try. I asked GPT-4 to generate the Python code for a few simple queries and was
+    pleasantly surprised by its responses. The veracity of GPT-4’s out-of-the-box
+    results left much to be desired, which was understandable given that *I had not
+    fed in any information about the FiftyOne library*. But the prospects of making
+    this work were tantalizing.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Require Uniformity
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we experimented with prompting techniques (we’ll get to that later), it became
+    immediately apparent that if we wanted to incorporate this into larger pipelines,
+    we’d need to *clearly define the task*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Left to its own devices, the GPT model’s responses varied substantially in their
+    format from prompt to prompt.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are just two examples, which we will analyze shortly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prompt 1:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Your task is to convert input natural language queries into Python code to
+    generate ViewStages for the computer vision library FiftyOne.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Here is your first natural language query: “Images that only contain dogs”*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Give me the FiftyOne code.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Response 1:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Sure, here’s the FiftyOne code that generates a ViewStage for images that
+    only contain dogs:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*This code loads the Open Images v6 validation dataset with only the “detections”
+    label type for dogs. It then creates a view stage that filters out any images
+    that do not have any dog detections. Finally, the view stage is applied to the
+    dataset and launched in the FiftyOne App.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Prompt 2:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Your task is to convert input natural language queries into Python code to
+    generate ViewStages for the machine learning library FiftyOne.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Here is your first natural language query: “most unique images with a false
+    positive detection”*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Give me the FiftyOne code.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Response 2:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Sure, here’s the FiftyOne code to generate ViewStages for the natural language
+    query “most unique images with a false positive detection” using the FiftyOne
+    library in Python:*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*In this code, we first load the FiftyOne library and any necessary dependencies.
+    We then load your dataset using fo.load_dataset().*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Next, we define your false positive detection model using foz.load_zoo_model().
+    This function loads a pre-trained model from the FiftyOne Zoo Model Zoo, which
+    includes a wide range of state-of-the-art models for computer vision.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*After that, we define our pipeline using the $set, $match, $group, $count,
+    and $sort aggregation stages. The pipeline first adds a field to each sample in
+    your dataset that contains the model predictions using $set. We then filter the
+    samples to only include those with a false positive detection using $match.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Next, we group the samples by their file paths using $group, and count the
+    number of images in each group using $count. Finally, we sort the groups in descending
+    order of the number of images using $sort.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Finally, we run the pipeline on your dataset and limit the results to the
+    top 10 images with the most false positive detections using limit(). We then display
+    the results in a view stage using display().*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even though the prompt for these two examples was structured in the same way,
+    the responses differed in a few key ways. Response 1 attempts to create a `DatasetView`
+    by adding `ViewStage` to the dataset. Response 2 defines and applies a [MongoDB
+    aggregation pipeline](https://www.mongodb.com/docs/manual/core/aggregation-pipeline/),
+    followed by the `limit()` method (applying `Limit` stage) to limit the view to
+    10 samples, as well as a non-existent (AKA hallucinated) `display()` method. Additionally,
+    while Response 1 loads in an actual dataset (Open Images V6), Response 2 is effectively
+    template code, as `"your_dataset_name"` and `"your_model_name”` need to be filled
+    in.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These examples also highlighted the following issues:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Boilerplate code**: some responses contained code for importing modules,
+    instantiating datasets (and models), and visualizing the view (`session = fo.launch_app(dataset)`).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Explanatory text**: in many cases — including educational contexts — the
+    fact that the model explains its “reasoning” is a positive. If we want to perform
+    queries on the user’s behalf, however, this explanatory text just gets in the
+    way. Some queries even resulted in multiple code blocks, split up by text.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'What we really wanted was for the LLM to respond with code that could be copied
+    and pasted into a Python process, without all of the extra baggage. As a first
+    attempt at prompting the model, I started to give the following text as prefix
+    to any natural language query I wanted it to translate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Crucially, I defined a *task*, and set *rules*, instructing the model what it
+    was allowed and not allowed to do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Note: with responses coming in a more uniform format, it was at this point
+    that I moved from the ChatGPT chat interface to using GPT-4 via OpenAI’s API.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Limiting Scope
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Our team also decided that, at least to start, we would limit the scope of what
+    we were asking the LLM to do. While the fiftyone query language itself is full-bodied,
+    asking a pre-trained model to do arbitrarily complex tasks without any fine-tuning
+    is a recipe for disappointment. Start simple, and iteratively add in complexity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this experiment, we imposed the following bounds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Just images and videos**: don’t expect the LLM to query 3D point clouds or
+    grouped datasets.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Ignore fickle** `**ViewStages**`: most `ViewStages` abide by the same basic
+    rules, but a few buck the trend. `Concat` is the only `ViewStages`` that takes
+    in a second `DatasetView`; `Mongo` uses MongoDB Aggregation syntax; `GeoNear`
+    has a `query` argument, which takes in a `fiftyone.utils.geojson.geo_within()`
+    object; and `GeoWithin` requires a 2D array to define the region to which the
+    “within” applies. We decided to ignore `Concat`, `Mongo`, and `GeoWithin`, and
+    to support all `GeoNear` usage *except* for the `query` argument.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Stick to two stages**: while it would be great for the model to compose an
+    arbitrary number of stages, in most workflows I’ve seen, one or two `ViewStages`
+    suffice to create the desired `DatasetView`. The goal of this project was not
+    to get caught in the weeds, but to build something useful for computer vision
+    practitioners.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Providing Context
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/b6238ba569dacd151b120983c5bafd56.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: VoxelGPT using natural language to query an image dataset. Image courtesy of
+    the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In addition to giving the model an explicit “task” and providing clear instructions,
+    we found that we could improve performance by giving the model more information
+    about how FiftyOne’s query language works. Without this information, the LLM is
+    flying blind. It is just grasping, reaching out into the darkness.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, in Prompt 2, when I asked for false positive predictions, the response
+    attempted to reference these false positives with `predictions.mistakes.false_positive`.
+    As far as ChatGPT was concerned, this seemed like a reasonable way to store and
+    access information about false positives.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model didn’t know that in FiftyOne, the truth/falsity of detection predictions
+    is evaluated with `dataset.evaluate_detections()` and after running said evaluation,
+    you can retrieve all images with a false positive by matching for `eval_fp>0`
+    with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I tried to clarify the task by providing additional rules, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I also provided information about label types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Additionally, while by providing the model with a list of allowed view stages,
+    I was able to nudge it towards using them, it didn’t know
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*When* a given stage was relevant, or'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*How* to use the stage in a syntactically correct manner'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: To fill this gap, I wanted to give the LLM information about each of the view
+    stages. I wrote code to loop through view stages (which you can list with `fiftyone.list_view_stages()`),
+    store the docstring, and then split the text of the docstring into description
+    and inputs/arguments.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*However, I soon ran into a problem: context length.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the base GPT-4 model via the OpenAI API, I was already bumping up against
+    the 8,192 token context length. And this was before adding in examples, or any
+    information about the dataset itself!
+  prefs: []
+  type: TYPE_NORMAL
+- en: OpenAI does have a GPT-4 model with a 32,768 token context which in theory I
+    could have used, but a back-of-the-envelope calculation convinced me that this
+    could get expensive. If we filled the entire 32k token context, given [OpenAI’s
+    pricing](https://openai.com/pricing), it would cost about $2 per query!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Instead, our team rethought our approach and did the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Switch to GPT-3.5
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Minimize token count
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Be more selective with input info
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Switching to GPT-3.5
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: There’s no such thing as a free lunch — this did lead to slightly lower performance,
+    at least initially. Over the course of the project, we were able to recover and
+    far surpass this through prompt engineering! In our case, the effort was worth
+    the cost savings. In other cases, it might not be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Minimizing Token Count
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'With context length becoming a limiting factor, I employed the following simple
+    trick: *use ChatGPT to optimize prompts!*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One `ViewStage` at a time, I took the original description and list of inputs,
+    and fed this information into ChatGPT, along with a prompt *asking the LLM to
+    minimize the token count* of that text while *retaining all semantic information*.
+    Using [tiktoken](https://github.com/openai/tiktoken) to count the tokens in the
+    original and compressed versions, I was able to reduce the number of tokens by
+    about 30%.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Being More Selective
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: While it’s great to provide the model with context, some information is more
+    helpful than other information, depending on the task at hand. If the model only
+    needs to generate a Python query involving two `ViewStages`, it probably won’t
+    benefit terribly from information about what inputs the other `ViewStages` take.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We knew that we needed a way to select relevant information depending on the
+    input natural language query. However, it wouldn’t be as simple as performing
+    a similarity search on the descriptions and input parameters, because the former
+    often comes in very different language than the latter. We needed a way to link
+    input and information selection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: That link, as it turns out, was *examples*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Examples
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Generating Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If you’ve ever played around with ChatGPT or another LLM, you’ve probably experienced
+    first-hand how providing the model with even just a single relevant example can
+    drastically improve performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As a starting point, I came up with 10 completely synthetic examples and passed
+    these along to GPT-3.5 by adding this below the task rules and `ViewStage` descriptions
+    in my input prompt:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here are a few examples of Input-Output Pairs in A, B form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: With just these 10 examples, there was a noticeable improvement in the quality
+    of the model’s responses, so our team decided to be systematic about it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, we combed through our docs, finding any and all examples of views created
+    through combinations of `ViewStages`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We then went through the list of `ViewStages` and added examples so that we
+    had as close to complete coverage as possible over usage syntax. To this, we made
+    sure that there was at least one example for each argument or keyword, to give
+    the model a pattern to follow.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With usage syntax covered, we varied the names of fields and classes in the
+    examples so that the model wouldn’t generate any false assumptions about names
+    correlating with stages. For instance, we don’t want the model to strongly associate
+    the “person” class with the `match_labels()` method just because all of the examples
+    for `match_labels()` happen to include a “person” class.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Selecting Similar Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: At the end of this example generation process, we already had hundreds of examples
+    — far more than could fit in the context length. Fortunately, these examples contained
+    (as input) natural language queries that we could directly compare with the user’s
+    input natural language query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To perform this comparison, we pre-computed embeddings for these example queries
+    with OpenAI’s [text-embedding-ada–002](https://openai.com/blog/new-and-improved-embedding-model)
+    model. At run-time, the user’s query is embedded with the same model, and the
+    examples with the most similar natural language queries — by cosine distance —
+    are selected. Initially, we used [ChromaDB](https://www.trychroma.com/) to construct
+    an in-memory vector database. However, given that we were dealing with hundreds
+    or thousands of vectors, rather than hundreds of thousands or millions, it actually
+    made more sense to switch to an exact vector search (plus we limited dependencies).
+  prefs: []
+  type: TYPE_NORMAL
+- en: It was becoming difficult to manage these examples and the components of the
+    prompt, so it was at this point that we started to use [LangChain’s Prompts module](https://python.langchain.com/en/latest/modules/prompts.html).
+    Initially, we were able to use their [Similarity ExampleSelector](https://python.langchain.com/en/latest/modules/prompts/example_selectors/examples/similarity.html)
+    to select the most relevant examples, but eventually we had to write a custom
+    `ExampleSelector` so that we had more control over the pre-filtering.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Filtering for Appropriate Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In the computer vision query language, the appropriate syntax for a query can
+    depend on the media type of the samples in the dataset: videos, for example, sometimes
+    need to be treated differently than images. Rather than confuse the model by giving
+    seemingly conflicting examples, or complicating the task by forcing the model
+    to infer based on media type, we decided to only give examples that would be syntactically
+    correct for a given dataset. In the context of vector search, this is known as
+    [pre-filtering](https://weaviate.io/developers/weaviate/concepts/prefiltering).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This idea worked so well that we eventually applied the same considerations
+    to other features of the dataset. In some cases, the differences were merely syntactic
+    — when querying labels, the syntax for accessing a `Detections` label is different
+    from that of a `Classification` label. Other filters were more strategic: sometimes
+    we didn’t want the model to know about a certain feature of the query language.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For instance, we didn’t want to give the LLM examples utilizing computations
+    it would not have access to. If a text similarity index had not been constructed
+    for a specific dataset, it would not make sense to feed the model examples of
+    searching for the best visual matches to a natural language query. In a similar
+    vein, if the dataset did not have any evaluation runs, then querying for true
+    positives and false positives would yield either errors or null results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can see the complete example pre-filtering pipeline in [view_stage_example_selector.py](https://github.com/voxel51/voxelgpt/blob/main/links/view_stage_example_selector.py)
+    in the GitHub repo.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing Contextual Info Based on Examples
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For a given natural language query, we then use the examples selected by our
+    `ExampleSelector` to decide what additional information to provide in the context.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, we count the occurrences of each `ViewStage` in these selected
+    examples, identify the five most frequent ``ViewStages`, and add the descriptions
+    and information about the input parameters for these `ViewStages` as context in
+    our prompt. The rationale for this is that if a stage frequently occurs in similar
+    queries, it is likely (but not guaranteed) to be relevant to this query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If it is not relevant, then the description will help the model to determine
+    that it is not relevant. If it is relevant, then information about input parameters
+    will help the model generate a syntactically correct `ViewStage` operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Divide and Conquer
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '![](../Images/6e1df4b3d2bfed3c2e4862decc4ad83d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: VoxelGPT using natural language to query an image dataset. Image courtesy of
+    the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Up until this point, we had focused on squeezing as much relevant information
+    as possible — and just relevant information — into a single prompt. But this approach
+    was reaching its limits.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even without accounting for the fact that every dataset has its own names for
+    fields and classes, the space of possible Python queries was just too large.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make progress, we needed to break the problem down into smaller pieces. Taking
+    inspiration from recent approaches, including [Chain-of-thought prompting](https://arxiv.org/abs/2201.11903)
+    and [Selection-inference prompting](https://arxiv.org/abs/2205.09712), we divided
+    the problem of generating a `DatasetView` into four distinct selection subproblems
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithms
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Runs of algorithms
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Relevant fields
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Relevant class names
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We then chained these selection “links” together, and passed their outputs along
+    to the model in the final prompt for `DatasetView` inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each of these subtasks, the same principles of uniformity and simplicity
+    apply. We tried to recycle the natural language queries from existing examples
+    wherever possible, but made a point to simplify the formats of all inputs and
+    outputs for each selection task. What is simplest for one link may not be simplest
+    for another!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Algorithms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In FiftyOne, information resulting from a computation on a dataset is stored
+    as a “run”. This includes computations like `uniqueness`, which measures how unique
+    each image is relative to the rest of the images in the dataset, and `hardness`,
+    which quantifies the difficulty a model will experience when trying to learn on
+    this sample. It also includes computations of `similarity`, which involve generating
+    a vector index for embeddings associated with each sample, and even `evaluation`
+    computations, which we touched upon earlier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of these computations generates a different type of results object, which
+    has its own API. Furthermore, there is not any one-to-one correspondence between
+    `ViewStages` and these computations. Let’s take uniqueness as an example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A uniqueness computation result is stored in a float-valued field (`"uniqueness”`
+    by default) on each image. This means that depending on the situation, you may
+    want to sort by uniqueness:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Retrieve samples with uniqueness above a certain threshold:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or even just show the uniqueness field:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In this selection step, we task the LLM with predicting which of the possible
+    computations might be relevant to the user’s natural language query. An example
+    for this task looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Runs of Algorithms
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once potentially relevant computational algorithms have been identified, we
+    task the LLM with selecting the most appropriate run of each computation. This
+    is essential because some computations can be run multiple times on the same dataset
+    with different configurations, and a `ViewStage` may only make sense with the
+    right “run”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A great example of this is similarity runs. Suppose you are testing out two
+    models (InceptionV3 and CLIP) on your data, and you have generated a vector similarity
+    index on the dataset for each model. When using the `SortBySimilarity` view stage,
+    which images are determined to be most similar to which other images can depend
+    quite strongly on the embedding model, so the following two queries would need
+    to generate different results:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: This run selection process is handled separately for each type of computation,
+    as each requires a modified set of task rules and examples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relevant Fields
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This link in the chain involves identifying all field names relevant to the
+    natural language query that are *not* related to a computational run. For instance
+    not all datasets with predictions have those labels stored under the name `"predictions”`.
+    Depending on the person, dataset, and application, predictions might be stored
+    in a field named `"pred"`, `"resnet"`, `"fine-tuned"`, `"predictions_05_16_2023"`,
+    or something else entirely.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Examples for this task included the query, the names and types of all fields
+    in the dataset, and the names of relevant fields:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Relevant Class Names
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For label fields like classifications and detections, translating a natural
+    language query into Python code requires using the names of actual classes in
+    the dataset. To accomplish this, I tasked GPT-3.5 with performing [named entity
+    recognition](https://paperswithcode.com/task/named-entity-recognition-ner) for
+    label classes in input queries.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the query “samples with at least one cow prediction and no horses”, the model’s
+    job is to identify `"horse"` and `"cow"`. These identified names are then compared
+    against the class names for label fields selected in the prior step — first case
+    sensitive, then case insensitive, then plurality insensitive.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If no matches are found between named entities and the class names in the dataset,
+    we fall back to semantic matching: `"people"` → `"person"`, `"table"` → `"dining
+    table"`, and `"animal"` → `[“cat”, “dog", “horse", …]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Whenever the match is not identical, we use the names of the matched classes
+    to update the query that is passed into the final inference step:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: ViewStage Inference
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Once all of these selections have been made, the similar examples, relevant
+    descriptions, and relevant dataset info (selected algorithmic runs, fields, and
+    classes) are passed in to the model, along with the (potentially modified) query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rather than instruct the model to return code to me in the form `dataset.view1().view2()…viewn()`
+    as we were doing initially, we ended up nixing the `dataset` part, and instead
+    asking the model to return the `ViewStages` as a list. At the time, I was surprised
+    to see this improve performance, but in hindsight, it fits with the insight that
+    the more you split the task up, the better an LLM can do.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Making it Usable
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Creating an LLM-powered toy is cool, but turning the same kernel into an LLM-power
+    application is much cooler. Here’s a brief overview of how we did it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unit Testing
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As we turned this from a proof-of-principle into a robustly engineered system,
+    we used unit testing to stress test the pipeline and identify weak points. The
+    modular nature of links in the chain means that each step can individually be
+    unit tested, validated, and iterated on without needing to run the entire chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This leads to *faster improvement*, because different individuals or groups
+    of people within a prompt-engineering team can work on different links in the
+    chain in parallel. Additionally, it results in *reduced costs*, as in theory,
+    you should only need to run a single step of LLM inference to optimize a single
+    link in the chain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Evaluating LLM-Generated Code
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We used Python’s `eval()` function to turn GPT-3.5’s response into a `DatasetView`.
+    We then set the state of the FiftyOne App `session` to display this view.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Input Validation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Garbage input → garbage output. To avoid this, we run validation to make sure
+    that the user’s natural language query is sensible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, we use [OpenAI’s moderation endpoint](https://platform.openai.com/docs/guides/moderation/quickstart).
+    Then we categorize any prompt into one of the following four cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1:** Sensible and complete: the prompt can reasonably be translated into
+    Python code for querying a dataset.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images with dog detections*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2:** Sensible and incomplete: the prompt is reasonable, but cannot be converted
+    into a DatasetView without additional information. For example, if we have two
+    models with predictions on our data, then the following prompt, which just refers
+    to “my model” is insufficient:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Retrieve my model’s incorrect predictions*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3:** Out of scope: we are building an application that generates queried
+    views into computer vision datasets. While the underlying GPT-3.5 model is a general
+    purpose LLM, our application should not turn into a disconnected ChatGPT session
+    *next* *to* your dataset. Prompts like the following should be snuffed out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Explain quantum computing like I’m five*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4:** Not sensible: given a random string, it would not make sense to attempt
+    to generate a view of the dataset — where would one even start?!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Azlsakjdbiayervbg*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before attempting to turn the user’s input query into a sequence of view stages,
+    we pass the input into the model with validation instructions and examples. Depending
+    on the response, we either prompt the user for more information or a more sensible
+    query, or proceed with the dataset view generation pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recap
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: VoxelGPT in action! Video courtesy of the author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple idea led to a crazy idea, and this journey brought that crazy idea
+    to life. With prompt engineering, some genuine software engineering, a lot of
+    elbow grease, and a healthy dose of black magic, our small team created an LLM-powered
+    application that translates natural language queries into filtered views of computer
+    vision datasets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The takeaways are simple: define a task, instruct with rules, limit scope,
+    simplify, opt for uniformity, break down problems, and keep it relevant.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we put all the pieces together, it looks something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Validate query
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Find similar examples
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Retrieve pertinent documentation
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Identify potential algorithms/computations
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Select most likely runs of those algorithms
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Determine which fields (properties) are accessed/utilized in queries
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Infer the class names for each label field
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Generate list of view stages for query
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Compose view stages and return filtered view into dataset
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Win
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: VoxelGPT is far from perfect. But that was never the goal. There’s room for
+    improvement at every step — not to mention more examples! One could also use this
+    as a foundation for building an [AutoGPT](https://github.com/Significant-Gravitas/Auto-GPT)-style
+    delegator for computer vision tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Any and all contributions to [VoxelGPT](https://github.com/voxel51/fiftyone-gpt)
+    are welcome. It’s free and open source! 🙂
+  prefs: []
+  type: TYPE_NORMAL

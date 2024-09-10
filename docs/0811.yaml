@@ -1,0 +1,274 @@
+- en: Performance Estimation Techniques for Machine Learning Models
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/performance-estimation-techniques-for-machine-learning-models-aaa83463bfa3?source=collection_archive---------7-----------------------#2023-03-02](https://towardsdatascience.com/performance-estimation-techniques-for-machine-learning-models-aaa83463bfa3?source=collection_archive---------7-----------------------#2023-03-02)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)[![Felipe
+    de Pontes Adachi](../Images/58c9544ae85f43548c5e5b56fda31bb4.png)](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------)
+    [Felipe de Pontes Adachi](https://felipe-p-adachi.medium.com/?source=post_page-----aaa83463bfa3--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa038269245d5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=post_page-a038269245d5----aaa83463bfa3---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aaa83463bfa3--------------------------------)
+    ·6 min read·Mar 2, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faaa83463bfa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&user=Felipe+de+Pontes+Adachi&userId=a038269245d5&source=-----aaa83463bfa3---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faaa83463bfa3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fperformance-estimation-techniques-for-machine-learning-models-aaa83463bfa3&source=-----aaa83463bfa3---------------------bookmark_footer-----------)![](../Images/90680db7d0ae093f76c7997e6d1a97ee.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Isaac Smith](https://unsplash.com/@isaacmsmith?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once your model is deployed, monitoring its performance plays a crucial role
+    in ensuring the quality of your ML system. To calculate metrics such as accuracy,
+    precision, recall, or f1-score, labels are required. However, in many cases, labels
+    can be unavailable, partially available or come in a delayed fashion. In those
+    cases, the ability to estimate the model’s performance can be helpful.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post, I want to discuss possible methods for estimating performance
+    without ground-truth data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: NannyML
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[NannyML](https://nannyml.readthedocs.io/en/stable/index.html) is a Python
+    package for detecting silent model failures, estimating post-deployment performance
+    without labeled data, and detecting data drift. Currently, NannyML has two methods
+    for performance estimation: **Confidence-based Performance Estimation** (**CBPE**)
+    and **Direct Loss Estimation** (**DLE**). For a more detailed description of these
+    methods, please refer to the [NannyML original documentation](https://nannyml.readthedocs.io/en/stable/how_it_works/performance_estimation.html#).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**a. Confidence-based Performance Estimation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Much like the name suggests, this method leverages the confidence scores of
+    the model’s predictions to perform performance estimation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Considerations:** There are some requirements and assumptions to be aware
+    of when using this method.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Confidence as probabilities**: the confidence scores should represent probabilities
+    — e.g. if the score is 0.9 for a large set of observations, it would be correct
+    approximately 90% of the time.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Well-calibrated probabilities**: another requirement is that the scores should
+    be well-calibrated, which might not always be the case. The good news is that
+    NannyML performs calibration internally if needed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No covariate shift to previously unseen regions in space**: if, for example,
+    your model was trained on people with age 10–70, and in production, your observations
+    are of people over 70, this approach will likely not provide reliable estimations'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No concept drift:** if the relationship between the inputs and targets of
+    your model changes, this approach will likely not provide reliable estimations
+    (I personally don’t know any approach that would)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Poorly fit for regression models**: regression models often don’t inherently
+    output confidence scores, only the actual predictions, which makes the use of
+    this method non-trivial for such cases.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**b. Direct Loss Estimation**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The intuition behind this method is to train an extra ML model whose task is
+    to estimate the loss of the monitored model. The extra model is called the **Nanny
+    Model**, and the monitored model is the **Child Model.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Considerations:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Extra model:** it is required to train an extra model to estimate the losses
+    of the original model, which increases the complexity of your system. However,
+    the model doesn’t have to be better than the original model, and in many cases,
+    it can be a straightforward process.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Fit for regression:** this approach is well-suited for regression tasks.
+    The nanny model can be trained to predict MSE (Mean Squared Error) or MAE (Mean
+    Absolute Error), for instance.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No covariate shift to previously unseen regions in space:** the same considerations
+    made for CBPE applies to this method as well'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**No concept drift:** the same considerations made for CBPE applies to this
+    method as well'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Regions with different performances:** the monitored model should have varying
+    performances across different regions. For example, if your model performs better
+    or worse according to different periods of the day different seasons.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Importance Weighting
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: I first knew about this approach by attending an O’Reilly Course called Monitor
+    [Real-Time Machine Learning Performance](https://learning.oreilly.com/live-events/monitor-real-time-machine-learning-performance/0636920075104/0636920075102/)
+    by [Shreya Shankar](https://twitter.com/sh_reya). The intuition is that you can
+    leverage a reference dataset for which you do have labels to estimate the performance
+    of an unlabeled target dataset. This can be a dataset you used in a pre-deployment
+    stage, such as the test split from when you originally trained your model. To
+    do so, we first define segments with well-defined criteria, and then calculate
+    the performance, let’s say accuracy, for each segment of data. This could be,
+    for example, segmenting according to the age, profession, or product category.
+    To estimate the accuracy of your target dataset, you then apply the same rules
+    to segment your data, and weight the original reference segmented accuracies with
+    respect to the target dataset’s segment proportions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I really like this approach because the intuition is very clear and the implementation
+    is straightforward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are considering here that the main reason for the difference in performance
+    between the reference and target datasets is due to a change in the distribution
+    of the input data. This is known as **covariate shift**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Considerations:**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**No concept drift:** if the relationship between the inputs and targets of
+    your model changes, this approach will likely not provide reliable estimations.
+    Again — I don’t know any approach that would'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Covariate shift to unknown regions of the feature space**: The same considerations
+    made for the previous approaches applies to this method as well'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Importance of segmentation**: Choosing the proper way to segment your data
+    is very important. The segments in the target dataset must be a subset of the
+    reference dataset, as an unseen segment will not have an associated accuracy.
+    The segments also should ideally have high variance in training accuracies: if
+    all segments have the same accuracy, then weighting them would not make much sense.
+    You should also be able to perform the segmentation during production easily,
+    without having to manually label them — that’s what we’re trying to get away from
+    the start!'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Mutually exclusive and exhaustive segments:** To the best of my knowledge,
+    this approach works only with mutually exclusive and exhaustive segments. That
+    means that our segments don’t overlap with each other, and the sum of the segments
+    equal to the complete dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mandoline
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Mandoline](https://arxiv.org/abs/2107.00643) is a framework for evaluating
+    ML models that leverages a labeled reference dataset and the user’s prior knowledge
+    to estimate the performance of an unlabeled dataset. The key insight here is that
+    the users can leverage their understanding to create “slicing functions” that
+    capture the axes by which the distributions may have changed. These functions
+    can group the data either programatically or by using metadata.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are similarities with the approach presented in the previous session,
+    considering that both use a similar concept of buckets/slices/segments, and both
+    use these groups to reweight the source data. In Mandoline, the slices created
+    will help guide a following density estimation process, and these estimates are
+    then used to reweight the source dataset and output a performance estimate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8643e31a6e64f49d9b9423de9da0207f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Mandoline: Model Evaluation under Distribution Shift — [https://arxiv.org/abs/2107.00643](https://arxiv.org/abs/2107.00643)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [paper](https://arxiv.org/abs/2107.00643) is very interesting and well worth
+    reading, and it looks like the results are very promising. They also provide a
+    [python implementation of the framework](https://github.com/HazyResearch/mandoline),
+    which I plan to explore in future posts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Considerations**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**No concept drift:** Again, the problem formulation assumes that there is
+    no concept drift between the distributions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Works with noisy, underspecified slices:** This approach works well even
+    if your slices are noisy and/or underspecified. Let’s take one example present
+    in the paper — detecting toxicity with the [CivilComments dataset](https://wilds.stanford.edu/datasets/#civilcomments),
+    and you want to segment based on demographics, such as male, female, christian,
+    LGBTQ, etc. You can use regex functions that looks for keywords, such as “man,
+    male, female” to group your data. This will not get the slices right 100% of the
+    times, but even so the approach performs well. Also, to the best of my knowledge,
+    this approach works with overlapping segments — in this case, each comment could
+    mention one or more demographic.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Importance of slicing:** Properly designing your slicing functions is critical.
+    They should be relevant to the task at hand, and should effectively capture different
+    axes of possible shift in your distributions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Future Experiments
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In future posts, I plan to experiment with each approach in practical use cases.
+    The goal is not to compare the performance of each approach, but simply show how
+    we can use those approaches in a practical scenario. Since each approach has different
+    sets of requirements, it is likely that we’ll use different datasets and use cases
+    for each approach. For example, Mandoline supports the use of overlapping segment.
+    In the other hand, the Importance Weighting approach works with mutually exclusive
+    and exhaustive bins. Both the CBPE and DLE approaches don’t assume segmentation
+    of any kind, but we do need to have a model with confidence scores that are well
+    calibrated (CBPE) or train an extra model (DLE).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*“*[*Performance Estimation Techniques for Machine Learning Models*](https://datatravelogues.substack.com/p/performance-estimation-pt-1)*”
+    was originally published in the* [*author’s personal newsletter*](https://datatravelogues.substack.com/)*.*'
+  prefs: []
+  type: TYPE_NORMAL

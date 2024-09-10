@@ -1,0 +1,804 @@
+- en: Map-Matching for Trajectory Prediction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/map-matching-for-trajectory-prediction-be307a1547f0?source=collection_archive---------4-----------------------#2023-07-20](https://towardsdatascience.com/map-matching-for-trajectory-prediction-be307a1547f0?source=collection_archive---------4-----------------------#2023-07-20)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Where are you going? Should you be going that way?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@joao.figueira?source=post_page-----be307a1547f0--------------------------------)[![João
+    Paulo Figueira](../Images/54e4176f66e4ab0324d86ec71d8b033d.png)](https://medium.com/@joao.figueira?source=post_page-----be307a1547f0--------------------------------)[](https://towardsdatascience.com/?source=post_page-----be307a1547f0--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----be307a1547f0--------------------------------)
+    [João Paulo Figueira](https://medium.com/@joao.figueira?source=post_page-----be307a1547f0--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F64bc009cedeb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmap-matching-for-trajectory-prediction-be307a1547f0&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=post_page-64bc009cedeb----be307a1547f0---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----be307a1547f0--------------------------------)
+    ·16 min read·Jul 20, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fbe307a1547f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmap-matching-for-trajectory-prediction-be307a1547f0&user=Jo%C3%A3o+Paulo+Figueira&userId=64bc009cedeb&source=-----be307a1547f0---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fbe307a1547f0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmap-matching-for-trajectory-prediction-be307a1547f0&source=-----be307a1547f0---------------------bookmark_footer-----------)![](../Images/a73b6217b65a4dfaed426ff4ff6ec0d4.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Mateusz Wacławek](https://unsplash.com/@wacalke?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article presents a method to predict vehicle trajectories on a digital
+    road network using a database of past trips sampled from noisy GPS sensors. Besides
+    predicting future directions, this method also assigns a probability to an arbitrary
+    sequence of locations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Central to this idea is using a digital map unto which we project all sampled
+    locations by aggregating them into individual trajectories and matching them to
+    the map. This matching process discretizes the continuous GPS space into predetermined
+    locations and sequences. After encoding these locations into unique geospatial
+    tokens, we can more easily predict sequences, evaluate the probability of current
+    observations, and estimate future directions. This is the gist of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Problems
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: What problems am I trying to solve here? If you need to analyze vehicle path
+    data, you might need to answer questions like those in the article’s sub-heading.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where are you going? Should you be going that way?
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How do you evaluate the probability that the path under observation follows
+    frequently traveled directions? This is an important question as, by answering
+    it, you could program an automated system to classify trips according to their
+    observed frequency. A new trajectory with a low score would cause concern and
+    prompt immediate flagging.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How do you predict which maneuvers the vehicle will do next? Will it keep going
+    straight ahead, or will it turn right at the next intersection? Where do you expect
+    to see the vehicle in the next ten minutes or ten miles? Quick answers to these
+    questions will assist an online tracking software solution provide answers and
+    insights to delivery planners, online route optimizers, or even opportunity charging
+    systems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solution
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The solution I am presenting here uses a database of historical trajectories,
+    each consisting of a timed sequence of positions generated by the motion of a
+    specific vehicle. Each positional record must contain time, position information,
+    a reference to the vehicle identifier, and the trajectory identifier. A vehicle
+    has many trajectories, and each trajectory has many positional records. A sample
+    of our input data is depicted in **Figure 1** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b1ba6d6813bc8c2cdeda3ae3ef91f9c9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 1** — The table above shows a small sample of a trajectory from the
+    [Extended Vehicle Energy Dataset](https://arxiv.org/abs/2203.08630). Although
+    each row contains more properties than the ones displayed, we only need the implicit
+    order and the locations. Note that there are many duplicated locations due to
+    the sampling strategy. We will handle this issue later on. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I drew the data above from the [Extended Vehicle Energy Dataset](https://arxiv.org/abs/2203.08630)
+    (EVED) **[1]** article. You can build the corresponding database by following
+    the code in one of my previous articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/travel-time-estimation-using-quadkeys-ecf6d54823b4?source=post_page-----be307a1547f0--------------------------------)
+    [## Travel Time Estimation Using Quadkeys'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article explains how to estimate travel times using known speed vectors
+    indexed by quadkeys.
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/travel-time-estimation-using-quadkeys-ecf6d54823b4?source=post_page-----be307a1547f0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our first job is to match these trajectories to a supporting digital map. The
+    purpose of this step is not only to eliminate the GPS data sampling errors but,
+    most importantly, to coerce the acquired trip data to an existing road network
+    where each node and edge are known and fixed. Each recorded trajectory is thus
+    converted from a sequence of geospatial locations into another sequence of numeric
+    tokens coinciding with the existing digital map nodes. Here, we will use open-sourced
+    data and software, with map data sourced from [OpenStreetMap](https://www.openstreetmap.org/)
+    (compiled by [Geofabrik](https://www.geofabrik.de/)), the [Valhalla](https://valhalla.github.io/valhalla/)
+    map-matching package, and [H3](https://www.uber.com/en-PT/blog/h3/) as the geospatial
+    tokenizer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Edge Versus Node Matching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Map-matching is more nuanced than it might look at first sight. To illustrate
+    what this concept entails, let us look at **Figure 2** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2fc824d827b903fce0e6ac71bfc620a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 2** — The map above shows a noisy trajectory taken from the EVED in
+    blue. As you can see, it does not match the nearest road and needs matching to
+    the map. Once we project the blue line vertices to the map, we obtain a sequence
+    of projections of the original points to the inferred map edges, and you can see
+    the resulting trajectory in red. Still, this path misses the underlying map in
+    some places, most notably in the image’s center, where the red line jumps between
+    roads. We aim to reconstruct the trip’s path on the map, as represented by the
+    green line, that follows the underlying map nodes. (Image source: Author using
+    Folium and OpenStreetMap imagery)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 2** above shows that we can derive two trajectories from an original
+    GPS sequence. We obtain the first trajectory by projecting the original GPS locations
+    into the nearest (and most likely) road network segments. As you can see, the
+    resulting polyline will only sometimes follow the road because the map uses graph
+    nodes to define its basic shapes. By projecting the original locations to the
+    map *edges*, we get new points that belong to the map but may stray from the map’s
+    geometry when connected to the next ones by a straight line.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By projecting the GPS trajectory to the map *nodes*, we get a path that perfectly
+    overlays the map, as shown by the green line in **Figure 2**. Although this path
+    better represents the initially driven trajectory, it does not necessarily have
+    a one-to-one location correspondence with the original. Fortunately, this will
+    be fine for us as we will always map-match any trajectory to the map nodes, so
+    we will always get coherent data, with one exception. The Valhalla map-matching
+    code always edge-projects the initial and final trajectory points, so we will
+    systematically discard them as they do not correspond to map nodes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: H3 Tokenization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Unfortunately, Valhalla does not report the unique road network node identifiers,
+    so we must convert the node coordinates to unique integer tokens for later sequence
+    frequency calculation. This is where H3 enters the picture by allowing us to encode
+    the node coordinates into a sixty-four-bit integer uniquely. We pick the Valhalla-generated
+    polyline, strip the initial and final points (these points are not nodes but edge
+    projections), and map all remaining coordinates to [level 15 H3 indices](https://h3geo.org/docs/core-library/restable/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Dual Graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Using the process above, we convert each historical trajectory into a sequence
+    of H3 tokens. The next step is to convert each trajectory to a sequence of token
+    triplets. Three values in a sequence represent two consecutive edges of the prediction
+    graph, and we want to know the frequencies of these, as they will be the core
+    data for both the prediction and the probability assessment. **Figure 3** below
+    depicts this process visually.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3b69e2aacdf1d111ab679baeb19abd54.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 3** — The list of geospatial tokens on the left is expanded to another
+    list of triplets, representing a dual vision of the implicit graph. Each token
+    is a node on the geospatial graph, and its sequence represents the edges. The
+    transformed list considers each edge a node in the dual graph, and the middle
+    token is the new edge, as shown in the right column. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The transformation above computes the dual of the road graph, reversing the
+    roles of the original nodes and edges.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now start to answer the proposed questions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Should you be going that way?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We need to know the vehicle trajectory up to a given moment to answer this question.
+    We map-match and tokenize the trajectory using the same process as above and then
+    compute each trajectory triplet frequency using the known historic frequencies.
+    The final result is the product of all individual frequencies. If the input trajectory
+    has an unknown triplet, its frequency will be zero as the final path probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A triplet probability is the ratio of counts of a specific sequence *(A, B,
+    C)* to the count of all *(A, B, *)* triplets, as depicted in **Figure 4** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3f2a013dfc05e514790e23f06dfaf861.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 4** — The triplet probability is the ratio of its frequency to the
+    frequency of all triplets with the same two initial tokens. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trip probability is just the product of individual trip triplets, as depicted
+    in **Figure 5** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/63a1a05726650fc3d47ed0b011dbfe04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 5** — The trip probability is the simple product of all matched triplets.
+    (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Where are you going?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We use the same principles to answer this question but start with the last known
+    triplet only. We can predict the *k* most likely successors using this triplet
+    as input by enumerating all triplets that have as their first two tokens the last
+    two of the input. **Figure 6** below illustrates the process for triplet sequence
+    generation and evaluation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6a24f954180d02aadb06ac87356c66a9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 6** — In this fictitious case, the next most likely triplet is the
+    one with the highest observed frequency (B, C, D). (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can extract the top *k* successor triplets and repeat the process to predict
+    the most likely trip.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Implementation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We are ready to discuss the implementation details, starting with map-matching
+    and some associated concepts. Next, we will see how to use the Valhalla toolset
+    from Python, extract the matched paths and generate the token sequences. The data
+    preprocessing step will be over once we store the result in the database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Finally, I illustrate a simple user interface using [Streamlit](https://streamlit.io/)
+    that calculates the probability of any hand-drawn trajectory and then projects
+    it into the future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Map-Matching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Map-matching](https://en.wikipedia.org/wiki/Map_matching) converts GPS coordinates
+    sampled from a moving object’s path into an existing road graph. A road graph
+    is a discrete model of the underlying physical road network consisting of *nodes*
+    and connecting *edges*. Each node corresponds to a known geospatial location along
+    the road, encoded as a latitude, longitude, and altitude tuple. Each *directed
+    edge* connects adjacent nodes following the underlying road and contains many
+    properties such as the heading, maximum speed, road type, and more. **Figure 7**
+    below illustrates the concept with a straightforward example.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac91e1c9f23d35de0d6164bf25a3d1f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 7** — The picture above shows a tiny digital road network highlighting
+    an intersection. Each red dot represents a known geospatial location along the
+    existing road. The blue lines represent the connecting edges between the nodes.
+    Note that these edges are usually directed and might also be multiple. (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When successful, the map-matching process produces relevant and valuable information
+    on the sampled trajectory. On the one hand, the process projects the sampled GPS
+    points to locations along the most likely road graph *edges*. The map-matching
+    process “corrects” the observed spots by squarely placing them over the inferred
+    road graph *edges*. On the other hand, the method also reconstructs the sequence
+    of graph *nodes* by providing the most likely path through the road graph corresponding
+    to the sampled GPS locations. Note that, as previously explained, these outputs
+    are different. The first output contains coordinates along the *edges* of the
+    most likely path, while the second output consists of the reconstructed sequence
+    of graph *nodes*. **Figure 8** below illustrates the process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/443a5756f68bb893a9107d3fdc3dcada.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 8** — The diagram above illustrates the map-matching process, where
+    the green dots represent the observed GPS coordinates, and the orange diamonds
+    represent the projected locations along the known edges. Note that, for the simplified
+    example above, we can only safely reconstruct the path between nodes 2 and 3\.
+    This predicament is not as dire as it looks because, in actual maps, trajectories
+    match many more edges than just one, so the information loss is minimal. (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A byproduct of the map-matching process is the standardization of the input
+    locations using a shared road network representation, especially when considering
+    the second output type: the most likely sequence of nodes. When converting sampled
+    GPS trajectories to a series of nodes, we make them comparable by reducing the
+    inferred path to a series of node identifiers. We can think of these node sequences
+    as *phrases* of a known language, where each inferred node identifier is a *word*,
+    and their arrangement conveys behavioral information.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is the fifth article where I explore the [Extended Vehicle Energy Dataset](https://arxiv.org/abs/2203.08630)¹
+    (EVED) [1]. This dataset is an enhancement and review of [prior work](https://arxiv.org/abs/1905.02081)
+    and provides the map-matched versions of the original GPS-sampled locations (the
+    orange diamonds in **Figure 8** above).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unfortunately, the EVED only contains the projected GPS locations and misses
+    the reconstructed road network node sequences. In my previous two articles, I
+    addressed the issue of rebuilding the road segment sequences from the transformed
+    GPS locations without map-matching. I found the result somewhat disappointing,
+    as I expected less than the observed 16% of defective reconstructions. You can
+    follow this discussion from the articles below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](/road-network-edge-matching-with-triangles-5dc989a77edf?source=post_page-----be307a1547f0--------------------------------)
+    [## Road Network Edge Matching With Triangles'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Triangles have mighty properties for geospatial queries
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/road-network-edge-matching-with-triangles-5dc989a77edf?source=post_page-----be307a1547f0--------------------------------)
+    [](/more-on-road-network-matching-c2ea0728c415?source=post_page-----be307a1547f0--------------------------------)
+    [## More on Road Network Matching
+  prefs: []
+  type: TYPE_NORMAL
+- en: Road network matching shenanigans
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: towardsdatascience.com](/more-on-road-network-matching-c2ea0728c415?source=post_page-----be307a1547f0--------------------------------)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, I am looking at the source map-matching tool to see how far it can go in
+    correcting the defective reconstructions. So, let’s put [Valhalla](https://valhalla.github.io/valhalla/)
+    through its paces. Below are the steps, references, and code I used to run Valhalla
+    on a Docker container.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Valhalla Setup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here, I closely follow the instructions provided by [Sandeep Pandey](https://ikespand.github.io/posts/meili/)
+    [2] on his blog.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, make sure that you have Docker installed on your machine. To install
+    the Docker engine, please follow the [online instructions](https://docs.docker.com/engine/install/).
+    If you work on a Mac, a great alternative is [Colima](https://github.com/abiosoft/colima).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once installed, you must pull a Valhalla image from GitHub by issuing the following
+    commands at your command line, as the shell code in **Figure 9** below depicts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 9** — Pulling Valhalla’s docker image from the command line. (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: While executing the above commands, you may have to enter your GitHub credentials.
+    Also, ensure you have cloned this article’s [GitHub repository](https://github.com/joaofig/eved-explore),
+    as some files and folder structures refer to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once done, you should open a new terminal window and issue the following command
+    to start the Valhalla API server (MacOS, Linux, [WSL](https://learn.microsoft.com/en-us/windows/wsl/install)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 10** — The above command runs the pulled Valhalla image in a Docker
+    container. During first-time execution, the command also downloads and prepares
+    the latest Geofabrik Michigan data file before starting. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The command line above explicitly states which OSM file to download from the
+    [Geofabrik](https://www.geofabrik.de/) service, the latest Michigan file. This
+    specification means that when executed the first time, the server will download
+    and process the file and generate an optimized database. In subsequent calls,
+    the server omits these steps. When needed, delete everything under the target
+    directory to refresh the downloaded data and spin up Docker again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now call the Valhalla API with a specialized client.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enter PyValhalla
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This spin-off project simply offers packaged Python bindings to the fantastic
+    [Valhalla project](https://github.com/valhalla/valhalla).
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Using the [PyValhalla](https://github.com/gis-ops/pyvalhalla) Python package
+    is quite simple. We start with a neat install procedure using the following command
+    line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 11** — You can install PyValhalla using PIP. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In your Python code, you must import the required references, instantiate a
+    configuration from the processed GeoFabrik files, and finally create an **Actor**
+    object, your gateway to the Valhalla API.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 12** — The code above shows how easy it is to set up PyValhalla on
+    a Python application or notebook. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before we call the [Meili](https://valhalla.github.io/valhalla/api/map-matching/api-reference/)
+    map-matching service, we must get the trajectory GPS locations using the function
+    listed below in **Figure 13**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 13** — The function above loads the unique positions of a vehicle’s
+    trajectory, returning a Pandas DataFrame with latitude, longitude, and timestamp.
+    (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now set up the parameter dictionary to pass into the PyValhalla call
+    to trace the route. Please refer to the [Valhalla documentation](https://valhalla.github.io/valhalla/)
+    for more details on these parameters. The function below calls the map-matching
+    feature in Valhalla (Meili) and is included in the [data preparation script](https://github.com/joaofig/eved-explore/blob/main/match-trips.py).
+    It illustrates how to determine the inferred route from a Pandas data frame containing
+    the observed GPS locations encoded as latitude, longitude, and time tuples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 14** — The function above accepts a PyValhalla Actor object and a
+    Pandas DataFrame containing the source path and returns a map-matched string-encoded
+    polyline. This string is later decoded into a list of geospatial locations corresponding
+    to the digital map network nodes, except for the extremities, which are edge-projected.
+    (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above function returns the matched path as a string-encoded polyline. As
+    illustrated in the data preparation code below, we can easily decode the returned
+    string using a PyValhalla library call. Note that this function returns a polyline
+    whose first and last locations are projected to edges, not graph nodes. You will
+    see these extremities removed by code later in the article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us now look at the data preparation phase, where we convert all the trajectories
+    in the EVED database into a set of map edge sequences, from where we can derive
+    pattern frequencies.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Preparation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Data preparation aims at converting the noisy GPS-acquired trajectories into
+    sequences of geospatial tokens corresponding to known map locations. The main
+    code iterates through the existing trips, processing one at a time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I use an SQLite database in this article to store all the data processing results.
+    We start by filling the matched trajectory path. You can follow the description
+    using the code in **Figure 15** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 15** — The code above contains the preprocessing data loop. This loop
+    iterates through the known trajectories, computes their map-matched paths (if
+    any), tokenizes the nodes, and expands them into triplets. The code stores all
+    intermediary and final results in the database. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For each trajectory, we instantiate an object of the **Actor** type (*line 9*).
+    This is an unstated requirement, as each call to the map-matching service requires
+    a new instance. Next, we load the trajectory points (*line 13*) acquired by the
+    vehicles’ GPS receivers with the added noise, as stated in the original VED article.
+    In line *14*, we make the map-matching call to Valhalla, retrieve the string-encoded
+    matched path, and save it to the database. Next, we decode the string into a list
+    of geospatial coordinates, remove the extremities (*line 17*), and then convert
+    them to a list of H3 indices computed at level 15 (*line 19*). On line *23*, we
+    save the converted H3 indices and the original coordinates to the database for
+    later reverse mapping. Finally, on lines *25* to *27*, we generate a sequence
+    of 3-tuples based on the H3 indices list and save them for later inference calculations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s go through each of these steps and explain them in detail.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trajectory Loading
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We have seen how to load each trajectory from the database (see **Figure 13**).
+    A trajectory is a time-ordered sequence of sampled GPS locations encoded as a
+    latitude and longitude pair. Note that we are not using the matched versions of
+    these locations as provided by the EVED data. Here, we use the noisy and original
+    coordinates as they existed in the initial VED database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Map Matching
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The code that calls the map-matching service is already presented in **Figure
+    14** above. Its central issue is the configuration settings; other than that,
+    it is a pretty straightforward call. Saving the resulting encoded string to the
+    database is also simple.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 16** — The code above saves the encoded polyline string to the new
+    database. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: On line *17* of the main loop (**Figure 15**), we decode the geometry string
+    into a list of latitude and longitude tuples. Note that this is where we strip
+    out the initial and final locations, as they are not projected to nodes. Next,
+    we convert this list to its corresponding H3 token list on line *19*. We use the
+    maximum detail level to try and avoid overlaps and ensure a one-to-one relationship
+    between H3 tokens and map graph nodes. We insert the tokens in the database in
+    the following two lines. First, we save the whole token list, associating it to
+    the trajectory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 17** — The function above inserts the trajectory H3 token list in
+    the database. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, we insert the mapping of node coordinates to H3 tokens to enable drawing
+    polylines from a given list of tokens. This feature will be helpful later on when
+    inferring future trip directions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 18** — We insert a mapping between H3 tokens and node coordinates
+    to enable the reconstruction of a trajectory from given inferred tokens. (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now generate and save the corresponding token triples. The function below
+    uses the newly generated list of H3 tokens and expands it to another list of triples,
+    as detailed in **Figure 3** above. The expansion code is depicted in **Figure
+    19** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 19** — The code above converts a list of H3 tokens into a list of
+    the corresponding triples. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: After triplet expansion, we can finally save the final product to the database,
+    as shown by the code in **Figure 20** below. Through clever querying of this table,
+    we will infer current trip probabilities and future most likely trajectories.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 20** — The function above saves the H3 triples to the database. This
+    is the final step of the data preparation phase. We can now move on to exploring
+    the information we collected. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We are now done with one cycle of the data preparation loop. Once the outer
+    loop is completed, we have a new database with all the trajectories converted
+    to token sequences that we can explore at will.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can find the whole [data preparation code](https://github.com/joaofig/eved-explore/blob/main/match-trips.py)
+    in the GitHub repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Probabilities and Predictions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We now turn to the problem of estimating existing trip probabilities and predicting
+    future directions. Let’s start by defining what I mean by “existing trip probabilities.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Trip Probabilities
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We start with an arbitrary path projected into the road network nodes through
+    map-matching. Thus, we have a sequence of nodes from the map and want to assess
+    how probable that sequence is, using as a frequency reference the known trip database.
+    We use the formula in **Figure 5** above. In a nutshell, we compute the product
+    of the probabilities of all individual token triplets.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To illustrate this feature, I implemented a simple [Streamlit application](https://github.com/joaofig/eved-explore/blob/main/map-predict.py)
+    that allows the user to draw an arbitrary trip over the covered Ann Arbor area
+    and immediately compute its probability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once the user draws points on the map representing the trip or the hypothetical
+    GPS samples, the code map matches them to retrieve the underlying H3 tokens. From
+    then on, it’s a simple matter of computing the individual triplet frequencies
+    and multiplying them to compute the total probability. The function in **Figure
+    21** below computes the probability of an arbitrary trip.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 21** — The function above computes an arbitrary path probability from
+    the triplet frequency database. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code gets support from another function that retrieves the successors of
+    any existing pair of H3 tokens. The function listed below in **Figure 22** queries
+    the frequency database and returns a Python **Counter** object with the counts
+    of all successors of the input token pair. When the query finds no successors,
+    the function returns the **None** constant. Note how the function uses a cache
+    to improve database access performance (code not listed here).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 22** — The function above queries the frequency database for the known
+    successors of any pair of H3 tokens and returns a Counter object with the counts
+    of all successors. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I designed both functions such that the computed probability is zero when no
+    known successors exist for any given node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us look at how we can predict a trajectory’s most probable future path.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Predicting Directions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We only need the last two tokens from a given running trip to predict its most
+    likely future directions. The idea involves expanding all the successors of that
+    token pair and selecting the most frequent ones. The code below shows the function
+    as the entry point to the directions prediction service.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 23** — The function above populates a FeatureGroup object from Folium
+    with the predicted paths of the existing user-provided trip. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The above function starts by retrieving the user-drawn trajectory as a list
+    of map-matched H3 tokens and extracting the last pair. We call this token pair
+    the *seed* and will expand it further in the code. At line *9,* we call the seed-expansion
+    function that returns a list of polylines corresponding to the input expansion
+    criteria: the maximum branching per iteration and the total number of iterations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us see how the seed expansion function works by following the code listed
+    below in **Figure 24**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 24** — The seed expansion function uses the PredictedPath class to
+    manage each iteration. Please see below for more details on this class. (Image
+    source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: By calling a path expansion function that generates the best successor paths,
+    the seed expansion function iteratively expands paths, starting with the initial
+    one. Path expansion operates by picking a path and generating the most probable
+    expansions, as shown below in **Figure 25**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 25** — The path expansion function above iterates the most frequent
+    successors to the current path. It creates a new path for each of the most frequent
+    successors using a specialized function (see below). (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code generates new paths by appending the successor nodes to the source
+    path, as shown in **Figure 26** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 26** — To generate a “child” path, we only need to append the successor
+    node to an existing path, as shown below. Note that the code creates a copy of
+    the original path before appending the new node. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code implements predicted paths using a specialized class, as shown in **Figure
+    27**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Figure 27** — The class above implements a predicted path with probability
+    sorting support, creation from a seed token pair, and map polyline generation.
+    (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Application
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We can now see the resulting [Streamlit application](https://github.com/joaofig/eved-explore/blob/main/map-predict.py)
+    in **Figure 28** below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/058ee4d531abec3ba6917f9a2656d4d6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '**Figure 28** — The Streamlit application shows the two described features
+    in action. The input trajectory is in blue, and you can draw it using the tool
+    menu on the left-hand side of the map. Once drawn, the code computes its probability
+    and displays it at the bottom. The three red trajectories are the three most likely
+    fifty-edge predictions for where the source trajectory may evolve. You get a popup
+    with the computed probability by clicking on each trajectory. (Image source: Author)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this article, I presented a means to predict a vehicle’s future trajectory
+    when driving through a digitally mapped road network. Using a historical trajectory
+    database, this method assigns a probability to any trip and also predicts the
+    most likely directions for the near future. Consequently, this method can detect
+    unlikely or even novel trajectories never seen before.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We start with an extensive database of vehicle trajectories from the area of
+    interest. Each path is a chronological sequence of geospatial coordinates (latitude
+    and longitude) and other relevant properties such as speed. We typically collect
+    these trajectories from onboard GPS receivers and centrally compile them into
+    a database.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPS samples are noisy due to unavoidable errors that occur during signal measurement.
+    Natural and artificial obstacles, such as urban canyons, can significantly decrease
+    the signal’s reception accuracy and increase geolocation errors. Fortunately,
+    workable solutions solve this issue by probabilistically matching the GPS samples
+    to a digital map. This is what map matching is all about.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By matching the noisy GPS samples to a known digital map, we not only correct
+    the accuracy problem by projecting each instance to the map’s most likely road
+    segment, but we also get a discrete sequence of existing map-defined locations
+    that the vehicle most likely went through. This last result is instrumental for
+    our trajectory prediction because it essentially converts a set of noisy GPS coordinates
+    into a clean and well-known collection of points in the digital map. These digital
+    markers are fixed and never change, and by projecting the GPS sample sequence
+    into them, we get a string of well-known tokens that we can later use for prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We calculate all probabilities using the known token sequence frequencies for
+    arbitrary trajectories and their future evolution. The result is a couple of Python
+    scripts, one for data preparation and another for data input and visualization
+    using the Streamlit platform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Notes
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The original paper authors licensed the dataset under the Apache 2.0 License
+    (see the [VED](https://github.com/gsoh/VED) and [EVED](https://github.com/zhangsl2013/eVED)
+    GitHub repositories). Note that this also applies to derivative work.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**[1]** Zhang, S., Fatih, D., Abdulqadir, F., Schwarz, T., & Ma, X. (2022).
+    Extended vehicle energy dataset (eVED): an enhanced large-scale dataset for deep
+    learning on vehicle trip energy consumption. *arXiv*. [https://doi.org/10.48550/arXiv.2203.08630](https://doi.org/10.48550/arXiv.2203.08630)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[2]** [Efficient and fast map matching with Valhalla — Sandeep Pandey (ikespand.github.io)](https://ikespand.github.io/posts/meili/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**[3]** [Map Matching done right using Valhalla’s Meili | by Serge Zotov |
+    Towards Data Science](/map-matching-done-right-using-valhallas-meili-f635ebd17053)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: João Paulo Figueira is a Data Scientist at [tb.lx by Daimler Truck](https://tblx.io/)
+    in Lisbon, Portugal.
+  prefs: []
+  type: TYPE_NORMAL

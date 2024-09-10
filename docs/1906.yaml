@@ -1,0 +1,341 @@
+- en: Motivating Self-Attention
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/motivating-self-attention-aead09a02f70?source=collection_archive---------2-----------------------#2023-06-10](https://towardsdatascience.com/motivating-self-attention-aead09a02f70?source=collection_archive---------2-----------------------#2023-06-10)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why do we need queries, keys AND values?
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)[![Ryan
+    Xu](../Images/246c35755c45386273206ff44b31c691.png)](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)[](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------)
+    [Ryan Xu](https://medium.com/@ryxu?source=post_page-----aead09a02f70--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fff9d266441dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&user=Ryan+Xu&userId=ff9d266441dd&source=post_page-ff9d266441dd----aead09a02f70---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----aead09a02f70--------------------------------)
+    ·9 min read·Jun 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Faead09a02f70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&user=Ryan+Xu&userId=ff9d266441dd&source=-----aead09a02f70---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Faead09a02f70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmotivating-self-attention-aead09a02f70&source=-----aead09a02f70---------------------bookmark_footer-----------)![](../Images/190f2dea8254b6d693ca7a50fdecd509.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: …self-self-attention?
+  prefs: []
+  type: TYPE_NORMAL
+- en: The goal of this article is to offer an explanation not for *how* the self-attention
+    mechanism in transformers works, but rather for *why* it was designed that way.
+  prefs: []
+  type: TYPE_NORMAL
+- en: We’ll start with a discussion of the kinds of abilities we would like a language
+    understanding model to have, followed by a interactive construction of the self-attention
+    mechanism. In the process, we’ll discover why we need queries, keys, AND values
+    in order to model relationships between words in a natural way, and that QKV attention
+    is one of the simplest ways to do so.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This article will be most insightful to readers who have encountered transformers
+    and self-attention before, but should be accessible to anybody familiar with some
+    basic linear algebra. To those who are looking to better understand transformers,
+    I will happily refer you to [this blog post](http://jalammar.github.io/illustrated-transformer/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All images are by the author.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Transformers are frequently presented in the context of sequence-to-sequence
+    modeling tasks such as language translation or more saliently, sentence completion.
+    However, I think that it’s easier to start off by thinking about the problem of
+    sequence modeling and specifically, language understanding.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, here’s a sentence that we want to understand:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/703ccfa08b74c3079cbcd25a9a1c939f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s think a little bit about how we understand this sentence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Evan’s dog Riley…* From this, we know that Riley is the name of the dog, and
+    that Evan owns Riley.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*…is so hyper…* Simple enough, “hyper” refers to the dog Riley, influencing
+    our impression of Riley.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*…she never stops moving*. This one is interesting. “she” refers to Riley,
+    since the dog is the subject of the first phrase. This tells us that Evan’s dog
+    Riley is fact female, which was previously ambiguous due to the commonly unisex
+    dog name, “Riley”. “never stops moving” is a slightly more complex set of words
+    that elaborates on “hyper”.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The key takeaway here is that to build up our understanding of the sentence,
+    we’re constantly considering how words relate to other words to augment their
+    meaning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the machine learning community, the process of augmenting the meaning of
+    a word **a** by the presence of another word **b** is colloquially referred to
+    as “**a** attends to **b**”, as in word **a** pays attention to word **b**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e71804c1195ba214ee007bf1b63fb1d4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: An arrow **a** => **b** indicates that “**a** attends to **b**”
+  prefs: []
+  type: TYPE_NORMAL
+- en: And so, if we would like a machine learning model to understand language, we
+    might understandably want the model to have the ability to have a word attend
+    to another and somehow update its meaning accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is precisely the ability that we hope to emulate as we build up the aptly
+    named (self) attention mechanism in 3 parts.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*In the following, I will pose a number of questions in italics. I strongly
+    encourage the reader to stop and consider the question for a minute before continuing.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 1
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: For now, let’s focus on the relationship between the words “dog” and “Riley”.
+    The word “dog” strongly influences the meaning of the word, “Riley”, and so we
+    want “Riley” to attend to “dog”, and so the goal here is to somehow update the
+    meaning of the word “Riley” accordingly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ece19bb21c5d776d23dc696aa847314c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: To make this example more concrete, let’s say that we begin with vector representations
+    of each word, each of length **n**, based on a context-free understanding of the
+    word. We will assume that this vector space is fairly well organized, meaning
+    that words that are more similar in meaning are associated with vectors that are
+    closer in the space.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So, we have two vectors, **v_dog** and **v_Riley**, that capture the meaning
+    of the two words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*How can we update the value of* ***v_Riley*** *using* ***v_dog*** *to obtain
+    a new value for the word “Riley” that incorporates the meaning of “dog”?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We don’t want to completely replace the value of **v_Riley** with **v_dog**,
+    so let’s say that we take a linear combination of **v_Riley** and **v_dog** as
+    the new value for **v_Riley**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This seems to work alright, we’ve embedded a bit of the meaning of the word
+    “dog” into the word “Riley”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now we would like to try and apply this form of attention to the whole sentence
+    by updating the vector representations of every single word by the vector representations
+    of every other word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*What goes wrong here?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The core problem is that we don’t know which words should take on the meanings
+    of other words. We would also like some measure of how much the value of each
+    word should contribute to each other word.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Part 2**'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Alright. So we need to know how much two words should be related.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Time for attempt number 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve redesigned our vector database so that each word actually has two associated
+    vectors. The first is the same value vector that we had before, still denoted
+    by **v**. In addition, we now have unit vectors denoted by **k** that store some
+    notion of word relations. Specifically, if two **k** vectors are close together,
+    it means that the values associated with these words are likely to influence each
+    other’s meanings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*With our new* ***k*** *and* ***v*** *vectors, how can we modify our previous
+    scheme to update* ***v_Riley****’s value with* ***v_dog*** *in a way that respects
+    how much two words are related?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s continue with the same linear combination business as before, but only
+    if the k vectors of both are close in embedding space. Even better, we can use
+    the dot product of the two k vectors (which range from 0–1 since they are unit
+    vectors) to tell us how much we should update **v_Riley** with **v_dog**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is a little bit strange since if relevance is 1, **v_Riley** gets completely
+    replaced by **v_dog**, but let’s ignore that for a minute.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I want to instead think about what happens when we apply this kind of idea to
+    the whole sequence. The word “Riley” will have a relevance value with each other
+    word via dot product of **k**s. So, maybe we can instead update the value of each
+    word proportionally to the value of the dot product. For simplicity, let’s also
+    include it’s dot product with itself as a way to preserve it’s own value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Ok that’s good enough for now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But once again, I claim that there’s something wrong with this approach. It’s
+    not that any of our ideas have been implemented incorrectly, but rather there’s
+    something fundamentally different between this approach and how we actually think
+    about relationships between words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*If there’s any point in this article where I* ***really really*** *think that
+    you should stop and think, it’s here. Even those of you who think you fully understand
+    attention. What’s wrong with our approach?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7b84bc5ca1fe623192e96921b64083c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: A hint
+  prefs: []
+  type: TYPE_NORMAL
+- en: Relationships between words are inherently asymmetric! The way that “Riley”
+    attends to “dog” is different from the way that “dog” attends to “Riley”. It’s
+    a much bigger deal that “Riley” refers to a dog, not a human, than the name of
+    the dog.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In contrast, the dot product is a symmetric operation, which means that in our
+    current setup, if a attends to b, then b attends equally strong to a! Actually,
+    this is somewhat false because we’re normalizing the relevance scores, but the
+    point is that the words should have the option of attending in an asymmetric way,
+    even if the other tokens are held constant.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Part 3
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We’re almost there! Finally, the question becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*How can we most naturally extend our current setup to allow for asymmetric
+    relationships?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well what can we do with one more vector type? We still have our value vectors
+    **v**, and our relation vector **k**. Now we have yet another vector **q** for
+    each token.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*How can we modify our setup and use* ***q*** *to achieve the asymmetric relationship
+    that we want?*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those of you who are familiar with how self-attention works will hopefully be
+    smirking at this point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of computing relevance **k_dog** · **k_Riley** when “dog” attends to
+    “Riley”, we can instead *query* **q_Riley** against the *key* **k_dog** by taking
+    their dot product. When computing the other way around, we will have **q_dog**
+    · **k_Riley** instead — asymmetric relevance!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s the whole thing together, computing the update for every value at once!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: And that’s basically self-attention!
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a few more details that I left out, but the important ideas are all
+    there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To recap, we started with value vectors (**v**) to represent the meaning of
+    each word, but quickly found that we need key vectors (**k**) to account for how
+    words relate to each other. Finally, to properly model the asymmetric nature of
+    word relationships, we introduced query vectors (**q**). It almost feels like
+    if all we’re allowed are dot products and such, 3 is the minimal number of vectors
+    per word needed to properly model relationships between words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The purpose of this article is to unravel the self-attention mechanism in a
+    way that’s less overwhelming than the traditional algorithm-first approach. I
+    hope that from this more language-motivated perspective, the elegance and simplicity
+    of the query-key-value design can show through.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Some details that I left out:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Instead of storing 3 vectors for each token, we instead store a single embedding
+    vector from which we can extract our **q**-**k**-**v** vectors. The extraction
+    process is just a linear projection.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Technically, in this whole setup, each word has no idea where the other words
+    are in the sentence. Self-attention is really a set operation. So, we need to
+    embed positional knowledge, typically done by adding a position vector to the
+    embedding vector. This isn’t completely trivial since transformers should allow
+    for sequences of arbitrary length. How this works in practice is outside the scope
+    of this article.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A single self-attention layer only allows us to represent two-word relationships.
+    But by composing self-attention layers, we can model higher level relationships
+    between words. Since the output of a self-attention layer is of the same sequence
+    length as the original sequence, this means that we can compose them. In fact,
+    transformer blocks are just self-attention layers followed by position-wise feed-forward
+    blocks. Stack a few hundred of these, pay a few million dollars, and you have
+    yourself an LLM! :)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/fc2b1b4d79199119a9f07e5f7fc59fd8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: OpenAI showed that it takes 512 transformer blocks to understand that second
+    half.
+  prefs: []
+  type: TYPE_NORMAL

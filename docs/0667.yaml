@@ -1,0 +1,545 @@
+- en: Visualizing the Deconvolution Operation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/visualizing-the-deconvolution-operation-8dad71577912?source=collection_archive---------12-----------------------#2023-02-17](https://towardsdatascience.com/visualizing-the-deconvolution-operation-8dad71577912?source=collection_archive---------12-----------------------#2023-02-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A detailed breakdown of transposed convolutions operation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)[![Vitalii
+    Pogribnyi](../Images/1dbdade2fcbd991225cfb92a67c30de2.png)](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)[](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------)
+    [Vitalii Pogribnyi](https://medium.com/@vb.pogribnyi?source=post_page-----8dad71577912--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3f609904004d&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&user=Vitalii+Pogribnyi&userId=3f609904004d&source=post_page-3f609904004d----8dad71577912---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----8dad71577912--------------------------------)
+    ·11 min read·Feb 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F8dad71577912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&user=Vitalii+Pogribnyi&userId=3f609904004d&source=-----8dad71577912---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F8dad71577912&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fvisualizing-the-deconvolution-operation-8dad71577912&source=-----8dad71577912---------------------bookmark_footer-----------)![](../Images/309262e54c0d9444c7d53b0fe05fc099.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/photos/qppYBtgonqw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Introduction**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The transposed convolutions are the ones used for generating images, and though
+    they’ve been around for a while, and were explained quite nicely — I’ve still
+    struggled to understand how exactly they get their job done. The article I’m sharing
+    describes a simple experiment illustrating this process. I’ve also included some
+    tricks that help to improve the network performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Overall, there are several topics described in this article a reader may consider
+    interesting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Overall visualization of the deconvolution operation'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Optimizing the network by separating more important components'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '- Addressing a synthetic dataset issue'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The task for the illustration is the simplest I could think of: build an autoencoder
+    for synthetic data. The fact that it is synthetic, may raise some issues. It’s
+    true that the models trained on such data may not perform well on real data. But
+    we will later see why this is the case and how to fix it. The model consists of
+    one convolutional layer for the encoder, and one deconvolution (aka convolution
+    transposed) for the decoder.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: All the images and chars below are my own.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**1\. The Dataset**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The data is a set of 1-dimensional Bezier curves looking like the following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/87797c629623563ad35b65a6cb6a5b29.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data examples
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And here is the code that generates the data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: These curves contain 15 points each. Each curve will be fed into the network
+    as a 1-d array (instead of passing [x, y] coordinates for each point, only [y]
+    is passed).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every curve can be characterized by two parameters, meaning that our network
+    should be able to encode/decode any curve into a vector of size 2.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. The Approach**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Here is an example network one could use to encode the curve:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c6dd83d3425eb1f1b3bad12437ceb44e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Network architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the image above, the input signal (bottom) is broken into 3 patches of size
+    7 (by applying a convolution layer of window size 7 and stride 4). Each patch
+    is encoded into a vector of size 3, giving a 3x3 matrix. This matrix is then encoded
+    into a vector of size 2; then the operation is repeated inversely in the decoder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The network may be broken into 2 parts. The first one will be able to encode/decode
+    a part of the curve (the 7 pixels patch); whereas the second will only deal with
+    the 3x3 matrix. This way, I will be able to train each part separately. I could
+    make a smaller autoencoder that works with 7 pixels patches only:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/454031c98d61cdbb258d78aee89efdde.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Simplified network architecture
+  prefs: []
+  type: TYPE_NORMAL
+- en: So I’m going to split each example into patches, and train the network to encode/decode
+    the patches. Then, I will assemble this network to produce the whole curve.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I won’t be further encoding this 3x3 matrix, as this process will not carry
+    any new information.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. The Network**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Models used**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I will use separate models for the encoder and decoder. And they are quite
+    simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The stride is given as 4 because as referred to by the images in the “Approach”
+    section, the filter moves 4 pixels at a time. Since we’re implementing only one
+    stage here, this stride is entirely optional; it will only have an effect later
+    when we assemble a larger network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Training process**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To start with, I will set up a set of trainings with different seeds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The code for the training is as simple as it can be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is how the loss behaves for these experiments:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/758e0a6b3a6af14dbded78fc93fb7bdb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The image shows the mean and standard deviation of the loss for 10 experiments
+    with different seeds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If I now compare labels with the network outputs visually, it looks like the
+    following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e064b80ea7765d89aa68f39c714bac38.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Network evaluation — original curve compared to the network output
+  prefs: []
+  type: TYPE_NORMAL
+- en: This doesn’t look bad, seems like the network is working and the loss value
+    under 1e-4 is sufficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, I will illustrate how the encoder and decoder work in this example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Decoder**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The decoder is meant to transform the code (3-dimensional vector) into the curve
+    patch. As a deconvolution operation, it has a set of filters, each scaled by some
+    value, then being summed up; in other words, the weighted sum of the filters should
+    match the desired output.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The image below contains two examples of restoring a curve. The example on the
+    left was decoded from vector [0.0, 0.1, 0.2] and on the right — [0.1, 0.1, 0.0].
+    Each example contains scaled filters on the top and filters without scaling on
+    the bottom.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/0a60a8a4c894190378e9a4e21512fa0b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Decoder filters combination
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sure enough, we could vary the vector components one at a time and render the
+    network output in real-time, forming a cool-looking animation. So here it is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/024d6890619c382d8fb711a1e1f8c3d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualization of the network operation
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each of the animations above contains multiple plots. The point on the bottom-left
+    shows the input vector. Its X and Y coordinates and size represent the input’s
+    first, second, and third components. The bottom-right plot shows raw filters and
+    stays the same for all the animations. The top-right plot shows scaled filters
+    and output. Since only one parameter is being varied, only one filter is scaled
+    and the output matches this filter.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The top-left plot is probably the most interesting because it’s designed to
+    show how the output depends on two components simultaneously. Each curve on it
+    represents the output for different values of the third component. One may see
+    that in the third animation the graph does not move, only different curves become
+    bold. In the first two animations, only the middle curve remains bold because
+    the third component remains zero, but overall it gives an idea of what the output
+    would be if the third component was varied.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the case when all components are varied simultaneously:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c563eff8bdbff55c7c3884bc98fda2e0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Visualization of the network operation
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Encoder**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The encoder in this example looks a bit less intuitive, but anyway it somehow
+    gets the job done. (Its quality will be reviewed in the following sections)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d75602aa169a8e67678970946ec83739.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Encoder components
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are raw filters shown on the left, along with an example input. The plot
+    on the right shows these same filters applied to the example input (i.e. every
+    point of the input multiplied by every point of a filter). The labels also contain
+    each filter’s output (i.e. the sum of every point of filter 1 multiplied by every
+    point of the input gives 0.02).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The example on the plot above would be encoded into a vector (0.02, 0.08, -0.08).
+    The decoder would restore the input in the way shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6f2d3f0402abd21520b173407fea3bed.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Encoder performance example
+  prefs: []
+  type: TYPE_NORMAL
+- en: The plot on the left shows deconvolution filers. The one on the right — each
+    filter multiplied by its code vector value along with their sum (that is also
+    the output of the decoder).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**So what’s the problem?**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The solution seems to be working — the network encodes its 7-values input into
+    3-values code; then decodes it back with low error. But I see two possibilities
+    for improvement:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. The filters differ a lot when the network is trained with a different seed.
+    It means that the network has too much flexibility and we can constrain it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Encoder robustness. How can we make sure that the encoder will work for
+    a wide variety of real data?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To illustrate the first case, I will simply plot the filters obtained by training
+    with different seeds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/13d6c72f2467b52821343c707ced78c5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Decoder filters
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Obviously, we need to account for the filter sign and order: filter 3 on the
+    first image and filter 1 on the second are identical. The set of filters, with
+    compensation for sign and order, is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/08f2b5b9947b4eff6076a56207682439.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Decoder filters, reorganized
+  prefs: []
+  type: TYPE_NORMAL
+- en: The filters clearly vary a lot here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. The Improvement**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Code noise**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The fact that different set of filters gives the same result is a sign that
+    the filters may be constrained. One way to constrain the filters is to prioritize
+    them. Similar to the PCA technique, separate the filters that encode most information
+    and those encoding little details. This can be achieved by adding noise to the
+    encoded image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c030378c12f09414de499d2c8982f51c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'On the plot above, the image on the left illustrates a conventional autoencoder:
+    input is being encoded onto a 2D plane; then decoded back. The network decodes
+    a slightly shifted point from the 2D plane in the middle image. This forces the
+    network to encode similar images into points that remain close on the plane. The
+    image on the right shows the situation when the point for decoding may drift on
+    the Y-axis further than on the X-axis. This forces the network to encode the most
+    important feature into the X component because it’s less noisy.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the same concept realized in code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After running the experiment again, I would receive a more consistent set of
+    filters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/75f206639e4dc299ed8c061b52de875e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Encoder filters after training with noise
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And if I compensate for the sign and order as before, in the “what’s the problem”
+    section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/bf0d38720591701166ac9e2d405f76f4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Encoder filters after training with noise — reorganized
+  prefs: []
+  type: TYPE_NORMAL
+- en: One may see clearly that there are filters curvy on one side and sharp on the
+    other, and one component is curvy in the middle. Filters 2 and 3 seem to be of
+    equal importance because they get encoded sometimes in the first component, and
+    sometimes in the second. The third filter, however, is smaller in magnitude and
+    is always encoded in the noisiest component, which suggests it’s less important.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The impact of this noise can be checked by comparing models’ performance while
+    zeroing out different components of the encoded vector:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ef864eef758e22f8a447628c3068448f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Comparison of the models performance with one of their components deactivated
+  prefs: []
+  type: TYPE_NORMAL
+- en: The plot above shows the loss change by zeroing the of the first, second, or
+    third component, for the model with noise on the left and the original model on
+    the right. For the original model, disabling each component leads to relatively
+    same loss drop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is how it’s compared visually. Find the model input and output, on the
+    plot below. From left to right: full model; model with filter 1 disabled; model
+    with filter 2 disabled; model with filter 3 disabled.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The model trained with noise:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/b906abc759a4bc842f51c472a0c29b21.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Network evaluation, original curve compared to the network output — for models
+    having one component disabled, from left to right: full model, no disabled components;
+    component 1 disabled; component 2 disabled; component 3 disabled.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And for the original model:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e9efe3c979d316dabdcb732c40a96b57.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Network evaluation, original curve compared to the network output — for models
+    having one component disabled, from left to right: full model, no disabled components;
+    component 1 disabled; component 2 disabled; component 3 disabled.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model trained with noise has a noticeably smaller error when only the noisy
+    component is disabled.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Input noise**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s now take another look at the encoder filters. They are not smooth at
+    all, and some of them look similar to each other. That’s strange, because the
+    purpose of the encoder is to spot a difference in the input, and you can’t spot
+    the difference with a set of similar filters. How is the network able to do it?
+    Well, the answer is that our synthetic dataset is too perfect to train correct
+    filters. The network can easily classify the input by a single point:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/046ed8ca0a38c45474f073a9b7bc56a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Examples with similar point
+  prefs: []
+  type: TYPE_NORMAL
+- en: On each plot above, there is a curve example on the larger plot (referred to
+    as ‘original’), and 3 examples that have a similar point to this original example.
+    The examples themselves are different, but given the precise value at the point
+    (i.e. -0.247 or -0.243), the network is able to make a decision about the whole
+    example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This can easily be fixed by adding noise to the raw input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After training the models again, I obtained nice smooth filters:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/98d15010cf036d04e45ac96228a4ce46.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Encoder components — after adding noise
+  prefs: []
+  type: TYPE_NORMAL
+- en: One may see that Filter 1, the noisiest one, grows larger than the other filters.
+    My guess is, that it’s trying to make its output larger than the noise, trying
+    to decrease its effect. But since I have a tanh activation, its output cannot
+    be larger than 1, so the noise is still in effect.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**4\. The Full Model**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Assembly**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now that we have a working component of the model, we can apply it multiple
+    times, so that it works for encoding/decoding the whole 15-points curve. There’s
+    nothing special about this, all I need to do is not cut my example into pieces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This would give me the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/ac837fd926e23f1b6339165725be5f45.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Overlap issue
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Well, maybe I need to change something. The problem is, the deconvolution will
+    sum up the overlapping parts of the image. So these parts on the plot below get
+    doubled:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/eeb0ee2bfac9f952d7a67b017a861f13.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Overlapping deconvolution windows
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There’s an easy fix for this: I could decrease by half the weights of my filters,
+    whose output is overlapped:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After this manipulation I will get the following output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/72d335a8f77bb7d68e7efcfa7edb22c0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Deconvolution with overlap — updated
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alternatively, I could reduce the filter values gradually, starting small near
+    the center and reducing strongly on the sides:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which leads to a much smoother output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6def5a9d9de486ed94b02ade1421040e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Deconvolution with overlap — final version
+  prefs: []
+  type: TYPE_NORMAL
+- en: This leads to another problem — the border points have nothing to overlap with,
+    and the decoded image is different from what it should be. There are several possible
+    solutions to this. For example, to include padding to the encoded image, so that
+    the borders are also encoded, or to ignore these borders (maybe also exclude them
+    from the loss calculation). I will stop here because further improvements are
+    out of the scope of this article.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Conclusion**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: This simple example illustrates how deconvolutions do their job and how one
+    can employ noise (sometimes of varying magnitude) for training a neural network.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The described method does work well for larger networks, and the noise magnitude(s)
+    become a hyperparameter to experiment with. The method may not work with ReLu
+    activations: their output may easily grow way larger than the noise magnitude,
+    and the noise loses its effect.'
+  prefs: []
+  type: TYPE_NORMAL

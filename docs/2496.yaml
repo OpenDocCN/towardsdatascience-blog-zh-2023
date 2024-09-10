@@ -1,0 +1,505 @@
+- en: 'The Vehicle Routing Problem: Exact and Heuristic Solutions'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/the-vehicle-routing-problem-exact-and-heuristic-solutions-c411c0f4d734?source=collection_archive---------0-----------------------#2023-08-04](https://towardsdatascience.com/the-vehicle-routing-problem-exact-and-heuristic-solutions-c411c0f4d734?source=collection_archive---------0-----------------------#2023-08-04)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Understand how to solve complex routing problems with Python
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@bruscalia12?source=post_page-----c411c0f4d734--------------------------------)[![Bruno
+    Scalia C. F. Leite](../Images/1042cd04be047c0811fef79ecd04e69c.png)](https://medium.com/@bruscalia12?source=post_page-----c411c0f4d734--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c411c0f4d734--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c411c0f4d734--------------------------------)
+    [Bruno Scalia C. F. Leite](https://medium.com/@bruscalia12?source=post_page-----c411c0f4d734--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F3ce9b7482ef0&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-vehicle-routing-problem-exact-and-heuristic-solutions-c411c0f4d734&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=post_page-3ce9b7482ef0----c411c0f4d734---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c411c0f4d734--------------------------------)
+    ·13 min read·Aug 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc411c0f4d734&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-vehicle-routing-problem-exact-and-heuristic-solutions-c411c0f4d734&user=Bruno+Scalia+C.+F.+Leite&userId=3ce9b7482ef0&source=-----c411c0f4d734---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc411c0f4d734&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-vehicle-routing-problem-exact-and-heuristic-solutions-c411c0f4d734&source=-----c411c0f4d734---------------------bookmark_footer-----------)![](../Images/f93bccab1e4c779b83d2245412c6d584.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Nik Shuliahin 💛💙](https://unsplash.com/@tjump?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Vehicle Routing Problem (VRP) aims to determine the best set of routes to
+    be performed by a fleet of vehicles to serve a given set of customers. Due to
+    its several applications and challenging combinatorial aspects, it is one of the
+    most studied problems in Operations Research and Numerical Optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Capacitated Vehicle Routing Problem (CVRP) is one of the most common variants,
+    as it introduces vehicles with limited load capacity and possibly duration/distance
+    constraints. Other usual variants also introduce multiple depots, heterogeneous
+    fleets, pickup and deliveries, and time-window constraints.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Combinatorial aspects of these problems are such that considering a simple set
+    of 15 points, there are 6 × 10¹¹ possible routes connecting them (Dantzig & Ramser,
+    1959). Therefore, some real-world applications would remain impractical until
+    computational and algorithm research advances over the last couple of decades.
+    Branch-Cut-and-Price algorithms have been able to prove the optimality of CVRP
+    instances with a few hundred customers (Fukasawa et al., 2006; Pecin et al., 2017),
+    and state-of-the-art metaheuristics combined with local search techniques can
+    provide good quality (sometimes optimal) solutions to these instances within a
+    few seconds (Vidal et al., 2012; Vidal, 2022).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Throughout this article, we will introduce the Capacitated Vehicle Routing Problem
+    with load (and duration) constraints and solve it using Mixed-Integer Programming
+    (MIP) and specialized (meta)heuristic algorithms. In the first part, we will use
+    the Python AML *Pyomo*, with the HiGHS solver, whereas in the second part, we
+    will use the Google *OR Tools* package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reader who is more interested in real-world applications than in theoretical
+    aspects of the problem might quickly skim through the *MIP* section and pay more
+    interest to the [*Specialized (Meta)Heuristics*](#45ff)and [*Useful Extensions*](#cb69)sections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those interested in understanding in detail the MIP formulation but not yet
+    familiar with numerical optimization might find it useful to take a look at my
+    previous stories about[*Linear Programming*](https://medium.com/towards-data-science/linear-programming-theory-and-applications-c67600591612)and
+    the [*Branch & Bound*](/a-gentle-introduction-to-branch-bound-d00a4ee1cad) method
+    before proceeding with this one.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As usual, you can find the complete code in this [git repository](https://github.com/bruscalia/optimization-demo-files/tree/27ccb5d2fc9e85e07436d1120f5c3f4073960448/vrp).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, let us dive in!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mixed-Integer Programming
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The mathematical formulation presented in this section will use the same equations
+    presented by Toth & Vigo (2002) in the model therein referred to as the “three-index
+    vehicle flow formulation”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider a set *V* of nodes (demands and depot) and a set *K* of vehicles.
+    We will use lowercase *i* and *j* to indicate node indexes and lowercase *k* to
+    indicate vehicle indexes. As this model is valid for the asymmetric case, let
+    us assume the nodes are part of a complete directed graph *G*(*V*, *A*) with arcs
+    *A*. In this problem, there is a single depot node indexed by 0 and all vehicles
+    have the same capacity *Q*. Consider two groups of decision variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*x*_{*i, j, k*}: Is a binary variable that indicates an active arc from node
+    *i* to node *j* performed by vehicle *k*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*y*_{*i, k*}: Is a binary variable that indicates that the demand from node
+    *i* is fulfilled by vehicle *k*.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Consider our objective to minimize the cost value associated with active arcs.
+    Total duration or distance are usual examples. Say the cost of traversing the
+    arc *i*, *j* is *cᵢⱼ*. The objective function can be stated as the following.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6edb8e70ffd7f3b0b7621fcc56c702c8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Objective function of CVRP. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We also need to include constraints that ensure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each customer *i* is visited once, therefore has one active arc which starts
+    from it and one that arrives on it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If any arc variable indexed by vehicle *k* goes into one node *i* or out of
+    it, the demand *q* of this node is assigned to vehicle *k*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The total demand assigned to a vehicle must not exceed its capacity *Q*.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Exactly |*K*| nodes start at the depot and arrive at the depot.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: There are no subtours… However, the number of subtours is potentially too large
+    to be enumerated from the start. We will dive into more detail about how to do
+    it.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '![](../Images/27107a239f4062abd402f7f61d187d3d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Constraints of CVRP. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As usual for Python tutorials, let us start our *hands-on* part by importing
+    the libraries used in this section:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: And now let us instantiate a random problem with *N* demand nodes. In this example,
+    the *depot* node is assumed to be the first node (index 0), so we ensure its corresponding
+    demand is also zero.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The number of necessary vehicles can be calculated by using a Bin Packing Problem.
+    An example of how to perform it is also included in the [complete source code](https://github.com/bruscalia/optimization-demo-files/tree/27ccb5d2fc9e85e07436d1120f5c3f4073960448/vrp).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are two approaches for modeling a problem in *pyomo*: *Abstract* and
+    *Concrete* models. In the first approach, the algebraic expressions of the problem
+    are defined before some data values are supplied, whereas, in the second, the
+    model instance is created immediately as its elements are defined. You can find
+    more about these approaches in the [library documentation](https://pyomo.readthedocs.io/en/stable/pyomo_overview/abstract_concrete.html)
+    or in the book by Bynum et al. (2021). Throughout this article, we will adopt
+    the *Concrete* model formulation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us instantiate the sets of demand nodes *V*, arcs *A*, and vehicles *K*.
+    Notice that the depot node is included in the set of nodes *V* as in the original
+    mathematical formulation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now our parameters for capacity, demand load, and arc costs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: And the decision variables indicating active arcs in a given vehicle and that
+    a node visited by the vehicle.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Before including the constraints, I will create our objective that computes
+    the total cost of active arcs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We also must include constraints previously listed. First let us implement
+    them using the usual *Pyomo* signature: *function(model, *domain)*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: And then incorporate them into our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Notice that I didn’t include the subtour elimination constraints yet. We should
+    consider all possible permutations of the *N* nodes taking *k* at a time and these
+    could be prohibitively large to enumerate even for moderate size instances. Alternatively,
+    in our solution procedure, we will recursively include subtour elimination constraints
+    each time a new solution is found if we verify that this solution produces subtours.
+    In some commercial solvers, these are called “*lazy constraints*” and can be incorporated
+    directly into the solver via callback.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First let us create a function that, given a subtour, all remaining nodes, a
+    node from the subtour, and a vehicle, returns a *Pyomo* expression corresponding
+    to the mathematical formulation previously stated. Also, let us include a *ConstraintList*
+    to which we will include new elements as we proceed with the solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: We must create some functions that will, given a solution, return subtours created
+    (if they exist). To do so, we will first create a list of active arcs in the model
+    using the *find_arcs* function. This list will be used to create an incomplete
+    directed graph using the *Networkx* *DiGraph* class. And the *find_subtours* function
+    should return a *list* of *sets* of connected components.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Our goal is to eliminate groups of connected components that do not include
+    the depot node. So in the next step, we will create functions that iterate over
+    the list of sets, and include new constraints if the set of components does not
+    include the depot node. This will use the method *add* of the *ConstraintList*
+    class.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: And now we have everything ready to propose a solution procedure that iteratively
+    solves the MIP, verifies if the current solution has subtours, and, if so, includes
+    new constraints to eliminate them. Otherwise, the solution found is optimal.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now let us instantiate the solver and solve our model. The *Highs* solver is
+    available in *Pyomo* (check the imports) if the *highspy* package is installed.
+    So make sure to run a `pip install highspy` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: One more function to find the tours created and we are ready to plot results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/6fb03fe9219dd011aed7342e92b71ae5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tours produced in CVRP using MIP. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Amazing results for the small instance with a total of 10 nodes. However, even
+    for this small instance, the solver took almost half a minute to obtain the solution
+    and the complexity increases significantly with more demand points. Fortunately,
+    there are specialized algorithms publicly available to find good quality solutions
+    for much larger instances in a short computational time. Let us take a look at
+    them in the next section.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Specialized (Meta)Heuristics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Throughout the years several specialized (meta)heuristics have been proposed
+    for variants of the VRP. Most of them strongly rely on local search algorithms
+    so that, given a solution, different perturbations are tried in order to sequentially
+    improve its cost until no further improvement is possible in the given neighborhood.
+    When using Google *Or Tools*, we will too use local search methods associated
+    with constructive algorithms.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this section, instance 150d from Rochat and Taillard (1995) will be used.
+    Its data was obtained from the [CVRPLIB](http://vrp.atd-lab.inf.puc-rio.br/index.php/en/plotted-instances?data=tai150d).
+    This instance has 150 customers and one depot node, so we surely wouldn't be able
+    to solve it using the MIP strategy previously presented.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let us once again start by importing the libraries used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: And let us load the problem data from a file that includes the coordinates and
+    demand of each node.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first step to using *OR Tools* VRP solver is to instantiate a routing manager
+    and a model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Next, we will include callbacks to quantify dimensions related to arcs/edges
+    and nodes. The method *RegisterTransitCallback* of our *routing* instance can
+    be used to quantify any dimension related to arcs/edges whereas the method *RegisterUnaryTransitCallback*
+    can quantify values related to nodes. It might be important to re-scale your parameters
+    depending on their original magnitude because *ortools* considers only integer
+    values in dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, we will include a capacity constraint using the *demand_callback_index*
+    previously defined. Notice that duration constraints could have been defined using
+    the same syntax just passing instances of *RegisterTransitCallback* as the first
+    argument. Furthermore, it is important to remark that the *routing* model handles
+    heterogeneous fleets, so we must pass a list of values in the third argument.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: Similarly, the definition of the objective also takes a *callback* as the main
+    argument. In this example, let us minimize the distances defined in the *transit_callback_index*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: At last, we must define solver parameters and solve our model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: The following piece of code can be used to extract the routes used in our solution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: And one can access the objective value by running the simple line `solution.ObjectiveValue()`
+    . Using the configuration presented, I got an objective of 2679, which is quite
+    close to the proven optimal value of 2645 (1.2% gap). The routes obtained are
+    represented below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8b71961f6789302f5c15f3eb698c493f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Routes obtained in instance tai150d using ortools. (Image by the author).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The complete code (plots included) is available in this [git repository](https://github.com/bruscalia/optimization-demo-files/tree/27ccb5d2fc9e85e07436d1120f5c3f4073960448/vrp).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Useful Extensions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The *OR Tools* library is fantastic as a general solver for routing problems
+    for it handles several variants of the VRP, such as time windows, heterogeneous
+    fleets, and multiple depots. However, algorithms fit for the canonical CVRP can
+    perform even better. It is totally worth taking a look at the [*HGS-CVRP*](https://github.com/vidalt/HGS-CVRP)package
+    (Vidal, 2022) that combines a state-of-the-art genetic algorithm with several
+    local search moves. The algorithm finds the optimal solution for the instance
+    *tai150d* within less than 20 seconds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Regarding some real-world applications, it is likely that one should rely on
+    road distances (or durations) rather than Euclidean distances to connect locations.
+    Google provides a nice paid interface to do so, which you can check in [this tutorial](https://developers.google.com/optimization/routing/google_direction).
+    However, if you are looking for open-source alternatives it is worth checking
+    out the [OpenStreetMap API](https://wiki.openstreetmap.org/wiki/Main_Page). Some
+    useful requests are:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: https://router.project-osrm.org/table/v1/driving/<LOCATIONS>
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: http://router.project-osrm.org/route/v1/car/<LOCATIONS>?overview=false&steps=true
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In which *<LOCATIONS>* should be a list of longitude and latitude pairs separated
+    by commas within the pairs and by semicolons between different pairs. You can
+    also specify sources and destinations in the *table* request, which is useful
+    in case the complete table is too large to handle in a single request.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Besides doing precise routing calculations, visualization can be an important
+    tool. The *Python* library [*folium*](https://python-visualization.github.io/folium/)
+    can be quite useful to do it. It is definitely worth taking a look at it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further Reading
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Earlier in this article we implemented an exact MIP model for the CVRP, which
+    is not suitable for moderate-size instances. However, algorithms that combine
+    *column generation* to *Branch and Cut* have been successful in solving instances
+    with up to a few hundred customers. It is worth taking a look at the research
+    papers of Fukasawa et al. (2006) and Pecin et al. (2017).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those interested in a previous introduction to column generation might find
+    it in my previous [Medium article](https://medium.com/towards-data-science/column-generation-in-linear-programming-and-the-cutting-stock-problem-3c697caf4e2b).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regarding *meta-heuristics*, the papers of Vidal et al. (2012) and Vidal (2022)
+    are fantastic. Both are also available in the form of technical reports, with
+    links available in the [*HGS-CVRP*](https://github.com/vidalt/HGS-CVRP) repository.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusions
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In this article, two approaches for solving the Capacitated Vehicle Routing
+    Problem (CVRP) were presented: Mixed-Integer Programming and (Meta)Heuristics.
+    The first alternative was used to solve a small instance in which it has been
+    successful, although it is not able to handle moderate-size or large instances.
+    The second approach was used to solve a challenging problem from the literature
+    with 150 customers to which the solver found a good quality solution with a 1.2%
+    gap to the known optimal within 300s.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Bynum, M. L. et al., 2021\. *Pyomo-optimization modeling in python.* Springer.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dantzig, G. B., & Ramser, J. H., 1959\. The truck dispatching problem. *Management
+    science*, *6*(1), 80–91.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fukasawa, R., Longo, H., Lysgaard, J., Aragão, M. P. D., Reis, M., Uchoa, E.,
+    & Werneck, R. F., 2006\. Robust branch-and-cut-and-price for the capacitated vehicle
+    routing problem. *Mathematical programming*, *106*, 491–511.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pecin, D., Pessoa, A., Poggi, M., & Uchoa, E., 2017\. Improved branch-cut-and-price
+    for capacitated vehicle routing. *Mathematical Programming Computation*, *9*,
+    61–100.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Rochat, Y., & Taillard, É. D., 1995\. Probabilistic diversification and intensification
+    in local search for vehicle routing. *Journal of heuristics*, *1*, 147–167.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toth, P., & Vigo, D., 2002\. An overview of vehicle routing problems. *The vehicle
+    routing problem*, 1–26.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Vidal, T., 2022\. Hybrid genetic search for the CVRP: Open-source implementation
+    and SWAP* neighborhood. *Computers & Operations Research*, *140*, 105643.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vidal, T., Crainic, T. G., Gendreau, M., Lahrichi, N., & Rei, W., 2012\. A hybrid
+    genetic algorithm for multidepot and periodic vehicle routing problems. *Operations
+    Research*, *60*(3), 611–624.
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,409 @@
+- en: Solving Bottlenecks on the Data Input Pipeline with PyTorch Profiler and TensorBoard
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9?source=collection_archive---------2-----------------------#2023-08-26](https://towardsdatascience.com/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9?source=collection_archive---------2-----------------------#2023-08-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: PyTorch Model Performance Analysis and Optimization — Part 4
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://chaimrand.medium.com/?source=post_page-----5dced134dbe9--------------------------------)[![Chaim
+    Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----5dced134dbe9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----5dced134dbe9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----5dced134dbe9--------------------------------)
+    [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----5dced134dbe9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----5dced134dbe9---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----5dced134dbe9--------------------------------)
+    ·11 min read·Aug 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F5dced134dbe9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9&user=Chaim+Rand&userId=9440b37e27fe&source=-----5dced134dbe9---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F5dced134dbe9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsolving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9&source=-----5dced134dbe9---------------------bookmark_footer-----------)![](../Images/6d1d0873c895da273752a2327c322b7c.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Alexander Grey](https://unsplash.com/@sharonmccutcheon?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is the fourth post in our series of posts on the topic of performance
+    analysis and optimization of GPU-based PyTorch workloads. Our focus in this post
+    will be on the training **data input pipeline**. In a typical training application,
+    the host’s CPUs load, pre-process, and collate data before feeding it into the
+    GPU for training. Bottlenecks in the input pipeline occur when the host is not
+    able to keep up with the speed of the GPU. This results in the GPU — the *most
+    expensive* resource in the training setup — remaining idle for periods of time
+    while it waits for data input from the *overly tasked* host. In previous posts
+    (e.g., [here](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851))
+    we have discussed input pipeline bottlenecks in detail and reviewed different
+    ways of addressing them, such as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Choosing a training instance with a CPU to GPU compute ratio that is more suited
+    to your workload (e.g., see our [previous post](/instance-selection-for-deep-learning-7463d774cff0)
+    on tips for choosing the best instance type for your ML workload),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Improving the workload balance between the CPU and GPU by moving some of the
+    CPU pre-processing activity to the GPU, and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Offloading some of the CPU computation to auxiliary CPU-worker devices (e.g.,
+    see [here](/overcoming-ml-data-preprocessing-bottlenecks-with-grpc-ca30fdc01bee)).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Of course, **the first step to addressing a performance bottleneck in the data-input
+    pipeline is to identify and understand it**. In this post we will demonstrate
+    how this can be done using [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    and its associated [TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: As in our previous posts, we will define a toy PyTorch model and then *iteratively*
+    profile its performance, identify bottlenecks, and attempt to fix them. We will
+    run our experiments on an [Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/)
+    instance (containing an NVIDIA A10G GPU and 8 vCPUs) and using the official [AWS
+    PyTorch 2.0 Docker image](https://github.com/aws/deep-learning-containers). Keep
+    in mind that some of the behaviors we describe may vary between versions of PyTorch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many thanks to [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/)
+    for his contributions to this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Toy Model
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the following blocks we introduce the toy example we will use for our demonstration.
+    We start by defining a simple image classification model. The input to the model
+    is a batch of *256*x*256* YUV images and the output is its associated batch of
+    semantic class predictions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The code block below contains our dataset definition. Our dataset contains ten
+    thousand JPEG-image file-paths and their associated (randomly generated) semantic
+    labels. To simplify our demonstration, we will assume that all of the JPEG-file
+    paths point to the same image — the picture of the colorful “bottlenecks” at the
+    top of this post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Note that we have wrapped the file reader with a [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    context manager.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our input data pipeline includes the following transformations on the image:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PILToTensor](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor.html)
+    converts the PIL image to a PyTorch Tensor.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[RandomCrop](https://pytorch.org/vision/0.8/transforms.html#torchvision.transforms.RandomCrop)
+    returns a *256*x*256* crop at a random offset in the image.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: RandomMask is a custom transform that creates a random *256*x*256* boolean mask
+    and applies it to the image. The transform includes a four-neighbor dilation operation
+    on the mask.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: ConvertColor is a custom transformation that converts the image format from
+    RGB to YUV.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Scale is a custom transformation that scales the pixels to the range [0,1].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: We chain the transformations using the [Compose](https://pytorch.org/vision/0.8/transforms.html#torchvision.transforms.Compose)
+    class which we have modified slightly to include a [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    context manager around each of the transform invocations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the code block below we define the dataset and dataloader. We configure the
+    [DataLoader](https://pytorch.org/docs/stable/data.html) to use a [custom collate
+    function](https://pytorch.org/docs/stable/data.html#working-with-collate-fn) in
+    which we wrap the [default collate function](https://pytorch.org/docs/stable/data.html#torch.utils.data.default_collate)
+    with a [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    context manager.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Lastly, we define the model, loss function, optimizer, and the training loop,
+    which we wrap with a [profiler context manager](https://pytorch.org/docs/stable/profiler.html#torch.profiler.profile).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: In the following sections we will use [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    and its associated [TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    in order to assess the performance of our model. Our focus will be on the *Trace
+    View* of the profiler report. Please see the [first post](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
+    in our series for a demonstration of how to use the other sections of the report.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initial Performance Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The average step time reported by the script we defined is 1.3 seconds and
+    the average GPU utilization is a very low 18.21%. In the image below we capture
+    the performance results as displayed in the [TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    *Trace View*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d88379983c412418b10a9b62114465e9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View of Baseline Model (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that every fourth training step includes a long (~5.5 second) period
+    of data-loading during which the GPU is completely idle. The reason that this
+    occurs on every fourth step is directly related to the number of DataLoader workers
+    we chose — four. Every fourth step we find all of the workers busy producing the
+    samples for the next batch while the GPU waits. This is a clear indication of
+    a bottleneck in the data input pipeline. The question is how do we analyze it?
+    Complicating matters is the fact that the many [record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
+    markers that we inserted into the code are nowhere to be found in the profile
+    trace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The use of multiple workers in the DataLoader is **critical** for optimizing
+    performance. Unfortunately, it also makes the profiling process more difficult.
+    Although there exist profilers that support multi-process analysis (e.g., check
+    out [VizTracer](https://viztracer.readthedocs.io/en/latest/concurrency.html)),
+    the approach we will take in this post is to run, analyze, and optimize our model
+    **in single-process mode** (i.e., with zero DataLoader workers) and then apply
+    the optimizations to the **multi-worker mode**. Admittedly, optimizing the speed
+    of a standalone function does not guarantee that multiple (parallel) invocations
+    of the same function will also benefit. However, as we will see in this post,
+    this strategy will enable us to identify and address some core issues that we
+    were *not* able to identify otherwise, and, at least with regards to the issues
+    discussed here, we *will* find a strong correlation between the performance impacts
+    on the two modes. But just before we apply this strategy, let us tune our choice
+    of the number of workers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization 1: Tune the multi-processing strategy'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Determining the optimal number of threads or processes in a multi-process/multi-threaded
+    application, such as ours, can be tricky. On the one hand, if we choose a number
+    that is too low, we might end up under-utilizing the CPU resources. On the other
+    hand, if we go too high, we run the risk of *thrashing*, an undesired situation
+    in which the operating system spends most of its time managing the multiple threading/processing
+    rather than running our code. In the case of a PyTorch training workload, it is
+    recommended to test out different choices for the DataLoader *num_workers* setting.
+    A good place to start is to set the number based on the number of CPUs on the
+    host, (e.g., *num_workers*:=*num_cpus/num_gpus*). In our case the [Amazon EC2
+    g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/) has eight vCPUs and,
+    in fact, increasing the number of DataLoader workers to eight results in a slightly
+    better average step time of 1.17 seconds (an 11% boost).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Importantly, look out for other, less obvious, configuration settings that might
+    impact the number of threads or processes being used by the data-input pipeline.
+    For example, [opencv-python](https://pypi.org/project/opencv-python/), a library
+    commonly used for image pre-processing in computer vision workloads, includes
+    the [cv2.setNumThreads(int)](https://medium.com/@rachittayal7/a-note-on-opencv-threads-performance-in-prod-d10180716fba)
+    function for controlling the number of threads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the image below we capture a portion of the *Trace View* when running the
+    script with *num_workers* set to **zero**.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/535011e9c86417421f028e452be9a593.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View of Baseline Model in Single-process Mode (Captured by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running the script in this manner enables us to see the *record_function* labels
+    we set and to identify the *RandomMask* transform, or more specifically our *dilation*
+    function, as the most time-consuming operation in the retrieval of each individual
+    sample.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization 2: Optimize the dilation function'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Our current implementation of the dilation function uses a 2D convolution, typically
+    implemented using matrix multiplication and not known to run especially fast on
+    CPU. One option would be to run the dilation on the GPU (as described in [this
+    post](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851)).
+    However, the overhead involved in the host-device transaction would likely outweigh
+    the potential performance gains from this type of solution, not to mention that
+    we prefer not to increase the load on the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the code block below we propose an alternative, more CPU-friendly, implementation
+    of the dilation function that uses boolean operations instead of a convolution:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Following this modification, our step time drops to 0.78 seconds, which amounts
+    to an additional 50% improvement. The update single-process *Trace-View* is displayed
+    below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5ec0eeb29fc63b3c03de5b1c9fd86dd4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View Following Dilation Optimization in Single-process Mode (Captured
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can see that the dilation operation has shrunk significantly and that the
+    most time-consuming operation is now the [PILToTensor](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor.html)
+    transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A closer look at the [PILToTensor](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor.html)
+    function (see [here](https://pytorch.org/vision/stable/_modules/torchvision/transforms/functional.html#pil_to_tensor))
+    reveals three underlying operations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Loading the PIL image — due to lazy loading property of [Image.open](https://pillow.readthedocs.io/en/latest/reference/Image.html#PIL.Image.open),
+    the image is loaded here.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The PIL image is converted to a numpy array.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The numpy array is converted to a PyTorch Tensor.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Although the image loading takes the majority of time, we note the extreme wastefulness
+    of applying the subsequent operations to the full-size image only to crop it immediately
+    afterwards. This leads us to our next optimization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization 3: Reorder transformations'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Fortunately, the [RandomCrop](https://pytorch.org/vision/0.8/transforms.html#torchvision.transforms.RandomCrop)
+    transformation can be applied directly to the PIL image enabling us to apply the
+    image-size reduction as the first operation on our pipeline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Following this optimization our step time drops to 0.72 seconds, an additional
+    8% optimization. The *Trace View* capture below shows that the RandomCrop transformation
+    is now the dominant operation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f327927acfd400caac441940988a887a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Trace View Following Transformation Reordering in Single-process Mode (Captured
+    by Author)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In reality, as before, it is actually the PIL image (lazy) loading that causes
+    the bottleneck, not the random crop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ideally, we would be able to optimize this further by limiting the read operation
+    to only the crop in which we are interested. Unfortunately, as of the time of
+    this writing, [torchvision](https://pytorch.org/vision/stable/index.html) does
+    not support this option. In a future post we will demonstrate how we can overcome
+    this shortcoming by implementing our own [custom](https://pytorch.org/tutorials/advanced/cpp_extension.html)
+    *decode_and_crop* PyTorch operator.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Optimization 4: Apply batch transformations'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'In our current implementation, each of the image transformations are applied
+    on each image individually. However, some transformations may run more optimally
+    when applied on the entire batch at once. In the code block below we modify our
+    pipeline so that the ColorTransformation and Scale transforms are applied on image
+    **batches** within our [custom collate function](https://pytorch.org/docs/stable/data.html#working-with-collate-fn):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The result of this change is actually a slight increase in the step time, to
+    0.75 seconds. Although unhelpful in the case of our toy model, the ability to
+    apply certain operations as batch transforms rather than per-sample transforms
+    carries the potential to optimize certain workloads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The successive optimizations we have applied in this post resulted in an 80%
+    improvement in runtime performance. However, although less severe, there still
+    remains a bottleneck in the input pipeline and the GPU remains highly under-utilized
+    (~30%). Please revisit our previous posts (e.g., [here](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851))
+    for additional methods of addressing such issues.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In this post we have focused on performance issues in the training-data input
+    pipeline. As in our previous posts in this series we have chosen PyTorch Profiler
+    and its associated TensorBoard plugin as our weapons of choice and demonstrated
+    their use in accelerating the speed of training. In particular, we showed how
+    running the DataLoader with zero workers increases our ability to identify, analyze,
+    and optimize bottlenecks on the data-input pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As in our previous posts, we emphasize that the path to successful optimization
+    will vary greatly based on the details of the training project, including the
+    model architecture and training environment. In practice, reaching your goals
+    may be more difficult than in the example we presented here. Some of the techniques
+    we described may have little impact on your performance or might even make it
+    worse. We also note that the precise optimizations that we chose, and the order
+    in which we chose to apply them, was somewhat arbitrary. You are highly encouraged
+    to develop your own tools and techniques for reaching your optimization goals
+    based on the specific details of your project.
+  prefs: []
+  type: TYPE_NORMAL

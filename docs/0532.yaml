@@ -1,0 +1,271 @@
+- en: 'MLOps made simple: how to run a batch prediction pipeline using Azure Machine
+    Learning components'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/mlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8?source=collection_archive---------11-----------------------#2023-02-06](https://towardsdatascience.com/mlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8?source=collection_archive---------11-----------------------#2023-02-06)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: You just want to get your model .pt file, upload it somewhere and get the predictions,
+    right? Let’s see how to do it using AML infrastructure
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)[![Déborah
+    Mesquita](../Images/3b77b7eb569e24f2679875429173daf1.png)](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)[](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------)
+    [Déborah Mesquita](https://medium.com/@dehhmesquita?source=post_page-----ea7931e818c8--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdd9e06a0a640&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=post_page-dd9e06a0a640----ea7931e818c8---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----ea7931e818c8--------------------------------)
+    ·7 min read·Feb 6, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fea7931e818c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&user=D%C3%A9borah+Mesquita&userId=dd9e06a0a640&source=-----ea7931e818c8---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fea7931e818c8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fmlops-made-simple-how-to-run-a-batch-prediction-pipeline-using-azure-machine-learning-components-ea7931e818c8&source=-----ea7931e818c8---------------------bookmark_footer-----------)![](../Images/591289eeaf235b40ba0fd589b0304db8.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pic by [Sarah Dorweiler](https://unsplash.com/ko/@sarahdorweiler?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+    on [Unsplash](https://unsplash.com/pt-br/fotografias/x2Tmfd1-SgA?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our day-to-day as data scientists we often need to use some models for internal
+    purposes. If we worked in a team of 1 it would be ok to run them in our own machines,
+    but we usually need to share our work with other teammates. Sharing Jupyter Notebooks
+    that run our scripts is a way of doing it, but notebooks become hard to manage
+    and operate after we pass the experiments phase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recently Azure introduced [**components**](https://learn.microsoft.com/en-us/azure/machine-learning/concept-component),
+    a “self-contained piece of code that does one step in a machine learning pipeline”.
+    We can use the components to build independently executable workflows and share
+    them with other teammates. In today’s article we’re going to use components to
+    create a Feature Matching pipeline.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Note: if you’re totally new to Azure Machine Learning it might be good to read
+    [this other article](https://medium.com/towards-data-science/automl-for-object-detection-how-to-train-a-model-to-identify-potholes-e22c3f4b774)
+    where I give a brief review of some AML concepts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: MLOps 101
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'As [Ville Tuulos](https://twitter.com/vtuulos) points out in the book [Effective
+    Data Science Infrastructure: How to make data scientists productive](https://www.manning.com/books/effective-data-science-infrastructure)
+    (great read, I highly recommend reading it), there are 3 building blocks for a
+    data science infrastructure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Architecture**: what the actual code looks like and how the system looks
+    and feels to the data scientist'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Job scheduler:** how workflows are triggered, executed, and monitored and
+    how failures are handled'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Compute resources:** where the code executes in practice'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: For us the **Architecture** part consists of our python code. This part doesn’t
+    change much from platform to platform. The **Job scheduler** and the **Compute
+    resources** do change depending on the platform we’re running the workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of the data science workflow failures happen not because of the code itself
+    but because something changed in the data or in the environment we’re running
+    the code. Each AML component has its own environment and dependencies, so it contributes
+    a lot to the stability of our workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Using the AML stack we can build the **Architecture** using [components](https://learn.microsoft.com/en-us/azure/machine-learning/concept-component),
+    use pipelines jobs as our **Job Scheduler** and use [compute clusters](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-attach-compute-cluster?tabs=python#what-is-a-compute-cluster)
+    or [compute instances](https://learn.microsoft.com/en-us/azure/machine-learning/concept-compute-instance)
+    to run our workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now let’s see how we can use all that inside a AML Workspace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our batch prediction pipeline
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: We’re going to create a batch prediction pipeline using [Superglue and Superpoint](https://github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition)
+    [1]. Our input can have a target image (a movie poster for example), and for each
+    image in the dataset we want to know if the movie poster is there or not.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you heard of [Feature Matching using OpenCV](https://docs.opencv.org/4.x/dc/dc3/tutorial_py_matcher.html)?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/95697fa9ca0c969e1b04ee18f1ecb36c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Brute-Force Matching with SIFT Descriptors and Ratio Test
+  prefs: []
+  type: TYPE_NORMAL
+- en: Superglue and Superpoint accomplish that using deep learning. The best part
+    is that we don’t need to train the models again since Superpoint is trained in
+    a self-supervised manner [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: AML Components
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Components require a well-defined interface (inputs and outputs). We can share
+    and reuse them across pipelines and they’re versioned, so we can keep improving
+    the code and make modifications as we go. The code of the component can be in
+    any language (python, R, etc.); the only requirement is that it must be able to
+    execute it by a shell command.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our main component will read data from a data asset, run Superpoint+Superglue
+    and output a csv file with the image urls that has the target image in it. The
+    input [data asset](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-data-assets?tabs=cli)
+    will have the list of images we want to verify and a .jpeg file with the movie
+    poster.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can build the components using the Azure ML CLI v2 or the Azure ML SDK v2\.
+    Here we’ll use the python SDK. The code is adapted from the [superglue_rank_images.py
+    script written by Ariya Sontrapornpol](https://github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition/blob/master/superglue_rank_images.py).
+    This is how the component looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The **@command_component** decorator transforms the python function into static
+    specification (YAML) that the pipeline service uses. We need to provide this metadata
+    [3]:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`name` is the unique identifier of the component'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`version` is the current version of the component. A component can have multiple
+    versions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`display_name` is a friendly display name of the component in UI, which isn''t
+    unique'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`description` usually describes what task this component can complete'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`environment` specifies the run-time environment for this component. The environment
+    of this component specifies a docker image and refers to the `conda.yaml` file.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Being able to provide the environment for each component is great because we
+    can isolate the dependencies that each component uses.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `uri_folder` input type has a read only mount mode and the `uri_folder`
+    output type has read-write mount mode. For more info about acessing data in pipeline
+    jobs you can refer to [Access data in a job](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-read-write-data-v2?tabs=python)
+    and [Data concepts in Azure Machine Learning](https://learn.microsoft.com/en-us/azure/machine-learning/concept-data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To register this component in our AML workspace we’ll use the python SDK as
+    well, here is the code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now we can see the component in the AML workspace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/9248054cf7d19cb4606c1f15dedabbb5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The component we’ve created
+  prefs: []
+  type: TYPE_NORMAL
+- en: The next step is to create the pipeline to use the component.
+  prefs: []
+  type: TYPE_NORMAL
+- en: AML Pipelines
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: We can define pipelines using the Azure ML CLI v2, Azure ML SDK v2 or using
+    the Designer. Since our pipeline is simple we’ll define it using the designer.
+    To create the input data asset we’ll also use the workspace UI.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3d8c3ec55132766ca60cb08189e85e74.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating a data asset using the UI
+  prefs: []
+  type: TYPE_NORMAL
+- en: Since our pipeline has a custom component we need to create a custom pipeline
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1828bb84d05885da2f07de30bb6d8019.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Tab to create a custom pipeline
+  prefs: []
+  type: TYPE_NORMAL
+- en: To submit the pipeline run we need to specify the compute resource. You can
+    create one using the UI as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f3194f47ab79622c55ab371827d4871.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Creating the pipeline using Designer
+  prefs: []
+  type: TYPE_NORMAL
+- en: Final thoughts
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: AML components are a great way to organize our code in our data science day-to-day
+    activities. Since they can be written any language, we can run the code in any
+    platform that can run shell commands, not only inside Azure Machine Learning.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By using AML though we get the UI to manage them, create data assets, manage
+    our compute resources and so on. The AML ecosystem offers a great way of starting
+    to use MLOps principles in our workflows.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] [https://github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition](https://github.com/jomariya23156/SuperGlue-for-Visual-Place-Recognition)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] DeTone, Daniel, Tomasz Malisiewicz, and Andrew Rabinovich. “Superpoint:
+    Self-supervised interest point detection and description.” *Proceedings of the
+    IEEE conference on computer vision and pattern recognition workshops*. 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] [https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-component-pipeline-python](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-create-component-pipeline-python)'
+  prefs: []
+  type: TYPE_NORMAL

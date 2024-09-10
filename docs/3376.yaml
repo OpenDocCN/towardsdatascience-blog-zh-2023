@@ -1,0 +1,587 @@
+- en: Best Practices for Debugging Errors in Logistic Regression with Python
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/how-to-fix-errors-in-logistic-regression-32b8dd9fe6d7?source=collection_archive---------4-----------------------#2023-11-13](https://towardsdatascience.com/how-to-fix-errors-in-logistic-regression-32b8dd9fe6d7?source=collection_archive---------4-----------------------#2023-11-13)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Optimizing performance using unstructured, real-world data
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://gabeverzino.medium.com/?source=post_page-----32b8dd9fe6d7--------------------------------)[![Gabe
+    Verzino](../Images/36452afec54430c55594a26247136f6f.png)](https://gabeverzino.medium.com/?source=post_page-----32b8dd9fe6d7--------------------------------)[](https://towardsdatascience.com/?source=post_page-----32b8dd9fe6d7--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----32b8dd9fe6d7--------------------------------)
+    [Gabe Verzino](https://gabeverzino.medium.com/?source=post_page-----32b8dd9fe6d7--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fb4abbbfdcbbb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-fix-errors-in-logistic-regression-32b8dd9fe6d7&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=post_page-b4abbbfdcbbb----32b8dd9fe6d7---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----32b8dd9fe6d7--------------------------------)
+    ·13 min read·Nov 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F32b8dd9fe6d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-fix-errors-in-logistic-regression-32b8dd9fe6d7&user=Gabe+Verzino&userId=b4abbbfdcbbb&source=-----32b8dd9fe6d7---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F32b8dd9fe6d7&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-to-fix-errors-in-logistic-regression-32b8dd9fe6d7&source=-----32b8dd9fe6d7---------------------bookmark_footer-----------)![](../Images/ece08cc83ca0517ebe73fcf363268779.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Vardan Papikyan ([Unsplash](https://unsplash.com/photos/a-person-holding-two-pieces-of-a-puzzle-JzE1dHEaAew))
+  prefs: []
+  type: TYPE_NORMAL
+- en: Much has been written about the basics of Logistic Regression (LR) — its versatility,
+    time-tested performance, even the underlying math. But knowing *how* to implement
+    LR successfully and debug inevitable errors is much more challenging to do. That
+    information lives deep in QA websites, academic papers, or simply comes with experience.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The reality is, not every output will be as clean as the iconic iris dataset,
+    swiftly classifying flower types. On large datasets (the datasets you likely use
+    on the job), LR models are likely to encounter problems. Implausibly high coefficients.
+    NaN standard errors. Failing to converge.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What’s to blame? Bad data? Your model?
+  prefs: []
+  type: TYPE_NORMAL
+- en: To organize the landscape a bit, I conducted some research and compiled a list
+    of common LR errors, reasons, and possible solutions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7a1c7c056d5da9f85adf5dacee78042e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: LR Model output problems, reasons and solutions (Gabe Verzino)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The above table is not exhaustive by any means, but it’s all in one place. Below
+    I will use fabricated data (that’s imbalanced, sparse, categorical… but typical)
+    to artificially re-create these errors and then fix them again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But first.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quick Background
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'As you begin to think about LR, there are a few things unique to these models
+    that you should remember:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: LR is technically a probability model, not a classifier
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: LR requires a linear decision boundary; it assumes linearity between features
+    and target variable, which you can determine with visuals, crosstabs, or ConvexHull
+    analysis from *scipy.spatial*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: You cannot have missing values or major outliers
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As the number of features increases, you are more likely to experience multicollinearity
+    and overfitting (fixable with VIF and regularization, respectively)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The most popular LR packages in Python come from *sklearn* and *statsmodels*
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Now let’s get into some common problems.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Problem 1: Convergence warning, optimization failed'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Using the python *statsmodels* package, you may run a basic LR and get the
+    warning “ConvergenceWarning: Maximum Likelihood optimization failed to converge.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/6b6a0fb8106ed7abe831c5aa339c19a3.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The coefficients and standard errors may even populate, like normal, including
+    those from *LogisticRegression* in the *sklearn.linear_model* package.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Provided the results, you may be tempted to stop here. But don’t. You want to
+    ensure your model converges to produce the best (lowest) cost function and model
+    fit [1].
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can solve this in *statsmodels* or *sklearn* by changing the solver/method
+    or increasing the *maxiter* parameter. In *sklearn*, the tuning parameter *C*
+    can also be lowered to apply increased L2 regularization, and can be iteratively
+    tested along a logarithmic scale (100, 10, 1, 0.1, 0.01, etc.) [2].
+  prefs: []
+  type: TYPE_NORMAL
+- en: In my particular case, I increased to *maxiter*=300000 and the model converged.
+    The reason it worked is because I provided the model (e.g., solvers) more attempts
+    at converging and finding the best parameters [3]. And those parameters, such
+    as the coefficients and p-values, do indeed become more accurate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/555d15dead43f9bcefb8fbfa4d459617.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: method=’bfgs’, maxiter=0
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/1320d7f33ac6abab459908ebe51bc6f7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: method=’bfgs’, maxiter=30000
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Problem 2: Added a feature, but LR outputs didn’t update'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This one is easy to miss, but easy to diagnose. If you’re working with many
+    features or didn’t catch it in data cleaning, you may accidentally include a categorical
+    feature in your LR model that is nearly constant or has only one level… bad stuff.
+    The inclusion of such a feature will render coefficients and standard-errors without
+    any warnings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here’s our model and output without the bad feature.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/d2cf4366c6e491f9009ce96fad58e785.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Now, let’s add a one-level feature *type*, with its reference category set to
+    ‘Missing’.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: And here we see the impact of that superfluous feature… which was no impact
+    at all. The R-squared value stays the same, highlighted above and below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/477a18c48288ae152b0ef4decec8cd8c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Logistic Regression cannot make meaningful estimates on a feature with one level
+    or constant values, and may discard it from the model. This happens at no determinant
+    to the model itself, but still, best practice is to include only the features
+    in the model that are having a positive impact.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple *value_counts()* of our feature *type* reveals it has one level, indicating
+    you want to drop the feature from your model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8d0043b00e630e12ae3b6ddab946aeee.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Problem 3: “Inverting Hessian failed” (and NaN standard errors)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'This is a big one, and happens a lot. Let’s create this new error by including
+    four more features into our LR model: VA, VB, VC and VI. They’re all categorical,
+    each with 3 levels (0, 1 and “Missing” as a reference).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And here is our new error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/299d000bb77ddb4dcaafb9fbb2ad3835.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Exploring the outputs a bit, we see coefficients rendered but none of the standard
+    errors or p-values. *Sklearn* provides coefficients as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/57210c6e56574499fa797890631e8af5.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: But why the NaN values? And why do you need to invert Hessian, anyway?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Many optimization algorithms use the Hessian inverse (or an estimate of it)
+    to maximize the likelihood function. So when inversion has failed, it means the
+    Hessian (technically, a second derivative of the loglikelihood) is not a positive
+    definite [4]. Visually, some features have huge curvatures while some have smaller
+    curvatures, and the result is the model cannot produce standard errors for the
+    parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: More to the point, when a Hessian is not invertible, no computational changes
+    can make it inverse because it simply does not exist [5].
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What are the causes of this? There are three most common:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are more feature variables than observations
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The categorical feature(s) have very low frequency levels
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Multicollinearity exists between features
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since our dataset has many rows (~25,000) relative to features (14) we can safely
+    ignore the first possibility (though solutions exist for this exact problem [6]).
+    The third possibility may be at play, and we can check that with variance inflation
+    factor (VIF). The second possibility is a bit easier to diagnose, so let’s start
+    there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that features VA, VB, VC and VI are mainly comprised of 1s and 0s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/77be00b2bb75c73c665a183fef49031b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: In particular, the VI feature has a very low (relative) frequency for the ‘Missing’
+    category, actually on the order of 0.03% (9/24,874).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/29944d309a986ad9a1426f60a9fd8dfc.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Let’s say we confirm with our business context that we can collapse 1s and “Missing”
+    together. Or, at the very least, any potential consequences to refactoring data
+    in this way would be far less than accepting a model with known errors (and no
+    standard errors to speak of).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/93868b80adb5151783e2976628d35f9b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: So we created VI_alt, which has 2 levels, and 0 can serve as our reference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Exchanging VI_alt for VI in the model,
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: There’s a slight improvement to the overall model because it converges without
+    any errors, coefficients render and standard errors now appear. Again, still a
+    poorly-fitted model, but it’s now a workingmodel, which is our aim here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/de5b2d336595f759055c5b16bbf8f2aa.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Our third and final possibility for Hessian failing inversion is multi-collinearity.
+    Now, multi-collinearity is a hot topic in machine learning, I think because (1)
+    it plagues many popular models like LR, linear regression, KNN and Naive Bayes
+    (2) the VIF heuristic for removing features turns out to be more art than science,
+    and (3) ultimately, practitioners disagree about whether or not to even remove
+    such features in the first place if it comes at the expense of injecting selection
+    bias or losing key model information [5–9].
+  prefs: []
+  type: TYPE_NORMAL
+- en: I won’t go down that rabbit hole. It’s deep.
+  prefs: []
+  type: TYPE_NORMAL
+- en: But I’ll show how to calculate VIFs, and maybe we can make our own conclusions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the VIF really asks “How well is one of the features jointly explained
+    by all my other features?” A feature’s VIF estimate will get “inflated” when there
+    is linear dependence with other features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given all the features in our dataset, let’s calculate the VIFs below.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/0a6fb0ad0da304321f4d0e4dee906ffb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Note from this partial list, features VA, VB, VD all show VIFs towards infinity,
+    which far exceeds the “rule of thumb” threshold of 5\. But we need to be careful
+    about heuristics like this, as VIF thresholds have two caveats:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The 5 cut-off is relative to other features — e.g., if the large majority of
+    feature VIFs fall below 7 and a smaller subset of feature VIFs are above 7, then
+    7 could be a more reasonable threshold.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Categorical features with a smaller number of cases in the reference category
+    relative to other levels will produce high VIFs even if those features are not
+    correlated with other variables in the model [8].
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In our case, features VA, VB, VC are all highly colinear. Crosstabs confirm
+    this, and a Pearson’s correlation matrix would too if they were continuous variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The general consensus for solving this is to systematically drop one feature
+    at a time, review all VIFs, note possible improvements, and continue until all
+    VIFs fall below your selected threshold. Careful attention should be paid to losing
+    any possible explanatory power from the features, relative to both the business
+    context and target variable. Confirmatory statistical tests like chi-square and
+    visualization can help aid in deciding which feature to drop between two possible
+    choices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s drop VB and note the VIF changes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/176578df50e36401a64478974feef6ec.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: VA and VC still have VIFs at infinity. Even worse, the model is still rendering
+    NaN standard errors (not shown). Let’s drop VC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/024cb3841d6d1360ca2142f0522399e2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Finally, the model produces standard errors, so even though the VIFs of feature
+    VA are still > 5, it’s not a problem because of the second caveat above, the reference
+    category having a small number of cases relative to the other levels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e150ba20ded7a4ad0e38e6426751b90f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: '***Extra Credit: Let’s say you absolutely know VA, VB and VC are critical to
+    explaining the target variable and need them in the model. Given the additional
+    features, assume the optimization is working over a complex space, and the “Inverting
+    Hessian failed” may be circumvented by choosing new solvers and starting points
+    (start_params in sklearn). Training a new model that does not assume linear boundaries
+    would also be an option.***'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Problem 4: “Possibly complete quasi-separation” error (and unreasonably large
+    coefficients and/or standard errors)'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We might get excited to see large coefficients and high accuracy scores. But
+    often, these estimates are implausibly large, and are caused by another common
+    issue: perfect separation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Perfect (or near-perfect) separation occurs when one or more features are strongly
+    associated with the target variable. In fact, they may be almost identical to
+    it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I can manufacture this error by taking the target variable *target_satisfaction*
+    and creating a new feature from it called *new_target_satisfaction* that is 95%
+    similar to it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: And put *new_target_satisfaction* into the model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Coefficients and standard errors render, but we get this quasi-separation warning:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/30ed46310d28bd23b07ab46054b3255a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: The feature has a ridiculously high coefficient, and an odds ratio of about
+    70,000,000, which is implausible.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f2ed5a4d314402957da555c7f2e7d3d0.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Under the hood, this is happening because features that separate “too well”
+    create an inflated slope, thus a large coefficient and standard error. Possibly,
+    the LR model may also not converge [10].
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e347c68f2585e834a20328b5da03bb4e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Perfect Separation (Cornell Statistical Consulting Unit) [9]
+  prefs: []
+  type: TYPE_NORMAL
+- en: Those two red dots, the cases misclassified removed, would have actually prevented
+    perfect separation, helping the LR model converge and the standard error estimates
+    to be more realistic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The thing to remember about perfect separation in *sklearn* is that it can output
+    a model that looks like near-perfect accuracy, in our case 98%, but in reality
+    has a feature *new_target_satisfaction* that is a near duplicate of the target
+    *target_satisfaction*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '![](../Images/ddc8a4b7b3f30161f1444ff43462c28b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'The most common solution would be to simply drop the feature. But there are
+    a growing number of alternative solutions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Apply Firth’s correction, which maximizes a “penalized” likelihood function.
+    Currently, *statsmodels* does not have this functionality available but R does
+    [11]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Penalized regression can also work, specifically by testing combinations of
+    solvers, penalties and learning rates [2]. I kept *new_target_satisfaction* in
+    the model and tried various combinations, but it made little difference in this
+    particular case
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Some practitioners will manually swap a fewrandomly selected observations in
+    the problematic feature to make it less perfectly-separated with the target, like
+    adding back those red circles in the picture above [8, 10]. Running a crosstab
+    on that feature with the target can help you determine what percent of cases to
+    swap. While doing this you might ask yourself *Why? Why am I refactoring one feature
+    like this just so the LR model can accept it?* To help you sleep better, some
+    research argues perfect separation is only symptomatic of the model, not our data
+    [8, 11]
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finally, some contrarian practitioners actually see nothing wrong with coefficients
+    so high [8]. A very high odds-ratio simply suggests it is strongly suggestive
+    of an association, and is predicting almost perfectly. Caveat the findings and
+    leave it at that. The basis for this argument is high coefficients are an unfortunate
+    consequence of the Wald test and likelihood ratio that require an evaluation of
+    info with an alternative hypothesis
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Logistic Regression is most definitely versatile and powerful if you can overcome
+    the challenges from real-world data sets. I hope this overview provides a good
+    foundation of possible solutions. What tip did you find most interesting? What
+    are some others?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks for reading. Share your thoughts in the Comments section, and let me
+    know what other problems you’ve been encountering with Logistic Regression. I’m
+    also happy to connect and talk shop on [LinkedIn](https://www.linkedin.com/in/gabe-verzino-71401137/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Check out some of my other articles:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Using Bayesian Networks to Forecast Ancillary Service Volume in Hospitals**](https://medium.com/towards-data-science/using-bayesian-networks-to-forecast-ancillary-service-volume-in-hospitals-48968a978cb5)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Why Balancing Classes is Over-Hyped**](https://medium.com/towards-data-science/why-balancing-classes-is-over-hyped-e382a8a410f7)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[**Feature Engineering CPT Codes**](https://medium.com/mlearning-ai/working-with-cpt-codes-5a2b04a4d183)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Citations
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Allison, Paul. Convergence Failures in Logistic Regression. University of Pennsylvania,
+    Philadelphia, PA. [https://www.people.vcu.edu/~dbandyop/BIOS625/Convergence_Logistic.pdf](https://www.people.vcu.edu/~dbandyop/BIOS625/Convergence_Logistic.pdf)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Geron, Aurelien. Hands-On Machine Learning with Scikit-Learn, Keras & Tensorflow.
+    Second Edition. Published by: O’Reilly, 2019.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Sckit-learn documentation, sklearn.linear_model.LogisticRegression. [https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Google Groups discussion. “MLE error: Warning: Inverting hessian failed: Maybe
+    I cant use ‘matrix’ containers?” 2014\. [https://groups.google.com/g/pystatsmodels/c/aELcgNpg5f8](https://groups.google.com/g/pystatsmodels/c/aELcgNpg5f8)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Gill, Jeff & King, Gary. What to Do When Your Hessian Is Not Invertible. Alterantives
+    to Model Respecification in Nonlinear Estimation. SOCIOLOGICAL METHODS & RESEARCH,
+    Vol. 33, №1, August 2004 54–87 DOI: 10.1177/0049124103262681\. [https://gking.harvard.edu/files/help.pdf](https://gking.harvard.edu/files/help.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '“Variable Selection for a binary classification problem.” StackExchange, CrossValidated.
+    Online at: [https://stats.stackexchange.com/questions/64271/variable-selection-for-a-binary-classification-problem/64637#64637](https://stats.stackexchange.com/questions/64271/variable-selection-for-a-binary-classification-problem/64637#64637)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '“In supervised learning, why is it bad to have correlated features.” StackExchange,
+    Data Science. Online at: [https://datascience.stackexchange.com/questions/24452/in-supervised-learning-why-is-it-bad-to-have-correlated-features](https://datascience.stackexchange.com/questions/24452/in-supervised-learning-why-is-it-bad-to-have-correlated-features)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '“How to deal with perfect separation in logistic regression”. StackExchange,
+    CrossValidated. Online at: [https://stats.stackexchange.com/questions/11109/how-to-deal-with-perfect-separation-in-logistic-regression](https://stats.stackexchange.com/questions/11109/how-to-deal-with-perfect-separation-in-logistic-regression)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Allison, Paul. “When Can You Safely Ignore Multicollinearity”. Statistical
+    Horizons, September 10, 2012\. Online at: [https://statisticalhorizons.com/multicollinearity/](https://statisticalhorizons.com/multicollinearity/)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Cornell Statistical Consulting Unit. Separation and Convergence Issues in Logistic
+    Regression. Statnews #82\. Published: February, 2012\. Online at: [https://cscu.cornell.edu/wp-content/uploads/82_lgsbias.pdf](https://cscu.cornell.edu/wp-content/uploads/82_lgsbias.pdf)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Logistf: Firth’s Bias-Reduced Logistic Regression. R documentation. Published
+    August 18, 2023\. Online at: [https://cran.r-project.org/web/packages/logistf/index.html](https://cran.r-project.org/web/packages/logistf/index.html)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Note: All images are by the author, unless otherwise stated.*'
+  prefs: []
+  type: TYPE_NORMAL

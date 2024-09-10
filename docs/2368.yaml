@@ -1,0 +1,225 @@
+- en: Is It Compression That You Need?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/is-it-compression-that-you-need-7aa544a328b1?source=collection_archive---------4-----------------------#2023-07-22](https://towardsdatascience.com/is-it-compression-that-you-need-7aa544a328b1?source=collection_archive---------4-----------------------#2023-07-22)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A more efficient implementation of compression-based topic classification
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@mtths.mndr?source=post_page-----7aa544a328b1--------------------------------)[![Matthias
+    Minder](../Images/f4d6c603bc53deeac3a515db4bdfbeee.png)](https://medium.com/@mtths.mndr?source=post_page-----7aa544a328b1--------------------------------)[](https://towardsdatascience.com/?source=post_page-----7aa544a328b1--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----7aa544a328b1--------------------------------)
+    [Matthias Minder](https://medium.com/@mtths.mndr?source=post_page-----7aa544a328b1--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6a3d24668b34&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-it-compression-that-you-need-7aa544a328b1&user=Matthias+Minder&userId=6a3d24668b34&source=post_page-6a3d24668b34----7aa544a328b1---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----7aa544a328b1--------------------------------)
+    ·6 min read·Jul 22, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F7aa544a328b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-it-compression-that-you-need-7aa544a328b1&user=Matthias+Minder&userId=6a3d24668b34&source=-----7aa544a328b1---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F7aa544a328b1&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fis-it-compression-that-you-need-7aa544a328b1&source=-----7aa544a328b1---------------------bookmark_footer-----------)![](../Images/75dfff5b5a21605b44529d810116dce6.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Tomas Sobek](https://unsplash.com/es/@tomas_nz?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The recently published paper with the title *“Low-Resource” Text Classification:
+    A Parameter-Free Classification Method with Compressors* [1] has received quite
+    some public attention in the recent days. Their key finding is that they can in
+    some cases outperform large language models like BERT using the simple idea that
+    two text documents are more similar if they can be compressed to a smaller file
+    size (although there is some controversy about the validity of their results,
+    see [this blog post](https://kenschutte.com/gzip-knn-paper/) and [this discussion
+    including the author’s reply](https://github.com/bazingagin/npc_gzip/issues/3#issuecomment-1641679866)).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main idea behind their approach is that the “information distance” between
+    two documents, as defined by Bennet et. al [2], is a good distance metric to use
+    during text classification. Since the information distance itself isn’t computable,
+    they approximate it using the Normalized Compression Distance (NCD) [3], which
+    estimates the information distance using “real-life” data compressors like gzip.
+    NCD has the property that better compressors (i.e. compressors with a better compression
+    ratio) will allow for a better estimation of the true information distance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It seems natural then to expect that better compressor will achieve superior
+    performance in classification. But they cannot validate this experimentally; the
+    best compressor considered in the paper, bz2, performs worse in terms of accuracy
+    than gzip. They explain this as follows: “[…] the Burrows-Wheeler algorithm used
+    by bz2 dismisses the information of character order by permuting characters during
+    compression” [1, p.6817]. This implies that compression alone doesn’t explain
+    their findings, but that it has something to do with character order as well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This made me wonder: How much of their results are due to compression, and
+    how much is due to the comparison of strings between two documents?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To investigate this question, I compare their results with two alternatives:
+    (1) a simple compressor that relies solely on replacing recurring strings, and
+    (2) an algorithm that explicitly does substring matching between a query document
+    and all documents belonging to some topic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A first ablation: Will LZ4 do the job?** The compression algorithm gzip is
+    based on [DEFLATE](https://en.wikipedia.org/wiki/Deflate), which in term uses
+    [LZ77](https://en.wikipedia.org/wiki/LZ77_and_LZ78) and [Huffman coding](https://en.wikipedia.org/wiki/Huffman_coding)
+    to compress the data. Let’s look at these two algorithms in more detail and think
+    about what they imply when applied to our use-case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: During compression, LZ77 uses a sliding window over previously seen data. If
+    a string of characters is repeated, a reference to the first occurrence of the
+    character string is stored, instead of the string itself. Hence, if we take the
+    length of two concatenated documents as a distance metric, documents will be closer
+    together if they have more overlapping substrings within the size of the sliding
+    window (typically 32KB).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Huffman coding compresses the resulting text even further: Instead of using
+    8 bits for every character, it represents those letters that occur frequently
+    with less bits and those letters that occur rarely with more bits. If we apply
+    the Huffman coding to the concatenated documents, two documents would be smaller
+    after compression if they use the characters with similar frequency.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One would expect matching substrings to be much more important to topic classification
+    than similar character frequencies. I therefore do an ablation study by looking
+    at the performance when using the [LZ4](https://en.wikipedia.org/wiki/LZ4_(compression_algorithm))
+    algorithm [4] for compression (basically LZ77 but with a [fast implementation
+    available in python](https://pypi.org/project/lz4/)). Since LZ4 has a much lower
+    compression ratio than gzip, their explanation would suggest that performance
+    of LZ4 is worse than gzip. If however the main thing going on is substring matching,
+    LZ4 will perform just as well as gzip.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A more explicit algorithm** To go even further, I implement a simple algorithm
+    that explicitly does the substring matching: It assigns documents to the topic
+    with the most similar substrings (substrings being character-level n-grams here).
+    It works as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Text encoding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Extract all character n-grams within the text with 5 ≤ n ≤ 50.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. For the extracted n-grams, calculate an 8-digit hash code using `hash(n_gram)
+    % int(10e8)` in python (since I want to control how many different things to keep
+    track of).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Keep track of this in sets (thus losing the information about how many times
+    a given code occurs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Training:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. Calculate the set of hash codes for every text of a given topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Take the set union to obtain a set of hash codes that occur in the topic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Inferencing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. For some query text, calculate the set of its hashed n-grams.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. For every topic encountered during training, calculate the size of the intersection
+    between the topic sets and the query set.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Assign the query text to the topic with the largest intersection.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Experiment and Results** I compare the results of gzip, lz4 and the hashed
+    n-gram algorithm in the 100-shot setting with 5 runs, as described in their paper.
+    For all three methods I stick to their experimental setup in order to reproduce
+    their reported results (again, leaving us with potentially inflated accuracy measures).
+    The code can be found on [github](https://github.com/mattminder/npc_gzip).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can see the performance on three data sets from [torchtext](https://pytorch.org/text/stable/datasets.html)
+    ([AG_NEWS](http://groups.di.unipi.it/~gulli/AG_corpus_of_news_articles.html) [5],
+    [DBpedia](http://wikidata.dbpedia.org/develop/datasets) [6] and [YahooAnswers](https://github.com/LC-John/Yahoo-Answers-Topic-Classification-Dataset/tree/master/dataset)
+    [5]) in the following table:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a39a190e7ead963fef2e66f8bd2aa8b7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: We see that lz4 and the hashed n-grams outperform gzip on all three considered
+    data sets, with the hashed n-gram algorithm being best in 2 out of 3 data. But
+    it still doesn’t compete with BERT, which has a performance of 0.82 on AG_NEWS
+    and close to 1 on DBpedia according to their paper in the 100-shot setting.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'These results have important practical implications: In our experiment, the
+    lz4-based algorithm runs approximately 10x faster than the gzip-based algorithm.
+    And even more importantly, the hashed n-gram algorithm even improves the computational
+    complexity at inference time: Instead of having to compare a query document with
+    every other document in the text corpus, you just have to do a comparison with
+    every topic set.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**What do we learn from this?** My results suggest that the driving force between
+    the impressive reported performance of gzip can be attributed to the fact that
+    their method implicitly compares character-level n-grams between documents. This
+    finding allows for the use of faster compressors like lz4 without any performance
+    loss. Furthermore, one can even rewrite their algorithm to have constant complexity
+    with respect to dataset size at inference time, bringing their method a big step
+    closer to practical use on big data sets. If you do want to use it in practice,
+    I have started an implementation following the scikit-learn API of my proposed
+    algorithm [here](http://github.com/mattminder/long-tail-text-classifier).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The one question that remains is, why does this outperform the [TF-IDF](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)
+    approach that also compares words between documents?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Maybe considering character-level n-grams does a better job for some tasks
+    than splitting the text into individual words. But probably more importantly,
+    the method here gives equal weight to all n-grams, regardless of their occurrence
+    count. This means that it gives a lot of importance to so-called long-tail (read:
+    rare) information, which apparently is relevant for some text tasks such as topic
+    detection. Note that transformer networks don’t do too good a job on modelling
+    such long-tail information (for evidence, see e.g. [5]), which is why these very
+    simple approaches are a very interesting benchmark to measure your million-parameter
+    model against.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**References** [1] Z. Jiang, M. Yang, M. Tsirlin, R. Tang, Y. Dai, J. Lin.
+    “Low-Resource” Text Classification: A Parameter-Free Classification Method with
+    Compressors (2023), ACL 2023'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] C. H. Bennett, P. Gács, M. Li, P. MB Vitányi, and W. H. Zurek, Information
+    distance (1998), IEEE Transactions on information theory'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] M. Li, X. Chen, X. Li, B. Ma, and P. Vitányi, The similarity metric (2004),
+    IEEE transactions on Information Theory'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] N. Kandpal, H. Deng, A. Roberts, E. Wallace, C. Raffel, Large Language
+    Models Struggle to Learn Long-Tail Knowledge (2022), arxiv.org/abs/2211.08411'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to Joel Niklaus and Marcel Gygli for our discussions and your feedback.
+  prefs: []
+  type: TYPE_NORMAL

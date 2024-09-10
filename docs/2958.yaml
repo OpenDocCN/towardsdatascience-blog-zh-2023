@@ -1,0 +1,196 @@
+- en: Building a Smart Travel Itinerary Suggester with LangChain, Google Maps API,
+    and Gradio (Part 3)
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb?source=collection_archive---------5-----------------------#2023-09-26](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb?source=collection_archive---------5-----------------------#2023-09-26)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Learn how to build an application that might inspire your next road trip
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)[![Robert
+    Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)[](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------)
+    [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----90dc7be627fb--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----90dc7be627fb---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----90dc7be627fb--------------------------------)
+    ·6 min read·Sep 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F90dc7be627fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&user=Robert+Martin-Short&userId=83d38eb39498&source=-----90dc7be627fb---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F90dc7be627fb&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-3-90dc7be627fb&source=-----90dc7be627fb---------------------bookmark_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**This article is the final one in a three part series where we build a travel
+    itinerary suggester application using OpenAI and Google APIs and display it in
+    a simple UI generated with gradio. In this part, we discuss how to build that
+    UI, putting together the Agent and RouteFinder modules that we built in parts
+    1 and 2\. Just want see the code? Find it** [**here**](https://github.com/rmartinshort/travel_mapper)**.**'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 1\. Recap of part 2
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: In the [second part](/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5)
+    of this three part series, we built a system that takes a parsed list of waypoints
+    from a set of LLM calls (part 1) and uses the Google Maps API and Folium to generate
+    a route between them and plot it on an interactive map. Recall that our goal in
+    this project is to build an application that allows someone to easily enter a
+    travel request like “*A four day trip from Berlin to Zurich where I try lots of
+    local beer and food*” and returns a detailed itinerary along with a map for them
+    to explore. Thanks to parts 1 and 2 we have all the components assembled, we now
+    just need to put them together in a UI that makes using them easy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**2\. Connecting maps to gradio**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[gradio](https://www.gradio.app/) is an excellent library for quickly building
+    interactive apps that can showcase machine learning models. It has a `gradio.Plot`
+    component that is designed to work with Matplotlib, Bohkeh and Plotly (details
+    [here](https://www.gradio.app/guides/plot-component-for-maps)). However, the maps
+    we were generating in Part 2 are made with folium. It would certainly be possilbe
+    to re-make them using one of these other libraries, but thankfully we don’t need
+    to. Instead, we can use the [leafmap](https://leafmap.org/) package, which allows
+    us to reuse the folium code we already have and force it to output a html that
+    can be understood by `gradio` . Details can be found [here](https://leafmap.org/notebooks/66_gradio/).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let’s look at a simple example to see how this works. First we will make a function
+    that outputs a html from in the desired format
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, the function `generate_map` takes in a string of coordinates in the format
+    *“lat,lon”* and a zoom level for the folium map. It generates the map and converts
+    it to a format that can be readable by gradio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Next, lets build a really simple gradio interface to display our map
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here we are making use of the `Blocks` API, which gives us flexibility over
+    how our app’s UI will be set up. We make one row pf components with two columns.
+    The first column contains three elements: A text box for the user to enter the
+    desired center coordinates, a dropdown to select the zoom level and a button called
+    *“generate map”*, which they need to click on.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the second column, we have `map_output` which is a`gradio.HTML()` component,
+    which is going to display the map html.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, all we need to do is define what happens when `map_button` is clicked.
+    When this happens, we will run the `generate_map` function, passing in the selected
+    values from `coordinates_input` and `zoom_input` . The result will be send to
+    the `map_output` variable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Running this produces the following UI
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/20d1d726bf80511528ef8b0c48695346.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Basic mapping UI generated with leafmap and gradio
+  prefs: []
+  type: TYPE_NORMAL
+- en: It’s certainly not sophisticated or well laid out, but it contains the essential
+    element for building a mapping tool with gradio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**3\. A simple UI for our travel agent**'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Let’s first look at some of the features of the gradio app for our travel mapper
+    before we examine the code. Bear in mind though that gradio has a large variety
+    of components available to make sophisticated and good-looking UIs, and this travel
+    mapper UI is still very much at the POC stage.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7e9da427e20d22d644547d8d2282cff7.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Description of all the components in the final gradio app for the travel mapper
+  prefs: []
+  type: TYPE_NORMAL
+- en: Essentially our app has two columns. The first contains a text box for the user
+    to enter their query, a set of radio buttons that allows us to switch between
+    models and a text box that displays the output of the validation check.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The second column contains the map, generated with `leafmap.folium` and a text
+    box that displays the full text itinerary output from the LLM call. The *“generate
+    map”* button is at the bottom, off screen in the screenshot above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The code for all this is remarkably concise, thanks to all the work being done
+    in the background by gradio.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 4\. Creating the package
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: As can be seen from looking at the repository on github, the travel mapper code
+    is structured with the help of a standard template from [cookiecutter](https://github.com/cookiecutter/cookiecutter),
+    but some important parts of the template are not yet filled in. Ideally we would
+    include unit and integration tests, and complete the repository set up so that
+    continuous integration/continuous delivery (CI/CD) concepts are used. If the project
+    develops further beyond this POC stage, these aspects will be added in future.
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are a few ways that the code can be run locally. If we put the `main`
+    function in the block above into a script called `driver.py` , we should be able
+    to run it from the top level of the `travel_mapper`project from the terminal.
+    If the package successfully runs, a message like this should appear in the terminal
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Copy-pasting this url into a web browser should display the gradio app, running
+    locally on your machine. Of course, more steps would be needed if we actually
+    wanted to deploy this on the web (which I do not recommend because of the costs
+    incurred from the API calls), but this is beyond the scope of these articles.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The driver can also be run from a bash script called `run.sh` , which can be
+    found in the `user_interface` module of the codebase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: When run from the top level of the project, this also sets the `PYTHONPATH`
+    correctly so that the project-specific import statements are always recognized.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thats it for the series and thanks for making it to the end! Please feel free
+    to explore the full codebase here [https://github.com/rmartinshort/travel_mapper](https://github.com/rmartinshort/travel_mapper).
+    Any suggestions for improvement or extensions to the functionality would be much
+    appreciated!
+  prefs: []
+  type: TYPE_NORMAL

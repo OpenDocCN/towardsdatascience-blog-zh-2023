@@ -1,0 +1,578 @@
+- en: Batched K-Means with Python Numba and CUDA C
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/batched-k-means-with-python-numba-and-cuda-c-3d4946c587b9?source=collection_archive---------2-----------------------#2023-11-27](https://towardsdatascience.com/batched-k-means-with-python-numba-and-cuda-c-3d4946c587b9?source=collection_archive---------2-----------------------#2023-11-27)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to Speed Up Your Data Analysis 1600x vs Scikit-Learn (With Code!)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)[![Alex
+    Shao](../Images/07a2cd8de23969f5732995b0fda2a25e.png)](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)[](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------)
+    [Alex Shao](https://medium.com/@alex.w.shao?source=post_page-----3d4946c587b9--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F723362c2a30f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&user=Alex+Shao&userId=723362c2a30f&source=post_page-723362c2a30f----3d4946c587b9---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----3d4946c587b9--------------------------------)
+    ·15 min read·Nov 27, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F3d4946c587b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&user=Alex+Shao&userId=723362c2a30f&source=-----3d4946c587b9---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F3d4946c587b9&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbatched-k-means-with-python-numba-and-cuda-c-3d4946c587b9&source=-----3d4946c587b9---------------------bookmark_footer-----------)![](../Images/79476c6455fbebdbb31e6dad7cb9a6ee.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image generated using [Midjourney](https://www.midjourney.com/) based on author’s
+    drawing
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallelizing data analysis workloads can be a daunting task, especially when
+    there is no efficient off-the-shelf implementation available for your specific
+    use case. In this tutorial, I will walk through the principles of writing CUDA
+    kernels in both C and Python Numba, and how those principles can be applied to
+    the classic k-means clustering algorithm. By the end of this article, you will
+    be able to write a custom parallelized implementation of batched k-means in both
+    C and Python, achieving up to 1600x speedup compared to the standard scikit-learn
+    implementation. If you want to jump straight to the code, it is available in [Colab](https://colab.research.google.com/drive/1Il_OyESH92iVapFas0oTarF74IQcM3sq?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'We will study two frameworks for parallelizing on NVIDIA GPUs: Python Numba
+    and CUDA C. We will then implement the same batched k-means algorithm in both
+    and benchmark them against scikit-learn.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numba is a gentler learning curve for those who prefer Python over C. Numba
+    compiles portions of your code into specialized CUDA functions called **kernels**.
+    CUDA C, is a layer lower on the abstraction tree, which offers more refined control.
+    The Colab examples are designed to mirror the algorithm implementations tightly,
+    so once you understand one of them, you can easily understand the other.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This tutorial grew out of a custom batched **k-means** implementation I had
+    to write, which I will use as an illustrative example. Normally, k-means libraries
+    are optimized to run a single instance of the algorithm on an extremely large
+    dataset. However, in our project we needed to cluster millions of individual small
+    datasets in parallel, which is not something we could find an off-the shelf library
+    for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This article is split into four main sections: CUDA Basics, Parallelized K-means
+    Algorithm, Python Numba, and CUDA C. I will try to keep the material relatively
+    self-contained and briefly review concepts as needed.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CUDA Basics
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**CPUs** are designed for fast sequential processing and **GPUs** are designed
+    for massive parallelism. For our algorithm, we needed to run k-means on millions
+    of small independent datasets, which lends itself perfectly to the GPU implementation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our implementation will be using **CUDA**, short for Compute Unified Device
+    Architecture, which is a C library and computing platform developed by NVIDIA
+    to leverage GPUs for parallel computation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To understand GPU kernels and device functions, here are some definitions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **thread** is a single sequence of instructions that can be executed independently.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **core** is a processing unit that can execute a single thread.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **warp** is the smallest thread scheduling unit. Each warp consists of 32
+    threads and schedules them onto cores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **multiprocessor**, also referred to as a Streaming Multiprocessor (SM) is
+    made up of a fixed number of cores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **GPU kernel** is a function that is designed to be executed in parallel across
+    many GPU threads. Kernel functions are be invoked by the CPU and executed on the
+    GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **device function** is a function that can be called by a kernel function
+    or another device function. This function is executed on the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: These kernels are organized into a hierarchy of **grid**, **blocks**, and **threads**.
+    In the context of a GPU, each thread is connected to a single core and executes
+    a copy of the kernel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/7ca4bde115664dba1490f8d5a3508a04.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: GPUFunction[(x, y), z](Data Structure). Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **block** is a collection of threads that runs on one multiprocessor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A **grid** is an abstract array to organize blocks of threads. Grids are used
+    to map kernel instances to threads by index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'On the GPU, there are two types of memory: global memory and shared memory.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Global memory** is stored on DRAM (Dynamic Random Access Memory). All threads
+    can access its contents at the cost of high memory latency.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Shared memory** is stored on cache and is private to threads within the same
+    block. It can be accessed much faster than global memory.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parallelized K-Means Algorithm
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Now let’s introduce the k-means algorithm. K-means is an unsupervised clustering
+    algorithm that partitions a dataset into k distinct, non-overlapping clusters.
+    Given a set of data points, we first initialize k centroids, or the starting cluster
+    centers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/4a070de7a2e4b4e264a3e5d204301933.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Centroid Initialization (k=3). Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Then, after choosing initial centroids, iteratively perform two steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Assignment Step:** Each data point is assigned to its closest centroid based
+    on Euclidean distance.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Update Step:** The centroid locations are reassigned to the mean of all the
+    points assigned to that centroid in the previous step.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: These steps are repeated until convergence, or when centroid locations no longer
+    change significantly. The output is the set of k cluster centroid coordinates
+    together with an array marking cluster indices (called **labels**) for each of
+    the original data points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/afea9c8c722a794cc07e166dd1149978.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: K-means Algorithm (k = 3). Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For a large dataset, centroid initialization can significantly affect the algorithm
+    output. Therefore, the program tries multiple initial centroids, called initial
+    seeds, and returns the result from the best seed. Each seed is selected from the
+    initial dataset without replacement–meaning no initial centroid will be repeated.
+    The optimal number of seeds for our algorithm is one third of the number of datapoints.
+    In our program, because we run k-means on individual rows of 100 data points,
+    the optimal number of seeds would be 33.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our k-means function, the one million rows are represented by blocks while
+    the threads represent the seeds. Threads in a block are organized into warps,
+    the smallest thread scheduling unit in the hardware architecture. Each warp consists
+    of 32 threads, making it optimal to set block sizes as multiples of 32\. Each
+    block then outputs the data from the seed that has the smallest inertia, measured
+    by the sum of Euclidean distance between cluster centers and their assigned points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/3adcb0e40e317278702305fbf5431809.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Parallelized K-means — GPU side. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Linked here is the [Colab](https://colab.research.google.com/drive/1Il_OyESH92iVapFas0oTarF74IQcM3sq?usp=sharing)
+    where you can follow along in either Python or C.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: In our k-means algorithm, we begin by setting global variables. We will need
+    to reference them from both the CPU and GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While global variables are accessible from the kernel, the kernel cannot directly
+    return values to the host. To circumvent this limitation, the CPU portion of our
+    code passes two empty arrays to the kernel alongside the input data. These arrays
+    will be used to copy the final centroid and label arrays back to the CPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: With our data structures instantiated, we invoke the kernel, defining the grid
+    and block dimensions as a tuple. The call to the kernel includes passing in our
+    data, memory allocation for centroids and labels, and a state for the initial
+    random centroid initialization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Once on **device** (aka the GPU), our code now exists simultaneously on the
+    entire grid. To figure out where we are on the grid, we access the block and thread
+    indices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the GPU, memory defaults to **global memory** which is stored on **DRAM**.
+    **Shared memory** is private to threads within the same block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: By transferring the single row of data (that all threads in a block must read
+    from) to shared memory, we cut down on memory access time. In the cuda_kmeans
+    function, we create shared memory to store the row of data, centroids, labels,
+    and the accuracy measure of each seed, called inertia.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In our program, each thread corresponds to one seed, and all threads in a block
+    work on the same row of data. For each **block**, one thread sequentially creates
+    32 seeds and aggregates their outcomes into a single data structure for the other
+    threads in the block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When a subsequent step in the algorithm relies on this aggregation to have been
+    completed, the threads must be **synchronized** using the built-in CUDA syncthreads()
+    function. **NB:** one must be **very careful** about the placement of syncthreads()
+    calls, since attempting to synchronize threads when not all of them have had a
+    chance to complete can lead to **deadlocks** and hanging of the entire program.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our kernel function, which is described in pseudocode below, is called cuda_kmeans.
+    This function takes care of arranging the process outlined above, making space
+    for the results from all 32 seeds and selecting the best seed for the final output
+    in centroids and labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: From cuda_kmeans we then call the actual k-means algorithm, passing the newly
+    instantiated shared memory. In our k-means algorithm, we start by picking the
+    initial centroids and then sorting them from smallest to largest. We iteratively
+    assign the data points to the nearest centroid and update centroid locations until
+    convergence.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To be able to determine whether convergence has been achieved, we use a helper
+    function called find_yard_stick. This function calculates and returns the smallest
+    distance between two initial centroids (yard_stick). Our convergence condition
+    is met when none of the centroids have moved by more than yard_stick times epsilon
+    during a single iteration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After convergence, we return to cuda_kmeans. Here, we determine the best seed
+    by calculating the squared Euclidean distance between each centroid and its data
+    points. The seed with the most effective grouping–indicated by the smallest **inertia**–is
+    considered the best. We then take the centroids and labels from this seed and
+    copy them to a single row in our output arrays. Once all blocks are done, these
+    outputs are then copied back to the host (CPU).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e023eb19ea4a1684ef6fee357567e11a.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Data Transfers During K-means Algorithm. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An Intro to Numba
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The easiest way to design custom kernels is with Numba. **Numba** is a Python
+    library that can be used to compile Python code into CUDA kernels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/934081746e8272fba1084b302a68e739.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Levels of Abstraction. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Under the surface, Numba interfaces with CUDA. To parallelize your code, Numba
+    compiles your designated GPU code into a kernel and passes it to the GPU, dividing
+    the program logic into two main parts:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: CPU level code
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: GPU level code
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Using Numba, you separate and hand off the sequential and parallelizable parts
+    of code to the CPU and GPU. To compile a function for the GPU, the programmer
+    uses the **@cuda.jit** decorator above the function definition, thereby transforming
+    this function into a **kernel** which is called from the CPU (host) but is executed
+    in parallel on the GPU (device).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python Numba
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Link to the [Colab](https://colab.research.google.com/drive/1Il_OyESH92iVapFas0oTarF74IQcM3sq?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Numba serves as a bridge between Python code and the CUDA platform. Because
+    the Python code is nearly identical to the algorithm pseudocode above, I am only
+    going to provide a couple of examples of key relevant syntax.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: After instantiating the necessary global variables and data structures, we can
+    call the kernel, cuda_kmeans, from the host. Numba requires two tuples for the
+    dimensionality of the blocks and threads. Because we will be using single-dimensional
+    blocks and threads, the second index in each tuple is empty. We also pass in our
+    data structures and an array of random states for random seed instantiation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use the Numba @cuda.jit() decorator to mark the for GPU compilation. Using
+    the notation cuda.blockIdx.x and cuda.threadIdx.x we obtain the current index
+    of the kernel. The shared arrays are instantiated using cuda.shared.array with
+    two arguments, shape and the type, both of which must be known at compile time.
+    After getting centroids and filling the row with data, we call the kmeans function,
+    populate shared arrays and make a call to cuda.syncthreads().
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'K-means is a **device function** because it is called from the kernel function.
+    Therefore, we must specify device=True in the decorator: **@cuda.jit(device=True)**.
+    The k-means function then gets the current row for labels and centroids and runs
+    until convergence.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: With just an extra dozen lines of code and a little bit of effort, your Python
+    code can become an optimized kernel ready for parallel use.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Our parallelized k-means does cut down our compute time drastically–however,
+    wrapping and compiling a high level language like Python is not necessarily optimal.
+    Curious to see if writing the code in C would speed up our project, I dove into
+    the realm of CUDA C.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An Intro to C
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: In Python, memory and type allocation are automatic, whereas in C, memory can
+    be allocated on the stack or the heap, both of which require explicit type declaration
+    and are allocated a fixed amount of memory. Stack memory is automatically allocated
+    and freed by the compiler, while heap memory is manually allocated at runtime
+    using functions like malloc(), with the programmer responsible for its deallocation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Pointers are tools that hold the memory addresses of variables. The type of
+    data the pointer refers to is defined during declaration. Pointers are specified
+    using an asterisk (*). To retrieve the address of a variable, called referencing,
+    you use an ampersand (&). To access value from a pointer, you dereference the
+    pointer again using an asterisk.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A double pointer, or a pointer to a pointer, stores the address of a pointer.
+    This is useful for modifying addresses of other pointers when passing arrays to
+    functions. When passing arrays to functions, they’re passed as pointers to their
+    first element, without size information, relying on pointer arithmetic to index
+    through the array. To return an array from a function, you would pass the address
+    of a pointer using & and receive it with a double pointer **, allowing you to
+    modify the address of the original pointer, thereby passing the array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: CUDA C
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Link to the [Colab](https://colab.research.google.com/drive/1Il_OyESH92iVapFas0oTarF74IQcM3sq?usp=sharing).
+  prefs: []
+  type: TYPE_NORMAL
+- en: CUDA is a computing platform that leverages NVIDIA GPUs to parallelize complex
+    computational problems. Building on your newfound mastery of C (joking), the CUDA
+    C code structure is literally identical to the pseudocode structure we stepped
+    through.
+  prefs: []
+  type: TYPE_NORMAL
+- en: On the CPU side, we set up some constants that tell the algorithm what to expect,
+    import libraries, initialize our variables, and define some macros.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Let us break the differences down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The main function starts by initializing the data by creating a pointer and
+    passing it to initInputData as an address to a pointer. The function receives
+    inputData as a pointer to a pointer (float** input), which allows the function
+    to modify the address held by the original pointer. Input is then pointed to a
+    GPU memory address that is initialized using cudaMalloc and filled using cudaMemcpy,
+    copying data from the temporary host array sample_data, already populated with
+    random numbers.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, the code allocates memory on the device to hold the results from our k-means
+    function. The function uses make_cudaExtent to create a cudaExtent object whose
+    purpose is to encapsulate the dimensions of the multidimensional array.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The type cudaPitchedPointer is used to define a pointer that can address this
+    pitched memory space. This type of pointer is specifically designed to work with
+    memory allocated by cudaMalloc3D, which takes both a cudaPitchedPtr and cudaExtent
+    object to allocate the linear memory on the GPU.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Going into the GPU code,we define the grid such that each block corresponds
+    to a row of data and each thread corresponds to a seed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The seeds are initialized by a single thread in each block, ensuring entirely
+    different seeds.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: The CUDA C code uses shared memory for the data, centroids, labels, and errors.
+    However, unlike Python, the code takes the pointers to shared memory and stores
+    them in a struct, which is just a method to pass variables en masse. Finally,
+    cuda_kmeans calls the actual k-means algorithm and passes core_params.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: On the device function, before anything, we extract the values from the core_params
+    struct into variables using the DECLARE_CORE_PARAMS macro.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then, we run the same k-means algorithm as in Python, with the only difference
+    being we pass the struct instead of variables and have to manage memory, pointers,
+    and types.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Benchmarks
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To compare our algorithms against non-parallelized k-means, we import the scikit-learn
+    k-means module.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our benchmark, we run 100,000 rows by 100 columns with three clusters. Because
+    scikit-learn doesn’t have a parallelized k-means for different rows, we run the
+    rows sequentially in a for loop.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For our benchmarks in colab, we use the free T4 GPU Colab instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/43b25f0e293f72b6503a1ede9ed7c5c2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The results are good — the Python Numba code is two orders of magnitude faster
+    than non-parallelized CPU code and the CUDA C code is three orders of magnitude
+    faster. The kernel functions are easily scalable and the algorithm can be altered
+    to support clustering in higher dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Note that the randomized initial centroid generation in both the C and Python
+    algorithms is not fully optimized to use all cores. When improved, the Python
+    algorithm may very well approach the C code run time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a29d96b77f789ca427e1d575f9d8871d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Runtimes based on free Colab T4 GPU on 11/23/2023\. Image by Author.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After running the k-means function a hundred times on different datasets and
+    recording the resulting times–we notice that the first iteration is significantly
+    slower due to the time it takes to compile both C and Python in Colab.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conclusion
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Now you should be ready to write your own custom GPU kernels! One remaining
+    question may be — should you use CUDA C or Numba for parallelized data processing
+    workloads? It depends. Both are vastly faster than off-the-shelf scikit-learn.
+    Even though in my case the CUDA C batched k-means implementation turned out to
+    be about 3.5x faster than an equivalent written using Numba, Python offers some
+    important advantages such as readability and less reliance on specialized C programming
+    skills in teams that mostly work in Python. Additionally, the runtime of your
+    specific implementation will depend on how well you have optimized your code to
+    e.g. not trigger serialized operations on the GPU. In conclusion, if you are new
+    to both C and parallelized programming, I would suggest starting with Numba to
+    prototype your algorithm, and then translate it into CUDA C if you need additional
+    speedup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[Scikit-learn: Machine Learning in Python](https://jmlr.csail.mit.edu/papers/v12/pedregosa11a.html),
+    Pedregosa *et al.*, JMLR 12, pp. 2825–2830, 2011.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'NVIDIA, Vingelmann, P. & Fitzek, F.H.P., 2020\. CUDA, release: 10.2\. 89, Available
+    at: [https://developer.nvidia.com/cuda-toolkit.](https://developer.nvidia.com/cuda-toolkit.)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Lam, Siu Kwan, Antoine Pitrou, and Stanley Seibert. [“Numba: A llvm-based python
+    jit compiler.”](https://numba.pydata.org) *Proceedings of the Second Workshop
+    on the LLVM Compiler Infrastructure in HPC*. 2015.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Harris, C.R., Millman, K.J., van der Walt, S.J. et al. “*Array programming
+    with NumPy*.” Nature 585, 357–362 (2020). DOI: [10.1038/s41586–020–2649–2](https://doi.org/10.1038/s41586-020-2649-2).
+    ([Publisher link](https://www.nature.com/articles/s41586-020-2649-2)).'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

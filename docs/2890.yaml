@@ -1,0 +1,373 @@
+- en: 'Understanding SQL: Getting Started with Window Functions'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://towardsdatascience.com/understanding-sql-getting-started-with-window-functions-287391b9cef5?source=collection_archive---------5-----------------------#2023-09-17](https://towardsdatascience.com/understanding-sql-getting-started-with-window-functions-287391b9cef5?source=collection_archive---------5-----------------------#2023-09-17)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Get more from your aggregations by using SQL window functions
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)[![Rob
+    Taylor, PhD](../Images/5e4e86da7b77404ed42d00a60ea5eacf.png)](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)[](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------)
+    [Rob Taylor, PhD](https://medium.com/@dataforyou?source=post_page-----287391b9cef5--------------------------------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: ·
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F98de080592fc&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=post_page-98de080592fc----287391b9cef5---------------------post_header-----------)
+    Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----287391b9cef5--------------------------------)
+    ·15 min read·Sep 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F287391b9cef5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&user=Rob+Taylor%2C+PhD&userId=98de080592fc&source=-----287391b9cef5---------------------clap_footer-----------)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: --
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F287391b9cef5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Funderstanding-sql-getting-started-with-window-functions-287391b9cef5&source=-----287391b9cef5---------------------bookmark_footer-----------)![](../Images/7d9d02bd38237ca6dc7bedb3e5383324.png)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Photo by [Components AI](https://unsplash.com/@components_ai?utm_source=medium&utm_medium=referral)
+    on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Introduction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When it comes to aggregating data in SQL, *window functions* provide greater
+    flexibility than aggregations used in conjunction with `GROUP BY` clauses. While
+    both approaches indeed perform similar functions, window functions differ by virtue
+    of how the outputs are structured. Specifically, window functions apply operations
+    across a *set* of related rows, where the relation is determined by some grouping,
+    or *partition*, of the table rows. And, unlike their non-window counterparts that
+    collapse rows into a single output row, *all* rows retain their separate identities
+    and are present in the output table.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This behaviour is quite unlike your usual run of the mill aggregation and can
+    greatly extend your analytical toolbox beyond simple summary statistics. For example,
+    window functions allows us to compute running sums, moving averages, and even
+    statistical measures like *z*-scores.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In this post we’re going to take a look at the anatomy and basic functionality
+    of SQL window functions. The focus here is somewhat rudimentary, so if you haven’t
+    come across window functions, or have limited experience using them, this will
+    hopefully be of some interest to you.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For this post we’ll be using some high level summary data about the FIFA World
+    Cup competitions between 1930 and 2022\. The placings and statistics were sourced
+    from Wikipedia and is made available under the Creative Commons Attribution Share-Alike
+    license (CC-BY-SA). The data and related information can be found [here](https://en.wikipedia.org/wiki/FIFA_World_Cup).
+    For the purpose of this blog I imported the table into my own PostgresSQL database,
+    but if you want to follow along you can grab a copy of the table from my [Git
+    repository](https://github.com/dataforyounz/fifa-world-cup). In my database this
+    table is called `world_cup_placings` and an output is shown below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: A quick note on execution order
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The order in which SQL executes each clause is important to understand, so let’s
+    just take a few minutes to examine where window functions fall in the [order of
+    execution](/understanding-sql-order-of-execution-ba2b4e558828).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Window functions can only be used within `SELECT` lists and the`ORDER BY` clause.
+    They **cannot** be used with `GROUP BY` , `HAVING` , or `WHERE` clauses. The reason
+    for this is that window functions are executed *after* these clauses have been
+    processed. Another thing to note is that window functions are processed *after*
+    non-window aggregate functions (i.e., `SUM` , `MAX,` `AVG` , etc). As we’ll see
+    later, this is useful because it means we can actually use these functions within
+    our window function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The OVER clause
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'First, let’s take a look at the simplest version of a window function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The `FUNCTION_NAME()` is just a placeholder for whatever function you wish to
+    use; however, window functions must *always* contain an `OVER` clause. This clause
+    is what distinguishes window from non-window functions and its role is to determine
+    *how* the rows are split up for processing. In the example above, though, no arguments
+    have been passed to `OVER` . This is perfectly legitimate so lets see what this
+    looks like in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A common use case for window functions is to assign a numerical value to each
+    row in the table. This can be achieved using the inbuilt `ROW_NUMBER` function.
+    For example, consider the example query below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We now have a newly minted column called `row_num` that contains a sequential
+    list of numbers; one for each table row. With just the vanilla `OVER` clause the
+    window function treats the *entire* table as a single partition. That’s because
+    we haven’t told it anything otherwise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s see what happens if we replace `ROW_NUMBER` with an aggregate function,
+    like `SUM` , and apply it to the `total_goals` columns, which is the total number
+    of goals during the entire competition. The query for this is provided next:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: Okay, so we just get a single value for each row — but this is exactly what
+    we should expect to see. Remember, window functions are applied across all rows
+    within a partition, and here (like above) the window function is treating the
+    entire table as a partition. As a result, it will just sum all values in the `total_goals`
+    column. Also, window functions retain row identity and so this output value is
+    repeated for each output row. Note also that we’re using an aggregation function
+    within the window function — this is possible because window functions are processed
+    *after* aggregate functions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Right, let’s see how far we can push this approach by computing the average
+    number of goals scored across all competitions (note the rounding off for output
+    value):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, this is quite useful. Having the average number of goals listed alongside
+    the competition totals allows us to directly compare these values. We can easily
+    see how individual totals compare to the average taken across all competitions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s push this even further by computing a *z*-score for each row. To do so
+    we’ll also need to use the `STDDEV` function within another window function. The
+    query below shows you how to do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: That’s looking pretty good!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The PARTITION BY clause
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Up until this point I have been using the term *partition* a lot, so let’s
+    take a look at what this actually means. Recall that in the earlier examples we
+    didn’t explicitly state how we wanted the table partitioned, so operations were
+    performed across all rows in the table. The `PARTITION BY` clause, on the other
+    hand, is called *within* the `OVER` clause and it dictates how rows should be
+    divided into groups, or *partitions.* With this clause included the anatomy of
+    the window function now looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The placeholder `[var]` refers to a column that is used to group rows. To demonstrate,
+    let’s take another crack at numbering rows using the `ROW_NUMBER` function, only
+    this time we’ll use the `first_place` column to partition the rows. Check out
+    the query below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Okay, things are looking very different to last time. First, we can see that
+    the output has ordered the table using the `first_place` column, but that’s not
+    all that interesting. What *is* interesting are the changes to the `row_num` column.
+    Starting at the top and working down, we can see that the number sequence resets
+    for each distinct value in `first_place`, counting only the rows associated with
+    each country’s partition.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s build on our query some more. In addition to the `row_num` column let’s
+    compute the total number of goals scored and the maximum total attendance. We’ll
+    again use the `first_place` column to partition the table, so these aggregations
+    will apply only to the rows associated with each partition. The query below shows
+    you how to do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, neither of these aggregations are particularly useful in and of themselves
+    and they’re really just for demonstration purposes. But let’s take a look at what
+    we actually get back from this query.
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, the `all_goals` column provides the total number of goals scored across
+    all competitions for each winning country (recall, we have partitioned rows using
+    the `first_place` column). For example, in competitions where Argentina won, we
+    can see that a total of 102 goals were scored when Argentina hosted in 1978, 132
+    goals were scored in 1986 when Mexico hosted, and 172 goals most recently in Qatar.
+    The `all_goals` value, then, is simply the sum of these two values, which is 406.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Second, the `max_attendance` value returns the highest competition attendance
+    for each winning country. For example, of the World Cups listed in the table,
+    Italy has won four of them, with the highest attendance recorded during the 2006
+    World Cup held in Germany (3,359,439). So, for all rows where Italy was the winner,
+    this is value returned for `max_attendance` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Looking back over the query, you might have noticed that we need write `OVER(
+    PARTITION BY first_place )` three times; once for each window function in the
+    `SELECT` list. This can become a little tedious if your query requires multiple
+    window functions that partition using the same column. So is there a better to
+    achieve the same goal? Yes. Yes there is. In cases like these — where the windowing
+    is the same for all functions — we can use a separate `WINDOW` clause to define
+    the partition and assign it a name that can be called by `OVER` . Take a look
+    at the query below:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Now, this doesn’t eliminate the need to provide an argument after the `OVER`
+    clause — that can’t be avoided — but this approach is far less error-prone and
+    definitely helps declutter the query. You can check that the results are identical
+    to the output above.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The ORDER BY clause
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another clause that can be added to `OVER` is the `ORDER BY` clause. This clause
+    will certainly look familiar, and indeed it works exactly how you’d expect it
+    to. The only difference is that when we use it within the `OVER` clause it affects
+    the ordering within each partition. With this clause included our window function
+    now looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can use the `ORDER BY` clause to order values before performing an operation.
+    This is particularly useful if we want to rank values using the `RANK` function
+    which assigns a numerical value to each *distinct* `ORDER BY` value. This means
+    it behaves slightly differently to the `ROW_NUMBER` function because the `RANK`
+    function will assign the same rank to duplicated values. Check out the query below
+    and compare the row outputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: See the difference? If we look at the rows two and three, we see that both Brazil
+    2014 and France 1998 resulted in 171 goals. While the `row_num` column assigns
+    different values to these rows, the `row_rank` columns has assigned the same rank.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just note that, for the `ROW_NUMBER` window function, I didn’t actually need
+    to specify `ORDER BY total_goals DESC` , but I’ve done this to highlight the fact
+    that the `ROW_NUMBER` window function doesn’t care about duplicated values; it
+    simply numbers each row despite the ordering by `total_goals` .
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Okay, now let’s try using the `ORDER BY` and `PARTITION BY` clause together
+    to find in which year each team last won the World Cup. First, we’ll use the `first_place`
+    column to partition the table and then sort the rows in descending order using
+    the `year` column. The following query shows you how to do this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: By sorting the competition years in descending order we ensure that the most
+    recent year occupies the first row of each partition. Now, because there can only
+    be one winner each year there are no duplicate values in the `year` column. So,
+    when we assign ranks to each partition, the first row will always have a rank
+    of 1 which corresponds to the most recent win for each country.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This output, however, is a bit noisy and we have to read each row to find the
+    ranks for each partition. We can tidy things up a bit by placing the above query
+    within a sub-query and filtering out only the rows that have a rank of 1\. Check
+    out the query below to see this in action:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Final Remarks
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Window functions are remarkably versatile and are often more efficient when
+    needing to compute values using only a subset of rows. This post just scratches
+    the surface of what can be done using window functions and demonstrates only their
+    basic functionality. Regardless, I hope you found something useful in this post.
+    In a later post we’ll build on these concepts and explore how window functions
+    can be used to compute some more exotic measures.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Related Articles
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Understanding SQL: Order of Execution](https://medium.com/towards-data-science/understanding-sql-order-of-execution-ba2b4e558828)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thanks for reading!
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you enjoyed this post and would like to stay up to date then please consider
+    [following me on Medium.](https://medium.com/@dataforyou) This will ensure you
+    don’t miss out on any new content.
+  prefs: []
+  type: TYPE_NORMAL
+- en: To get unlimited access to all content consider signing up for a [Medium subscription](https://medium.com/membership).
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can also follow me on [Twitter](https://twitter.com/dataforyounz), [LinkedIn](https://www.linkedin.com/in/dataforyou/),
+    or check out my [GitHub](https://github.com/dataforyounz) if that’s more your
+    thing.
+  prefs: []
+  type: TYPE_NORMAL
