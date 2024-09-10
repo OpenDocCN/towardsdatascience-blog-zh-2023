@@ -1,12 +1,15 @@
 - en: The power of dbt incremental models for Big Data
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=collection_archive---------5-----------------------#2023-02-09](https://towardsdatascience.com/the-power-of-dbt-incremental-models-for-big-data-c8ba821eb078?source=collection_archive---------5-----------------------#2023-02-09)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: An experiment on BigQuery
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,20 +17,25 @@
     Isaj](../Images/2749bad708a0446216a7e0bb6656026c.png)](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------)
     [Suela Isaj](https://medium.com/@suela.isaj?source=post_page-----c8ba821eb078--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F6aa4db597456&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&user=Suela+Isaj&userId=6aa4db597456&source=post_page-6aa4db597456----c8ba821eb078---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c8ba821eb078--------------------------------)
     ·5 min read·Feb 9, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc8ba821eb078&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&user=Suela+Isaj&userId=6aa4db597456&source=-----c8ba821eb078---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc8ba821eb078&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fthe-power-of-dbt-incremental-models-for-big-data-c8ba821eb078&source=-----c8ba821eb078---------------------bookmark_footer-----------)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: If you are processing a couple of MB or GB with your dbt model, this is not
@@ -36,13 +44,16 @@
     rolling totals over huge event data on a daily or even at a higher frequency basis.
     In this post, I will go over a technique for enabling a cheap data injestion and
     cheap data consumption for “big data”.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/a7ab7fb73c98a2f43f123fd1f58a350e.png)'
+  id: totrans-9
   prefs: []
   type: TYPE_IMG
 - en: Photo by [Joshua Sortino](https://unsplash.com/@sortino?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: Let’s imagine we have raw data in the granularity of timestamps and we need
@@ -55,48 +66,76 @@
     the raw data to a partitioned table, following [this](https://www.revisitclass.com/gcp/how-to-add-partition-to-existing-table-in-bigquery/)
     example. Make sure to make the partition filter as required [https://cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter](https://cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter)
     to avoid accidents where all raw data is being scanned.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们假设我们有以时间戳为粒度的原始数据，并且我们需要计算每个客户的总数。此外，我们希望进行按天和按月的分析，因为我们需要在不同粒度上汇总数据。我将以
+    Twitter 点赞为例，其中 `user_id` 是 Twitter 用户，`post_id` 是 Twitter 帖子，`timestamp` 是 `user_id`
+    点赞 `post_id` 的时间戳。原始数据以天为粒度存储为分区表。如果你的原始数据没有分区，这已经是你的第一个改进，因此考虑将原始数据迁移到分区表，参考
+    [这个](https://www.revisitclass.com/gcp/how-to-add-partition-to-existing-table-in-bigquery/)
+    示例。确保按需设置分区过滤器 [https://cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter](https://cloud.google.com/bigquery/docs/managing-partitioned-tables#require-filter)，以避免扫描所有原始数据的意外情况。
 - en: '![](../Images/b10e53c96af999ec201f8a59190e72a8.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b10e53c96af999ec201f8a59190e72a8.png)'
 - en: Raw log of Twitter post likes
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Twitter 点赞的原始日志
 - en: 'And this data is actually around 869.91 GB! So if I want the number of likes
     that each user has performed, my [costly] naive query would be:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些数据实际上大约是 869.91 GB！所以如果我想知道每个用户所执行的点赞数量，我的[昂贵的]简单查询将是：
 - en: '[PRE0]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: However, the likes on Twitter are *immutable* events, with no chance to be modified.
     This allows me to load this data incrementally. I will go over the raw data to
     load the day, go over the daily aggregated data to load the month, and finally
     through the daily data to update the counts for the user that have changed.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，Twitter 上的点赞是*不可变*的事件，无法被修改。这允许我逐步加载这些数据。我将遍历原始数据来加载当天的数据，检查每日汇总的数据以加载本月的数据，最后通过每日数据来更新发生变化的用户的点赞数。
 - en: For both incremental models, I will use the static partitioning technique, which
     is proven to be the most performant [https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981).
     This means that I will operate on the partitions and not scan data, so I will
     pick the two last-day partitions (just in case I have late arriving events), aggregate
     them, and add them to my dbt model `twitter_likes_daily`
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这两种增量模型，我将使用静态分区技术，这被证明是性能最优的 [https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981)。这意味着我将对分区进行操作而不是扫描数据，因此我会选择最近的两个日期分区（以防我有延迟到达的事件），对它们进行汇总，然后将其添加到我的
+    dbt 模型 `twitter_likes_daily` 中。
 - en: '[PRE1]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '`twitter_likes_daily` is only 55.52 GB and the daily load scans 536.6 MB! Let’s
     create the monthly aggregates, and for that, we can directly work on `twitter_likes_daily`
     instead of the raw `twitter_likes`'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '`twitter_likes_daily` 仅为 55.52 GB，日加载扫描 536.6 MB！让我们创建每月汇总数据，为此，我们可以直接在 `twitter_likes_daily`
+    上工作，而不是原始的 `twitter_likes`。'
 - en: '[PRE2]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The `twitter_likes_monthly` is 14.32 GB and 1 load scans only 2.5 GB!
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '`twitter_likes_monthly` 的大小为 14.32 GB，而一次加载仅扫描 2.5 GB！'
 - en: Now let’s go for the totals. For this case, we can decide to run a `merge` operation
     to update the totals of only those users that have new likes in the last 2 days.
     The rest of the users have no updates. So for that case, I can pick the users
@@ -104,34 +143,52 @@
     and finally merge them in the table with the totals `twitter_likes_total` . Note
     that the table is `clustered` using the `user_id` because a merge with a cluster
     on the id is more performant that a regular merge [https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们来看看总数。在这种情况下，我们可以决定运行一个 `merge` 操作，只更新过去 2 天内有新点赞的用户的总数。其余用户没有更新。因此，在这种情况下，我可以从
+    `twitter_likes_daily` 中挑选出今天有点赞的用户，计算他们在 `twitter_likes_monthly` 中的总数，最后将它们合并到包含总数的表
+    `twitter_likes_total` 中。请注意，该表使用 `user_id` 进行 `clustered`，因为与 id 的集群合并比常规合并更高效
+    [https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981](https://discourse.getdbt.com/t/benchmarking-incremental-strategies-on-bigquery/981)。
 - en: '[PRE3]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '`twitter_likes_total` is 1.6 GB and scans 16 GB! So from 869.91 GB we ended
     up scanning only 16 GB and producing a bunch of light and cheap analytical tables.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '`twitter_likes_total` 是 1.6 GB，但扫描了 16 GB！所以从 869.91 GB 中，我们仅扫描了 16 GB，并生成了一些轻量且便宜的分析表。'
 - en: 'However, the approach of `twitter_likes_total` could also have been a table
     configuration on `dbt` that only scans the `twitter_likes_monthly` . That would
     be like below:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，`twitter_likes_total` 的方法也可以是一个仅扫描 `twitter_likes_monthly` 的 `dbt` 表配置。如下所示：
 - en: '[PRE4]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The above script will scan 14.5 GB so actually lighter than the `merge` procedure!
     What just happened here? It is important to understand that a merge can be less
     effective than a full table recreation. Given that the table that we are scanning
     `twitter_likes_monthly` is not that large and 14.5 GB, a full table recreation
     is more performant than a `merge`. So when the data ends up not being that large,
     a merge would be really over-engineering.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述脚本将扫描 14.5 GB，因此实际上比 `merge` 过程更轻量！这到底发生了什么？重要的是要理解，`merge` 可能比完全重建表的效果差。鉴于我们扫描的表
+    `twitter_likes_monthly` 不大且为 14.5 GB，完全重建表比 `merge` 更高效。因此，当数据量不是很大时，`merge` 实际上可能是过度工程。
 - en: '**Let’s wrap up**'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结一下**'
 - en: The scans of raw immutable events can be efficiently treated by using incremental
     models on `dbt`, and specifically, using a static insert+overwrite strategy. The
     improvement can be huge, from TB to a couple of GB daily for the dbt load, but
@@ -140,5 +197,9 @@
     appending data to a table might look theoretically cheaper than re-creating the
     table, depending on the use case, sometimes using a `merge` can be less performant
     than a full table recreation, when the source data is a couple of GB.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始不可变事件的扫描可以通过在 `dbt` 上使用增量模型高效处理，特别是使用静态插入+覆盖策略。改进可能是巨大的，从 TB 减少到每天几 GB 的 dbt
+    负载，但最重要的是，能够让数据分析师在原本成本高昂的原始表扫描上运行查询，转而使用一些轻量、预聚合的表。最后，虽然向表中追加数据在理论上可能比重建表便宜，但根据用例，有时使用
+    `merge` 可能比完全重建表的性能差，尤其是当源数据只有几 GB 时。
