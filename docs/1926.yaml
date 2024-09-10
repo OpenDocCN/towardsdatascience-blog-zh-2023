@@ -1,14 +1,17 @@
 - en: NT-Xent (Normalized Temperature-Scaled Cross-Entropy) Loss Explained and Implemented
     in PyTorch
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/nt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848?source=collection_archive---------1-----------------------#2023-06-13](https://towardsdatascience.com/nt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848?source=collection_archive---------1-----------------------#2023-06-13)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: An intuitive explanation of the NT-Xent loss with a step-by-step explanation
     of the operation and our implementation in PyTorch
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -16,33 +19,42 @@
     Matani](../Images/d63bf7776c28a29c02b985b1f64abdd3.png)](https://medium.com/@dhruvbird?source=post_page-----cc081f69848--------------------------------)[](https://towardsdatascience.com/?source=post_page-----cc081f69848--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----cc081f69848--------------------------------)
     [Dhruv Matani](https://medium.com/@dhruvbird?source=post_page-----cc081f69848--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F63f5d5495279&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848&user=Dhruv+Matani&userId=63f5d5495279&source=post_page-63f5d5495279----cc081f69848---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----cc081f69848--------------------------------)
     ·14 min read·Jun 13, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fcc081f69848&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848&user=Dhruv+Matani&userId=63f5d5495279&source=-----cc081f69848---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fcc081f69848&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnt-xent-normalized-temperature-scaled-cross-entropy-loss-explained-and-implemented-in-pytorch-cc081f69848&source=-----cc081f69848---------------------bookmark_footer-----------)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Co-authored with [Naresh Singh](https://medium.com/u/1e659a80cffd).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/f1a271acfecfd43c4d250941c7754440.png)'
+  id: totrans-9
   prefs: []
   type: TYPE_IMG
 - en: 'Formula for NT-Xent loss. Source: [Papers with code](https://paperswithcode.com/method/nt-xent)
     (CC-BY-SA)'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: Introduction
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -50,195 +62,279 @@
     and [contrastive learning](/understanding-contrastive-learning-d5b19fd96607) have
     excited researchers and practitioners in Machine Learning (ML) to explore this
     space with renewed interest.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近在 [自监督学习](https://neptune.ai/blog/self-supervised-learning) 和 [对比学习](/understanding-contrastive-learning-d5b19fd96607)
+    方面的进展激发了机器学习（ML）领域的研究人员和从业者重新关注这一领域。
 - en: In particular, the [SimCLR](https://arxiv.org/pdf/2002.05709.pdf) paper that
     presents a simple framework for contrastive learning of visual representations
     has gained a lot of attention in the self-supervised and contrastive learning
     space.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 尤其是，[SimCLR](https://arxiv.org/pdf/2002.05709.pdf) 论文提出了一个简单的对比学习视觉表示框架，在自监督和对比学习领域获得了大量关注。
 - en: The central idea behind the paper is very simple — allow the model to learn
     if a pair of images were derived from the same or different initial image.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 论文的核心思想非常简单——允许模型学习一对图像是否来自相同或不同的初始图像。
 - en: '![](../Images/04e9c2852b2200c323cdbabca0b3e988.png)'
+  id: totrans-15
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/04e9c2852b2200c323cdbabca0b3e988.png)'
 - en: 'Figure 1: The high-level idea behind SimCLR. Source: [SimCLR paper](https://arxiv.org/pdf/2002.05709.pdf)'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1：SimCLR的高层次思路。来源：[SimCLR 论文](https://arxiv.org/pdf/2002.05709.pdf)
 - en: 'The SimCLR approach encodes each input image ***i*** as a feature vector ***zi***.
     There are 2 cases to consider:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: SimCLR 方法将每个输入图像 ***i*** 编码为特征向量 ***zi***。需要考虑两种情况：
 - en: '**Positive Pairs**: The same image is augmented using a different set of augmentations,
     and the resulting feature vectors ***zi*** and ***zj*** are compared. These feature
     vectors are forced to be similar by the loss function.'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**正对**：相同图像使用不同的增强集合进行增强，结果特征向量 ***zi*** 和 ***zj*** 进行比较。这些特征向量通过损失函数被强制保持相似。'
 - en: '**Negative Pairs**: Different images are augmented using a different set of
     augmentations, and the resulting feature vectors ***zi*** and ***zk*** are compared.
     These feature vectors are forced to be dissimilar by the loss function.'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**负对**：不同的图像使用不同的增强集合进行增强，结果特征向量 ***zi*** 和 ***zk*** 进行比较。这些特征向量通过损失函数被强制保持不相似。'
 - en: The rest of this article will focus on explaining and understanding this loss
     function, and its efficient implementation using PyTorch.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文其余部分将集中于解释和理解该损失函数及其使用PyTorch的高效实现。
 - en: The NT-Xent Loss
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: NT-Xent损失
 - en: At a high level, the contrastive learning model is fed 2N images, originating
     from N underlying images. Each of the N underlying images is augmented using a
     random set of image augmentations to produce 2 augmented images. This is how we
     end up with 2N images in a single train batch fed to the model.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 从高层次看，对比学习模型接收2N张图像，来源于N个基础图像。每个N个基础图像都使用随机的图像增强集合进行增强，生成2张增强图像。这就是我们在单个训练批次中获得2N张图像的方式。
 - en: '![](../Images/0e24735fcc69c1116d2734e8f11df06e.png)'
+  id: totrans-23
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0e24735fcc69c1116d2734e8f11df06e.png)'
 - en: 'Figure 2: A batch of 6 images in a single training batch for contrastive learning.
     The number below each image is the index of that image in the input batch when
     fed into a contrastive learning model. Image Source: [Oxford Visual Geometry Group](https://www.robots.ox.ac.uk/~vgg/data/pets/)
     (CC-SA).'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2：对比学习中的单个训练批次中的6张图像。每张图像下方的数字是该图像在输入批次中的索引，输入到对比学习模型中。图像来源：[牛津视觉几何组](https://www.robots.ox.ac.uk/~vgg/data/pets/)（CC-SA）。
 - en: In the following sections, we will dive deep into the following aspects of the
     NT-Xent loss.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的章节中，我们将深入探讨NT-Xent损失的以下方面。
 - en: '[The effect of temperature on SoftMax and Sigmoid](#8cb8)'
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[温度对SoftMax和Sigmoid的影响](#8cb8)'
 - en: '[A simple and intuitive interpretation of the NT-Xent loss](#40d2)'
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[NT-Xent损失的简单直观解释](#40d2)'
 - en: '[A step-by-step implementation of NT-Xent in PyTorch](#29d4)'
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[PyTorch中NT-Xent的逐步实现](#29d4)'
 - en: '[Motivating the need for a multi-label loss function (NT-BXent)](#f004)'
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[激发多标签损失函数需求（NT-BXent）](#f004)'
 - en: '[A step-by-step implementation of NT-BXent in PyTorch](#242d)'
+  id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[PyTorch中NT-BXent的逐步实现](#242d)'
 - en: All the code for steps 2–5 can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/NT-Xent%20Loss.ipynb).
     The code for step-1 can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/SoftMax%20and%20Sigmoid%20with%20temperature.ipynb).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 步骤2-5的所有代码可以在 [这个笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/NT-Xent%20Loss.ipynb)
+    中找到。步骤1的代码可以在 [这个笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/SoftMax%20and%20Sigmoid%20with%20temperature.ipynb)
+    中找到。
 - en: The effect of temperature on SoftMax and Sigmoid
+  id: totrans-32
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 温度对SoftMax和Sigmoid的影响
 - en: To understand all the moving parts of the contrastive loss function we’ll be
     studying in this article, we need to first understand the effect of temperature
     on the SoftMax and Sigmoid activation functions.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了理解本文中要研究的对比损失函数的所有活动部分，我们需要首先了解温度对SoftMax和Sigmoid激活函数的影响。
 - en: Typically, temperature scaling is applied to the input to SoftMax or Sigmoid
     to either smooth out or accentuate the output of those activation functions. The
     input logits are divided by the temperature before passing into the activation
     functions. You can find all the code for this section in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/SoftMax%20and%20Sigmoid%20with%20temperature.ipynb).
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，温度缩放应用于SoftMax或Sigmoid的输入，以平滑或突出这些激活函数的输出。在传递到激活函数之前，输入logits被温度除以。你可以在[这个笔记本](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/SoftMax%20and%20Sigmoid%20with%20temperature.ipynb)中找到所有相关代码。
 - en: '**SoftMax**: For SoftMax, a high temperature reduces the variance in the output
     distribution which results in softening of the labels. A low temperature increases
     the variance in the output distribution and makes the maximum value stand out
     over the other values. See the charts below for the effect of temperature on SoftMax
     when fed with the input tensor [0.1081, 0.4376, 0.7697, 0.1929, 0.3626, 2.8451].'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '**SoftMax**：对于SoftMax，高温度会降低输出分布的方差，从而使标签变得更加柔和。低温度则会增加输出分布的方差，使最大值相对于其他值更加突出。请参见下面的图表，了解输入张量[0.1081,
+    0.4376, 0.7697, 0.1929, 0.3626, 2.8451]的温度对SoftMax的影响。'
 - en: '![](../Images/2bd5edcd98118bea0c576c1e7b3ada7f.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2bd5edcd98118bea0c576c1e7b3ada7f.png)'
 - en: 'Figure 3: Effect of temperature on SoftMax. Source: Author(s)'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3：温度对SoftMax的影响。来源：作者
 - en: '**Sigmoid**: For Sigmoid, a high-temperature results in an output distribution
     that is pulled towards 0.0, whereas a low temperature stretches the inputs to
     higher values, stretching the outputs to be closer to either 0.0 or 1.0 depending
     on the unsigned magnitude of the input.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Sigmoid**：对于Sigmoid，高温度会导致输出分布向0.0拉伸，而低温度则将输入扩展到更高的值，使输出更接近0.0或1.0，具体取决于输入的未签名幅度。'
 - en: '![](../Images/0d7036a7fb298c646e1652f03d546b79.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0d7036a7fb298c646e1652f03d546b79.png)'
 - en: 'Figure 4: Effect of temperature on Sigmoid. Source: Author(s)'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4：温度对Sigmoid的影响。来源：作者
 - en: Now that we understand the effect of various temperature values on the SoftMax
     and Sigmoid functions, let’s see how this applies to our understanding of the
     NT-Xent loss.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们理解了不同温度值对SoftMax和Sigmoid函数的影响，让我们看看这些知识如何应用于理解NT-Xent损失。
 - en: Interpreting the NT-Xent loss
+  id: totrans-42
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 解读NT-Xent损失
 - en: The NT-Xent loss is understood by understanding the individual terms in the
     name of this loss.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: NT-Xent损失通过理解损失名称中的各个术语来进行理解。
 - en: 'Normalized: Cosine similarity produces a normalized score in the range [-1.0
     to +1.0]'
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 标准化：余弦相似度产生范围在[-1.0到+1.0]之间的标准化分数
 - en: 'Temperature-scaled: The all-pairs cosine similarity is scaled by a temperature
     before computing the cross-entropy loss'
+  id: totrans-45
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 温度缩放：所有对的余弦相似度在计算交叉熵损失之前被温度缩放
 - en: 'Cross-entropy loss: The underlying loss is a multi-class (single-label) cross-entropy
     loss'
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 交叉熵损失：底层损失是一个多类别（单标签）交叉熵损失
 - en: As mentioned above, we assume that for a batch of size 2N, the feature vectors
     at the following indices represent positive pairs (0, 1), (2, 3), (4, 5), (6,
     7), … and the rest of the combinations represent negative pairs. This is an important
     factor to keep in mind throughout the interpretation of the NT-Xent loss as it
     relates to SimCLR.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 如上所述，我们假设对于大小为2N的批次，以下索引处的特征向量代表正对（0, 1）、（2, 3）、（4, 5）、（6, 7）等，其余组合代表负对。在解释NT-Xent损失时，这一点是与SimCLR相关的重要因素。
 - en: Now that we understand what the terms mean in the context of the NT-Xent loss,
     let’s take a look at the mechanical steps needed to compute the NT-Xent loss on
     a batch of feature vectors.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们了解了NT-Xent损失的术语在上下文中的含义，让我们来看看计算特征向量批次上NT-Xent损失所需的机械步骤。
 - en: The all-pairs Cosine Similarity score is computed for each of the 2N vectors
     produced by the SimCLR model. This results in (2N)² similarity scores represented
     as a 2N x 2N matrix
+  id: totrans-49
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 所有对的余弦相似度分数是针对SimCLR模型生成的每个2N向量计算的。这导致了(2N)²的相似度分数，表示为一个2N x 2N矩阵
 - en: Comparison results between the same value (i, i) are discarded (since a distribution
     is perfectly similar to itself and can’t possibly allow the model to learn anything
     useful)
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Each value (cosine similarity) is scaled by a temperature parameter 𝜏 (which
     is a hyper-parameter)
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Cross-entropy loss is applied to each row of the resulting matrix above. The
     following paragraph explains more in detail
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Typically, the mean of these losses (one loss per element in a batch) is used
     for backpropagation
+  id: totrans-53
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -257,17 +353,21 @@
     setting where the probability distribution of the similarity probability between
     images represents a classification task where one of them will be close to 1.0
     and the rest will be close to 0.0.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: Now that we have a solid overall understanding of the NT-Xent loss, we should
     be in great shape to implement these ideas in PyTorch. Let’s get going!
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: Implementation of NT-Xent loss in PyTorch
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: All the code in this section can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/NT-Xent%20Loss.ipynb).
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '**Code Reuse**: Many [implementations](https://github.com/KevinMusgrave/pytorch-metric-learning/blob/master/src/pytorch_metric_learning/losses/ntxent_loss.py)
@@ -278,139 +378,202 @@
     of the standard cross-entropy loss that PyTorch already provides. To do this,
     we need to massage the predictions and ground-truth labels in a format that cross_entropy
     can accept. Let’s see how to do this below.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
 - en: '**Predictions Tensor**: First, we need to create a PyTorch tensor that will
     represent the output from our contrastive learning model. Let’s assume that our
     batch size is 8 (2N=8), and our feature vectors have 2 dimensions (2 values).
     We’ll call our input variable *“x”*.'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '**预测张量**：首先，我们需要创建一个 PyTorch 张量，它将表示我们对比学习模型的输出。假设我们的批量大小是 8（2N=8），并且我们的特征向量有
+    2 个维度（2 个值）。我们将输入变量称为 *“x”*。'
 - en: '[PRE0]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '**Cosine Similarity**: Next, we’ll compute the all-pairs cosine similarity
     between every feature vector in this batch and store the result in the variable
     named *“xcs”*. If the line below seems confusing, please read the details on [this
     page](https://medium.com/@dhruvbird/all-pairs-cosine-similarity-in-pytorch-867e722c8572).
     This is the “normalize” step.'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '**余弦相似度**：接下来，我们将计算此批次中每个特征向量之间的所有对的余弦相似度，并将结果存储在名为 *“xcs”* 的变量中。如果下面的代码看起来令人困惑，请阅读[这个页面](https://medium.com/@dhruvbird/all-pairs-cosine-similarity-in-pytorch-867e722c8572)上的详细信息。这是“标准化”步骤。'
 - en: '[PRE1]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: As mentioned above, we need to ignore the self-similarity score of every feature
     vector since it doesn’t contribute to the model’s learning and will be an unnecessary
     nuisance later on when we want to compute the cross-entropy loss. For this purpose,
     we’ll define a variable *“eye”* which is a matrix with the elements on the principal
     diagonal having a value of 1.0 and the rest being 0.0\. We can create such a matrix
     using the following command.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 如上所述，我们需要忽略每个特征向量的自相似度分数，因为它不对模型的学习做出贡献，并且在我们想要计算交叉熵损失时会成为不必要的麻烦。为此，我们将定义一个变量
+    *“eye”*，这是一个矩阵，其中主对角线上的元素值为 1.0，其余元素值为 0.0。我们可以使用以下命令创建这样的矩阵。
 - en: '[PRE2]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Now let’s convert this into a boolean matrix so that we can index into the *“xcs”*
     variable using this mask matrix.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们将其转换为布尔矩阵，以便可以使用这个掩码矩阵在 *“xcs”* 变量中进行索引。
 - en: '[PRE3]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Let’s clone the tensor *“xcs”* into a tensor named *“y”* so that we can reference
     the “xcs” tensor later.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将张量 *“xcs”* 克隆到一个名为 *“y”* 的张量中，以便以后可以引用“xcs”张量。
 - en: '[PRE4]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Now, we will set the values along the principal diagonal of the all-pairs cosine
     similarity matrix to *-inf* so that when we compute the softmax on each row, this
     value will contribute nothing.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们将所有对的余弦相似度矩阵的主对角线上的值设置为 *-inf*，这样当我们对每一行计算 softmax 时，这个值将不会产生任何贡献。
 - en: '[PRE5]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The tensor *“y”* scaled by a temperature parameter will be one of the inputs
     (predictions) to the [cross-entropy loss API in PyTorch](https://pytorch.org/docs/stable/generated/torch.nn.functional.cross_entropy.html#torch.nn.functional.cross_entropy).
     Next, we need to compute the ground-truth labels (target) that we need to feed
     to the cross-entropy loss API.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 张量 *“y”* 通过温度参数缩放后，将成为 [PyTorch 中的交叉熵损失 API](https://pytorch.org/docs/stable/generated/torch.nn.functional.cross_entropy.html#torch.nn.functional.cross_entropy)
+    的输入之一。接下来，我们需要计算要传递给交叉熵损失 API 的真实标签（目标）。
 - en: '**Ground Truth labels (Target tensor)**: For the example we are using (2N=8),
     this is what the ground-truth tensor should look like.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '**真实标签（目标张量）**：对于我们使用的示例（2N=8），这就是真实标签张量的样子。'
 - en: tensor([1, 0, 3, 2, 5, 4, 7, 6])
+  id: totrans-73
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: tensor([1, 0, 3, 2, 5, 4, 7, 6])
 - en: That’s because the following index pairs in the tensor *“y”* contain positive
     pairs.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是因为张量 *“y”* 中的以下索引对包含正对。
 - en: (0, 1), (1, 0)
+  id: totrans-75
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: (0, 1), (1, 0)
 - en: ''
+  id: totrans-76
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: (2, 3), (3, 2)
+  id: totrans-77
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: (2, 3), (3, 2)
 - en: ''
+  id: totrans-78
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: (4, 5), (5, 4)
+  id: totrans-79
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: (4, 5), (5, 4)
 - en: ''
+  id: totrans-80
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: (6, 7), (7, 6)
+  id: totrans-81
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: (6, 7), (7, 6)
 - en: To interpret the index pairs above, we look at a single example. The pair (4,
     5) means that column 5 at row 4 is supposed to be set to 1.0 (positive pair),
     which is what the tensor above is also saying. Great!
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 要解释上述索引对，我们来看一个单一的例子。对 (4, 5) 来说，这意味着第 4 行第 5 列应该设置为 1.0（正对），这也是上述张量所表示的。太好了！
 - en: To create the tensor above, we can use the following PyTorch code, which stores
     the ground-truth labels in the variable *“target”*.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 要创建上述张量，我们可以使用以下 PyTorch 代码，该代码将真实标签存储在变量 *“target”* 中。
 - en: '[PRE6]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '**cross-entropy Loss**: We have all the ingredients we need to compute our
     loss! The only thing that remains to be done is to call the cross_entropy API
     in PyTorch.'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '**交叉熵损失**：我们已经具备了计算损失所需的所有成分！剩下的唯一任务就是调用 PyTorch 中的 cross_entropy API。'
 - en: '[PRE7]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: The variable “loss” now contains the computed NT-Xent loss. Let’s wrap all the
     code in a single python function below.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 变量 “loss” 现在包含了计算出的 NT-Xent 损失。让我们把所有的代码封装到一个 Python 函数中。
 - en: '[PRE8]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The code above works as long as each feature vector has exactly one positive
     pair in the batch when training our contrastive learning model. Let’s take a look
     at how to handle multiple positive pairs in a contrastive learning task.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
 - en: 'A multi-label loss for contrastive learning: NT-BXent'
+  id: totrans-90
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -420,62 +583,78 @@
     same image fed into the contrastive learning model’s single training batch, then
     each batch would have image M-1 similar pairs for image ***i***. This task would
     resemble a multi-label problem.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
 - en: The obvious choice would be to replace *cross-entropy loss* with *binary cross-entropy
     loss*. Hence the name NT-BXent loss, which stands for Normalized Temperature-scaled
     Binary cross-entropy Loss.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: The formulation below shows the loss ***Li*** for the element ***i***. The σ
     in the formula below stands for the [Sigmoid function](https://en.wikipedia.org/wiki/Sigmoid_function).
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/923d835482d9a31dafa43fe719a94d34.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
 - en: 'Figure 5: Formulation for the NT-BXent loss. Image source: Author(s) of this
     article'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
 - en: To avoid the class imbalance problem, we weigh the positive and negative pairs
     by the inverse of the number of positive and negative pairs in our mini-batch.
     The final loss in the mini-batch used for backpropagation will be the mean of
     the losses of each sample in our mini-batch.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: Next, let’s focus our attention on our implementation of the NT-BXent loss in
     PyTorch.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
 - en: Implementation of NT-BXent loss in PyTorch
+  id: totrans-98
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: All the code in this section can be found in [this notebook](https://github.com/dhruvbird/ml-notebooks/blob/main/nt-xent-loss/NT-Xent%20Loss.ipynb).
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
 - en: '**Code Reuse**: Similar to our implementation of the NT-Xent loss, we shall
     re-use the Binary Cross-entropy (BCE) loss method provided by PyTorch. The setup
     of our ground-truth labels will be similar to that of a multi-label classification
     problem where BCE loss is used.'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: '**Predictions Tensor**: We’ll use the same (8, 2) predictions tensor as we
     used for the implementation of the NT-Xent loss.'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE9]'
+  id: totrans-102
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: '**Cosine Similarity**: Since the input tensor ***x*** is same, the all-pairs
     cosine similarity tensor ***xcs*** will also be the same. Please see [this page](https://medium.com/@dhruvbird/all-pairs-cosine-similarity-in-pytorch-867e722c8572)
     for a detailed explanation of what the line below does.'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE10]'
+  id: totrans-104
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: To ensure that the loss from the element at position ***(i, i)*** is ***0***,
     we’ll need to perform some gymnastics to have our ***xcs*** tensor contain a value
     ***1*** at every index ***(i, i)*** after Sigmoid is applied to it. Since we’ll
@@ -484,148 +663,217 @@
     sigmoid function on the ***xcs*** tensor, will convert infinity to the value ***1***,
     and we will set up our ground-truth labels so that every position ***(i, i)***
     in the ground-truth labels has the value ***1***.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了确保位置***(i, i)***处的损失为***0***，我们需要进行一些操作，使得在对***xcs***张量应用Sigmoid后，它在每个索引***(i,
+    i)***处的值为***1***。由于我们将使用BCE损失，我们会将每个特征向量的自相似性分数标记为张量***xcs***中的值为***无穷大***。这是因为在***xcs***张量上应用Sigmoid函数将无穷大转换为值***1***，我们将设置我们的真实标签，使得真实标签中的每个位置***(i,
+    i)***的值为***1***。
 - en: Let’s create a masking tensor that has the value ***True*** along the principal
     diagonal (***xcs*** has self-similarity scores along the principal diagonal),
     and ***False*** everywhere else.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 创建一个掩码张量，该张量在主对角线上具有值***True***（***xcs***在主对角线上具有自相似性分数），而其他地方为***False***。
 - en: '[PRE11]'
+  id: totrans-107
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Let’s clone the tensor *“xcs”* into a tensor named *“y”* so that we can reference
     the *“xcs”* tensor later.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 将张量*“xcs”*克隆到一个名为*“y”*的张量中，以便我们可以稍后引用*“xcs”*张量。
 - en: '[PRE12]'
+  id: totrans-109
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: Now, we will set the values along the principal diagonal of the all-pairs cosine
     similarity matrix to *infinity* so that when we compute the sigmoid on each row,
     we get 1 in these positions.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们将所有对的余弦相似度矩阵的主对角线上的值设置为*无穷大*，以便在对每一行计算Sigmoid时，这些位置的值为1。
 - en: '[PRE13]'
+  id: totrans-111
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: The tensor *“y”* scaled by a temperature parameter will be one of the inputs
     (predictions) to the [BCE loss API](https://pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy.html)
     in PyTorch. Next, we need to compute the ground-truth labels (target) that we
     need to feed to the BCE loss API.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 张量*“y”*由温度参数缩放后，将作为PyTorch中[BCE损失API](https://pytorch.org/docs/stable/generated/torch.nn.functional.binary_cross_entropy.html)的输入（预测）之一。接下来，我们需要计算要提供给BCE损失API的真实标签（目标）。
 - en: '**Ground Truth labels (Target tensor)**: We will expect the user to pass to
     us the pair of all (x, y) index pairs which contain positive examples. This is
     a departure for what we did for the NT-Xent loss, since the positive pairs were
     implicit, whereas here, the positive pairs are explicit.'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '**真实标签（目标张量）**：我们期望用户传递给我们包含正例的所有（x, y）索引对。这与我们对NT-Xent损失所做的有所不同，因为正对是隐式的，而这里正对是显式的。'
 - en: In addition to the locations provided by the user, we will set all the diagonal
     elements as positive pairs as explained above. We will use the PyTorch tensor
     indexing API to pluck out all the elements at those locations and set them to
     1, whereas the rest are initialized to 0.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了用户提供的位置外，我们还将所有对角线元素设置为正对，如上所述。我们将使用PyTorch张量索引API提取这些位置的所有元素并将其设置为1，而其他元素初始化为0。
 - en: '[PRE14]'
+  id: totrans-115
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '**Binary cross-entropy (BCE) Loss**: Unlike the NT-Xent loss, we can’t simply
     call the torch.nn.functional.binary_cross_entropy_function, since we want to weigh
     the positive and negative loss based on how many positive and negative pairs the
     element at index i has in the current mini-batch.'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '**二元交叉熵（BCE）损失**：与NT-Xent损失不同，我们不能简单调用`torch.nn.functional.binary_cross_entropy_function`，因为我们需要根据当前小批量中索引i处的正负对数目来加权正负损失。'
 - en: The first step though is to compute the element-wise BCE loss.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过第一步是计算逐元素的BCE损失。
 - en: '[PRE15]'
+  id: totrans-118
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: We’ll create a binary mask of positive and negative pairs and then create 2
     tensors, loss_pos and loss_neg that contain only those elements from the computed
     loss that correspond to the positive and negative pairs.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将创建一个正负对的二进制掩码，然后创建两个张量，loss_pos和loss_neg，只包含计算损失中对应于正对和负对的元素。
 - en: '[PRE16]'
+  id: totrans-120
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: Next, we’ll sum up the positive and negative pair loss (separately) corresponding
     to each element i in our mini-batch.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将分别对每个小批量中的元素i的正负对损失进行求和。
 - en: '[PRE17]'
+  id: totrans-122
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: To perform weighting, we need to track the number of positive and negative pairs
     corresponding to each element i in our mini-batch. Tensors *“num_pos”* and *“num_neg”*
     will store these values.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了进行加权，我们需要跟踪每个小批量中每个元素i对应的正负对的数量。张量*“num_pos”*和*“num_neg”*将存储这些值。
 - en: '[PRE18]'
+  id: totrans-124
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: We have all the ingredients we need to compute our loss! The only thing that
     we need to do is weigh the positive and negative loss by the number of positive
     and negative pairs, and then average the loss across the mini-batch.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经具备了计算损失所需的所有要素！我们唯一需要做的就是按正负对的数量对正负损失进行加权，然后在小批量中计算损失的平均值。
 - en: '[PRE19]'
+  id: totrans-126
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: Prints.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 打印。
 - en: 'Temperature: 0.01, Loss: 62.898780822753906'
+  id: totrans-128
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 温度：0.01，损失：62.898780822753906
 - en: ''
+  id: totrans-129
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'Temperature: 0.10, Loss: 4.851151943206787'
+  id: totrans-130
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 温度：0.10，损失：4.851151943206787
 - en: ''
+  id: totrans-131
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'Temperature: 1.00, Loss: 1.0727109909057617'
+  id: totrans-132
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 温度：1.00，损失：1.0727109909057617
 - en: ''
+  id: totrans-133
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'Temperature: 10.00, Loss: 0.9827173948287964'
+  id: totrans-134
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 温度：10.00，损失：0.9827173948287964
 - en: ''
+  id: totrans-135
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: 'Temperature: 20.00, Loss: 0.982099175453186'
+  id: totrans-136
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 温度：20.00，损失：0.982099175453186
 - en: Conclusion
+  id: totrans-137
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: Self-supervised learning is an upcoming field in deep learning and allows one
     to train models on unlabeled data. This technique lets us work around the requirement
     of labeled data at scale.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 自监督学习是深度学习中的一个新兴领域，它允许在未标记的数据上训练模型。这项技术让我们绕过了大规模标记数据的需求。
 - en: In this article, we learned about loss functions for contrastive learning. The
     first one, named NT-Xent loss, is used for learning on a single positive pair
     per input in a mini-batch. We introduced the NT-BXent loss which is used for learning
     on multiple (> 1) positive pairs per input in a mini-batch. We learned to interpret
     them intuitively, building on our knowledge of cross-entropy loss and binary cross-entropy
     loss. Finally, we implemented them both efficiently in PyTorch.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们了解了对比学习的损失函数。第一个，称为NT-Xent损失，用于对每个输入在小批量中学习单个正对。我们介绍了NT-BXent损失，该损失用于在小批量中对每个输入学习多个（>
+    1）正对。我们学会了直观地解释这些损失，基于我们对交叉熵损失和二元交叉熵损失的理解。最后，我们在PyTorch中高效地实现了这两种损失函数。
