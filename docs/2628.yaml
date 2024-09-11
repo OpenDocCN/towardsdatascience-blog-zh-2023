@@ -1,14 +1,17 @@
 - en: A Simple (Yet Effective) Approach to Implementing Unit Tests for dbt Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18](https://towardsdatascience.com/a-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79?source=collection_archive---------0-----------------------#2023-08-18)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Unit testing dbt models has always been one of the most critical missing pieces
     of the dbt ecosystem. This article proposes a new unit testing approach that relies
     on standards and dbt best practices
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -16,293 +19,401 @@
     Karabiben](../Images/f1aac76435b8db295c306c76796a3201.png)](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)[](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)
     [Mahdi Karabiben](https://mahdiqb.medium.com/?source=post_page-----da2583ea8e79--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F7cda12823b7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=post_page-7cda12823b7a----da2583ea8e79---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----da2583ea8e79--------------------------------)
     ·9 min read·Aug 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&user=Mahdi+Karabiben&userId=7cda12823b7a&source=-----da2583ea8e79---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fda2583ea8e79&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fa-simple-yet-effective-approach-to-implementing-unit-tests-for-dbt-models-da2583ea8e79&source=-----da2583ea8e79---------------------bookmark_footer-----------)![](../Images/9fa3a5ea813d037c94ab620c1126f1a6.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Fabio Ballasina](https://unsplash.com/@fabiolog?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Ever since [dbt](https://www.getdbt.com/product/what-is-dbt/) introduced software
     engineering best practices to the realm of data engineering, its functionalities
     and the ecosystem around it have kept expanding to cover yet more areas of the
     data transformation space.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 自从 [dbt](https://www.getdbt.com/product/what-is-dbt/) 将软件工程最佳实践引入数据工程领域以来，它的功能和周边生态系统不断扩展，覆盖了更多的数据转换领域。
 - en: 'However, one essential piece of the “*data engineering with software engineering
     best practices*” puzzle remains elusive and an unsolved problem: unit testing.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，“*数据工程与软件工程最佳实践*”的一个关键部分仍然模糊不清且尚未解决：单元测试。
 - en: 'Justifying the importance of unit tests, why they’re critical for any line
     of code before it can be called “production-ready”, and why they’re different
     from dbt Tests or data quality tests is something that has already been [brilliantly
     tackled and explained](https://www.youtube.com/watch?v=hxvVhmhWRJA). But if we
     wanted to summarize their importance in a one-minute elevator pitch, it’d be the
     following:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 单元测试的重要性、它们为何对任何一行代码在称为“生产就绪”之前至关重要，以及它们为何不同于 dbt 测试或数据质量测试，已经被 [精彩阐述和解释](https://www.youtube.com/watch?v=hxvVhmhWRJA)。但如果我们要用一分钟的电梯陈述总结它们的重要性，那就是：
 - en: 'In data engineering there are generally two different elements that we want
     to test: the data and our code — dbt Tests (and other data quality systems/tools)
     allow us to test the data, while unit tests allow us to test our code.'
+  id: totrans-12
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在数据工程中，通常有两个不同的元素需要测试：数据和我们的代码——dbt 测试（以及其他数据质量系统/工具）允许我们测试数据，而单元测试允许我们测试代码。
 - en: With the above in mind, it’s only natural that there have been multiple initiatives
     by the community to enhance dbt with an open-source unit testing capability (like
     Equal Experts’ [dbt Unit Testing package](https://github.com/EqualExperts/dbt-unit-testing)
     or GoDataDriven’s [dbt-focused Pytest plugin](https://github.com/godatadriven/pytest-dbt-core)).
     However, these packages remain limited in functionalities and have a steep learning
     curve.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑到上述情况，社区自然进行了多个倡议，以通过开源单元测试功能增强 dbt（如 Equal Experts 的 [dbt 单元测试包](https://github.com/EqualExperts/dbt-unit-testing)
+    或 GoDataDriven 的 [dbt 专用 Pytest 插件](https://github.com/godatadriven/pytest-dbt-core)）。然而，这些包在功能上仍然有限，并且具有较高的学习曲线。
 - en: This article introduces a different approach that’s much simpler yet more elegant,
     relying on standards and dbt best practices to implement a scalable and reliable
     unit testing process.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文介绍了一种更简单却更优雅的方法，依靠标准和 dbt 最佳实践来实现可扩展且可靠的单元测试流程。
 - en: Unit testing models vs. CTEs
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 单元测试模型与 CTE
 - en: Before diving into the approach, let’s first define the level at which we want
     to run our unit tests. The question to answer here is related to our definition
     of a “testable unit” within a dbt project.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入探讨方法之前，让我们首先定义一下我们希望在何种级别运行单元测试。这里需要回答的问题与我们在 dbt 项目中的“可测试单元”的定义有关。
 - en: What are our testable units?
+  id: totrans-17
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 我们的可测试单元是什么？
 - en: If we stick to software engineering best practices, a testable unit would be
     a small piece of code with clear inputs and outputs — and without dependencies
     on external factors. Depending on the dbt project and its complexity, this definition
     can apply to both dbt models and the Common Table Expressions (CTEs) they’re made
     of.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们坚持软件工程最佳实践，那么一个可测试单元就是一个具有清晰输入和输出的小段代码——并且不依赖于外部因素。根据 dbt 项目及其复杂性，这一定义可以适用于
+    dbt 模型及其构成的公共表表达式（CTEs）。
 - en: If we have a dbt project that mostly contains short and fairly simple models
     (less than 100 lines of code per model), then defining unit tests at the model
     level can be suitable. However, if our dbt project contains long and complex models,
     then defining unit tests at the CTE level will be the more efficient approach.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们的 dbt 项目主要包含短小而相对简单的模型（每个模型少于 100 行代码），那么在模型级别定义单元测试是合适的。然而，如果我们的 dbt 项目包含长而复杂的模型，那么在
+    CTE 级别定义单元测试将是更高效的方法。
 - en: It’s a matter of perspective
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 这是一种视角问题
 - en: dbt Labs (the company behind dbt Core) [has a preference for the first approach](https://www.getdbt.com/analytics-engineering/modular-data-modeling-technique/#data-model-readability).
     So, unsurprisingly, [their unit testing proposal](https://github.com/dbt-labs/dbt-core/discussions/8275)
     focuses on model-level tests and considers CTE-level tests an *anti-goal*. For
     small or greenfield dbt projects, this can be a very reasonable design decision.
     However, if you have a mature or large dbt project, then adding layers of unnecessary
     ephemeral models solely to avoid complex models [may not be a good idea](https://medium.com/p/d49550f95580#:~:text=Why%20do%20we%20need%20design%20docs%20for%20data%20pipelines%3F).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: dbt Labs（dbt Core的开发公司）[更倾向于第一种方法](https://www.getdbt.com/analytics-engineering/modular-data-modeling-technique/#data-model-readability)。因此，毫不奇怪，[他们的单元测试提案](https://github.com/dbt-labs/dbt-core/discussions/8275)专注于模型级别的测试，并将CTE级别的测试视为*反目标*。对于小型或新建的dbt项目，这可能是一个非常合理的设计决策。然而，如果你拥有一个成熟或大型的dbt项目，那么为了避免复杂模型而增加不必要的临时模型[可能不是一个好主意](https://medium.com/p/d49550f95580#:~:text=Why%20do%20we%20need%20design%20docs%20for%20data%20pipelines%3F)。
 - en: 'For most dbt projects, performing multiple operations (transformations, aggregation,
     etc.) on the same entity within a dbt model is completely acceptable: We can first
     transform a given column and then aggregate the data using it, or we can create
     a new flag and then rely on it to apply some business logic or filter the data.
     These operations can happen in different CTEs within the same model, making the
     CTE a natural testable unit.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于大多数dbt项目，在一个dbt模型中对同一实体执行多个操作（变换、聚合等）是完全可以接受的：我们可以首先对给定的列进行变换，然后使用它来聚合数据，或者我们可以创建一个新的标志，然后依赖它来应用一些业务逻辑或筛选数据。这些操作可以在同一模型中的不同CTE中进行，使CTE成为一个自然的可测试单元。
 - en: The approach presented in this article will focus on unit testing CTEs and not
     the model as a whole, although the same principles can be tweaked to perform unit
     tests at the model level.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文中介绍的方法将重点关注CTE的单元测试，而不是整个模型，尽管相同的原则可以调整用于模型级别的单元测试。
 - en: 'The secret sauce: shrinking the universe'
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 秘密武器：缩小宇宙
 - en: The main complexity when implementing a unit testing system for dbt models stems
     from the fact that a “dbt model” can be many, many things. From a 1000-line massive
     `select` statement to a long list of CTEs and subqueries, all these scenarios
     need to be considered if we want to build a generic unit testing system that can
     be used in any dbt project.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 实施dbt模型的单元测试系统的主要复杂性在于“dbt模型”可以有很多种形式。从一个1000行的庞大`select`语句到一长串CTE和子查询，如果我们想构建一个可以用于任何dbt项目的通用单元测试系统，就需要考虑所有这些场景。
 - en: 'However, we can avoid this complexity altogether by limiting the scope of the
     problem. Instead of building a unit testing system that works in any dbt project,
     we only need to build one for ***our*** dbt projects. [As Don Draper would tell
     you](https://www.youtube.com/watch?v=ijJonVw7YPY), we can always “***change the
     conversation***”:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们可以通过限制问题的范围来完全避免这种复杂性。与其构建一个在任何dbt项目中都能工作的单元测试系统，不如只为***我们的***dbt项目构建一个。[正如Don
+    Draper会告诉你的](https://www.youtube.com/watch?v=ijJonVw7YPY)，我们可以随时“***改变对话***”：
 - en: Instead of building a unit testing system for dbt models (***a universe we can’t
     control***), let’s build a system for our dbt models (***a much smaller universe
     that we can control***).
+  id: totrans-27
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 与其为dbt模型（***一个我们无法控制的宇宙***）构建单元测试系统，不如为我们的dbt模型（***一个我们可以控制的更小宇宙***）构建系统。
 - en: Changing our targeted universe dramatically simplifies the problem since we
     know our dbt models and their quirks. More importantly, we can define standards
     and guidelines for their structure and contents.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 改变我们目标宇宙的范围大大简化了问题，因为我们了解我们的dbt模型及其特性。更重要的是，我们可以为它们的结构和内容定义标准和指南。
 - en: '![](../Images/afca9da593d06a0764695eab547f05a0.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/afca9da593d06a0764695eab547f05a0.png)'
 - en: A visual representation of how “shrinking” the universe simplifies the unit
     testing approach (image by author)
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何通过“缩小”宇宙来简化单元测试方法的视觉表示（作者提供的图像）
 - en: The above principle can also be applied to other areas where we want to build
     customizations and functionalities related to dbt. Setting standards and limiting
     what we can expect when we talk about “dbt models” simplifies the problem and
     opens the door for straightforward solutions.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述原则也可以应用于我们希望构建与dbt相关的自定义和功能的其他领域。设定标准并限制我们对“dbt模型”的期望，可以简化问题，并为直接解决方案打开大门。
 - en: 'Navigating a familiar universe: standardizing the structure of our dbt models'
+  id: totrans-32
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 导航熟悉的宇宙：标准化我们的dbt模型结构
 - en: Now that we’ve limited the scope of the work to our dbt models, we can clarify
     our inputs by defining a mandatory model structure that we can enforce via automation
     like CI actions. If you’re already maintaining dbt projects that don’t have a
     recommended model structure, you can always start enforcing it progressively as
     you update your existing models.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们已经将工作的范围限制在我们的 dbt 模型上，我们可以通过定义一个强制执行的模型结构来明确我们的输入，这个结构可以通过自动化（如 CI 操作）来强制执行。如果你已经在维护没有推荐模型结构的
+    dbt 项目，你可以在更新现有模型时逐步开始强制执行它。
 - en: 'The ideal structure would depend on your use cases, but the ***import-intermediate-final***
     approach recommended by dbt Labs is a safe bet in most cases. It basically divides
     a dbt model into three types of CTEs:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 理想的结构将取决于你的用例，但 dbt Labs 推荐的 ***import-intermediate-final*** 方法在大多数情况下是一个安全的选择。它基本上将
+    dbt 模型分为三种类型的 CTEs：
 - en: '**Import CTEs**: These constitute the first section of the model and merely
     consist of reading data from other models. We can perform column renaming and
     filtering, but we shouldn’t transform the data at this stage. Ideally, their names
     would start with the `import_` prefix.'
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**导入 CTEs**：这些是模型的第一部分，仅仅是从其他模型中读取数据。我们可以进行列重命名和过滤，但在这个阶段不应对数据进行转换。理想情况下，它们的名称应以
+    `import_` 前缀开头。'
 - en: '**Intermediate CTEs**: This is where the bulk of the work happens. We can use
     these CTEs to transform, join, and aggregate the data, apply business logic, and
     all the other operations to generate the desired output of the model — making
     these the CTEs that we’d want to unit test. Ideally, their names would start with
     the `intermediate_` prefix.'
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**中间 CTEs**：这是工作的大部分内容发生的地方。我们可以使用这些 CTE 来转换、连接和汇总数据，应用业务逻辑，以及进行所有其他操作以生成模型的期望输出——使得这些
+    CTE 成为我们希望单元测试的对象。理想情况下，它们的名称应以 `intermediate_` 前缀开头。'
 - en: '**Final CTE**: In this CTE we join different import and intermediate CTEs to
     define the model’s output — without applying any additional transformations. This
     CTE should be named `final`.'
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**最终 CTE**：在这个 CTE 中，我们将不同的导入和中间 CTE 连接起来，以定义模型的输出——而不应用任何额外的转换。这个 CTE 应该命名为
+    `final`。'
 - en: Then, as the last section of the model, a `select * from final` statement would
     generate its output.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，作为模型的最后一部分，`select * from final` 语句将生成其输出。
 - en: '![](../Images/b5463781d6ed959fd945029667e14bff.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b5463781d6ed959fd945029667e14bff.png)'
 - en: Sample dbt model using the import-intermediate-final structure (image by author)
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 import-intermediate-final 结构的示例 dbt 模型（作者提供的图像）
 - en: Now that we have a model structure that we can design around, defining a unit
     testing system becomes a much easier task.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们有了可以围绕其设计的模型结构，定义单元测试系统变得更加容易。
 - en: It’s worth noting, however, that ideally we’d define the model structure before
     we start using dbt — along with other foundations for our dbt usage. This was
     one of the key areas that my team at Zendesk and myself focused on when we decided
     to implement a dbt-based data transformation framework, and we detailed our work
     on standards in [this article](https://zendesk.engineering/dbt-at-zendesk-part-i-setting-foundations-for-scalability-34b55e6a6aa1)
     published on the Zendesk engineering blog.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，值得注意的是，理想情况下我们应该在开始使用 dbt 之前定义模型结构——以及其他 dbt 使用的基础。这是我和 Zendesk 团队在决定实施基于
+    dbt 的数据转换框架时关注的关键领域之一，我们在 Zendesk 工程博客上发布了[这篇文章](https://zendesk.engineering/dbt-at-zendesk-part-i-setting-foundations-for-scalability-34b55e6a6aa1)详细描述了我们的标准工作。
 - en: 'Building on standards: a simple unit testing system'
+  id: totrans-43
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于标准：一个简单的单元测试系统
 - en: Based on the structure we discussed above, to ensure efficient unit testing
     code coverage for our dbt models, we can rely on testing the intermediate CTEs
     and the final CTE — since the import CTEs don’t contain any code we’d want to
     test.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于我们讨论的结构，为了确保对 dbt 模型进行高效的单元测试代码覆盖，我们可以依赖测试中间 CTEs 和最终 CTE——因为导入 CTEs 不包含我们需要测试的代码。
 - en: '![](../Images/011f38aae61b82b635f72cee65815e1c.png)'
+  id: totrans-45
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/011f38aae61b82b635f72cee65815e1c.png)'
 - en: Dividing the dbt model into inputs and code that needs to be tested (image by
     author)
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 将 dbt 模型分为需要测试的输入和代码（作者提供的图像）
 - en: And so now we can define the different components of our unit testing system
     and how they’d interact based on the above standards.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以根据上述标准定义单元测试系统的不同组件及其交互方式。
 - en: 'The mock inputs: the output of import CTEs'
+  id: totrans-48
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模拟输入：导入 CTEs 的输出
 - en: The first component of our system is mock inputs (basically, the sample data
     we’d want to use to test different execution scenarios). In terms of structure,
     this should be similar to the output of our import CTEs — so if we’re reading
     two columns from a model named `customers`, the mock input should contain the
     same structure.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/fc2574b360143165136dd435a6bc18e5.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
 - en: Translating the output of import CTEs into mock inputs for unit tests (image
     by author)
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: These inputs should be defined as [dbt seeds](https://docs.getdbt.com/docs/build/seeds)
     (and so we’re providing CSV files that contain the mock data) ideally in a separate
     `tests` dbt project (to avoid cluttering our main project with unit testing seeds).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: 'The expectations: the desired output of intermediate CTEs'
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: Now that we’ve defined our inputs, we can use the same process (dbt seeds) to
     define our desired outputs. These outputs correspond to the expected state of
     the data after the execution of every intermediate CTE.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: For every intermediate CTE, we can have multiple outputs corresponding to the
     scenarios we want to test to maximize code coverage and ensure we test edge cases.
     (Either within the same CSV with a `test_id` column that allows us to separate
     the different tests or by providing multiple CSVs.)
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: 'Running the tests: the luxury of choice'
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: The last architectural component of the system is the process that will perform
     the assertions for us (comparing the actual outputs of our CTEs with the expected
     outputs).
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: 'Technically, we just want to compare two tables in our data warehouse:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
 - en: The table generated from our expectations dbt seed (the expected output that
     we provided in a CSV file)
+  id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: The table generated by running the CTE we’re testing (with the mock data as
     its inputs)
+  id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -310,25 +421,30 @@
     helper](https://github.com/dbt-labs/dbt-audit-helper) or a data quality system
     like [Soda Core](https://github.com/sodadata/soda-core) (using [the built-in comparison
     checks](https://docs.soda.io/soda-cl/compare.html) of SodaCL).
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
 - en: Connecting the dots
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
 - en: 'Finally, now that all of the components are defined, we only need to connect
     the dots via a module (which we can write in Python or any other language) that
     does the following:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
 - en: Compile the dbt model we want to test (to replace variables and macros with
     their actual values).
+  id: totrans-64
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Parse the compiled model and retrieve the list of intermediate CTEs (ideally
     we’d rely on the `intermediate_` prefix but this can be achieved in multiple ways)
     and the Final CTE (using its name).
+  id: totrans-65
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -336,72 +452,101 @@
     with references to the corresponding mock data (and so instead of referencing
     CTEs, we’d reference the dbt seeds). Here again, we can rely on the prefixes (both
     `import_` and `intermediate_`) to find the CTE names that we need to replace.
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: For every CTE, write its new body (after replacing the references) as a dbt
     model within our tests dbt project.
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Run `dbt seed` command in our tests project (to recreate the mock data tables
     and the expected output tables), ideally with a tag that only refreshes the tables
     related to the model we’re currently testing.
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 运行 `dbt seed` 命令在我们的测试项目中（以重新创建模拟数据表和预期输出表），理想情况下使用一个仅刷新与我们当前测试的模型相关的表的标签。
 - en: Perform the assertions using our tool of choice (a dbt package or a tool like
     Soda) and print the output or perform an action based on it.
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用我们选择的工具（一个 dbt 包或类似 Soda 的工具）执行断言，并根据输出打印结果或执行某些操作。
 - en: With the above process, we can test every intermediate CTE (and the final CTE)
     during one execution without having the actual output of one CTE interfere with
     the next one. This means that for a given CTE, dbt will only use the mock inputs
     when running it (since it’s referencing the dbt seeds we provided) — with the
     inputs being the output of import CTEs and the expected output of other intermediate
     CTEs we’re referencing.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过上述过程，我们可以在一次执行中测试每个中级 CTE（以及最终 CTE），而不必担心一个 CTE 的实际输出会干扰下一个 CTE。这意味着，对于给定的
+    CTE，dbt 仅会在运行时使用模拟输入（因为它引用了我们提供的 dbt 种子）——输入包括导入 CTE 的输出和我们引用的其他中级 CTE 的预期输出。
 - en: '![](../Images/107eb6753a3c94defea5d20318729d39.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/107eb6753a3c94defea5d20318729d39.png)'
 - en: Sample inputs for an intermediate CTE in which we’re referencing two import
     CTEs and another intermediate CTE (image by author)
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个中级 CTE 的示例输入，其中我们引用了两个导入 CTE 和另一个中级 CTE（图像来源：作者）
 - en: Conclusion
+  id: totrans-73
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'In this article, we presented a scalable and flexible unit testing approach
     for dbt models (at the CTE level) that requires a relatively small amount of engineering
     effort and a focus on enforcing standards. Even though the approach doesn’t solve
     unit testing for every dbt project, I believe many teams can leverage it (or a
     variation of it) in their projects to add an essential layer of safety: testing
     the code.'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们介绍了一种可扩展且灵活的单元测试方法，用于 dbt 模型（在 CTE 级别），这需要相对较少的工程工作，并专注于执行标准。尽管该方法不能解决所有
+    dbt 项目的单元测试问题，但我相信许多团队可以在他们的项目中利用它（或其变体）来增加一个重要的安全层：测试代码。
 - en: The approach can be tweaked and enhanced based on the specificities of the dbt
     project, and may not be suitable for all scenarios (for example, if the bulk of
     your code resides in macros) — but standardization remains a powerful ally that
     streamlines the path towards enhancing dbt in different areas.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法可以根据 dbt 项目的特定情况进行调整和增强，并不适用于所有场景（例如，如果大部分代码位于宏中）——但标准化仍然是一个强大的盟友，能够简化在不同领域提升
+    dbt 的路径。
 - en: '*For more data engineering content you can subscribe to my newsletter, Data
     Espresso, in which I discuss various topics related to data engineering and technology
     in general:*'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如需更多数据工程内容，您可以订阅我的新闻通讯《数据浓缩》，我将在其中讨论各种与数据工程和技术相关的主题：*'
 - en: '[](https://dataespresso.substack.com/?source=post_page-----da2583ea8e79--------------------------------)
     [## Data Espresso | Mahdi Karabiben | Substack'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## Data Espresso | Mahdi Karabiben | Substack](https://dataespresso.substack.com/?source=post_page-----da2583ea8e79--------------------------------)'
 - en: Hundreds of subscribers. Data engineering updates and commentary to accompany
     your afternoon espresso. Click to read…
+  id: totrans-78
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 数百名订阅者。数据工程更新和评论，伴随您的下午浓缩咖啡。点击阅读…
 - en: dataespresso.substack.com](https://dataespresso.substack.com/?source=post_page-----da2583ea8e79--------------------------------)
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '[dataespresso.substack.com](https://dataespresso.substack.com/?source=post_page-----da2583ea8e79--------------------------------)'
