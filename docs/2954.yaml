@@ -1,13 +1,16 @@
 - en: Building a Smart Travel Itinerary Suggester with LangChain, Google Maps API,
     and Gradio (Part 1)
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26](https://towardsdatascience.com/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74?source=collection_archive---------1-----------------------#2023-09-26)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Learn how to build an application that might inspire your next road trip
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -15,30 +18,37 @@
     Martin-Short](../Images/e3910071b72a914255b185b850579a5a.png)](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)[](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)
     [Robert Martin-Short](https://medium.com/@rmartinshort?source=post_page-----4175ff480b74--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F83d38eb39498&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=post_page-83d38eb39498----4175ff480b74---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----4175ff480b74--------------------------------)
     ·13 min read·Sep 26, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F4175ff480b74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&user=Robert+Martin-Short&userId=83d38eb39498&source=-----4175ff480b74---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F4175ff480b74&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fbuilding-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-1-4175ff480b74&source=-----4175ff480b74---------------------bookmark_footer-----------)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: '**This article is part 1 of a three part series where we build a travel itinerary
     suggester application using OpenAI and Google APIs and display it in a simple
     UI generated with gradio. In this part, we start by discussing prompt engineering
     for this project. Just want see the code? Find it** [**here**](https://github.com/rmartinshort/travel_mapper)**.**'
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '**1\. Motivation**'
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -50,8 +60,12 @@
     such as OpenAI and PaLM. It is both exciting and somewhat overwhelming to see
     how fast this field is advancing, with new tools and development paradigms seemingly
     emerging every few weeks.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 自2022年底 ChatGPT 发布以来，对大型语言模型（LLMs）及其在面向消费者的产品（如聊天机器人和搜索引擎）中的应用兴趣激增。不足一年，我们已经可以访问大量来自[Hugging
+    Face](https://huggingface.co/models)的开源 LLM、[Lamini](https://www.lamini.ai/)等模型托管服务以及
+    OpenAI 和 PaLM 等付费 API。看到这一领域的发展如此迅速，新的工具和开发范式似乎每几周就会出现，既令人兴奋又有些不知所措。
 - en: Here we’ll be sampling just a fraction of this zoo of tools to build a useful
     application that could help us with travel planning. When planning a vacation
     its often nice to get suggestions from someone who’s been there before, and even
@@ -61,23 +75,33 @@
     is fun, but its inefficient and likely to miss something. Wouldn’t it be nice
     to have a tool that could give you a bunch of suggestions with just a few high
     level preferences?
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们将仅仅采样这些工具中的一小部分，构建一个有用的应用程序，帮助我们进行旅行规划。在计划度假时，得到曾经去过那里的人建议往往很不错，看到这些建议在地图上展示更好。在没有这种建议的情况下，我有时会浏览
+    Google 地图，在我想要访问的一般区域内随意选择一些看起来有趣的地方。也许这个过程很有趣，但它效率低且可能会遗漏一些东西。拥有一个能够根据几个高层次偏好提供大量建议的工具岂不是很好吗？
 - en: 'Thats exactly what we’ll try to build: A system that can provide travel itinerary
     suggestions given some high level preferences, something like *“I have 3 days
     to explore the San Francisco and love art museums”*. Google Search’s generative
     AI feature and ChatGPT can already produce creative results for queries like this,
     but we want to go a step further and produce an actual itinerary with travel times
     and a nice map to help the user get orientated.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这正是我们尝试构建的系统：一个能够根据一些高层次的偏好提供旅行行程建议的系统，例如*“我有3天时间探索旧金山，并且喜欢艺术博物馆”*。Google 搜索的生成
+    AI 功能和 ChatGPT 已经可以为类似的查询提供创造性的结果，但我们希望更进一步，生成一个包含旅行时间和美观地图的实际行程，帮助用户定位。
 - en: '![](../Images/0aab314c7aca0e6ff37fec3053974304.png)'
+  id: totrans-13
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0aab314c7aca0e6ff37fec3053974304.png)'
 - en: 'This is what we’ll build: A system to generate travel suggestions with a basic
     map showing the route and waypoints provided by the LLM'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是我们将构建的系统：一个生成旅行建议的系统，配有基本地图，显示由 LLM 提供的路线和中途点。
 - en: The goal is more to get acquainted with the tools needed to build a service
     like this rather than actually deploy the application, but along the way we’ll
     learn a bit about prompt engineering, LLM orchestration with LangChain, using
@@ -86,40 +110,60 @@
     you to build a POC for systems like this, but as always the real challenges lie
     in evaluation and edge case management. The tool we’ll build is far from perfect
     and if anyone is interested in helping me develop it further that would be fantastic.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标更多是熟悉构建此类服务所需的工具，而不是实际部署应用程序，但在此过程中我们将了解一些关于提示工程、与 LangChain 协调的 LLM、使用 Google
+    Maps API 提取方向以及使用 [leafmap](https://leafmap.org/) 和 [gradio](https://www.gradio.app/)
+    显示结果的知识。令人惊叹的是，这些工具能够如此快速地为此类系统构建一个 POC，但真正的挑战总是出现在评估和边缘情况管理上。我们将构建的工具远非完美，如果有人有兴趣进一步帮助我开发，那将是非常棒的。
 - en: 2\. Prompting strategy
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 2\. 提示策略
 - en: This project will make use of the OpenAI and Google PaLM API. You can get make
     API keys by making accounts [here](https://platform.openai.com/account/members)
     and [here](https://makersuite.google.com/app/home). At the time of writing, the
     Google API has limited general availability and has a waitlist, but it should
     only take a few days to get access.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 该项目将使用 OpenAI 和 Google PaLM API。你可以通过在[这里](https://platform.openai.com/account/members)和[这里](https://makersuite.google.com/app/home)注册账户来获取
+    API 密钥。撰写时，Google API 的通用可用性有限，并且有等待名单，但获取访问权限通常只需几天时间。
 - en: Use of `[dotenv](https://pypi.org/project/python-dotenv/)` is an easy way to
     avoid having to copy and paste API keys into your development environment. After
     making a .env file with the following lines
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 `[dotenv](https://pypi.org/project/python-dotenv/)` 是避免将 API 密钥复制粘贴到开发环境中的一种简单方法。在创建了一个包含以下行的
+    .env 文件之后
 - en: '[PRE0]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We can use this function to load the variables ready for downstream use by `LangChain`
     for example
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以使用这个函数来加载变量，以便 `LangChain` 等下游使用。
 - en: '[PRE1]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Now, how should we design the prompts for a travel agent service? The user will
     be free to enter any text they want, so we first want to be able to determine
     whether or not their query is valid. We definitely want to flag any query that
     contain harmful content, such requests for an itinerary with malicious intent.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，我们应该如何设计旅行代理服务的提示呢？用户将可以输入他们想要的任何文本，因此我们首先要能够确定他们的查询是否有效。我们肯定要标记任何包含有害内容的查询，例如具有恶意意图的行程请求。
 - en: We also want to filter out questions unrelated to travel — no doubt the LLM
     could provide an answer to such questions, but they are beyond the scope of this
     project. Finally, we also want to identify requests that are unreasonable like
@@ -127,56 +171,82 @@
     York to Tokyo”*. Given an unreasonable request like this, it would be great of
     the model could explain why it was unreasonable and suggest a modification that
     would help.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还想过滤掉与旅行无关的问题——毫无疑问，大语言模型可以回答这些问题，但这些问题超出了本项目的范围。最后，我们还希望识别出不合理的请求，例如 *“我想飞到月球”*
+    或 *“我想进行从纽约到东京的三天公路旅行”*。对于这样的不合理请求，如果模型能够解释为何不合理并提出有帮助的修改建议，那将是很好的。
 - en: Once the request is validated we can proceed to providing a suggested itinerary,
     which ideally should contain specific addresses of the waypoints so that they
     can be sent to a mapping or directions API such as Google Maps.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦请求被验证，我们可以继续提供建议的行程，理想情况下应该包含路线点的具体地址，以便可以将其发送到诸如 Google Maps 的映射或导航 API。
 - en: The itinerary should be human-readable, with enough detail for the user to to
     find it useful as a stand-alone suggestion. Large, instruction-tuned LLMs such
     as ChatGPT seem to be great at providing such responses, but we need to make sure
     that the waypoint addresses are extracted in a consistent way.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 行程应该是人类可读的，包含足够的细节，使用户能够将其作为独立建议使用。像 ChatGPT 这样的庞大、经过指令调优的大语言模型似乎在提供这样的回应方面表现出色，但我们需要确保路线点地址以一致的方式提取。
 - en: 'So there are three distinct stages here:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，这里有三个不同的阶段：
 - en: Validate the query
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 验证查询
 - en: Produce the itinerary
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 生成行程
 - en: Extract the waypoints in a format that can be understood by the Google Maps
     API
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 以 Google Maps API 可以理解的格式提取路线点
 - en: It may be possible to design a prompt that can do all three in one call, but
     for ease of debugging we will split them up into three LLM calls, one for each
     part.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 可能设计一个能够一次完成所有三项工作的提示，但为了便于调试，我们将其拆分为三个大语言模型调用，每个部分一个。
 - en: Fortunately LangChain’s `[PydanticOutputParser](https://python.langchain.com/docs/modules/model_io/output_parsers/pydantic)`
     can really help here, by providing a set of pre-made prompts that encourage LLMs
     to format their responses in a way that conforms with an output schema.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，LangChain 的 `[PydanticOutputParser](https://python.langchain.com/docs/modules/model_io/output_parsers/pydantic)`
+    确实可以提供帮助，通过提供一组预设的提示，鼓励大语言模型以符合输出模式的方式格式化其回应。
 - en: '**3\. The validation prompt**'
+  id: totrans-32
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**3\. 验证提示**'
 - en: Let’s take a look at the validation prompt, which we can wrap in a template
     class to make it easier to contain and iterate on different versions.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看验证提示，我们可以将其包装在一个模板类中，以便更容易包含和迭代不同的版本。
 - en: '[PRE2]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Our `Validation` class contains the output schema definitions for the query,
     which will be a JSON object with two keys `plan_is_valid` and `updated_request`.
     Inside`ValidationTemplate` we use LangChain’s helpful template classes to construct
@@ -186,102 +256,156 @@
     instructions in the system template. Every time the API is called, we want the
     both the `system_message_prompt`and the `human_message_prompt` to be sent to the
     LLM, which is why we package them together in the `chat_prompt`.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的 `Validation` 类包含查询的输出模式定义，这将是一个包含两个键 `plan_is_valid` 和 `updated_request`
+    的 JSON 对象。在 `ValidationTemplate` 中，我们使用 LangChain 的有用模板类来构造提示，并创建一个带有 `PydanticOutputParser`
+    的解析器对象。这将 `Pydantic` 代码转换为可以与查询一起传递给 LLM 的一组指令。然后，我们可以在系统模板中引用这些格式指令。每次调用 API
+    时，我们希望 `system_message_prompt` 和 `human_message_prompt` 都发送给 LLM，这就是为什么我们将它们打包在
+    `chat_prompt` 中。
 - en: Since this isn’t really a chatbot application (although it could be made into
     one!) we could just put both the system and human templates into the same string
     and get the same response.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这实际上并不是一个聊天机器人应用程序（虽然可以将其制作成一个！），我们可以将系统和人工模板放在同一个字符串中，以获得相同的响应。
 - en: Now, we can make an `Agent` class that uses LangChain to call the LLM API with
     the template defined above. Here we’re using `ChatOpenAI` , but it can be replaced
     with `GooglePalm` if you prefer that.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们可以创建一个使用 LangChain 调用 LLM API 的 `Agent` 类。这里我们使用 `ChatOpenAI`，但如果你更喜欢，也可以用
+    `GooglePalm` 替代。
 - en: Note that we also make use of `LLMChain` and `SequentialChain` from Langchain
     here, even though we’re only making a single call to the LLM. This is probably
     overkill, but it could be helpful for extensibility in future of we wanted to
     add another call , for example to the [OpenAI moderation API](https://platform.openai.com/docs/guides/moderation/overview?lang=python)
     before the validation chain runs.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，我们这里还使用了 Langchain 的 `LLMChain` 和 `SequentialChain`，尽管我们只是进行了一次 LLM 调用。这可能有些过度，但如果未来我们想添加另一个调用（例如，在验证链运行之前调用
+    [OpenAI moderation API](https://platform.openai.com/docs/guides/moderation/overview?lang=python)），这可能会有帮助。
 - en: '[PRE3]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: To run an example, we can try the following code. Setting `debug=True` will
     activate LangChain’s debug mode, which prints the progression of the query text
     at is moves though the various LangChain classes on its way too and from the LLM
     call.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 要运行示例，我们可以尝试以下代码。设置 `debug=True` 将激活 LangChain 的调试模式，该模式会打印查询文本在通过各种 LangChain
+    类时的进展情况。
 - en: '[PRE4]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: This query seems reasonable, so we get a result like this
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个查询似乎合理，因此我们得到如下结果
 - en: '[PRE5]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Now we test by changing the query to something less reasonable, such as
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们通过将查询更改为不那么合理的内容来进行测试，例如
 - en: '[PRE6]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: The response time is longer because ChatGPT is trying to provide an explanation
     for why the query is not valid and therefore generating more tokens.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 响应时间较长，因为 ChatGPT 正在尝试提供有关查询为何无效的解释，因此生成了更多的标记。
 - en: '[PRE7]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 4\. The itinerary prompt
+  id: totrans-48
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 4. 行程提示
 - en: If a query is valid, it can pass on to the next stage, which is the itinerary
     prompt. Here, we want to the model to return a detailed suggested travel plan,
     which should take the form of a bulleted list with waypoint addresses and some
     advice about what to do in each place. This is really the main “generative” part
     of the project, and there are many ways to design a query to give good results
     here. Our `ItineraryTemplate` looks like this
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果查询有效，它可以传递到下一个阶段，即行程提示。在这里，我们希望模型返回详细的建议旅行计划，形式应为包含途经地址和有关每个地点活动建议的项目符号列表。这实际上是项目的主要“生成”部分，有很多方法可以设计查询以获得良好的结果。我们的
+    `ItineraryTemplate` 看起来像这样
 - en: '[PRE8]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Note that there is no need for a `Pydantic` parser here because we want the
     output to be a string rather than a JSON object.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，这里不需要 `Pydantic` 解析器，因为我们希望输出是一个字符串，而不是 JSON 对象。
 - en: To use this, we can add a new LLMChain to the `Agent` class, which looks like
     this
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 要使用这个，我们可以向 `Agent` 类添加一个新的 LLMChain，如下所示
 - en: '[PRE9]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: We did not set the`max_tokens` argument when instantiating the `chat_model`
     here, which allows the model to decide the length of its output. With GPT4 in
     particular this can make the response time rather long (30s+ in some cases). Interestingly,
     the response times of PaLM are considerably shorter.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在实例化 `chat_model` 时没有设置 `max_tokens` 参数，这允许模型决定其输出的长度。特别是对于 GPT4，这可能使响应时间相当长（有时超过
+    30 秒）。有趣的是，PaLM 的响应时间明显较短。
 - en: '**5\. The waypoint extraction prompt**'
+  id: totrans-55
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: Using the itinerary prompt might give us a nice list of waypoints, perhaps something
     like this
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE10]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: Now we need to extract the addresses of the waypoints so that we can proceed
     to the next step, which is going to be plotting them on a map and calling the
     Google Maps directions API to obtain directions between them.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
 - en: To do this, we will make another LLM call and use `PydanicOutputParser` again
@@ -289,57 +413,78 @@
     it’s useful to briefly consider what we want to do at the next stage of this project
     (covered in part 2). We will be making a call to the [Google Maps Python API](https://github.com/googlemaps/google-maps-services-python),
     which looks like this
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE11]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Where start and end are addresses as strings, and waypoints is a list of addresses
     to be visited in between.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
 - en: Our requested schema for the waypoint extraction prompt therefore looks like
     this
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE12]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: Which will enable us plug the outputs of the LLM call into the directions call.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
 - en: For this prompt, I found that adding a one-shot example really helped the model
     conform to the desired output. Fine-tuning of a smaller, open source LLM to extract
     lists of waypoints using these results from ChatGPT/PaLM might be an interesting
     spinoff project here.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE13]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Now, lets add a new method to the `Agent` class that can call the LLM with `ItineraryTemplate`
     and `MappingTemplate` sequentially using SequentialChain
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE14]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: To make these calls, we can use the following code
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE15]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: The addresses in `waypoints_dict` should be sufficiently formatted for use with
     Google Maps, but they can also be geocoded to reduce the likelihood of errors
     when calling the directions API. The waypoints dictionary should look something
     like this.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE16]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '**6\. Putting it all together**'
+  id: totrans-73
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -348,30 +493,39 @@
     down steam. You’ll see that in the code, almost all of this functionality is handled
     by the `Agent` class, which is instantiated inside `TravelMapperBase` and used
     as follows
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE17]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: Using LangChain makes it very easy to swap out the LLM that is being used. For
     PALM, we simply need to declare
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE18]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: And for OpenAI, we can either use `ChatOpenAI` or `OpenAI` as described in the
     sections above.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: 'Now, we’re ready to move onto the next stage: How to we convert the list of
     places into a set of directions and plot them on a map for the user to examine?
     This will be covered in [part 2](https://medium.com/towards-data-science/building-a-smart-travel-itinerary-suggester-with-langchain-google-maps-api-and-gradio-part-2-86e9d2bcae5)
     of this three part series.'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
 - en: Thanks for reading! Please feel free to explore the full codebase here [https://github.com/rmartinshort/travel_mapper](https://github.com/rmartinshort/travel_mapper).
     Any suggestions for improvement or extensions to the functionality would be much
     appreciated!
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
