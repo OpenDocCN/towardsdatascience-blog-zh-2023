@@ -431,51 +431,60 @@
   id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 单进程模式下膨胀优化后的跟踪视图（作者拍摄）
 - en: We can see that the dilation operation has shrunk significantly and that the
     most time-consuming operation is now the [PILToTensor](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor.html)
     transform.
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到，膨胀操作已经显著缩小，现在最耗时的操作是[PILToTensor](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor.html)变换。
 - en: 'A closer look at the [PILToTensor](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor.html)
     function (see [here](https://pytorch.org/vision/stable/_modules/torchvision/transforms/functional.html#pil_to_tensor))
     reveals three underlying operations:'
   id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 更详细地查看[PILToTensor](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor.html)函数（见[这里](https://pytorch.org/vision/stable/_modules/torchvision/transforms/functional.html#pil_to_tensor)）可以发现三个潜在的操作：
 - en: Loading the PIL image — due to lazy loading property of [Image.open](https://pillow.readthedocs.io/en/latest/reference/Image.html#PIL.Image.open),
     the image is loaded here.
   id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于[Image.open](https://pillow.readthedocs.io/en/latest/reference/Image.html#PIL.Image.open)的延迟加载特性，PIL图像在此处被加载。
 - en: The PIL image is converted to a numpy array.
   id: totrans-59
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: PIL图像被转换为numpy数组。
 - en: The numpy array is converted to a PyTorch Tensor.
   id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: numpy数组被转换为PyTorch Tensor。
 - en: Although the image loading takes the majority of time, we note the extreme wastefulness
     of applying the subsequent operations to the full-size image only to crop it immediately
     afterwards. This leads us to our next optimization.
   id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管图像加载占用了大部分时间，但我们注意到对全尺寸图像进行随后的操作并立即裁剪的极端浪费。这引出了我们下一步的优化。
 - en: 'Optimization 3: Reorder transformations'
   id: totrans-62
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 优化 3：重排变换
 - en: 'Fortunately, the [RandomCrop](https://pytorch.org/vision/0.8/transforms.html#torchvision.transforms.RandomCrop)
     transformation can be applied directly to the PIL image enabling us to apply the
     image-size reduction as the first operation on our pipeline:'
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，[RandomCrop](https://pytorch.org/vision/0.8/transforms.html#torchvision.transforms.RandomCrop)变换可以直接应用于PIL图像，使我们能够将图像尺寸缩减作为管道中的第一个操作：
 - en: '[PRE7]'
   id: totrans-64
   prefs: []
@@ -487,20 +496,24 @@
   id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一优化之后，我们的步骤时间降至0.72秒，额外的8%优化。下图中的*Trace View*捕获显示随机裁剪变换现在是主要操作：
 - en: '![](../Images/f327927acfd400caac441940988a887a.png)'
   id: totrans-66
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f327927acfd400caac441940988a887a.png)'
 - en: Trace View Following Transformation Reordering in Single-process Mode (Captured
     by Author)
   id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 单进程模式下变换重排后的跟踪视图（作者拍摄）
 - en: In reality, as before, it is actually the PIL image (lazy) loading that causes
     the bottleneck, not the random crop.
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，与之前一样，瓶颈实际上是PIL图像（延迟）加载，而不是随机裁剪。
 - en: Ideally, we would be able to optimize this further by limiting the read operation
     to only the crop in which we are interested. Unfortunately, as of the time of
     this writing, [torchvision](https://pytorch.org/vision/stable/index.html) does
@@ -510,11 +523,14 @@
   id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 理想情况下，我们可以通过将读取操作限制为仅对感兴趣的裁剪区域进行优化。不幸的是，截止到本文撰写时，[torchvision](https://pytorch.org/vision/stable/index.html)不支持此选项。在未来的帖子中，我们将展示如何通过实现我们自己的[custom](https://pytorch.org/tutorials/advanced/cpp_extension.html)
+    *decode_and_crop* PyTorch操作符来克服这一不足。
 - en: 'Optimization 4: Apply batch transformations'
   id: totrans-70
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 优化 4：应用批处理变换
 - en: 'In our current implementation, each of the image transformations are applied
     on each image individually. However, some transformations may run more optimally
     when applied on the entire batch at once. In the code block below we modify our
@@ -523,6 +539,8 @@
   id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们当前的实现中，每个图像变换都是对每个图像单独应用的。然而，当一次性对整个批量应用某些变换时，它们可能会运行得更优。下面的代码块中，我们修改了我们的管道，以便在我们的[custom
+    collate function](https://pytorch.org/docs/stable/data.html#working-with-collate-fn)中对图像**批量**应用ColorTransformation和Scale变换：
 - en: '[PRE8]'
   id: totrans-72
   prefs: []
@@ -535,11 +553,13 @@
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个变化的结果实际上是步骤时间略微增加，达到0.75秒。虽然对于我们的玩具模型没有帮助，但将某些操作应用为批量变换而不是每个样本变换的能力，具有优化特定工作负载的潜力。
 - en: Results
   id: totrans-74
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结果
 - en: The successive optimizations we have applied in this post resulted in an 80%
     improvement in runtime performance. However, although less severe, there still
     remains a bottleneck in the input pipeline and the GPU remains highly under-utilized
@@ -548,11 +568,13 @@
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在这篇文章中应用的连续优化使得运行时性能提高了80%。然而，尽管改进的效果不那么显著，输入管道仍存在瓶颈，而且GPU的利用率依然较低（约30%）。请参考我们之前的文章（例如，[这里](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851)）以获取解决此类问题的额外方法。
 - en: Summary
   id: totrans-76
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: In this post we have focused on performance issues in the training-data input
     pipeline. As in our previous posts in this series we have chosen PyTorch Profiler
     and its associated TensorBoard plugin as our weapons of choice and demonstrated
@@ -562,6 +584,7 @@
   id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们关注了训练数据输入管道中的性能问题。正如我们在本系列的之前文章中所做的，我们选择了PyTorch Profiler及其关联的TensorBoard插件作为我们首选的工具，并展示了它们在加速训练速度方面的使用。特别是，我们展示了如何通过使用零工作线程运行DataLoader，来提高识别、分析和优化数据输入管道瓶颈的能力。
 - en: As in our previous posts, we emphasize that the path to successful optimization
     will vary greatly based on the details of the training project, including the
     model architecture and training environment. In practice, reaching your goals
@@ -574,3 +597,4 @@
   id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们在之前的文章中强调的，成功优化的路径将根据训练项目的细节，包括模型架构和训练环境，存在很大差异。实际上，实现你的目标可能比我们这里展示的例子更为困难。我们描述的一些技术可能对你的性能影响不大，甚至可能使其变得更差。我们还注意到，我们选择的具体优化及其应用顺序有些任意。我们强烈鼓励你根据项目的具体细节开发自己的工具和技术来实现优化目标。
