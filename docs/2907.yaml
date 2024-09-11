@@ -1,13 +1,16 @@
 - en: PyTorch Model Performance Analysis and Optimization — Part 6
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b?source=collection_archive---------3-----------------------#2023-09-20](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b?source=collection_archive---------3-----------------------#2023-09-20)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: How to Identify and Analyze Performance Issues in the Backward Pass with PyTorch
     Profiler, PyTorch Hooks, and TensorBoard
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -15,24 +18,30 @@
     Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----b87412a0371b--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b87412a0371b--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b87412a0371b--------------------------------)
     [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----b87412a0371b--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----b87412a0371b---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b87412a0371b--------------------------------)
     ·8 min read·Sep 20, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb87412a0371b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b&user=Chaim+Rand&userId=9440b37e27fe&source=-----b87412a0371b---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb87412a0371b&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-6-b87412a0371b&source=-----b87412a0371b---------------------bookmark_footer-----------)![](../Images/acfc647db438fa36a7a5dabe53b3b43a.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [David Clode](https://unsplash.com/@davidclode?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: This is the sixth part in our [series of posts](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
@@ -45,12 +54,17 @@
     hooks to different parts of the training step](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook).
     Many thanks to [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/)
     for his contributions to this post.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们关于使用[PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)和[TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)分析和优化PyTorch模型的[系列文章](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)的第六部分。在这篇文章中，我们将探讨分析中一种更复杂的性能问题——**训练步骤的反向传播过程中的瓶颈**。我们将解释这种类型的瓶颈为什么特别具有挑战性，并提出一种使用PyTorch内置的[为训练步骤的不同部分附加钩子](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)来分析它的方法。非常感谢[Yitzhak
+    Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/)对本文的贡献。
 - en: Toy Model
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 玩具模型
 - en: 'To facilitate our discussion, we define a simple Vision Transformer (ViT)-based
     classification model using the popular [timm](https://pypi.org/project/timm/)
     python module (version 0.9.7). We define the model with the *patch_drop_rate*
@@ -60,31 +74,48 @@
     function and the [cuBLAS](https://docs.nvidia.com/cuda/cublas/index.html#cublasApi_reproducibility)
     environment variable, *CUBLAS_WORKSPACE_CONFIG*. Please see the code block below
     for the full model definition:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了方便讨论，我们使用流行的[timm](https://pypi.org/project/timm/) Python模块（版本0.9.7）定义了一个简单的基于Vision
+    Transformer（ViT）的分类模型。我们将模型定义为*patch_drop_rate*标志设置为*0.5*，这会使模型在每个训练步骤中随机丢弃一半的补丁。训练脚本被编程为[最小化非确定性](https://pytorch.org/docs/stable/notes/randomness.html)，使用[torch.use_deterministic_algorithms](https://pytorch.org/docs/stable/generated/torch.use_deterministic_algorithms.html#torch.use_deterministic_algorithms)函数和[cuBLAS](https://docs.nvidia.com/cuda/cublas/index.html#cublasApi_reproducibility)环境变量*CUBLAS_WORKSPACE_CONFIG*。请参见下面的代码块以获取完整的模型定义：
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We will run our experiments on an [Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/)
     instance (containing an NVIDIA A10G GPU and 8 vCPUs) and using the official [AWS
     PyTorch 2.0 Docker image](https://github.com/aws/deep-learning-containers).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在一个[Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/)实例（包含NVIDIA
+    A10G GPU和8个vCPUs）上进行实验，并使用官方[AWS PyTorch 2.0 Docker镜像](https://github.com/aws/deep-learning-containers)。
 - en: Initial Performance Results
+  id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 初始性能结果
 - en: 'In the image below we capture the performance results as displayed in the [TensorBoard
     plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
     *Trace View*:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的图像中，我们捕捉了在[TensorBoard插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)*Trace
+    View*中显示的性能结果：
 - en: '![](../Images/8a66a097dd3a3a3ed1df10d9c683b002.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8a66a097dd3a3a3ed1df10d9c683b002.png)'
 - en: A Bottleneck in the Backward Pass (by Author)
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 反向传播中的瓶颈（作者）
 - en: While the operations in the forward pass of the training step are bunched together
     in the top thread, a performance issue appears to present itself in the backward
     pass in the bottom thread. There we see that a single operation, *GatherBackward*,
@@ -93,15 +124,19 @@
     As we saw in [part 2](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)
     of our series, these operations typically indicate that data is being copied from
     the host to the device — something that we would like to avoid mid-training-step.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练步骤的前向传递中，操作被集中在顶部线程中，但在底部线程的反向传递中似乎出现了性能问题。在这里我们看到一个操作，*GatherBackward*，占用了大量的追踪部分。仔细观察，我们可以看到底层操作包括“to”、“copy_”和“cudaStreamSynchronize”。正如我们在[第2部分](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)中看到的，这些操作通常表示数据从主机复制到设备——这是我们在训练步骤中希望避免的。
 - en: 'At this point you will naturally ask: Why is this happening? And what part
     of our model definition is causing it? The *GatherBackward* trace hints that a
     [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html) operation
     may be involved, but where is it coming from and why is it causing a synchronization
     event?'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 到这个时候，你自然会问：为什么会发生这种情况？我们模型定义的哪个部分导致了这个问题？*GatherBackward*追踪提示可能涉及一个[torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)操作，但它来自哪里以及为什么会引发同步事件呢？
 - en: In our previous posts (e.g., [here](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)),
     we advocated using labeled [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
     context managers in order to pinpoint the source of a performance issue. The problem
@@ -117,12 +152,18 @@
     our model. Ideally, we would like to be able to retain the same capability even
     in the case of performance issues in the backward pass. In the next section we
     will describe how this can be achieved using PyTorch hooks.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们之前的帖子中（例如，[这里](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)），我们提倡使用标记的[torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)上下文管理器来确定性能问题的来源。这里的问题是性能问题发生在反向传递中，而我们无法控制！特别是，**我们无法将反向传递中的单个操作用上下文管理器包裹。**
+    理论上，可以通过深入分析追踪视图并将反向传递中的每个片段与前向传递中的对应操作匹配来识别问题模型操作。然而，这不仅可能非常繁琐，而且还需要对模型训练步骤的所有底层操作有深入的了解。使用[torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)标签的优点在于它允许我们轻松定位模型中的问题部分。理想情况下，我们希望即使在反向传递中出现性能问题时，也能保留相同的能力。在下一部分，我们将描述如何使用PyTorch
+    hooks实现这一点。
 - en: Performance Analysis with PyTorch Backward Hooks
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用PyTorch反向钩子的性能分析
 - en: Although PyTorch does not allow you to wrap individual backward-pass operations,
     it does allow you to prepend and/or append custom functionality using its hook
     support. PyTorch supports registering hooks to both [torch.Tensors](https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html)
@@ -130,8 +171,10 @@
     Although the technique we will propose in this post will rely on **registering
     backward hooks to modules**, tensor-hook registering can be similarly used to
     either replace or augment the module-based method.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 PyTorch 不允许你封装单独的反向传播操作，但它允许你使用其钩子支持来前置和/或后置自定义功能。PyTorch 支持为[torch.Tensors](https://pytorch.org/docs/stable/generated/torch.Tensor.register_hook.html)和[torch.nn.Modules](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)注册钩子。尽管我们在本文中提出的技术将依赖于**向模块注册反向钩子**，但张量钩子的注册也可以类似地用于替换或增强基于模块的方法。
 - en: In the code block below we define a wrapper function that takes a module and
     registers both a [full_backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)
     and a [full_backward_pre_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_pre_hook)
@@ -141,57 +184,83 @@
     is programmed to print a “before” message and the [backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)
     an “after” message. An optional *details* string is appended to distinguish between
     multiple instances of the same module type.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的代码块中，我们定义了一个包装函数，该函数接受一个模块并注册一个[full_backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)和一个[full_backward_pre_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_pre_hook)（尽管在实际应用中一个就足够了）。每个钩子被编程为使用[torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)函数向捕获的性能分析跟踪中添加一条消息。[backward_pre_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_pre_hook)被编程为打印一个“before”消息，而[backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.register_full_backward_hook)则打印一个“after”消息。一个可选的*details*字符串被附加以区分相同模块类型的多个实例。
 - en: '[PRE1]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Using the *backward_hook_wrapper* function, we can begin the work of locating
     the source of our performance issue. We start by wrapping just the model and loss-function
     as in the code block below:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用*backward_hook_wrapper*函数，我们可以开始定位性能问题的来源。我们从封装模型和损失函数开始，如下代码块所示：
 - en: '[PRE2]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Using the search box of the [TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
     *Trace View*, we can identify the locations of our “before” and “after” messages
     and deduce where the backward propagation of the model and loss start and end.
     This enables us to conclude that the performance issue occurs in the backward
     pass of the model. The next step is to wrap the Vision Tranformer’s internal modules
     with our *backward_hook_wrapper* function:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用[TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    *Trace View* 的搜索框，我们可以识别“before”和“after”消息的位置，并推断出模型和损失的反向传播开始和结束的位置。这使我们能够得出性能问题发生在模型的反向传播过程中。下一步是用我们的*backward_hook_wrapper*函数封装
+    Vision Transformer 的内部模块：
 - en: '[PRE3]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'In the code block above, we specified each of the internal modules. An alternative
     way to wrap all of model’s first-level modules is to iterate over its [named_children](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.named_children):'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码块中，我们指定了每个内部模块。另一种将模型的一级模块全部封装起来的方法是迭代其[命名子模块](https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.named_children)：
 - en: '[PRE4]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The image capture below shows the presence of the “before backward of PatchDropout”
     message right before the problematic *GatherBackward* operation:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 下图显示了“before backward of PatchDropout”消息出现在有问题的*GatherBackward*操作之前：
 - en: '![](../Images/781626897e23f9935309b0fe43cd9da6.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/781626897e23f9935309b0fe43cd9da6.png)'
 - en: Identifying the Source of the Problematic Backward Operation in the Trace View
     (by Author)
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Trace View 中识别有问题的反向操作的来源（作者）
 - en: Our profiling analysis has indicated that the source of the performance problem
     is the [*PathDropout*](https://github.com/huggingface/pytorch-image-models/blob/v0.9.7/timm/layers/patch_dropout.py#L7)
     module. Examining the [*forward*](https://github.com/huggingface/pytorch-image-models/blob/v0.9.7/timm/layers/patch_dropout.py#L27)function
     of the module, we can indeed see a call to [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html).
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: In the case of our toy model, we needed just two iterations of analysis in order
     to zone in on the source of the performance issue. In practice, it is likely that
     additional iterations of this method may be required.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
 - en: Note that PyTorch includes the [torch.nn.modules.module.register_module_full_backward_hook](https://pytorch.org/docs/stable/generated/torch.nn.modules.module.register_module_full_backward_hook.html)
@@ -199,13 +268,16 @@
     in the training step. Although this may be sufficient in simple cases (such as
     our toy example), it does not enable one to distinguish between different instances
     of the same module type.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: Now that we know the source of the performance issue, we can get to work on
     trying to fix it.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: 'Optimization Proposal: Use Indexing Instead of Gather Wherever Possible'
+  id: totrans-38
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -222,27 +294,35 @@
     for a sync event. Indeed, if we remove this configuration, the performance issue
     disappears! The question is, can we maintain the algorithm determinism without
     needing to pay a performance penalty.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: In the code block below we propose an alternative implementation of the [*PathDropout*](https://github.com/huggingface/pytorch-image-models/blob/v0.9.7/timm/layers/patch_dropout.py#L7)
     module *forward* function that produces the same output using [torch.Tensor indexing](https://pytorch.org/cppdocs/notes/tensor_indexing.html)
     instead of [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html).
     The modified lines of code have been highlighted.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'In the image below we capture the *Trace View* following the above change:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/3f3ef66d8d70c3d1c0f51b9836b25c16.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
 - en: Trace View Following Optimization (by Author)
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: We can clearly see that the lengthy synchronization event is no longer present.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: In the case of our toy model, we were fortunate enough that the way in which
@@ -250,20 +330,25 @@
     operation was used allowed it to be replaced with PyTorch indexing. Naturally,
     this is not always the case; other usages of [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)
     may not have an equivalent implementation based on indexing.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: Results
+  id: totrans-47
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'In the table below we compare the performance results of training our toy model
     in different scenarios:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/4747889a916d822f41a4c4b7a40676c3.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
 - en: Optimization Results (by Author)
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: In the case of our toy example, the optimization had a modest, though measurable,
@@ -272,9 +357,11 @@
     Based on these findings, it might be a good idea to evaluate the option of using
     indexing rather than [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html),
     whenever possible.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: Summary
+  id: totrans-52
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -288,11 +375,13 @@
     issues in the backward pass. We applied this technique to a simple ViT model and
     learned about some of the nuances of the [torch.gather](https://pytorch.org/docs/stable/generated/torch.gather.html)
     operation.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: In this post we have covered a very specific type of performance bottleneck.
     Be sure to check out our [other posts on medium](https://chaimrand.medium.com/)
     which cover a wide variety of topics pertaining to performance analysis and performance
     optimization of machine learning workloads.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
