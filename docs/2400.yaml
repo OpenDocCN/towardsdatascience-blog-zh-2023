@@ -1,12 +1,15 @@
 - en: Hacking MySQL’s JSON_ARRAYAGG Function to Create Dynamic, Multi-Value Dimensions
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25](https://towardsdatascience.com/hacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28?source=collection_archive---------9-----------------------#2023-07-25)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Making up for one of MySQL’s lesser-known shortcomings
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,28 +17,35 @@
     Smith](../Images/df345239ca070910365d2b6c7fb3e5e7.png)](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)[](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)
     [Dakota Smith](https://medium.com/@dakotasmithdata?source=post_page-----211074115d28--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fdcadf2cebe12&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=post_page-dcadf2cebe12----211074115d28---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----211074115d28--------------------------------)
     ·9 min read·Jul 25, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&user=Dakota+Smith&userId=dcadf2cebe12&source=-----211074115d28---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F211074115d28&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhacking-mysqls-json-arrayagg-function-to-create-dynamic-multi-value-dimensions-211074115d28&source=-----211074115d28---------------------bookmark_footer-----------)![](../Images/fe765b373fc96e7eb057ae81d622a993.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Azamat E](https://unsplash.com/fr/@esen_aza?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral). Thanks,
     Azamat!
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -43,331 +53,484 @@
     In a MySQL database, transaction records of purchases are written to table named
     `subscriptions`. Metadata excluded, the table contains a `customer_id` and `subscription`
     field, and looks something like this:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们假设我们是一个订阅盒子公司的数据团队成员。在 MySQL 数据库中，购买的事务记录被写入名为 `subscriptions` 的表中。除了元数据之外，该表包含一个
+    `customer_id` 和 `subscription` 字段，类似于这样：
 - en: '![](../Images/8c82c2a747ec45b2f33645f1c8853035.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8c82c2a747ec45b2f33645f1c8853035.png)'
 - en: 'The subscriptions table. (Note: All images, unless otherwise noted, are by
     the author)'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 订阅表。（注意：所有图像，除非另有说明，均由作者提供）
 - en: '*Note that in this example scenario, a customer can have multiple subscriptions.
     The uniqueness of each record is in defined by both the customer ID and a subscription,
     i.e., no customer can have the same subscription twice. If you want to load this
     test data into your own database, you can find the code to do so* [*here*](https://github.com/dakotaleesmith/pyProjects/blob/main/tutorials/mysql_json_arrayagg_tutorial/create_table.sql)*.*'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请注意，在这个示例场景中，一个客户可以有多个订阅。每条记录的唯一性由客户 ID 和订阅共同定义，即没有客户可以拥有相同的订阅两次。如果你想将这些测试数据加载到自己的数据库中，你可以在*
+    [*这里*](https://github.com/dakotaleesmith/pyProjects/blob/main/tutorials/mysql_json_arrayagg_tutorial/create_table.sql)*找到相应的代码。*'
 - en: As a subscription box company, our goal is to sell more subscription boxes.
     To that end, the Product team recently pointed out that all of our current customers
     have more than one subscription. They’re curious what this says about customer
     behavior. They ask our team for a data model showing combinations of subscriptions
     purchased by user, as well as which combinations are most common.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一个订阅盒子公司，我们的目标是销售更多的订阅盒子。为此，产品团队最近指出我们当前的所有客户都拥有不止一个订阅。他们对这表明的客户行为感到好奇。他们要求我们的团队提供一个数据模型，展示用户购买的订阅组合，以及哪些组合最为常见。
 - en: The Marketing team has also showed interested in this model. They believe the
     results might be useful for marketing bundled product promotions, profiling customers,
     and targeting email campaigns. For these same reasons, they’re also asking to
     see the most common total *number* of subscriptions purchased by each customer.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 市场营销团队对这个模型也表现出了兴趣。他们认为这些结果可能对市场营销捆绑产品促销、客户画像以及定向电子邮件活动有用。出于这些相同的原因，他们还希望查看每个客户购买的最常见*订阅数量*。
 - en: In short, the requested data model hopes to answer some important questions
     that’ll ideally end in higher subscription box sales. The question is, how exactly
     should we execute it?
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，请求的数据模型希望回答一些重要的问题，理想情况下这些问题将最终导致更高的订阅盒子销售。问题是，我们应该如何准确执行？
 - en: In this article, we’re going to tackle a unique data modeling challenge by making
     up for one of MySQL’s lesser-known shortcomings. We’re going to go over qualitative
     aggregation, the JSON data type, and how to force MySQL to order a list of values
     in a way that produces distinct, multi-value dimensions.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们将解决一个独特的数据建模挑战，以弥补 MySQL 的一个不太为人所知的缺陷。我们将讨论定性聚合、JSON 数据类型，以及如何强制 MySQL
+    以一种产生独特、多值维度的方式对值进行排序。
 - en: Table of Contents
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 目录
 - en: '[Aggregations as Dimensions](#0c85)'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[聚合作为维度](#0c85)'
 - en: '[A brief overview of the JSON datatype in MySQL](#3a1b)'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[MySQL 中 JSON 数据类型的简要概述](#3a1b)'
 - en: '[JSON_ARRAYAGG](#5b60)'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[JSON_ARRAYAGG](#5b60)'
 - en: '[Using ROW_NUMBER to force the ordering of values](#0793)'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[使用 ROW_NUMBER 强制值的排序](#0793)'
 - en: '[To recap](#c0e9)'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[回顾](#c0e9)'
 - en: Aggregations as Dimensions
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 聚合作为维度
 - en: 'Conceptually, what we need to do is relatively simple: We need to bundle (group)
     our subscriptions by customer. Then we need to take a look at these bundles and
     see which are the most common and how many subscriptions are in them.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 从概念上讲，我们需要做的事情相对简单：我们需要按客户对订阅进行捆绑（分组）。然后，我们需要查看这些捆绑，看看哪些最为常见，以及它们包含了多少订阅。
 - en: 'In data modeling terms, we’re looking at some form of aggregation: specifically,
     aggregating subscriptions by customer.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 在数据建模术语中，我们关注的是某种形式的聚合：具体来说，是按客户对订阅进行聚合。
 - en: It’s normal to think of aggregate functions in the quantitative sense (`SUM`,
     `COUNT`, etc.), and this is largely because this is what most aggregate functions
     do in SQL. But we can also aggregate concatenated string values into longer, list-like
     strings.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常会想到定量意义上的聚合函数（`SUM`、`COUNT`等），这主要是因为 SQL 中大多数聚合函数的功能。但我们也可以将拼接的字符串值聚合成更长的、类似列表的字符串。
 - en: The challenge with this though is lies in accessing, manipulating, or otherwise
     evaluating the values within these concatenated strings. MySQL is going to treat
     the value `foo, bar, hello, world` not as a list, but as text.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这个挑战在于访问、操控或评估这些连接字符串中的值。MySQL会将`foo, bar, hello, world`的值视为文本，而不是列表。
 - en: Why is this relevant? Primarily because in our hypothetical scenario, we want
     to count the number of subscriptions in each combination. We don’t want a long
     comma-delimited string, we want something more truly list-like.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这有什么相关性？主要是因为在我们的假设场景中，我们想要计算每个组合中的订阅数量。我们不希望得到一个长的以逗号分隔的字符串，我们希望得到一个更真正的列表形式。
 - en: Solving this in Python would be simple—using pandas, maybe polars, or even just
     Python-native data structures. But there are many cases where this isn’t an option.
     Maybe the Data team is a strictly dbt-only shop; or, perhaps more commonplace,
     you work at a company where the IT department has local environments severely
     locked down.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Python中解决这个问题会很简单——使用pandas，也许是polars，甚至只是Python本身的数据结构。但有许多情况下这不是一个选项。也许数据团队只使用dbt；或者更常见的是，你在一个IT部门严密锁定本地环境的公司工作。
 - en: 'Whatever the case, if you have only SQL at your disposal, you need a solution
     that will provide you the most readable code and the most flexible results. Achieving
     this is not intuitive. For example, my first instinct when encountering this problem
     was to use `GROUP_CONCAT`, the function that concatenates strings according to
     your defined grouping:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论如何，如果你只有SQL可以使用，你需要一个能够提供最可读代码和最灵活结果的解决方案。实现这一点并不直观。例如，我遇到这个问题时的第一反应是使用`GROUP_CONCAT`，这是一个根据你定义的分组连接字符串的函数：
 - en: '[PRE0]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '![](../Images/a6f7a07836f586894a21825cbb0eb247.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a6f7a07836f586894a21825cbb0eb247.png)'
 - en: Query results
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询结果
 - en: As you can see, the aggregation *worked*, technically, but it didn’t work along
     the lines of our business logic. See the first and last rows. The subscriptions
     combination of “international_snacks, self_care” is the same combination as “self_care,
     international_snacks”. (The same is true of the 2nd and 4th rows.)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你所看到的，聚合*有效*，从技术上讲，但它并没有按照我们的业务逻辑工作。请查看第一行和最后一行。组合“international_snacks, self_care”的订阅与“self_care,
+    international_snacks”是相同的组合。（第二行和第四行也是如此。）
 - en: 'We can use an `ORDER BY` clause within `GROUP_CONCAT` to solve this particular
     issue:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以在`GROUP_CONCAT`中使用`ORDER BY`子句来解决这个特定问题：
 - en: '[PRE1]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/d600ce04441f86029ced24389ca10d45.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d600ce04441f86029ced24389ca10d45.png)'
 - en: Query results
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询结果
 - en: But this still leaves up with the problem of counting how many subscriptions
     are in each combination.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这仍然留下了一个问题：如何计算每个组合中的订阅数量。
 - en: There is a way to do it. But not only is it needlessly complex and not very
     readable, in my opinion, but it also comes with some not-so-obvious pitfalls.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样做是可行的。但我认为不仅复杂且不太易读，而且还伴随着一些不太明显的陷阱。
 - en: 'A quick search on how to count the number of values in a comma-delimited string
     in MySQL turns up a [solution](https://stackoverflow.com/a/7020024/16018746) from
     StackOverflow that, translated for our purposes, amounts to this (`subscriptions_grouped`
     CTE excluded):'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于如何计算MySQL中以逗号分隔的字符串中的值数量的快速搜索找到了一个[解决方案](https://stackoverflow.com/a/7020024/16018746)，对我们来说，相当于这个（`subscriptions_grouped`
+    CTE除外）：
 - en: '[PRE2]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Which is essentially counting the number of commas and then adding 1 to the
     result. This works. But not only is this answer difficult to understand at a glance,
     it also introduces a potential mistake: the `LENGTH` and `CHAR_LENGTH` function
     [don’t count the same thing](https://stackoverflow.com/a/1734340/16018746).'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 这本质上是计算逗号的数量，然后将结果加1。这是可行的。但这个答案不仅难以一眼理解，还引入了一个潜在的错误：`LENGTH`和`CHAR_LENGTH`函数[计算的内容不同](https://stackoverflow.com/a/1734340/16018746)。
 - en: As you can probably guess, this article details obstacles I ran into at work
     when I found myself in a similar situation.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你可能猜到的，这篇文章详细描述了我在工作中遇到的障碍，当时我发现自己处于类似的情况。
 - en: Ultimately, the solution was in a somewhat hack-y, but remarkably comprehensible,
     workaround using the native MySQL JSON data type.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，解决方案是使用本地MySQL JSON数据类型的某种黑客式但非常易懂的变通方法。
 - en: A brief overview of the JSON data type in MySQL
+  id: totrans-47
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: MySQL中JSON数据类型的简要概述
 - en: The JSON data type in MySQL was added in version 5.7.8, and provides a lot of
     useful utility for both storage and modeling.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: MySQL中的JSON数据类型是在5.7.8版本中新增的，提供了许多对存储和建模非常有用的功能。
 - en: 'Under the JSON data type umbrella (officially called “JSON documents”) are
     two different data structures: JSON arrays and JSON objects.'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 JSON 数据类型的伞下（官方称为“JSON 文档”）有两种不同的数据结构：JSON 数组和 JSON 对象。
 - en: 'A JSON array can simply be thought of as an array (a list, if you’re a Pythonista):
     values enclosed by square brackets `[ ]` and separated by commas.'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: JSON 数组可以简单地被看作是一个数组（如果你是 Python 爱好者的话，就是一个列表）：值用方括号 `[ ]` 括起来，并用逗号分隔。
 - en: 'An example MySQL JSON array value: `[“foo”, “bar”, 1, 2]`'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个 MySQL JSON 数组值的示例：`[“foo”, “bar”, 1, 2]`
 - en: 'A JSON object can be thought of as a hash table (or, again in Python terms,
     a dictionary): key-value pairs, separated by commas, and enclosed by curly brackets
     `{ }`.'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: JSON 对象可以被看作是一个哈希表（或者用 Python 的术语说，就是一个字典）：键值对，用逗号分隔，并用花括号 `{ }` 括起来。
 - en: 'An example of a MySQL JSON object value: `{“foo”: “bar”, 1: 2}`'
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '一个 MySQL JSON 对象值的示例：`{“foo”: “bar”, 1: 2}`'
 - en: '[MySQL has a number of functions that can be used to deal with both of these
     formats](https://dev.mysql.com/doc/refman/5.7/en/json-function-reference.html)—almost
     none of which perform any sort of aggregation.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '[MySQL 提供了许多函数来处理这两种格式](https://dev.mysql.com/doc/refman/5.7/en/json-function-reference.html)—几乎没有函数执行任何形式的聚合。'
 - en: Thankfully, though, there are two that do. And they both return JSON documents,
     which means we can use MySQL’s built-in functions to access the values therein.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过幸运的是，有两个函数是可以的。它们都返回 JSON 文档，这意味着我们可以使用 MySQL 内置的函数来访问其中的值。
 - en: JSON_ARRAYAGG
+  id: totrans-56
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: JSON_ARRAYAGG
 - en: The MySQL function `JSON_ARRAYAGG` acts a lot like `GROUP_CONCAT`. The biggest
     difference is that it returns a JSON array, which, again, comes with several helpful
     built-in functions linked above.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: MySQL 函数 `JSON_ARRAYAGG` 很像 `GROUP_CONCAT`。最大的区别是它返回一个 JSON 数组，而这个 JSON 数组带有多个有用的内置函数，如上所述。
 - en: 'The JSON array data type solves one of our two problems with astounding simplicity:
     the problem of reliably counting the number of subscriptions in a combination.
     This is accomplished using the `[JSON_LENGTH](https://dev.mysql.com/doc/refman/5.7/en/json-attribute-functions.html#function_json-length)`
     function. The syntax is wonderfully straightforward:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: JSON 数组数据类型以惊人的简单性解决了我们面临的两个问题中的一个：可靠计算组合中订阅数量的问题。这是通过使用 `[JSON_LENGTH](https://dev.mysql.com/doc/refman/5.7/en/json-attribute-functions.html#function_json-length)`
+    函数完成的。语法非常简单：
 - en: '[PRE3]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The result of this statement is 4, since there are 4 values in the generated
     JSON array.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个语句的结果是 4，因为生成的 JSON 数组中有 4 个值。
 - en: 'But let’s return to the combination of subscriptions. Unfortunately, `JSON_ARRAYAGG`
     doesn’t come with the ordering functionality that `GROUP_CONCAT` has. Ordering
     the `subscription` values, even in a CTE before the base query, doesn’t return
     the desired results:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 但让我们回到订阅的组合。不幸的是，`JSON_ARRAYAGG` 不具备 `GROUP_CONCAT` 的排序功能。在基查询之前即使在 CTE 中排序
+    `subscription` 值，也无法返回期望的结果：
 - en: '[PRE4]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '![](../Images/e43f5434827139bfa31f28338ec75ec2.png)'
+  id: totrans-63
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e43f5434827139bfa31f28338ec75ec2.png)'
 - en: Query results
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询结果
 - en: The number of subscriptions in each combination is there, thanks to the `JSON_LENGTH`
     function—but combinations that are effectively the same are once again mischaracterized
     as distinct because of their order.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个组合中的订阅数量是存在的，这要归功于 `JSON_LENGTH` 函数——但由于它们的顺序，相同的组合再次被错误地标记为不同的。
 - en: Using ROW_NUMBER to force the ordering of values
+  id: totrans-66
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用 ROW_NUMBER 强制值的排序
 - en: '`ROW_NUMBER` is a window function that creates an index. The index has to be
     defined; that is, you have to tell it where to start, how to increment (directionally),
     and where to end.'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '`ROW_NUMBER` 是一个窗口函数，用于创建索引。索引必须被定义；也就是说，你需要告诉它从哪里开始，如何递增（方向），以及在哪里结束。'
 - en: 'We can see a quick example of this by applying the `ROW_NUMBER` function and
     telling it to order by the `subscription` field:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过应用 `ROW_NUMBER` 函数并告诉它按 `subscription` 字段排序来快速查看一个例子：
 - en: '[PRE5]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '![](../Images/1066d24e9f6e4a4671f414253647015d.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1066d24e9f6e4a4671f414253647015d.png)'
 - en: Query results
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询结果
 - en: Look closely at the results. ***Even though we didn’t use an*** `ORDER BY` ***statement
     at the end of our query, the data is nonetheless ordered according to the*** `ORDER
     BY` ***in the*** `OVER` ***clause.***
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 仔细查看结果。***尽管我们在查询的最后没有使用*** `ORDER BY` ***语句，但数据还是根据*** `ORDER BY` ***在*** `OVER`
+    ***子句中的顺序进行了排序。***
 - en: 'But of course this still isn’t exactly what we want. What we need to do next
     is add a `PARTITION BY` clause to our window function, so that the ordering of
     the results are related to (and in fact bounded by) each customer ID. Like so:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE6]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![](../Images/4537a7c2f58735eb1c1b44276cf9c635.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
 - en: Query results
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
 - en: You can probably see where this is going.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
 - en: 'If we execute the `JSON_ARRAYAGG` function against these results in a CTE,
     we see that the duplicate combinations now look exactly the same, thanks to the
     subscriptions being forced into an alphabetical order by the `ROW_NUMBER` function:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE7]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '![](../Images/eac71aa011199f26abb7c391f7a0382e.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
 - en: Query results
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: 'Now all we need to do is add in the grouping CTE following the one executing
     `ROW_NUMBER`, and alter the base query:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE8]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'This gives not only accurately distinct combinations of subscriptions, but
     also the number of customers who’ve purchased those combinations, and how many
     subscriptions comprise each of them:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/5154dd8a5b6457e69f1cbcdeb57b20ae.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
 - en: Query results
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
 - en: Voila!
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
 - en: To recap
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -375,12 +538,14 @@
     and how many subscriptions were in each of those combinations. This presented
     two problems: how best to obtain the latter, and how to generate accurately distinct
     subscription combinations.'
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: To obtain the number of subscriptions in each combination, we chose to go with
     one of MySQL’s JSON functions, `JSON_ARRAYAGG`. The resulting aggregation was
     returned to us as a JSON data type, allowing us to use the `JSON_LENGTH` function.
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -388,16 +553,19 @@
     duplicate combinations didn’t mistakenly appear distinct. To do this, we used
     the window function `ROW_NUMBER` in a CTE prior to the base query, partitioning
     by customer ID and ordering the subscriptions alphabetically (in ascending order).
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: This ultimately allowed us to aggregate up to accurately distinct combinations
     of subscriptions; and with this we were able to use a simple `COUNT` function
     to see how many customers had purchased each combination.
+  id: totrans-92
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Thanks for reading! 🤓
+  id: totrans-93
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -406,6 +574,7 @@
     the de facto lingua franca for transforming structured data, but it’s not perfect.
     I always enjoy learning about innovative and/or clever solutions to real-world
     challenges. 🔥*'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: '*I write semi-regularly about data engineering and analytics topics—the goal
@@ -413,5 +582,6 @@
     confused you, please let me know in the comments. And if you’re interested in
     reading more articles like this, feel free to* [*follow me*](https://medium.com/@dakotasmithdata)
     *and/or* [*connect on LinkedIn*](https://www.linkedin.com/in/dakotaleesmith/)*.*'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
