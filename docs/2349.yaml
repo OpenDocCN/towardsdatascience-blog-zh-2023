@@ -1,145 +1,213 @@
 - en: 'Similarity Search, Part 6: Random Projections with LSH Forest'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 相似度搜索，第6部分：使用LSH森林的随机投影
 - en: 原文：[https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21](https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21](https://towardsdatascience.com/similarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47?source=collection_archive---------8-----------------------#2023-07-21)
 - en: Understand how to hash data and reflect its similarity by constructing random
     hyperplanes
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 了解如何通过构造随机超平面对数据进行哈希，并反映其相似性
 - en: '[](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[![Vyacheslav
     Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)
     [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[![Vyacheslav
+    Efimov](../Images/db4b02e75d257063e8e9d3f1f75d9d6d.png)](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)[](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)
+    [Vyacheslav Efimov](https://medium.com/@slavahead?source=post_page-----f2e9b31dcc47--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----f2e9b31dcc47---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)
     ·12 min read·Jul 21, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----f2e9b31dcc47---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fc8a0ca9d85d8&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=post_page-c8a0ca9d85d8----f2e9b31dcc47---------------------post_header-----------)
+    发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----f2e9b31dcc47--------------------------------)
+    · 12分钟阅读·2023年7月21日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&user=Vyacheslav+Efimov&userId=c8a0ca9d85d8&source=-----f2e9b31dcc47---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&source=-----f2e9b31dcc47---------------------bookmark_footer-----------)![](../Images/12114a0785739ca563e1e315b906d96b.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Ff2e9b31dcc47&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fsimilarity-search-part-6-random-projections-with-lsh-forest-f2e9b31dcc47&source=-----f2e9b31dcc47---------------------bookmark_footer-----------)![](../Images/12114a0785739ca563e1e315b906d96b.png)'
 - en: S**imilarity search** is a problem where given a query the goal is to find the
     most similar documents to it among all the database documents.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '**相似度搜索** 是一个问题，其中给定一个查询的目标是从所有数据库文档中找到与其最相似的文档。'
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 简介
 - en: In data science, similarity search often appears in the NLP domain, search engines
     or recommender systems where the most relevant documents or items need to be retrieved
     for a query. There exists a large variety of different ways to improve search
     performance in massive volumes of data.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在数据科学中，相似度搜索通常出现在NLP领域、搜索引擎或推荐系统中，在这些领域，需要为查询检索最相关的文档或项目。在处理大规模数据时，存在多种方法来提高搜索性能。
 - en: In the [last part](https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203),
     we looked at the main paradigm of LSH which is to *transform input vectors to
     lower-dimensional hash values while preserving information about their similarity*.
     For obtaining hash values (signatures) minhash functions were used. In this article,
     we are going to randomly project input data to get analogous binary vectors.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[上一部分](https://medium.com/towards-data-science/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203)，我们探讨了局部敏感哈希（LSH）的主要范式，即*将输入向量转换为低维哈希值，同时保留它们之间相似性的信息*。为了获得哈希值（签名），使用了minhash函数。在本文中，我们将随机投影输入数据，以获取类似的二进制向量。
 - en: '[](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------)
     [## Similarity Search, Part 5: Locality Sensitive Hashing (LSH)'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------)
+    [## 相似性搜索，第5部分：局部敏感哈希（LSH）'
 - en: Explore how similarity information can be incorporated into hash function
+  id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 探索如何将相似性信息融入到哈希函数中
 - en: towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: towardsdatascience.com](/similarity-search-part-5-locality-sensitive-hashing-lsh-76ae4b388203?source=post_page-----f2e9b31dcc47--------------------------------)
 - en: Idea
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 思路
 - en: 'Consider a group of points in a high-dimensional space. It is possible to construct
     a random hyperplane that acts as a wall and separates each point into one of two
     subgroups: positive and negative. A value of “1” is assigned to each point on
     the positive side and “0” to each point on the negative side.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑在高维空间中的一组点。可以构造一个随机超平面作为墙，将每个点分为两组：正组和负组。将“1”赋给正组中的每个点，将“0”赋给负组中的每个点。
 - en: '![](../Images/db91cd0f54fb01f7056f6323feec17e0.png)'
+  id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/db91cd0f54fb01f7056f6323feec17e0.png)'
 - en: Example of a hyperplane separating two points in 3D space
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 超平面分隔两个3D空间点的示例
 - en: How can the side of a hyperplane for a certain vector be determined? By using
     the inner product! Getting to the essence of linear algebra, the sign of the dot
     product between a given vector and the normal vector to the hyperplane determines
     on which side the vector is located. This way, every dataset vector can be separated
     into one of two sides.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何确定某个向量在超平面的一侧？通过使用内积！深入到线性代数的本质中，给定向量与超平面法向量之间点积的符号决定了该向量位于超平面的哪一侧。这样，每个数据集向量都可以被分隔到两个侧面之一。
 - en: '![](../Images/00c4e7a079ad44deb761eef2c59a5cf4.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/00c4e7a079ad44deb761eef2c59a5cf4.png)'
 - en: Calculating the inner product of a vector with the normal vector of a hyperplane
     and comparing it with 0 can tell on which side the vector is located relative
     to the hyperplane
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过计算向量与超平面法向量的内积，并与0进行比较，可以判断该向量相对于超平面的位置。
 - en: Obviously, encoding every dataset vector with one binary value is not be sufficient.
     That is several random hyperplanes should be constructed, so every vector can
     be encoded with that many values of 0 and 1 based on its relative position to
     a specific hyperplane. If two vectors have absolutely the same binary code, it
     indicates that none of the constructed hyperplanes could have separated them into
     different regions. Thus, they are likely to be very close to each other in reality.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，使用一个二进制值对每个数据集向量进行编码是不够的。因此，应该构造多个随机超平面，以便每个向量可以根据其相对位置用多个0和1进行编码。如果两个向量的二进制代码完全相同，则表示没有任何构造的超平面能够将它们分离到不同的区域。因此，它们在现实中很可能非常接近。
 - en: For finding the nearest neighbour for a given query, it is sufficient to encode
     the query with 0s and 1s in the same way by checking its relative positions to
     all the hyperplanes. The found binary vector for the query can be compared to
     all other binary vectors obtained for dataset vectors. This can be done linearly
     by using the Hamming distance.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 要为给定的查询找到最近的邻居，只需通过检查其相对位置到所有超平面，使用0和1对查询进行编码即可。可以将查询找到的二进制向量与数据集中所有其他二进制向量进行比较。这可以通过使用汉明距离线性完成。
 - en: '**Hamming distance** between two vectors is the number of positions at which
     their values are different.'
+  id: totrans-24
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**汉明距离**指的是两个向量在其值不同的位置的数量。'
 - en: '![](../Images/6110f31884e5d2440dd027e66a2037a9.png)'
+  id: totrans-25
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6110f31884e5d2440dd027e66a2037a9.png)'
 - en: Example of computing Hamming distance. A pair of vectors on the left are more
     similar to each other since their Hamming distance is smaller.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算汉明距离的示例。左侧的一对向量因为其汉明距离较小而彼此更为相似。
 - en: The binary vectors with the least Hamming distances to the query are taken as
     candidates and then fully compared to the initial query.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 与查询的汉明距离最小的二进制向量被作为候选项，然后与初始查询进行全面比较。
 - en: '**Why are hyperplanes built randomly?**'
+  id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '**为什么超平面是随机构建的？**'
 - en: 'At the current stage, it seems logical to demand why hyperplanes are built
     in a random manner and not in deterministic meaning that custom rules for separating
     dataset points could have been defined. There are two principal reasons behind
     this:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 在当前阶段，似乎有必要探讨为什么超平面是以随机方式构建而不是确定性方式，因而可以定义自定义规则来分隔数据集点。主要有两个原因：
 - en: Firstly, the deterministic approach is not able to generalize the algorithm
     and can lead to overfitting.
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，确定性方法无法对算法进行泛化，可能导致过拟合。
 - en: Secondly, randomness allows for making probabilistic statements regarding the
     algorithm’s performance which is not dependent on the input data. For a deterministic
     approach, this would not work out because it might act well on one data and have
@@ -150,55 +218,80 @@
     to expressively damage the efficiency of the system by always providing the worst-case
     data. That is why a randomized quick-sort is much more preferred. The absolutely
     similar situation occurs with random hyperplanes.
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 其次，随机性允许对算法性能做出概率性陈述，这不依赖于输入数据。对于确定性方法而言，这种方法无法实现，因为它在某些数据上表现良好，而在另一些数据上表现不佳。一个好的类比是确定性
+    [快速排序](https://medium.com/@slavahead/quick-sort-explained-and-visualised-866cae28308e)
+    算法，它平均时间复杂度为 *O(n * log n)*。然而，在已排序的数组上，它的最坏情况时间复杂度为 *O(n²)*。如果有人了解算法的工作流程，那么可以利用这一信息有针对性地降低系统的效率，通过总是提供最坏的数据。这就是为什么随机化的快速排序更受欢迎。随机超平面也有类似的情况。
 - en: Why are LSH random projections also called “trees”?
+  id: totrans-32
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么 LSH 随机投影也被称为“树”？
 - en: The random projections method is sometimes called **LSH Tree**. This is due
     to the fact that the process of hash code assignment can be represented in the
     form of the decision tree where each node contains a condition of whether a vector
     is located on the negative or positive side of a current hyperplane.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机投影方法有时被称为 **LSH 树**。这是因为哈希码分配的过程可以表示为决策树的形式，每个节点包含一个条件，判断向量是否位于当前超平面的负侧或正侧。
 - en: '![](../Images/dd1474b48056732a935964db924be732.png)'
+  id: totrans-34
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dd1474b48056732a935964db924be732.png)'
 - en: The first node checks on which side a vector is located relative to the red
     hyperplane. Nodes on the second level check the same condition but relatively
     to the green hyperplane. Finally, the third level checks the relative position
     of the blue hyperplane. Based on these 3 conditions, the vector is assigned a
     3-bit hash.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个节点检查向量相对于红色超平面的位置。第二层节点检查相对于绿色超平面的位置。最后，第三层检查相对于蓝色超平面的位置。根据这三个条件，向量被分配一个
+    3 位哈希值。
 - en: Forest of hyperplanes
+  id: totrans-36
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 超平面森林
 - en: Hyperplanes are constructed randomly. This may result in a scenario when they
     poorly separate dataset points which is shown in the figure below.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 超平面是随机构建的。这可能导致它们无法有效分隔数据集点，如下图所示。
 - en: '![](../Images/a7d909830c7dcf2b1f125e7222cb89ef.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a7d909830c7dcf2b1f125e7222cb89ef.png)'
 - en: 4 hyperplanes are constructed to represent dataset points as 4-length binary
     vectors. Even though points D and E have the same hash code, they are relatively
     far from each other (FP). The inverse situation occurs with a pair of points E
     and F which are located in different regions but are very close to each other
     (FN). Taking into consideration the Hamming distance, the algorithm normally predicts
     point D as being closer to E than point F.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 构建了 4 个超平面来将数据集点表示为 4 长度的二进制向量。即使点 D 和 E 具有相同的哈希码，它们之间的距离仍然相对较远（FP）。相反，点 E 和
+    F 的情况则是它们位于不同的区域，但彼此非常接近（FN）。考虑到汉明距离，算法通常预测点 D 更接近点 E 而不是点 F。
 - en: 'Technically, it is not a big deal when two points have the same hash code but
     are far from each other. In the next step of the algorithm, these points are taken
     as candidates and are fully compared — this way the algorithm can eliminate *false
     positive* cases. The situation is more complicated with *false negatives*: when
     two points have different hash codes but in reality are close to each other.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 从技术上讲，当两个点具有相同的哈希代码但彼此距离较远时，这并不是什么大问题。在算法的下一步中，这些点将作为候选项进行完全比较 — 这样算法可以消除 *假阳性*
+    情况。*假阴性* 更复杂：当两个点具有不同的哈希代码但实际上彼此接近时。
 - en: 'Why not use the same approach with decision trees from classical machine learning
     which are combined into random forests to improve the overall prediction quality?
     *If one estimator commits an error, other estimators can produce better predictions
@@ -206,251 +299,379 @@
     random hyperplanes can be independently repeated. Resulting hash values can be
     aggregated for a pair of vectors in a similar way to how it was with minhash values
     in the previous chapter:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么不使用经典机器学习中的决策树方法，这些决策树被组合成随机森林以提高整体预测质量？*如果一个估计器出现错误，其他估计器可以产生更好的预测，减轻最终预测误差*。利用这个想法，构建随机超平面的过程可以独立重复。得到的哈希值可以像上一章中
+    minhash 值一样，按对向量的方式进行聚合：
 - en: '*If a query has the same hash code at least once with another vector, then
     they are considered candidates*.'
+  id: totrans-42
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*如果查询与另一个向量至少有一次相同的哈希代码，则它们被视为候选项*。'
 - en: Using this mechanism the number of *false negatives* can be decreased.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用这种机制可以减少 *假阴性* 的数量。
 - en: Quality vs speed trade-off
+  id: totrans-44
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 质量与速度的权衡
 - en: It is important to choose an appropriate number of hyperplanes to run on the
     dataset. The more hyperplanes are chosen to partition dataset points, the fewer
     collisions there are and the more time it takes to compute hash codes and more
     memory to store them. Speaking exactly, if a dataset consists of *n* vectors and
     we split it by *k* hyperplanes, then on average every possible hash code will
     be assigned to *n / 2ᵏ* vectors.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择适当数量的超平面以对数据集进行划分非常重要。选择的超平面越多，数据点之间的碰撞越少，但计算哈希代码所需的时间越长，存储它们所需的内存也越多。具体而言，如果数据集由
+    *n* 个向量组成，我们用 *k* 个超平面进行划分，则平均每个可能的哈希代码将被分配给 *n / 2ᵏ* 个向量。
 - en: '![](../Images/e5344a069b049e23f0319c2a8645138a.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e5344a069b049e23f0319c2a8645138a.png)'
 - en: k = 3 results in 2³ = 8 buckets
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: k = 3 结果是 2³ = 8 个桶
 - en: Complexity
+  id: totrans-48
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 复杂度
 - en: Training
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练
 - en: 'The LSH Forest training phase consists of two parts:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: LSH Forest 训练阶段分为两个部分：
 - en: '*Generation of k hyperplanes*. This is a relatively fast procedure since a
     single hyperplane in *d*-dimensional space can be generated in *O(d)* of time.'
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*生成 k 个超平面*。这是一个相对快速的过程，因为在 *d* 维空间中生成一个超平面所需的时间为 *O(d)*。'
 - en: '*Assigning hash codes to all dataset vectors*. This step might take time, especially
     for large datasets. Obtaining a single hash code requires *O(dk)* of time. If
     a dataset consists of n vectors, then the total complexity becomes *O(ndk)*.'
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*为所有数据集向量分配哈希代码*。此步骤可能需要时间，尤其是对于大型数据集。获得单个哈希代码需要 *O(dk)* 的时间。如果数据集由 n 个向量组成，则总复杂度变为
+    *O(ndk)*。'
 - en: The process above is repeated several times for each tree in the forest.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述过程对森林中的每棵树重复多次。
 - en: '![](../Images/3b0b47d41f8109c64aafe892d1b6fed2.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3b0b47d41f8109c64aafe892d1b6fed2.png)'
 - en: Training complexity
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练复杂度
 - en: Inference
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 推断
 - en: 'One of the advantages of LSH forest is its fast inference which includes two
     steps:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: LSH forest 的一个优点是其快速推断，包括两个步骤：
 - en: '*Getting the hash code of a query*. This is equivalent to computing *k* scalar
     products which result in *O(dk)* of time (*d* — dimensionality).'
+  id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*获取查询的哈希代码*。这相当于计算 *k* 个标量乘积，复杂度为 *O(dk)* (*d* — 维度)。'
 - en: '*Finding the nearest neighbours* to the query within the same bucket (vectors
     with the same hash code) by calculating precise distances to the candidates. Distance
     computation proceeds linearly for *O(d)*. Every bucket on average contains *n
     /* *2ᵏ* vectors. Therefore, distance calculation to all the potential candidates
     requires *O(dn / 2ᵏ)* of time.'
+  id: totrans-59
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*查找最近邻*，在同一桶内（具有相同哈希代码的向量）通过计算与候选项的精确距离。距离计算线性进行，复杂度为 *O(d)*。每个桶平均包含 *n / 2ᵏ*
+    个向量。因此，计算所有潜在候选项的距离需要 *O(dn / 2ᵏ)* 的时间。'
 - en: The total complexity is *O(dk + dn / 2ᵏ)*.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 总复杂度为 *O(dk + dn / 2ᵏ)*。
 - en: As usual, the process above is repeated several times for each tree in the forest.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 和往常一样，上述过程对森林中的每棵树重复多次。
 - en: '![](../Images/630951b782bb1e19a0a66758900557f8.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/630951b782bb1e19a0a66758900557f8.png)'
 - en: Inference complexity
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 推理复杂度
 - en: When the number of hyperplanes *k* is chosen in such a way that *n ~ 2ᵏ* (which
     is possible in most cases), then the total inference complexity becomes *O(ldk)
     (l* is the number of trees*)*. Basically**,** this means that **the computational
     time does not depend on the dataset size!** This subtlety results in efficient
     scalability of similarity search for millions or even billions of vectors.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 当超平面数量 *k* 选择为 *n ~ 2ᵏ*（在大多数情况下是可能的），则总的推理复杂度为 *O(ldk)（l* 是树的数量）*。基本上**，** 这意味着
+    **计算时间不依赖于数据集的大小！** 这种微妙之处使得对数百万甚至数十亿个向量的相似性搜索具有高效的可扩展性。
 - en: Error rate
+  id: totrans-65
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 错误率
 - en: In the previous part of the article about LSH, we discussed how to find the
     probability that two vectors will be chosen as candidates based on their signature
     similarity. Here we are going to use almost the same logic to find the formula
     for LSH forest.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面的 LSH 文章部分中，我们讨论了如何根据签名相似性找到两个向量被选为候选的概率。在这里，我们将使用几乎相同的逻辑来寻找 LSH 森林的公式。
 - en: '![](../Images/c452b2188fcbfd0bc3d7f8ed2e3ad179.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c452b2188fcbfd0bc3d7f8ed2e3ad179.png)'
 - en: Let s be the probability that two vectors have the same bit at the same position
     of their hash values (s will be estimated later)
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 设 s 为两个向量的哈希值在相同位置上具有相同比特位的概率（s 将在后面估计）
 - en: '![](../Images/2627cc16d15c4dea9ed77b25464231e4.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2627cc16d15c4dea9ed77b25464231e4.png)'
 - en: The probability that hash codes of length k of two vectors are equal
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个向量的长度为 k 的哈希码相等的概率
 - en: '![](../Images/6f77f816eddd37ab45ba57197a22d3e4.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6f77f816eddd37ab45ba57197a22d3e4.png)'
 - en: The probability that hash codes of length k of two vectors are different (or
     at least one bit is different)
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个向量的长度为 k 的哈希码不同（或至少有一个比特位不同）的概率
 - en: '![](../Images/f4b47775fb0a7e28aedcc187af92cd60.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f4b47775fb0a7e28aedcc187af92cd60.png)'
 - en: The probability that all l hash codes (for l hyperplanes) of two vectors are
     different
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个向量的所有 l 个哈希码（用于 l 个超平面）不同的概率
 - en: '![](../Images/d73960509a18827c37433c71dfafcace.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d73960509a18827c37433c71dfafcace.png)'
 - en: The probability that at least one of l hash codes of two vectors is equal, so
     the vectors will become candidates
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 至少有一个 l 个哈希码相等的概率，这样向量将成为候选
 - en: So far we have almost obtained the formula for estimating the probability of
     two vectors being candidates. The only thing left is to estimate the value of
     the variable *s* in the equation. In the classic LSH algorithm, *s* is equal to
     the Jaccard index or signature similarity of two vectors. On the other hand, for
     estimating *s* for LSH forest, linear algebra theory is going to be used.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们几乎获得了估计两个向量成为候选的概率的公式。剩下的唯一任务是估计方程中变量 *s* 的值。在经典的 LSH 算法中，*s* 等于两个向量的
+    Jaccard 指数或签名相似性。另一方面，为了估计 LSH 森林中的 *s*，将使用线性代数理论。
 - en: 'Frankly speaking, *s* is the probability that two vectors *a* and *b* have
     the same bit. This probability is equivalent to the probability that a random
     hyperplane separates these vectors to the same side. Let us visualise it:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 说实话，*s* 是两个向量 *a* 和 *b* 具有相同比特位的概率。这个概率等同于一个随机超平面将这些向量分到同一侧的概率。让我们可视化一下：
 - en: '![](../Images/0af7b3dc68161821c43c1b390fded16f.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0af7b3dc68161821c43c1b390fded16f.png)'
 - en: Vectors a and b are separated by the blue hyperplane. The green hyperplane does
     not separate them.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 向量 a 和 b 被蓝色超平面分开。绿色超平面没有将它们分开。
 - en: 'From the figure, it is clear that a hyperplane separates vectors *a* and *b*
     into two different sides only in case when it passes between them. Such probability
     *q* is proportional to the angle between the vectors which can be easily computed:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 从图中可以看出，只有当超平面穿过它们之间时，才会将向量 *a* 和 *b* 分到两个不同的侧面。这样的概率 *q* 与向量之间的角度成正比，可以很容易地计算：
 - en: '![](../Images/8fe558b85b717c872df9910f1eba0d58.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8fe558b85b717c872df9910f1eba0d58.png)'
 - en: The probability that a random hyperplane separates two vectors (i.e. so they
     have different bits)
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机超平面将两个向量分开的概率（即，它们具有不同的比特位）
 - en: '![](../Images/28bd65fa3c1e8a5ddbc1a48bb8fc3405.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/28bd65fa3c1e8a5ddbc1a48bb8fc3405.png)'
 - en: The probability that a random hyperplane does not separate two vectors (i.e.
     so, they have the same bit)
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机超平面不将两个向量分开的概率（即，它们具有相同的比特位）
 - en: 'Plugging this equation into the one which was obtained previously leads to
     the final formula:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 将此方程代入之前获得的方程中，可以得到最终公式：
 - en: '![](../Images/8df3753d3ee282c6ec9722a0e8396e6a.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8df3753d3ee282c6ec9722a0e8396e6a.png)'
 - en: The probability that two vectors have at least one corresponding hash value
     (i.e. so they become candidates) based on the number of hyperplanes k and the
     number of LSH trees l
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于超平面数量 *k* 和 LSH 树的数量 *l*，两个向量至少有一个对应的哈希值（即成为候选者）的概率
 - en: Visualisation
+  id: totrans-89
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可视化
 - en: '*Note*. Cosine similarity is formally defined in range [-1, 1]. For simplicity,
     we will map this interval to [0, 1] where 0 and 1 indicate the lowest and the
     highest possible similarity respectively.'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意*。余弦相似度在正式定义范围[-1, 1]内。为了简便起见，我们将这个区间映射到[0, 1]，其中0和1分别表示最低和最高的相似度。'
 - en: With the last obtained formula, let us visualise the probability of two vectors
     being candidates based on their cosine similarity for a different number of hyperplanes
     *k* and trees *l*.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用最后得到的公式，让我们可视化不同超平面 *k* 和树 *l* 数量下的两个向量成为候选者的概率。
 - en: '![](../Images/1c8d1abc9f4f92ee1e09f12117a17500.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1c8d1abc9f4f92ee1e09f12117a17500.png)'
 - en: Adjusting number of trees l
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 调整树的数量 l
 - en: '![](../Images/d5d2615dac869b093f4842dd1483f5e3.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d5d2615dac869b093f4842dd1483f5e3.png)'
 - en: Adjusting number of hyperplanes k
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 调整超平面数量 k
 - en: 'Several useful observations can be made, based on the plots:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据图表，可以得出几个有用的观察结果：
 - en: A pair of vectors with the cosine similarity of 1 always become candidates.
+  id: totrans-97
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 余弦相似度为1的一对向量总是成为候选者。
 - en: A pair of vectors with the cosine similarity of 0 never become candidates.
+  id: totrans-98
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 余弦相似度为0的一对向量从不会成为候选者。
 - en: The probability *P* of two vectors being candidates increases (i.e. more *false
     positives*) when the number of hyperplanes *k* decreases or the number of LSH
     trees *l* increases. The inverse statement is true.
+  id: totrans-99
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当超平面数量 *k* 减少或 LSH 树的数量 *l* 增加时，两向量成为候选者的概率 *P* 会增加（即更多的 *假阳性*）。逆命题也成立。
 - en: 'To summarise things up, LSH is a very flexible algorithm: it is possible to
     adjust different values *k* and *l* based on a given problem and acquire the probability
     curve that satisfies the problem’s requirements.'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，LSH 是一种非常灵活的算法：可以根据给定问题调整不同的 *k* 和 *l* 值，以获得符合问题要求的概率曲线。
 - en: Example
+  id: totrans-101
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 示例
 - en: Let us look at the following example. Imagine *l = 5* trees are constructed
     with *k = 10* hyperplanes. Apart from it, there are two vectors with the cosine
     similarity of 0.8\. In most systems, such cosine similarity indicates that the
@@ -459,18 +680,27 @@
     a very low result for such a high cosine similarity. Using these parameters of
     *l = 5* and *k = 10* resultsin a huge number of *false negatives*! The green line
     below represents the probability in this case.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们来看以下例子。假设构建了 *l = 5* 棵树，并且使用了 *k = 10* 个超平面。此外，还有两个余弦相似度为0.8的向量。在大多数系统中，这种余弦相似度表明向量彼此非常接近。然而，根据前面的结果，这个概率仅为2.5%!
+    显然，对于如此高的余弦相似度，这个结果非常低。使用这些参数 *l = 5* 和 *k = 10* 会产生大量的*假阴性*! 下面的绿色线条表示这种情况下的概率。
 - en: '![](../Images/8f07e7d21fa0e15e1ea4370c54939e14.png)'
+  id: totrans-103
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8f07e7d21fa0e15e1ea4370c54939e14.png)'
 - en: Probability curve based on the cosine similarity of two vectors
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于两个向量的余弦相似度的概率曲线
 - en: This issue can be solved by adjusting better values of *k* and *l* to move the
     curve to the left.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个问题可以通过调整更好的 *k* 和 *l* 的值来解决，使曲线向左移动。
 - en: For instance, if *k* is decreased to 3 (red line), then the same value of the
     cosine similarity of 0.8 will correspond to the probability of 68% which is better
     than before. At first sight, it seems like the red line fits much better than
@@ -478,8 +708,11 @@
     (as in the case with the red line) leads to an enormous number of collisions.
     That is why it is sometimes preferable to adjust the second parameter which is
     the number of trees *l*.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，如果 *k* 减少到3（红线），那么相同的余弦相似度为0.8的概率将达到68%，这比之前要好。乍一看，红线似乎比绿线更合适，但需要注意的是，使用小的
+    *k* 值（如红线情况）会导致大量的碰撞。因此，有时调整第二个参数，即树的数量 *l* 更为可取。
 - en: 'Unlike with *k*, it usually requires a very high number of trees *l* to get
     a similar line shape. In the figure, the blue line is obtained from the green
     one by changing the value of *l* from 10 to 500\. The blue line clearly fits better
@@ -487,140 +720,203 @@
     between cosine similarity values of 0.6 and 0.8, the probability is almost equal
     to 0 around cosine similarity of 0.3-0.5 which is unfavorable. This small probability
     for a document similarity of 0.3–0.5 should normally be higher in real life.'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 与*k*不同，通常需要非常多的树*l*才能获得类似的曲线形状。在图中，蓝线是通过将*l*的值从10更改为500得到的。蓝线明显比绿线更适合，但仍然远未完美：因为在0.6到0.8的余弦相似度值之间斜率很高，所以在0.3-0.5的余弦相似度附近概率几乎为0，这不利于效果。实际中，0.3–0.5的文档相似度的小概率通常应该更高。
 - en: 'Based on the last example, it is evident that even a very high number of trees
     (which require lots of computations) still results in many *false negatives*!
     That is the main disadvantage of the random projections method:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据最后一个例子，很明显，即使是非常多的树（需要大量计算）仍然会产生许多*假阴性*! 这就是随机投影方法的主要缺点：
 - en: Though it is potentially possible to get a perfect probability curve, it would
     either require lots of computations or would result in lots of collisions. Otherwise,
     it leads to a high false negative rate.
+  id: totrans-109
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 尽管理论上可以得到完美的概率曲线，但这要么需要大量计算，要么会导致许多碰撞。否则，它会导致较高的假阴性率。
 - en: Faiss implementation
+  id: totrans-110
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Faiss 实现
 - en: '[**Faiss**](https://github.com/facebookresearch/faiss) (Facebook AI Search
     Similarity) is a Python library written in C++ used for optimised similarity search.
     This library presents different types of indexes which are data structures used
     to efficiently store the data and perform queries.'
+  id: totrans-111
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[**Faiss**](https://github.com/facebookresearch/faiss)（Facebook AI 搜索相似性）是一个用C++编写的Python库，用于优化相似性搜索。该库提供了不同类型的索引，这些索引是用于高效存储数据和执行查询的数据结构。'
 - en: Based on the information from the [Faiss documentation](https://faiss.ai), we
     will find out how to build LSH index.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据[Faiss文档](https://faiss.ai)的信息，我们将了解如何构建LSH索引。
 - en: The random projections algorithm is implemented in Faiss inside the *IndexLSH*
     class. Though the Faiss authors use a slightly another technique called “random
     rotations”, it still has similarities with what was described in this article.
     The class implements only a single LSH tree. If we want to use an LSH forest,
     then it is enough just to create several LSH trees and aggregate their results.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机投影算法在Faiss中通过*IndexLSH*类实现。尽管Faiss作者使用了一种略有不同的技术称为“随机旋转”，但它与本文所描述的仍有相似之处。该类只实现了一个LSH树。如果我们想使用LSH森林，只需创建几个LSH树并汇总它们的结果即可。
 - en: 'The constructor of the *IndexLSH* class takes two arguments:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '*IndexLSH*类的构造函数接受两个参数：'
 - en: '**d**: the number of dimensions'
+  id: totrans-115
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**d**: 维度的数量'
 - en: '**nbits**: the number of bits required to encode a single vector (the number
     of possible buckets equals *2ⁿᵇᶦᵗˢ*)'
+  id: totrans-116
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**nbits**: 编码单个向量所需的位数（可能的桶数等于*2ⁿᵇᶦᵗˢ*）'
 - en: Distances returned by the search() method are Hamming distances to the query
     vector.
+  id: totrans-117
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '`search()`方法返回的距离是查询向量的汉明距离。'
 - en: '![](../Images/bee3e4613c3f739d5d7ccf1b92d88a87.png)'
+  id: totrans-118
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bee3e4613c3f739d5d7ccf1b92d88a87.png)'
 - en: Faiss implementation of IndexLSH
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: Faiss 对 IndexLSH 的实现
 - en: Additionally, Faiss allows inspecting encoded hash values for each dataset vector
     by calling the *faiss.vector_to_array(index.codes)* method.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，Faiss允许通过调用*faiss.vector_to_array(index.codes)*方法检查每个数据集向量的编码哈希值。
 - en: 'Since every dataset vector is encoded by *nbits* binary values, the number
     of bytes required to store a single vector is equal to:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于每个数据集向量由*nbits*个二进制值编码，存储单个向量所需的字节数等于：
 - en: '![](../Images/de186f2e3138d8eb7e1a5d77ed3e8617.png)'
+  id: totrans-122
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/de186f2e3138d8eb7e1a5d77ed3e8617.png)'
 - en: Johnson-Lindenstrauss lemma
+  id: totrans-123
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Johnson-Lindenstrauss 引理
 - en: '[Johnson-Lindenstrauss lemma](https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf)
     is a fabulous lemma related to dimensionality reduction. While it may be difficult
     to fully understand its original statement, it can be formulated in simple words:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Johnson-Lindenstrauss 引理](https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf)是一个与降维相关的精彩引理。虽然可能很难完全理解其原始陈述，但可以用简单的话来表述：'
 - en: Choosing a random subset and projecting original data on it preserves corresponding
     pairwise distances between points.
+  id: totrans-125
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 选择一个随机子集并将原始数据投影到该子集上，可以保持点之间的对应对距离。
 - en: To be more precise, having a dataset of *n* points, it is possible to represent
     them in a new space of *O(logn)* dimensions in such a way that the relative distances
     between points will almost be preserved. If a vector is encoded by *~logn* binary
     values in the LSH method, then the lemma can be applied. Moreover, LSH creates
     hyperplanes in a random manner exactly as the lemma requires.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 更准确地说，拥有一个 *n* 个点的数据集，可以在一个 *O(logn)* 维的新空间中表示这些点，从而几乎保持点之间的相对距离。如果一个向量在 LSH
+    方法中由 *~logn* 个二进制值编码，则可以应用该引理。此外，LSH 随机创建超平面，正如引理所要求的那样。
 - en: What is also incredible about Johnson-Lindenstrauss lemma is the fact that **the
     number of dimensions of a new dataset does not depend on the dimensionality of
     the original dataset**! In practice, this lemma does not work well for very small
     dimensions.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 约翰逊-林登斯特劳斯引理的另一个令人惊叹的地方是 **新数据集的维数不依赖于原始数据集的维数**！实际上，这个引理在非常小的维度下效果不佳。
 - en: Conclusion
+  id: totrans-128
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: We have gone through a powerful algorithm for similarity search. Being based
     on a simple idea of separating points by random hyperplanes it usually performs
     and scales very well on large datasets. Moreover, it comes with good flexibility
     by allowing one to choose an appropriate number of hyperplanes and trees.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经介绍了一种用于相似性搜索的强大算法。该算法基于通过随机超平面分隔点的简单思路，通常在大数据集上表现良好并且具有很好的可扩展性。此外，它通过允许选择适当数量的超平面和树，提供了良好的灵活性。
 - en: Theoretical results from Johnson-Lindenstrauss lemma reinforce the usage of
     the random projections approach.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 约翰逊-林登斯特劳斯引理的理论结果加强了随机投影方法的使用。
 - en: Resources
+  id: totrans-131
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[LSH Forest: Self-Tuning Indexes for Similarity Search](http://infolab.stanford.edu/~bawa/Pub/similarity.pdf)'
+  id: totrans-132
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[LSH Forest: 自调节索引的相似性搜索](http://infolab.stanford.edu/~bawa/Pub/similarity.pdf)'
 - en: '[The Johnson-Lindenstrauss Lemma](https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf)'
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[约翰逊-林登斯特劳斯引理](https://cs.stanford.edu/people/mmahoney/cs369m/Lectures/lecture1.pdf)'
 - en: '[Faiss documentation](https://faiss.ai)'
+  id: totrans-134
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Faiss 文档](https://faiss.ai)'
 - en: '[Faiss repository](https://github.com/facebookresearch/faiss)'
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Faiss 仓库](https://github.com/facebookresearch/faiss)'
 - en: '[Summary of Faiss indexes](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes)'
+  id: totrans-136
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Faiss 索引概述](https://github.com/facebookresearch/faiss/wiki/Faiss-indexes)'
 - en: '*All images unless otherwise noted are by the author.*'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '*除非另有说明，否则所有图像均为作者提供。*'
