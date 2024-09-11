@@ -1,294 +1,447 @@
 - en: Nine Rules for SIMD Acceleration of your Rust Code (Part 2)
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 你的 Rust 代码的 SIMD 加速九大规则（第2部分）
 - en: 原文：[https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3?source=collection_archive---------7-----------------------#2023-12-15](https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3?source=collection_archive---------7-----------------------#2023-12-15)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3?source=collection_archive---------7-----------------------#2023-12-15](https://towardsdatascience.com/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3?source=collection_archive---------7-----------------------#2023-12-15)
 - en: General Lessons from Boosting Data Ingestion in the `range-set-blaze` Crate
     by 7x
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 从将 `range-set-blaze` Crate 数据摄取速度提升 7 倍的经验中得到的一般性教训
 - en: '[](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)[![Carl
     M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)
     [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)[![Carl
+    M. Kadie](../Images/9dbe27c76e9567136e5a7dc587f1fb15.png)](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)[](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)
+    [Carl M. Kadie](https://medium.com/@carlmkadie?source=post_page-----6a104b3be6f3--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----6a104b3be6f3---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)
     ·9 min read·Dec 15, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a104b3be6f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----6a104b3be6f3---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fa5e87027005f&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&user=Carl+M.+Kadie&userId=a5e87027005f&source=post_page-a5e87027005f----6a104b3be6f3---------------------post_header-----------)
+    发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----6a104b3be6f3--------------------------------)
+    ·9 分钟阅读·2023年12月15日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F6a104b3be6f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&user=Carl+M.+Kadie&userId=a5e87027005f&source=-----6a104b3be6f3---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a104b3be6f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&source=-----6a104b3be6f3---------------------bookmark_footer-----------)![](../Images/7c6265c7eac5b0a502b4d8cecf7e15f3.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F6a104b3be6f3&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fnine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3&source=-----6a104b3be6f3---------------------bookmark_footer-----------)![](../Images/7c6265c7eac5b0a502b4d8cecf7e15f3.png)'
 - en: 'A crab delegating calculations to little crabs — Source: [https://openai.com/dall-e-2/](https://openai.com/dall-e-2/).
     All other figures from the author.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 一只螃蟹将计算任务委托给小螃蟹——来源：[https://openai.com/dall-e-2/](https://openai.com/dall-e-2/)。所有其他图形来自作者。
 - en: Thanks to Ben Lichtman (B3NNY) at the Seattle Rust Meetup for pointing me in
     the right direction on SIMD.
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 感谢 Ben Lichtman (B3NNY) 在 Seattle Rust Meetup 上为我指引了正确的 SIMD 方向。
 - en: 'This is Part 2 of an article about creating SIMD code in Rust. (See [Part 1](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21).)
     We will look at rules 7 to 9:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是关于在 Rust 中创建 SIMD 代码的文章的第2部分。（参见 [第1部分](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21)。）我们将查看第7到第9条规则：
 - en: 7\. Use Criterion benchmarking to pick an algorithm and to discover that LANES
     should (almost) always be 32 or 64.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 7\. 使用 Criterion 基准测试来选择算法，并发现通道数（LANES）应该（几乎总是）为 32 或 64。
 - en: 8\. Integrate your best SIMD algorithm into your project with `as_simd`, special
     code for `i128`/`u128`, and additional in-context benchmarking.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 8\. 将你最佳的 SIMD 算法集成到你的项目中，使用 `as_simd`、专门的 `i128`/`u128` 代码和额外的上下文基准测试。
 - en: 9\. Extricate your best SIMD algorithm from your project (for now) with an optional
     cargo feature.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 9\. 使用可选的 cargo 特性将你最佳的 SIMD 算法从项目中抽取出来（暂时）。
 - en: 'Recall rules 1 to 6:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 回顾规则 1 到 6：
 - en: Use nightly Rust and `core::simd`, Rust’s experimental standard SIMD module.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 nightly Rust 和 `core::simd`，这是 Rust 的实验性标准 SIMD 模块。
 - en: 'CCC: Check, Control, and Choose your computer’s SIMD capabilities.'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: CCC：检查、控制和选择你计算机的 SIMD 能力。
 - en: Learn `core::simd`, but selectively.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 学习 `core::simd`，但要有选择地学习。
 - en: Brainstorm candidate algorithms.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 头脑风暴候选算法。
 - en: Use Godbolt and AI to understand your code’s assembly, even if you don’t know
     assembly language.
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 Godbolt 和 AI 来理解你代码的汇编，即使你不知道汇编语言。
 - en: Generalize to all types and LANES with in-lined generics, (and when that doesn’t
     work) macros, and (when that doesn’t work) traits.
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过内联泛型（如果这不起作用）宏（如果这不起作用）特质来通用化到所有类型和通道数。
 - en: These rules are informed by my experience trying to speed up `[range-set-blaze](https://crates.io/crates/range-set-blaze)`,
     a Rust crate for manipulating sets of “clumpy” integers.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些规则基于我尝试加速 `[range-set-blaze](https://crates.io/crates/range-set-blaze)` 的经验，这是一个用于操作“密集”整数集合的
+    Rust crate。
 - en: Recall that Rule 6, from [Part 1](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21),
     shows how to make Rust SIMD algorithms fully generic across type and LANES. We
     next need to pick our algorithm and set LANES.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 请回忆规则 6，来自于 [第 1 部分](https://medium.com/towards-data-science/nine-rules-for-simd-acceleration-of-your-rust-code-part-1-c16fe639ce21)，展示了如何使
+    Rust SIMD 算法在类型和通道数上完全通用。接下来我们需要选择算法并设置通道数。
 - en: 'Rule 7: Use Criterion benchmarking to pick an algorithm and to discover that
     LANES should (almost) always be 32 or 64.'
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 规则 7：使用 Criterion 基准测试来选择算法，并发现通道数（LANES）应该（几乎总是）为 32 或 64。
 - en: 'In this rule, we’ll see how to use the popular [criterion](https://docs.rs/criterion/latest/criterion/)
     crate to benchmark and evaluate our algorithms and options. In the context of
     `range-set-blaze`, we’ll evaluate:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一规则中，我们将看到如何使用流行的 [criterion](https://docs.rs/criterion/latest/criterion/)
+    crate 来基准测试和评估我们的算法及选项。在 `range-set-blaze` 的上下文中，我们将进行评估：
 - en: 5 algorithms — Regular, Splat0, Splat1, Splat2, Rotate
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 5 种算法 — Regular、Splat0、Splat1、Splat2、Rotate
 - en: 3 SIMD extension levels — `sse2` (128 bit), `avx2` (256 bit), `avx512f` (512
     bit)
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 3 种 SIMD 扩展级别 — `sse2`（128 位）、`avx2`（256 位）、`avx512f`（512 位）
 - en: 10 element types — `i8`, `u8`, `i16`, `u16`, `i32`, `u32`, `i64`, `u64`, `isize`,
     `usize`
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 10 种元素类型 — `i8`、`u8`、`i16`、`u16`、`i32`、`u32`、`i64`、`u64`、`isize`、`usize`
 - en: 5 lane numbers — 4, 8, 16, 32, 64
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 5 种通道数量 — 4、8、16、32、64
 - en: 4 input lengths — 1024; 10,240; 102,400; 1,024,000
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 4 种输入长度 — 1024；10,240；102,400；1,024,000
 - en: 2 CPUs — AMD 7950X with `avx512f`, Intel i5–8250U with `avx2`
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 2 个 CPU — AMD 7950X 配有 `avx512f`，Intel i5–8250U 配有 `avx2`
 - en: The benchmark measures the average time to run each combination. We then compute
     throughput in Mbytes/sec.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 基准测试测量每种组合的平均运行时间。然后，我们计算每秒传输的兆字节（Mbytes/sec）。
 - en: See this [new companion article](https://medium.com/towards-data-science/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb)
     on getting started with Criterion. That article also shows how to push (abuse?)
     Criterion to measure the effects of compiler settings, such as SIMD extension
     level.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 请参阅这篇 [新伴随文章](https://medium.com/towards-data-science/benchmarking-rust-compiler-settings-with-criterion-62db50cd62fb)，了解如何开始使用
+    Criterion。那篇文章还展示了如何推动（滥用？）Criterion 来测量编译器设置的效果，例如 SIMD 扩展级别。
 - en: 'Running the benchmarks results in a 5000-line `*.csv` file that starts:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行基准测试会生成一个 5000 行的 `*.csv` 文件，内容如下：
 - en: '[PRE0]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: This file is suitable for analysis via [spreadsheet pivot tables](https://support.microsoft.com/en-us/office/create-a-pivotchart-c1b1e057-6990-4c38-b52b-8255538e7b1c)
     or data frame tools such as [Polars](https://pola-rs.github.io/polars/user-guide/transformations/pivot/).
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 此文件适合通过 [电子表格数据透视表](https://support.microsoft.com/en-us/office/create-a-pivotchart-c1b1e057-6990-4c38-b52b-8255538e7b1c)
+    或数据框工具如 [Polars](https://pola-rs.github.io/polars/user-guide/transformations/pivot/)
+    进行分析。
 - en: Algorithms and Lanes
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 算法和通道
 - en: Here is an Excel pivot table showing — for each algorithm — throughput (MBytes/sec)
     vs. SIMD Lanes. The table averages throughput across SIMD extension levels, element
     types, and input length.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一个 Excel 数据透视表，显示 — 对于每种算法 — 吞吐量（MBytes/sec）与 SIMD 通道数的关系。该表格对 SIMD 扩展级别、元素类型和输入长度进行了吞吐量的平均计算。
 - en: 'On my AMD desktop machine:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的 AMD 桌面机器上：
 - en: '![](../Images/b595995d889d6a23cec98a2ee457591b.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b595995d889d6a23cec98a2ee457591b.png)'
 - en: 'On an Intel laptop machine:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一台Intel笔记本电脑上：
 - en: '![](../Images/452fad0ef42294b0bd627b3fcd3f3457.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/452fad0ef42294b0bd627b3fcd3f3457.png)'
 - en: The tables show Splat1 and Splat2 doing best. They also show more lanes always
     being better up to 32 or 64.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 表格显示Splat1和Splat2表现最佳。它们还显示更多的lanes始终在32或64之间更好。
 - en: How can, for example,`*sse2*` (128-bits wide) process 64 lanes of `*i64*` (4096-bits
     wide)? The Rust `*core::simd*` module makes this magic possible by automatically
     and efficiently dividing the 4096-bits into 32 chunks of 128-bits each. Processing
     the 32 128-bit chunks together (apparently) enables optimizations beyond processing
     the 128-bit chunks independently.
+  id: totrans-43
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 例如，`*sse2*`（128位宽）如何处理64条`*i64*`（4096位宽）的数据？Rust的`*core::simd*`模块通过自动而高效地将4096位分成32个128位块，使这一切成为可能。将32个128位块一起处理（显然）能够进行超越独立处理128位块的优化。
 - en: '**SIMD Extension Levels**'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '**SIMD扩展级别**'
 - en: Let’s set LANES to 64 and compare different SIMD extension levels on the AMD
     machine. The table averages throughput across element type and input length.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将LANES设置为64，并比较AMD机器上不同的SIMD扩展级别。表格展示了各元素类型和输入长度下的平均吞吐量。
 - en: '![](../Images/36e4721f810d3f192895ebc927c8ac2b.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/36e4721f810d3f192895ebc927c8ac2b.png)'
 - en: On my AMD machine, when using 64-lanes, `sse2` is slowest. Comparing`avx2` to
     `avx512f`, the results are mixed. Again, algorithm Splat1 and Splat2 do best.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的AMD机器上，当使用64条lanes时，`sse2`最慢。比较`avx2`和`avx512f`时，结果各有不同。再一次，算法Splat1和Splat2表现最好。
 - en: Element Types
+  id: totrans-48
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 元素类型
 - en: Let’s next set our SIMD extension level to `avx512f` and compare different element
     types. We keep `LANES` at 64 and average throughput across input length.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们将SIMD扩展级别设置为`avx512f`并比较不同的元素类型。我们将`LANES`保持在64，并对输入长度进行平均吞吐量测试。
 - en: '![](../Images/09c769e64b33873ba8ecf223b6c45005.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/09c769e64b33873ba8ecf223b6c45005.png)'
 - en: We see the bit-per-bit, 32-bit and 64-bit elements are processed fastest. (However,
     per element, smaller types are faster.) Splat1 and Splat2 are the fastest algorithms,
     with Splat1 being slightly better.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到按位、32位和64位元素的处理速度最快。（然而，按元素来说，更小的类型更快。）Splat1和Splat2是最快的算法，其中Splat1表现略好。
 - en: Input Length
+  id: totrans-52
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 输入长度
 - en: Finally, let’s set our element type to `i32` and see input length vs. throughput.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，让我们将元素类型设置为`i32`，看看输入长度与吞吐量的关系。
 - en: '![](../Images/4d4945fd8fb6a7d6c7bcd9222857b69d.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4d4945fd8fb6a7d6c7bcd9222857b69d.png)'
 - en: We see all the SIMD algorithms doing about the same at 1 million inputs. Splat1
     apparently does better than other algorithms on short inputs.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到所有的SIMD算法在100万个输入下表现差不多。Splat1显然在短输入上表现优于其他算法。
 - en: It also looks like shorter is faster than longer. This could be the result of
     caching, or it could be an artifact of the benchmarks throwing away un-aligned
     data.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 看起来更短的处理速度比更长的更快。这可能是缓存的结果，或者可能是基准测试丢弃未对齐数据的结果。
 - en: Benchmark Conclusions
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基准测试结论
 - en: Based on these benchmarks, we’ll use the Splat1 algorithm. For now, we’ll set
     LANES to 32 or 64, but see the next rule for a complication. Finally, we’ll advise
     users to set their SIMD extension level to at least `avx2`.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于这些基准测试，我们将使用Splat1算法。现在，我们将LANES设置为32或64，但请参见下一条规则以了解复杂情况。最后，我们建议用户将其SIMD扩展级别设置为至少`avx2`。
 - en: 'Rule 8: Integrate your best SIMD algorithm into your project with `as_simd`,
     special code for `i128`/`u128`, and additional in-context benchmarking.'
+  id: totrans-59
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 规则8：将您最好的SIMD算法集成到您的项目中，使用`as_simd`，为`i128`/`u128`编写特殊代码，并进行额外的上下文基准测试。
 - en: '`as_simd`'
+  id: totrans-60
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '`as_simd`'
 - en: 'Before adding SIMD support, `RangeSetBlaze`’s main constructor was `from_iter`:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 在添加SIMD支持之前，`RangeSetBlaze`的主要构造函数是`from_iter`：
 - en: '[PRE1]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'SIMD operations, however, work best on arrays, not iterators. Moreover, constructing
     a `RangeSetBlaze` from an array is often a natural thing to do, so I added a new
     `from_slice` constructor:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，SIMD操作在数组上效果最佳，而不是在迭代器上。此外，从数组构造`RangeSetBlaze`通常是一个自然的操作，因此我添加了一个新的`from_slice`构造函数：
 - en: '[PRE2]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'The new constructor does an in-line call to each integer’s own `from_slice`
     method. For all the integer types, except `i128`/`u128`, this next calls:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 新构造函数对每个整数的`from_slice`方法进行内联调用。对于所有整数类型，除了`i128`/`u128`，接下来的调用是：
 - en: '[PRE3]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Rust’s nightly `as_simd` method safely and quickly transmutes the slice into:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: Rust的夜间版`as_simd`方法安全快速地将切片转换为：
 - en: an unaligned `prefix` — which we process with `from_iter`, as before.
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一个未对齐的`prefix`——我们像之前一样用`from_iter`处理它。
 - en: '`middle`, an aligned array of `Simd` struct chunks'
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`middle`，一个对齐的`Simd`结构块数组'
 - en: An unaligned `suffix` — which we process with `from_iter`, as before.
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一个未对齐的`suffix`——我们像之前一样用`from_iter`处理它。
 - en: Think of `middle` as chunking our input integers into size-16 chunks (or whatever
     size LANES is set to). We then iterate the chunks through our `is_consecutive`
     function, looking for runs of `true`. Each run becomes a single range. For example,
@@ -297,57 +450,82 @@
     This range is then processed by `from_iter` much faster than `from_iter` would
     have processed the 160 individual integers. When `is_consecutive` returns `false`,
     we fall back to processing the chunk’s individual integers with `from_iter`.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 将`middle`视为将我们的输入整数分成大小为16的块（或者`LANES`设置的任何大小）。然后，我们通过`is_consecutive`函数迭代这些块，寻找`true`的连续段。每个连续段成为一个单一的范围。例如，从1000到1159（含）的160个连续整数将被识别并替换为一个Rust
+    `RangeInclusive` `1000..=1159`。然后，这个范围由`from_iter`处理，比`from_iter`处理160个单独整数要快得多。当`is_consecutive`返回`false`时，我们退回到使用`from_iter`处理块中的单独整数。
 - en: '`i128`/`u128`'
+  id: totrans-72
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '`i128`/`u128`'
 - en: How to we handle arrays of types that `core::simd` doesn't handle, namely`i128`/`u128`?
     For now, I just process them with the slower `from_iter`.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何处理`core::simd`不处理的类型数组，即`i128`/`u128`？目前，我只是用较慢的`from_iter`来处理它们。
 - en: In-Context Benchmarks
+  id: totrans-74
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 上下文基准测试
 - en: As a final step, benchmark your SIMD code in the context of your main code,
     ideally on representative data.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为最后一步，在你的主要代码的上下文中对SIMD代码进行基准测试，理想情况下使用具有代表性的数据。
 - en: The `range-set-blaze` crate already includes [benchmarks](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md).
     One benchmark measures performance ingesting 1,000,000 integers with various levels
     of clumpiness. Average clump size ranges from 1 (no clump) to 100,000 clumps.
     Let’s run that benchmark with LANES set at 4, 8, 16, 32, and 64\. We’ll use algorithm
     Splat1 and SIMD extension level `avx512f`.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '`range-set-blaze`库已经包括了[基准测试](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)。一个基准测试测量了在不同块大小下处理1,000,000个整数的性能。平均块大小范围从1（无块）到100,000块。让我们在`LANES`设置为4、8、16、32和64时运行该基准测试。我们将使用算法Splat1和SIMD扩展级别`avx512f`。'
 - en: For each clump size, the bars show the relative speed of ingesting 1,000,000
     integers. For each clump size, the fastest `LANES` is set to 100%.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于每种块大小，条形图显示了处理1,000,000个整数的相对速度。对于每种块大小，最快的`LANES`设置为100%。
 - en: '![](../Images/074b373e7a1c5bb4cda1d0ebb52c46e8.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/074b373e7a1c5bb4cda1d0ebb52c46e8.png)'
 - en: We see that for clumps of size 10 and 100, `LANES`=4 is best. With clumps of
     size 100,000, however, `LANES`=4 is 4 times worse than the best. At the other
     extreme, LANES=64 looks good with clumps of size 100,000, but it is 1.8 and 1.5
     times worse than the best at 100 and 1000, respectively.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到，对于大小为10和100的块，`LANES`=4是最好的。然而，对于大小为100,000的块，`LANES`=4的表现比最佳值差4倍。在另一个极端，`LANES`=64在大小为100,000的块上表现良好，但在大小为100和1000的块上分别比最佳值差1.8倍和1.5倍。
 - en: I decided to set `LANES` to 16\. It is the best for clumps of size 1000\. Moreover,
     it is never more than 1.25 times worse than the best.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 我决定将`LANES`设置为16。它对于大小为1000的块是最好的。此外，它的表现从未比最佳值差超过1.25倍。
 - en: With this setting, we can run other benchmarks. The chart below shows various
     range set libraries (including `range-set-blaze`) working on the same task — ingesting
     1,000,000 integers of varying clumpiness. The `y`-axis is milliseconds with lower
     being better.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用此设置，我们可以运行其他基准测试。下图显示了各种范围集库（包括`range-set-blaze`）在相同任务上工作的情况——处理1,000,000个具有不同块大小的整数。`y`轴是毫秒，值越低越好。
 - en: '![](../Images/f21111be1939935d2862b1b6c41bb6b4.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f21111be1939935d2862b1b6c41bb6b4.png)'
 - en: With clumps of size 1000, the existing `RangeSetBlaze::into_iter` method (red)
     was already 30 times faster than HashSet (orange). Note the scale is logarithmic.
     With `avx512f`, the new SIMD-powered `RangeSetBlaze::into_slice` algorithm (light
@@ -355,35 +533,47 @@
     faster. With `avx2` (yellow), it is 180 times faster. On this benchmark, compared
     to `RangeSetBlaze::into_iter`, `avx512f` `RangeSetBlaze::into_slice` is 7 times
     faster.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于大小为1000的块，现有的`RangeSetBlaze::into_iter`方法（红色）已经比HashSet（橙色）快30倍。注意，刻度是对数的。使用`avx512f`，新的SIMD加速的`RangeSetBlaze::into_slice`算法（浅蓝色）比HashSet快230倍。使用`sse2`（深蓝色），快220倍。使用`avx2`（黄色），快180倍。在这个基准测试中，与`RangeSetBlaze::into_iter`相比，`avx512f`的`RangeSetBlaze::into_slice`快7倍。
 - en: We should also consider the worst case, namely, ingesting data with no clumps.
     [I ran that benchmark](https://github.com/CarlKCarlK/range-set-blaze/blob/dec23/docs/bench.md).
     It showed the existing `RangeSetBlaze::into_iter` is about 2.2 times slower than
     HashSet. The new `RangeSetBlaze::into_slice` is 2.4 times slower than HashSet.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还应该考虑最坏的情况，即处理没有聚集的数据。[我进行了基准测试](https://github.com/CarlKCarlK/range-set-blaze/blob/dec23/docs/bench.md)。结果显示，现有的`RangeSetBlaze::into_iter`比HashSet慢约2.2倍。新的`RangeSetBlaze::into_slice`比HashSet慢2.4倍。
 - en: So, on balance, the new SIMD code offers a huge upside for data that is assumed
     to be clumpy. If the assumption is wrong, it is slower, but not catastrophically
     so.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，总的来说，新SIMD代码为假定数据有聚集的情况提供了巨大的优势。如果假设是错误的，它会更慢，但不会灾难性地慢。
 - en: With the SIMD code integrated into our project, we’re ready to ship, right?
     Sadly, no. Because our code depends on Rust nightly, we should make it optional.
     We’ll see how to do that in the next rule.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于SIMD代码集成到我们的项目中，我们准备好发布了，对吗？可惜不是。因为我们的代码依赖于Rust夜间版本，我们应该使其可选。我们将在下一条规则中看到如何做到这一点。
 - en: 'Rule 9: Extricate your best SIMD algorithm from your project (for now) with
     an optional cargo feature.'
+  id: totrans-87
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 规则9：暂时将你最佳的SIMD算法从项目中分离（使用可选的cargo功能）。
 - en: Our beautiful new SIMD code depends on Rust nightly which can and does change
     nightly. Requiring users to depend on Rust nightly would be cruel. (Also, getting
     complaints when things break would be annoying.) The solution is to hide the SIMD
     code behind a cargo feature.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们美丽的新SIMD代码依赖于Rust夜间版本，它会发生变化。要求用户依赖Rust夜间版本是不合理的。（另外，当事情出错时收到抱怨也会很烦人。）解决方案是将SIMD代码隐藏在cargo功能之后。
 - en: Feature, Feature, Feature — In the context of working with SIMD and Rust, the
     word “feature” is used three different ways. First, “CPU/target features” — these
     describe a CPU’s capabilities, including which SIMD extensions it supports. See
@@ -396,82 +586,128 @@
     these let any Rust crate or library offer/limit access to part of their capabilities.
     You see these in your `*Cargo.toml*` when you, for example, add a dependency to
     `*itertools/use_std*`.
+  id: totrans-89
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 功能、功能、功能——在处理SIMD和Rust的上下文中，“功能”一词有三种不同的含义。首先，“CPU/target features”——这些描述了CPU的能力，包括它支持的SIMD扩展。见`[*target-feature*](https://doc.rust-lang.org/std/arch/index.html)`
+    [和](https://doc.rust-lang.org/std/arch/index.html) `[*is_x86_feature_detected!*](https://doc.rust-lang.org/std/arch/index.html)`。第二，“nightly
+    feature gates”——Rust通过[功能开关](https://prev.rust-lang.org/en-US/faq.html#what-are-feature-gates)控制Rust夜间版本中新语言功能的可见性。例如，`[*#![feature(portable_simd)]*](https://github.com/rust-lang/portable-simd)`。第三，“[cargo
+    features](https://doc.rust-lang.org/cargo/reference/features.html)”——这些允许任何Rust
+    crate或库提供/限制其部分功能的访问。你在`*Cargo.toml*`中看到这些，例如，当你添加对`*itertools/use_std*`的依赖时。
 - en: 'Here are the steps that the `range-set-blaze` crate takes to make the nightly-dependent
     SIMD code optional:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是`range-set-blaze` crate采取的步骤，以使夜间依赖的SIMD代码可选：
 - en: 'In `Cargo.toml`, define a cargo feature related to the SIMD code:'
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在`Cargo.toml`中，定义一个与SIMD代码相关的cargo功能：
 - en: '[PRE4]'
+  id: totrans-92
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'At the top `lib.rs` file, make the nightly `portable_simd` feature gate, depend
     on the `from_slice`, cargo feature:'
+  id: totrans-93
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在顶部的`lib.rs`文件中，设置夜间`portable_simd`功能开关，依赖于`from_slice`的cargo功能：
 - en: '[PRE5]'
+  id: totrans-94
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Use the conditional compilation attribute, for example, `#[cfg(feature = “from_slice”)]`,
     to include the SIMD code selectively. This includes tests.
+  id: totrans-95
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用条件编译属性，例如`#[cfg(feature = “from_slice”)]`，来选择性地包含SIMD代码。这包括测试。
 - en: '[PRE6]bash'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '[PRE6]bash'
 - en: ///  cargo add range-set-blaze --features "from_slice"
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: /// cargo add range-set-blaze --features "from_slice"
 - en: /// [PRE7]
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: /// [PRE7]
 - en: As shown in the docs above, add warnings and cautions to the documentation.
+  id: totrans-99
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如上文档所示，向文档中添加警告和注意事项。
 - en: Use `--features from_slice` to check or test your SIMD code.
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用`--features from_slice`来检查或测试你的SIMD代码。
 - en: '[PRE8]'
+  id: totrans-101
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Use `--all-features` to run all tests, generate all documentation, and publish
     all cargo features:'
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用`--all-features`运行所有测试，生成所有文档，并发布所有cargo功能：
 - en: '[PRE9]'
+  id: totrans-103
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Conclusion
+  id: totrans-104
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'So, there you have it: nine rules for adding SIMD operations to your Rust code.
     The ease of this process reflects the `core::simd` library’s excellent design.
     Should you always use SIMD where applicable? Eventually, yes, when the library
     moves from Rust nightly to stable. For now, use SIMD where its performance benefits
     are crucial, or make its use optional.'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，这就是了：向 Rust 代码中添加 SIMD 操作的九条规则。这个过程的简便性反映了`core::simd`库的卓越设计。你应该在适用的地方总是使用
+    SIMD 吗？最终，应该的，当库从 Rust nightly 版本转到稳定版时。目前，在 SIMD 的性能优势至关重要的地方使用它，或者让它的使用成为可选。
 - en: Ideas for improving the SIMD experience in Rust? The quality of `core::simd`
     is already high; the main need is to stabilize it.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 有关提升 Rust 中 SIMD 体验的想法？`core::simd` 的质量已经很高，主要需要的是将其稳定化。
 - en: Thank you for joining me for this journey into SIMD programming. I hope that
     if you have a SIMD-appropriate problem, these steps will help you accelerate it.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢你和我一起探讨 SIMD 编程。我希望如果你有一个适合 SIMD 的问题，这些步骤能帮助你加速处理。
 - en: '*Please* [*follow Carl on Medium*](https://medium.com/@carlmkadie)*. I write
     on scientific programming in Rust and Python, machine learning, and statistics.
     I tend to write about one article per month.*'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请* [*关注 Carl 的 Medium 文章*](https://medium.com/@carlmkadie)*。我在 Rust 和 Python
+    的科学编程、机器学习以及统计学方面写作。我倾向于每月撰写一篇文章。*'
