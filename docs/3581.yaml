@@ -1,13 +1,16 @@
 - en: Programming Apple GPUs through Go and Metal Shading Language
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04](https://towardsdatascience.com/programming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba?source=collection_archive---------2-----------------------#2023-12-04)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Investigating Go, Cgo, Metal Shading Language, Metal Performance Shaders, and
     benchmarking different approaches to matrix multiplication
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -15,24 +18,30 @@
     Cvet](../Images/93545a0c873515a599ba094ad51ee915.png)](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)[](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)
     [Mike Cvet](https://mikecvet.medium.com/?source=post_page-----a0e7a60a3dba--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2Fbc23035f3073&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=post_page-bc23035f3073----a0e7a60a3dba---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----a0e7a60a3dba--------------------------------)
     ·12 min read·Dec 4, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&user=Mike+Cvet&userId=bc23035f3073&source=-----a0e7a60a3dba---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fa0e7a60a3dba&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fprogramming-apple-gpus-through-go-and-metal-shading-language-a0e7a60a3dba&source=-----a0e7a60a3dba---------------------bookmark_footer-----------)![](../Images/859d70c23112109e0b37aa4562897206.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Etienne Martin](https://unsplash.com/@etiennemartin?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
     on [Unsplash](https://unsplash.com/photos/a-close-up-of-a-metal-diamond-plate-v6uiP2MD6vs?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Below I’ll describe the process of using [cgo](https://pkg.go.dev/cmd/cgo) to
@@ -42,65 +51,100 @@
     Shading Language](https://developer.apple.com/documentation/metal), and finally
     benchmarking all of that against hand-written and [OpenBLAS](https://www.openblas.net)
     Go-based matrix multiplication operations. This was written to run on my M2 MacBook.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面我将描述如何使用 [cgo](https://pkg.go.dev/cmd/cgo) 在 Go 和原生 C 之间进行接口，如何将其用于与 Apple
+    的 [Metal Performance Shaders](https://developer.apple.com/documentation/metalperformanceshaders)
+    框架的 Objective-C 绑定进行接口，如何与用 [Metal 着色语言](https://developer.apple.com/documentation/metal)
+    编写的 *自定义* GPU 代码（着色器）进行接口，最后将所有这些与手写的和 [OpenBLAS](https://www.openblas.net) 的基于
+    Go 的矩阵乘法操作进行基准测试。这是为我的 M2 MacBook 编写的。
 - en: 'The layout of the source, [available here on GitHub](https://github.com/mikecvet/go-mm),
     looks like this:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 源代码的布局，[在 GitHub 上可用](https://github.com/mikecvet/go-mm)，如下所示：
 - en: '![](../Images/fce8e5410b9c2d3d5dd57587c6a14875.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fce8e5410b9c2d3d5dd57587c6a14875.png)'
 - en: High-level source code, library and device layout
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 高级源代码、库和设备布局
 - en: That’s a lot, so I’ll break it down here into these sections, or feel free to
     just jump [right to the benchmarks](#4aba).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这量很大，所以我将其分解为这些部分，或者可以直接跳到 [基准测试](#4aba)。
 - en: '[GPUs and Floating-Point Parallelism](#cad4)'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[GPU 和浮点并行性](#cad4)'
 - en: '[Metal GPU Basics](#e19f)'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Metal GPU 基础](#e19f)'
 - en: '[Metal Shading Language](#1a7c)'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Metal 着色语言](#1a7c)'
 - en: '[Objective-C Bindings](#eb32)'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Objective-C 绑定](#eb32)'
 - en: '[Metal Performance Shaders Framework](#890a)'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Metal Performance Shaders 框架](#890a)'
 - en: '[Go and cgo](#7de2)'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Go 和 cgo](#7de2)'
 - en: '[Go Implementation Baselines and OpenBLAS](#8aa1)'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Go 实现基线和 OpenBLAS](#8aa1)'
 - en: '[Results](#4aba)'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[结果](#4aba)'
 - en: GPUs and Floating-Point Parallelism
+  id: totrans-22
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: GPU 和浮点并行性
 - en: I assume most people at this point are intuitively familiar with the concept
     that GPUs are incredibly powerful at certain kinds of computational tasks; especially
     some which support machine learning. It wasn’t until I started playing around
     with Metal that I understood first-hand how *much* more powerful they can be than
     CPUs.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我假设大多数人此时直观上已经熟悉 GPU 在某些计算任务中的强大性能，尤其是一些支持机器学习的任务。直到我开始尝试 Metal，我才亲身理解它们比 CPU
+    *强大* 多少。
 - en: GPUs by design are extremely efficient at massively parallel floating-point
     operations which demand high memory bandwidth. My MacBook M2 has 8 CPU cores and
     8 GPU cores, but for comparison, the [Nvidia RTX 4090](https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/)
@@ -109,15 +153,24 @@
     GPUs usually support [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)
     processing, allowing them to execute the same instruction simultaneously across
     multiple data points.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: GPU 设计上极其高效于大规模并行浮点运算，这要求高内存带宽。我的 MacBook M2 有 8 个 CPU 核心和 8 个 GPU 核心，但为了对比，[Nvidia
+    RTX 4090](https://www.nvidia.com/en-us/geforce/graphics-cards/40-series/rtx-4090/)
+    拥有 *16384 核心*，而 [H100](https://www.forbes.com/sites/janakirammsv/2022/03/27/10-interesting-facts-about-nvidia-hopper-h100-gpu/)
+    拥有 *16896* CUDA 核心及数百个额外的专用张量核心。GPU 通常支持 [SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)
+    处理，使其能够在多个数据点上同时执行相同的指令。
 - en: Outside of graphics, matrix multiplication and linear algebraic tasks in general
     benefit from this concurrency thanks to their highly parallelizable algorithms.
     This in turns supports core machine learning workloads like training and inference
     [[1](https://betterprogramming.pub/word2vec-embeddings-from-the-ground-up-for-the-ml-adjacent-8d8c484e7cb5)]
     [[2](https://betterprogramming.pub/convolutional-neural-networks-from-the-ground-up-for-the-ml-adjacent-35d530ab26f3)].
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了图形处理外，矩阵乘法和线性代数任务一般都受益于这种并发，得益于其高度可并行的算法。这反过来支持了核心机器学习工作负载，如训练和推断 [[1](https://betterprogramming.pub/word2vec-embeddings-from-the-ground-up-for-the-ml-adjacent-8d8c484e7cb5)]
+    [[2](https://betterprogramming.pub/convolutional-neural-networks-from-the-ground-up-for-the-ml-adjacent-35d530ab26f3)]。
 - en: '[CUDA](https://developer.nvidia.com/about-cuda#:~:text=Since%20its%20introduction%20in%202006,workstations%2C%20compute%20clusters%20and%20supercomputers)
     is probably the most well-known GPU programming platform, which specific to Nvidia
     hardware. There are also mathematical frameworks available for [OpenGL](https://glm.g-truc.net/0.9.8/index.html).
@@ -125,49 +178,75 @@
     and reasonably transparently with GPU hardware. [This](https://explosion.ai/blog/metal-performance-shaders)
     was an interesting writeup about the performance improvements of supporting Metal-based
     GPU frameworks into the [spaCy NLP library](https://spacy.io).'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '[CUDA](https://developer.nvidia.com/about-cuda#:~:text=Since%20its%20introduction%20in%202006,workstations%2C%20compute%20clusters%20and%20supercomputers)
+    可能是最著名的 GPU 编程平台，专门针对 Nvidia 硬件。也有数学框架可用于 [OpenGL](https://glm.g-truc.net/0.9.8/index.html)。像
+    TensorFlow 和 PyTorch 这样的框架可以与 GPU 硬件 [轻松集成](https://www.tensorflow.org/guide/gpu)，且透明度相当高。[这篇文章](https://explosion.ai/blog/metal-performance-shaders)
+    对将支持 Metal 的 GPU 框架集成到 [spaCy NLP 库](https://spacy.io) 中的性能提升做了有趣的分析。'
 - en: Metal GPU Basics
+  id: totrans-27
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Metal GPU 基础知识
 - en: 'Programming direct GPU computation is not as simple as writing code for on-device
     CPUs. When working with Apple’s Metal framework, a rough series of operations
     for executing code on the GPU looks like:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 直接编程 GPU 计算并不像编写设备 CPU 代码那样简单。当使用 Apple 的 Metal 框架时，执行 GPU 上代码的大致操作步骤如下：
 - en: Find an appropriate GPU device
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 寻找适当的 GPU 设备
 - en: Create a queue for executing commands (ie the [MTLCommandQueue](https://developer.apple.com/documentation/metal/mtlcommandqueue))
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 创建一个用于执行命令的队列（即 [MTLCommandQueue](https://developer.apple.com/documentation/metal/mtlcommandqueue)）
 - en: Wrap pointers to data arrays in a structured buffer; if data is executable code,
     then a [pipeline state](https://developer.apple.com/documentation/metal/mtlcomputepipelinestate),
     otherwise a [regular buffer](https://developer.apple.com/documentation/metal/mtlbuffer).
     Apple GPUs use a [unified memory space](https://developer.apple.com/documentation/metal/resource_fundamentals/choosing_a_resource_storage_mode_for_apple_gpus#),
     meaning we don’t need to actually *copy* any data into GPU-specific physical memory
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将数据数组的指针封装到结构化缓冲区中；如果数据是可执行代码，则使用 [管道状态](https://developer.apple.com/documentation/metal/mtlcomputepipelinestate)，否则使用
+    [常规缓冲区](https://developer.apple.com/documentation/metal/mtlbuffer)。Apple 的 GPU
+    使用 [统一内存空间](https://developer.apple.com/documentation/metal/resource_fundamentals/choosing_a_resource_storage_mode_for_apple_gpus#)，这意味着我们不需要实际
+    *复制* 任何数据到特定于 GPU 的物理内存中。
 - en: '[Commit](https://github.com/mikecvet/go-mm/blob/main/metal.m#L224) the command
     buffer for execution, and either wait for results or set an event handler on completion'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[提交](https://github.com/mikecvet/go-mm/blob/main/metal.m#L224)命令缓冲区以进行执行，并等待结果或在完成时设置事件处理程序'
 - en: Extract bytes out of a response buffer and format locally with CPU program code
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从响应缓冲区中提取字节，并使用 CPU 程序代码在本地格式化
 - en: Raw GPU programming uses an async model.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始 GPU 编程使用异步模型。
 - en: Metal Shading Language
+  id: totrans-35
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Metal 着色语言
 - en: '[Metal Shading Language](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
     is a derivative of [C++14](https://en.cppreference.com/w/cpp/14) which can be
     used to compose custom logic (called “shaders”) to run on Metal-compatible GPUs.
@@ -175,327 +254,494 @@
     ([discussed later](#890a)) for equivalent functionality when possible — it tends
     to be highly-optimized for common classes of GPU-aligned use cases (like matrix
     multiplication or [neural networks](https://developer.apple.com/documentation/metalperformanceshadersgraph/training_a_neural_network_using_mps_graph)).'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Metal 着色语言](https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf)
+    是 [C++14](https://en.cppreference.com/w/cpp/14) 的一种衍生语言，可用于编写自定义逻辑（称为“着色器”），以在兼容
+    Metal 的 GPU 上运行。一般来说，如果可能的话，使用 [MPS 框架](https://developer.apple.com/documentation/metalperformanceshaders)（[稍后讨论](#890a)）来实现等效功能可能更好——它通常针对常见的
+    GPU 对齐用例（如矩阵乘法或 [神经网络](https://developer.apple.com/documentation/metalperformanceshadersgraph/training_a_neural_network_using_mps_graph)）进行了高度优化。'
 - en: Debugging of MSL code is pretty difficult. You can use the [Shader Debugger](https://developer.apple.com/documentation/xcode/debugging-the-shaders-within-a-draw-command-or-compute-dispatch/)
     through Xcode, but if you want to inspect or print intermediate values without
     Xcode, you need to write data to a response debug buffer, and parse the primitives
     in your C++ or Objective-C wrapper.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: MSL代码的调试相当困难。你可以通过Xcode使用[着色器调试器](https://developer.apple.com/documentation/xcode/debugging-the-shaders-within-a-draw-command-or-compute-dispatch/)，但如果你想在没有Xcode的情况下检查或打印中间值，你需要将数据写入响应调试缓冲区，并在你的C++或Objective-C包装器中解析这些原语。
 - en: MSL functions are exposed as public interfaces through the `kernel` designation.
     The Metal framework passes IDs for the current calling thread context, or thread
     group, which can be used to ensure non-overlapping writes. Threads can be represented
     by a three-dimensional ID system; the dimensions of this thread space are configured
     in the wrapper code.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: MSL函数通过`kernel`标识公开为公共接口。Metal框架传递当前调用线程上下文或线程组的ID，这些ID可以用来确保非重叠写入。线程可以通过三维ID系统表示；这个线程空间的维度在包装器代码中配置。
 - en: The following is an [implementation of the naive matrix multiplication](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L9)
     algorithm, combined with some loop unrolling which surprisingly improved its performance
     significantly. This is just for comparison purposes; normally the `MPSMatrixMultiplication`
     functionality from MPS would be more suitable.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是[原始矩阵乘法](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L9)算法的实现，结合了一些循环展开，令人惊讶地显著提高了性能。这只是为了比较；通常，MPS的`MPSMatrixMultiplication`功能会更合适。
 - en: '[PRE0]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'I implemented a [naive-transpose function as well](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L42)
     in MSL for comparison. Given a transposed matrix, this is a trivial adjustment
     to the logic above, whose inner loop runs over B’s rows rather than down its columns:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还在MSL中实现了一个[原始转置函数](https://github.com/mikecvet/go-mm/blob/main/mm.metal#L42)以供比较。给定一个转置矩阵，这是对上述逻辑的一个微不足道的调整，其内部循环遍历B的行而不是列：
 - en: '[PRE1]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: I [discussed this approach in an earlier blog post](https://betterprogramming.pub/better-than-cubic-complexity-for-matrix-multiplication-in-rust-cf8dfb6299f6#740c)
     as a pretty easy way to improve the scalar performance of the naive algorithm,
     at least, on CPUs. More on that later.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在[早期的博客文章中讨论了这种方法](https://betterprogramming.pub/better-than-cubic-complexity-for-matrix-multiplication-in-rust-cf8dfb6299f6#740c)，这是一种相当简单的方法，可以提高原始算法的标量性能，至少在CPU上是如此。更多内容稍后会讨论。
 - en: Objective-C Bindings
+  id: totrans-44
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Objective-C绑定
 - en: The Metal framework provides the ability to [compile a library from Metal source
     code](https://developer.apple.com/documentation/metal/mtldevice/1433431-newlibrarywithsource).
     Once the file contents are loaded, the binding code looks for the kernel functions
     [by name](https://github.com/mikecvet/go-mm/blob/main/metal.m#L51), and initializes
     a new `MTLComputePipelineState` representing the compiled function code.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: Metal框架提供了[从Metal源代码编译库](https://developer.apple.com/documentation/metal/mtldevice/1433431-newlibrarywithsource)的能力。一旦文件内容被加载，绑定代码会按[名称](https://github.com/mikecvet/go-mm/blob/main/metal.m#L51)查找内核函数，并初始化一个新的`MTLComputePipelineState`，表示编译后的函数代码。
 - en: '[PRE2]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: To actually call the native Metal code, the thread configuration [needs to be
     set](https://github.com/mikecvet/go-mm/blob/main/metal.m#L200), and the GPU buffers
     initialized.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了实际调用原生Metal代码，线程配置[需要设置](https://github.com/mikecvet/go-mm/blob/main/metal.m#L200)，并初始化GPU缓冲区。
 - en: '[PRE3]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'This is a lot, so I’ll illustrate the relationships here:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 这内容比较多，我在这里阐明一下关系：
 - en: '![](../Images/b233737dc027f8a96e6a7e61a0e7d67b.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b233737dc027f8a96e6a7e61a0e7d67b.png)'
 - en: High-level layout of concepts, types and hardware within the Objective-C wrapper
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: Objective-C包装器中的概念、类型和硬件的高级布局
 - en: Metal Performance Shaders Framework
+  id: totrans-52
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Metal性能着色器框架
 - en: The [MPS Framework](https://developer.apple.com/documentation/metalperformanceshaders)
     is a high-performance library provided by Apple for use with its [Metal family
     of GPUs](https://support.apple.com/en-us/102894). It offers functionality from
     image tasks to [neural network support](https://developer.apple.com/documentation/metalperformanceshaders/training_a_neural_network_with_metal_performance_shaders).
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '[MPS框架](https://developer.apple.com/documentation/metalperformanceshaders)是苹果公司提供的高性能库，用于其[Metal
+    GPU系列](https://support.apple.com/en-us/102894)。它提供从图像任务到[神经网络支持](https://developer.apple.com/documentation/metalperformanceshaders/training_a_neural_network_with_metal_performance_shaders)的功能。'
 - en: APIs are primarily available through Swift or Objective-C, though there is also
     a [Metal-cpp](https://developer.apple.com/metal/cpp/) library available for use.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: API 主要通过 Swift 或 Objective-C 提供，尽管也有一个 [Metal-cpp](https://developer.apple.com/metal/cpp/)
+    库可供使用。
 - en: The [MPSMatrixMultiplication API](https://developer.apple.com/documentation/metalperformanceshaders/mpsmatrixmultiplication)
     is [reasonably easy to use](https://github.com/mikecvet/go-mm/blob/main/metal.m#L128).
     As with the MSL code above, the MPS commands still need to be encoded into the
     `MTLCommandBuffer` and asynchronously committed for execution.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '[MPSMatrixMultiplication API](https://developer.apple.com/documentation/metalperformanceshaders/mpsmatrixmultiplication)
+    [相对容易使用](https://github.com/mikecvet/go-mm/blob/main/metal.m#L128)。与上述 MSL 代码一样，MPS
+    命令仍需编码到 `MTLCommandBuffer` 中，并异步提交执行。'
 - en: '[PRE4]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Go and cgo
+  id: totrans-57
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Go 和 cgo
 - en: I don’t particularly like working with Objective-C, and the point of this program
     is to run code on the GPU originating from a Go program.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我不特别喜欢使用 Objective-C，这个程序的重点是运行源自 Go 程序的 GPU 代码。
 - en: '[Cgo](https://pkg.go.dev/cmd/cgo) is a Go language feature which allows the
     Go compiler to understand compiler directives contained within comments related
     to native C code. It supports a version of [foreign function interface](https://en.wikipedia.org/wiki/Foreign_function_interface).'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Cgo](https://pkg.go.dev/cmd/cgo) 是一种 Go 语言功能，允许 Go 编译器理解与本地 C 代码相关的注释中的编译指令。它支持一种
+    [外部函数接口](https://en.wikipedia.org/wiki/Foreign_function_interface)。'
 - en: 'Directive configuration is a little *brittle*, but any comments immediately
     preceding the line `import “C”` (called “the preamble”) will be interpreted as
     header imports or compilation arguments when compiling referenced C code. For
     example:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 指令配置有点*脆弱*，但任何紧接着 `import “C”` 行的注释（称为“前言”）在编译引用的 C 代码时将被解释为头文件导入或编译参数。例如：
 - en: '[PRE5]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Passes linking flags to the linker via command-line `LDFLAGS`
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过命令行 `LDFLAGS` 传递链接标志给链接器
 - en: Compiles C code with the standard header `stdlib.h`
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用标准头文件 `stdlib.h` 编译 C 代码
 - en: Compiles C code with the local project header `metal.h`
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用本地项目头文件 `metal.h` 编译 C 代码
 - en: It took some trial-and-error to get the right set of linker flags to work on
     MacOS.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要一些反复试验才能找到适用于 MacOS 的正确链接器标志。
 - en: '`Foundation`: base libraries'
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Foundation`：基础库'
 - en: '`CoreGraphics`: necessary on MacOS to interface with the GPU'
+  id: totrans-67
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`CoreGraphics`：在 MacOS 上与 GPU 接口时必需'
 - en: '`Metal`: libraries and language support for Metal, including MSL'
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Metal`：用于 Metal 的库和语言支持，包括 MSL'
 - en: '`MetalPerformanceShaders`: libraries for MPS discussed above'
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`MetalPerformanceShaders`：上述讨论的 MPS 库'
 - en: 'It turns out that Apple bundles a BLAS implementation in its `Accelerate` framework,
     so in addition to installing OpenBLAS through `brew`, the location of the library
     needs to be provided when linking as well:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实证明，Apple 在其 `Accelerate` 框架中捆绑了一个 BLAS 实现，因此除了通过 `brew` 安装 OpenBLAS 外，还需要在链接时提供库的位置：
 - en: '`-L/opt/homebrew/opt/openblas/lib -lopenblas`'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '`-L/opt/homebrew/opt/openblas/lib -lopenblas`'
 - en: The `go:embed` directive allows Go programs to include files at compile time,
     which is [useful in this case](https://github.com/mikecvet/go-mm/blob/main/main.go#L18)
     when we want to pass the contents of the MSL source file (`mm.metal`) to the Metal
     framework, as discussed above, for compilation.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '`go:embed` 指令允许 Go 程序在编译时包含文件，这在我们希望将 MSL 源文件（`mm.metal`）的内容传递给 Metal 框架时是
+    [非常有用的](https://github.com/mikecvet/go-mm/blob/main/main.go#L18)，如上所述，用于编译。'
 - en: '[PRE6]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The references to `C` above are interfacing with C APIs through cgo, for example:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述对 `C` 的引用是通过 cgo 与 C API 接口，例如：
 - en: '[PRE7]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Note that this means that `C` is a reserved keyword and cannot be used as a
     variable name.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，这意味着 `C` 是一个保留关键字，不能用作变量名。
 - en: Go Implementation Baselines and OpenBLAS
+  id: totrans-77
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Go 实现基线和 OpenBLAS
 - en: I wanted to compare the performance of GPU-based matrix multiplication to both
     higher-level implementations, such as the [Gonum library](https://www.gonum.org),
     as well as intuitive, hand-written (and comparatively inefficient) implementations.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想将基于 GPU 的矩阵乘法性能与更高级的实现（如 [Gonum library](https://www.gonum.org)）以及直观的手写（且相对低效）实现进行比较。
 - en: 'I implemented a couple different algorithms in Go, including this parallel
     transpose naive algorithm, which naively divides the multiplication work across
     N goroutines:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在 Go 中实现了几种不同的算法，包括这个并行转置的简单算法，它将乘法工作天真地划分到 N 个 goroutine 中：
 - en: '[PRE8]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '`Gonum BLAS` is a pure Go library which [implements BLAS interfaces](https://pkg.go.dev/gonum.org/v1/gonum/blas).
     However, it can also be configured to divert algebraic operations to a native-code
     BLAS implementation like [OpenBLAS](https://www.openblas.net) through [netlib](https://github.com/gonum/netlib).'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Gonum BLAS`是一个纯Go库，它[实现了BLAS接口](https://pkg.go.dev/gonum.org/v1/gonum/blas)。然而，它也可以配置为将代数运算转发到本地代码BLAS实现，例如通过[netlib](https://github.com/gonum/netlib)的[OpenBLAS](https://www.openblas.net)。'
 - en: 'I showed above how `cgo` can be configured to properly link to an OpenBLAS
     installation on MacOS. Within the application code, the preferred BLAS implementation
     can be set directly. From the benchmark code:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 我上面展示了如何配置`cgo`以正确链接到MacOS上的OpenBLAS安装。在应用程序代码中，可以直接设置首选的BLAS实现。从基准测试代码：
 - en: '[PRE9]'
+  id: totrans-83
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Results
+  id: totrans-84
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结果
 - en: 'My [benchmarking code](https://github.com/mikecvet/go-mm/blob/main/benchmark.go)
     runs a few trials each of the following matrix multiplication implementations,
     and reports the average time each took to multiply two square matrices of gradually
     increasing dimensionality:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的[基准测试代码](https://github.com/mikecvet/go-mm/blob/main/benchmark.go)运行了几次以下矩阵乘法实现的试验，并报告了每次乘法两个逐渐增大的方阵所花费的平均时间：
 - en: '[PRE10]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Benchmarking output looks like this (floats are ms):'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 基准测试输出如下（浮点数为毫秒）：
 - en: '[PRE11]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: '[Some quick plotting](https://github.com/mikecvet/go-mm/blob/main/plot.py)
     through `matplotlib`'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '[一些快速绘图](https://github.com/mikecvet/go-mm/blob/main/plot.py)通过`matplotlib`'
 - en: '![](../Images/b8774a41fe0cc0304901089327c9e37c.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b8774a41fe0cc0304901089327c9e37c.png)'
 - en: Performance plot of all approaches
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有方法的性能图
 - en: As one might expect, my hand-written Go implementations are comparatively out
     of control. In fact, the other approaches are so fast, you can’t even tell them
     apart in the graph. Here’s the sliding histogram of GPU usage during this run
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如预期，我手写的Go实现相对失控。实际上，其他方法速度如此之快，以至于在图中无法区分它们。以下是这次运行的GPU使用滑动直方图
 - en: '![](../Images/106a8c798394b1afc407f5e27746208c.png)'
+  id: totrans-93
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/106a8c798394b1afc407f5e27746208c.png)'
 - en: Activity Monitor GPU history visualization — all approaches (Y-axis is usage
     percentage)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 活动监视器GPU历史可视化 — 所有方法（Y轴为使用百分比）
 - en: 'You can see the GPU isn’t particularly busy, because time is mostly being spent
     on CPU operations. Here’s another run, excluding the slowest three multiplication
     techniques:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以看到GPU并不是特别忙碌，因为时间主要花在了CPU操作上。以下是另一轮测试，排除了最慢的三种乘法技术：
 - en: '![](../Images/6e3a2d0a1e5df20c4f6d9843234287ac.png)'
+  id: totrans-96
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6e3a2d0a1e5df20c4f6d9843234287ac.png)'
 - en: Performance plot of approaches excluding my hand-written Go variants
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 排除我手写的Go变体的各种方法性能图
 - en: 'Around 16M elements (4k x 4k), `Gonum` begins to degrade. You can see clearly
     here that the GPU-based and `OpenBLAS` operations outperform the pure Go implementations.
     Looking just at the GPU-based approaches:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 大约16M元素（4k x 4k），`Gonum`开始下降。可以清楚地看到，基于GPU的和`OpenBLAS`操作优于纯Go实现。仅看基于GPU的方法：
 - en: '![](../Images/37744ae5c88393237a3dc3ecf77fec1d.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/37744ae5c88393237a3dc3ecf77fec1d.png)'
 - en: Performance plot of matrix multiplication operations which just run on the GPU
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅在GPU上运行的矩阵乘法操作性能图
 - en: 'A couple interesting notes here:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有几个有趣的笔记：
 - en: The Metal Performance Shaders library is amazingly fast
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Metal Performance Shaders库的速度惊人
 - en: There’s no real performance difference between the naive and transposed naive
     approaches
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 天真的方法和转置天真的方法之间没有实际性能差异
 - en: 'For the second point: this is unlike the performance characteristics of the
     Go-based pair of implementations above. It turns out that favorable cache access
     patterns for CPUs do not work the same way for GPUs and the way their SIMD groups
     ([or warps](https://developer.apple.com/documentation/metal/compute_passes/creating_threads_and_threadgroups))
     access memory. See GPU utilization here for comparison:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于第二点：这与上述Go基础的实现对比性能特性不同。结果表明，对CPU有利的缓存访问模式在GPU上效果不同，尤其是它们的SIMD组（[或warps](https://developer.apple.com/documentation/metal/compute_passes/creating_threads_and_threadgroups)）访问内存的方式。见GPU利用率以便比较：
 - en: '![](../Images/8b1b8a86d76081114882d01182891873.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8b1b8a86d76081114882d01182891873.png)'
 - en: Activity Monitor GPU history visualization — GPU operations only
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 活动监视器GPU历史可视化 — 仅GPU操作
 - en: 'Now looking at just `OpenBLAS` and `MPS` alone — the two fastest approaches:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在仅查看`OpenBLAS`和`MPS` — 这两种最快的方法：
 - en: '![](../Images/9ea4490d60e353f04df49b3a5fd25d06.png)'
+  id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ea4490d60e353f04df49b3a5fd25d06.png)'
 - en: Performance plot of OpenBLAS versus Apple’s Metal Performance Shaders MPSMatrixMultiplication
     API
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: OpenBLAS与Apple的Metal Performance Shaders MPSMatrixMultiplication API性能对比图
 - en: Around 35M elements, the `OpenBLAS` implementation begins to degrade, while
     `MPS` is holding steady. The difference here is pretty remarkable, with the latter
     completing the same 35M-element matrix multiplication operations in < 15% of the
     time. It’s reasonable to assume that difference would continue to grow with matrix
     cardinality.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 在大约35M元素时，`OpenBLAS` 实现开始下降，而 `MPS` 则保持稳定。这里的差异相当显著，后者完成相同的35M元素矩阵乘法操作的时间少于15%。可以合理地假设，随着矩阵规模的增长，这种差异会继续扩大。
 - en: 'Now of course, there are probably algorithmic differences between these two
     approaches, so this is not a fair CPU-to-GPU comparison. If I plot the performance
     differences between my two hand-coded implementations, it looks like this:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，这两种方法之间可能存在算法差异，因此这不是一个公平的CPU与GPU比较。如果我绘制我两个手工编码实现的性能差异图，它看起来是这样的：
 - en: '![](../Images/ea1d29dc0e64b1077fd68ad3517ceba8.png)'
+  id: totrans-112
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ea1d29dc0e64b1077fd68ad3517ceba8.png)'
 - en: Performance ratio plot of my MSL-written matrix multiplication code against
     my Go-written code
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的MSL编写的矩阵乘法代码与Go编写的代码的性能比率图
 - en: Which is saying that the naive MSL-based implementation completes the multiplication
     of 5M *elements in just 1% of the time* of my Go implementation, and that ratio
     seems to be improving in the GPU’s favor over time.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着，基于MSL的简单实现完成5M *元素的乘法操作仅需我Go实现的1%时间*，而这种比率似乎随着时间的推移对GPU更有利。
