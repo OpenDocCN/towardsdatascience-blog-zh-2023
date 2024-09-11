@@ -68,6 +68,7 @@
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们以一个电子商务购物应用程序为例。系统中有一个逻辑，会在供应商收到 100 个负面客户评分后将其列入黑名单。现在，可能会出现负面评分是由于应用内体验或配送/退货体验引起的情况。因此，为了保持公平，供应商可以选择每六个月对黑名单提出异议。为了方便本文讨论，我们假设审批/拒绝会记录在离线电子表格中。
 - en: All new appeals to retract black listings created in a week are exported to
     a spreadsheet and sent out to the team for review. The team reviews the data and
     approves or rejects it. They then send the data back to be updated in the system.
@@ -75,6 +76,7 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有新的撤销黑名单申请在一周内会被导出到一个电子表格，并发送给团队进行审查。团队会审查数据并批准或拒绝这些申请。然后，他们会将数据返回系统进行更新。这是每周进行的工作。
 - en: Now, this manual intervention data needs to be added to the system. There are
     various ways to do it. The individual users can upload their data to an s3 bucket
     which can then be scheduled to be read into the database. Or we can use quip so
@@ -83,12 +85,15 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，这些手动干预的数据需要被添加到系统中。可以有多种方法来实现。用户可以将他们的数据上传到一个 s3 桶中，然后可以安排将其读取到数据库中。或者，我们可以使用
+    quip，这样所有个人可以实时更新同一个电子表格，然后可以按照固定的节奏将其上传到数据库中。
 - en: Quip is a collaborative software that lets multiple people edit documents, spreadsheets
     on-the go allowing them freedom to use any end client — desktop/mobile.
   id: totrans-12
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Quip 是一款协作软件，允许多人实时编辑文档和电子表格，用户可以自由选择任何终端客户端——桌面/移动设备。
 - en: In this article, I am going to show you how I automated a quip spreadsheet to
     read the user-entered data, upload it to a database table, and then write back
     to the same spreadsheet with new data. I am going to use Redshift as the database
@@ -96,6 +101,8 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我将展示如何将一个 quip 电子表格自动化，以读取用户输入的数据，上传到数据库表中，然后将新的数据写回到同一个电子表格。我将使用 Redshift
+    作为这次练习的数据库。
 - en: There are two separate parts this task can be split into. First, read the data
     from the Quip spreadsheet and store it in a table in the database. Second, we
     would be doing some data manipulation or checks on this and joining with pre-existing
@@ -106,16 +113,20 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个任务可以分为两个独立的部分。首先，从 Quip 电子表格读取数据并将其存储在数据库中的表中。其次，我们将对这些数据进行一些操作或检查，并与数据库中现有的数据进行联接，然后将处理后的数据写入到已经存在的
+    quip 电子表格中。我们将分别讨论这两个情况，以便如果您只想读取或只想写入，这篇文章也能帮助您完成这项工作。让我们来看第一个部分。
 - en: Part 1 — Reading the data from Quip Spreadsheet and writing to a table in the
     database.
   id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第 1 部分 — 从 Quip 电子表格读取数据并将其写入数据库中的表。
 - en: '**Step 1: Getting access token to connect to Quip using Quip APIs.**'
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '**步骤 1: 获取访问令牌以通过 Quip API 连接到 Quip。**'
 - en: 'We need to generate an access token that provides API access to our personal
     Quip account. To generate a personal access token, visit this page: https://quip.com/dev/token.
     If you have a corporate SSO-enabled quip account, then the URL will slightly differ
@@ -123,25 +134,31 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要生成一个访问令牌，以提供对个人 Quip 账户的 API 访问权限。要生成个人访问令牌，请访问此页面：[https://quip.com/dev/token](https://quip.com/dev/token)。如果您有企业
+    SSO 启用的 Quip 账户，那么 URL 会有所不同，例如 — [https://quip-corporate.com/dev/token](https://quip-corporate.com/dev/token)
 - en: '![](../Images/278d8b150a4f1c90012c4fd343cc5082.png)'
   id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/278d8b150a4f1c90012c4fd343cc5082.png)'
 - en: Once you click on the Get Personal Access Token button above, you will get a
     token which we will use in later sections to access the quip spreadsheet using
     the APIs.
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦您点击上方的获取个人访问令牌按钮，您将获得一个令牌，我们将在后续部分使用该令牌通过 API 访问 quip 电子表格。
 - en: '**Step 2: Import the libraries**'
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '**步骤 2: 导入库**'
 - en: Let’s import the required libraries first. For this part, we are primarily going
     to be using *quipclient* and *pandas_redshift* libraries.
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们导入所需的库。在这一部分，我们主要使用 *quipclient* 和 *pandas_redshift* 库。
 - en: '[PRE0]'
   id: totrans-22
   prefs: []
@@ -151,6 +168,7 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '**步骤 3: 使用令牌 ID 连接到 Quip**'
 - en: The QuipClient API needs the base URL, thread ID, and access token to access
     any file. The base URL is the URL of the quip server you are trying to read from
     (or write to). In the case of corporate accounts, this will generally have the
@@ -160,21 +178,27 @@
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: QuipClient API 需要基本 URL、线程 ID 和访问令牌来访问任何文件。基本 URL 是你尝试读取（或写入）的 quip 服务器的 URL。在公司账户的情况下，这通常会在
+    URL 中包含公司名称。线程 ID 是 Quip 服务器上所有文件的唯一标识符。它是目标文件的基本 URL 之后的字母数字值，在这个例子中是一个电子表格。
 - en: If the URL for a file looks like — https://platform.quip-XXXXXXXXX.com/abcdefgh1234/,
     then the base URL will be — https://platform.quip-XXXXXXXXX.com and the thread_id
     will be — abcdefgh1234.
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果文件的 URL 看起来像 — https://platform.quip-XXXXXXXXX.com/abcdefgh1234/，则基本 URL 将是 — https://platform.quip-XXXXXXXXX.com，thread_id
+    将是 — abcdefgh1234。
 - en: The access token is the one we just generated in Step 1.
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 访问令牌是我们在第 1 步中刚刚生成的。
 - en: Now, using the QuipClient API, we connect to the URL using the access token
     and thread_id.
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，使用 QuipClient API，我们通过访问令牌和 thread_id 连接到 URL。
 - en: '[PRE1]'
   id: totrans-28
   prefs: []
@@ -184,6 +208,7 @@
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '**第 4 步：从 quip 中读取数据到数据框**'
 - en: The *rawdictionary* output from Step 3 above returns a list of HTML’s. Pandas
     function *read_html* will help read the HTML portion to the dataframe dfs. So,
     dfs is a list of dataframes. Each dataframe in this list contains the data from
@@ -193,6 +218,9 @@
   id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 第 3 步中的 *rawdictionary* 输出返回一个 HTML 列表。Pandas 函数 *read_html* 将帮助将 HTML 部分读取到数据框
+    dfs 中。因此，dfs 是一个数据框的列表。这个列表中的每个数据框包含来自 quip 电子表格中每个选项卡的数据。在这个例子中，我们只考虑最后一个选项卡的数据。因此，使用索引
+    -1 来获取 *raw_df* 中的最后一个数据框。
 - en: '[PRE2]'
   id: totrans-31
   prefs: []
@@ -202,11 +230,13 @@
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**第 5 步：连接到数据库以将数据写入表中**'
 - en: 'To access a Redshift instance, we need the [Redshift Endpoint URL](http://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-connect-to-cluster.html).
     For example, instances will look something like this:'
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 要访问 Redshift 实例，我们需要 [Redshift Endpoint URL](http://docs.aws.amazon.com/redshift/latest/gsg/rs-gsg-connect-to-cluster.html)。例如，实例将如下所示：
 - en: '[PRE3]'
   id: totrans-34
   prefs: []
@@ -226,6 +256,10 @@
   id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们连接到数据库，并将数据框（在第 4 步中创建）写入新表或现有表中。*pandas_to_redshift* 函数允许你将数据附加到现有表中或完全覆盖它。请注意，如果选择
+    *append = False*，那么每次执行此操作时，表将被删除并重新创建。如果你希望在覆盖数据时保留某些列的数据类型或字符长度，或者用户权限，最好在执行此操作之前先截断表。你可以通过发出直接的
+    Truncate 命令来截断表。*SQLAlchemy* 和 *psycopg2* 是更简单的选项。截断表后，你可以使用 *append = True* 执行操作。我通常对需要保留历史数据的类型
+    2 表使用 *append=True*。
 - en: '[PRE4]'
   id: totrans-36
   prefs: []
@@ -241,20 +275,24 @@
   id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 这完成了第一部分，即从 quip 电子表格中读取数据并写入 Redshift 表。现在，让我们看一下第二部分。
 - en: 'Part 2 : Writing data to an existing Quip Spreadsheet.'
   id: totrans-39
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 第 2 部分：将数据写入现有的 Quip 电子表格。
 - en: For this part, the first three steps remain the same as Part 1\. So, please
     follow steps 1, 2, and 3 from above. We will start from STEP 4 here.
   id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这一部分，前三个步骤与第 1 部分相同。所以，请遵循上述第 1、2 和 3 步。我们将从这里的第 4 步开始。
 - en: '**Step 4: Connecting to the database to read data**'
   id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '**第 4 步：连接到数据库以读取数据**'
 - en: We will use *psycopg2* here to connect to the Redshift instance and read the
     data from the Redshift table which needs to be written to Quip Spreadsheet. Here,
     I am converting the dataframe to markdown to get a clean table which is also a
@@ -262,6 +300,8 @@
   id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在这里使用 *psycopg2* 连接到 Redshift 实例，并从 Redshift 表中读取需要写入 Quip 电子表格的数据。在这里，我将数据框转换为
+    Markdown 以获得一个干净的表格，这也是 QuipClient 库的一个先决条件。
 - en: '[PRE6]'
   id: totrans-43
   prefs: []
