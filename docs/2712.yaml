@@ -72,6 +72,8 @@
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们关于 GPU 基于 PyTorch 工作负载的性能分析和优化系列文章中的第四篇。我们将在这篇文章中重点关注训练**数据输入管道**。在典型的训练应用中，主机的
+    CPU 加载、预处理和整理数据，然后将其送入 GPU 进行训练。当主机无法跟上 GPU 的速度时，输入管道中会出现瓶颈。这会导致 GPU —— 训练设置中*最昂贵*的资源——在等待来自*过度负荷*主机的数据输入时闲置。在之前的文章中（例如，[这里](/overcoming-data-preprocessing-bottlenecks-with-tensorflow-data-service-nvidia-dali-and-other-d6321917f851)），我们详细讨论了输入管道瓶颈，并回顾了应对这些瓶颈的不同方法，例如：
 - en: Choosing a training instance with a CPU to GPU compute ratio that is more suited
     to your workload (e.g., see our [previous post](/instance-selection-for-deep-learning-7463d774cff0)
     on tips for choosing the best instance type for your ML workload),
@@ -79,18 +81,22 @@
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择一个 CPU 到 GPU 计算比率更适合你的工作负载的训练实例（例如，参见我们 [之前的帖子](/instance-selection-for-deep-learning-7463d774cff0)
+    关于选择最适合你的 ML 工作负载的实例类型的提示），
 - en: Improving the workload balance between the CPU and GPU by moving some of the
     CPU pre-processing activity to the GPU, and
   id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过将一些 CPU 预处理活动转移到 GPU 来改善 CPU 和 GPU 之间的工作负载平衡，并
 - en: Offloading some of the CPU computation to auxiliary CPU-worker devices (e.g.,
     see [here](/overcoming-ml-data-preprocessing-bottlenecks-with-grpc-ca30fdc01bee)).
   id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将部分 CPU 计算任务转移到辅助 CPU 工作设备（例如，参见 [这里](/overcoming-ml-data-preprocessing-bottlenecks-with-grpc-ca30fdc01bee)）。
 - en: Of course, **the first step to addressing a performance bottleneck in the data-input
     pipeline is to identify and understand it**. In this post we will demonstrate
     how this can be done using [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
@@ -98,6 +104,9 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，**解决数据输入管道中的性能瓶颈的第一步是识别并理解它**。在这篇文章中，我们将演示如何使用 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    及其相关的 [TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    来实现这一点。
 - en: As in our previous posts, we will define a toy PyTorch model and then *iteratively*
     profile its performance, identify bottlenecks, and attempt to fix them. We will
     run our experiments on an [Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/)
@@ -107,16 +116,22 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们之前的帖子中所述，我们将定义一个玩具 PyTorch 模型，然后*迭代地*分析其性能，识别瓶颈，并尝试解决它们。我们将在一个 [Amazon EC2
+    g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/) 实例上运行我们的实验（该实例包含 NVIDIA
+    A10G GPU 和 8 个 vCPUs），并使用官方的 [AWS PyTorch 2.0 Docker 镜像](https://github.com/aws/deep-learning-containers)。请记住，我们描述的某些行为可能因
+    PyTorch 版本不同而有所变化。
 - en: Many thanks to [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/)
     for his contributions to this post.
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢 [Yitzhak Levi](https://www.linkedin.com/in/yitzhak-levi-49a217201/) 对这篇文章的贡献。
 - en: Toy Model
   id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 玩具模型
 - en: In the following blocks we introduce the toy example we will use for our demonstration.
     We start by defining a simple image classification model. The input to the model
     is a batch of *256*x*256* YUV images and the output is its associated batch of
@@ -124,6 +139,7 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的部分中，我们介绍了我们将用于演示的玩具示例。我们首先定义了一个简单的图像分类模型。模型的输入是一个*256*x*256*的 YUV 图像批次，输出是其相关的语义类别预测批次。
 - en: '[PRE0]'
   id: totrans-18
   prefs: []
