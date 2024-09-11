@@ -1,439 +1,640 @@
 - en: 5 Lessons Learned from Testing Databricks SQL Serverless + DBT
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 5个从测试Databricks SQL Serverless + DBT中获得的经验教训
 - en: 原文：[https://towardsdatascience.com/5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358?source=collection_archive---------3-----------------------#2023-10-17](https://towardsdatascience.com/5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358?source=collection_archive---------3-----------------------#2023-10-17)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358?source=collection_archive---------3-----------------------#2023-10-17](https://towardsdatascience.com/5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358?source=collection_archive---------3-----------------------#2023-10-17)
 - en: We ran a $12K experiment to test the cost and performance of Serverless warehouses
     and dbt concurrent threads, and obtained unexpected results.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 我们进行了一项$12K的实验，以测试Serverless仓库和dbt并发线程的成本和性能，并获得了意外的结果。
 - en: '[](https://medium.com/@jeff.b.chou?source=post_page-----1d85bc861358--------------------------------)[![Jeff
     Chou](../Images/4b5b7a7f880209faf1e81806a0f9dfba.png)](https://medium.com/@jeff.b.chou?source=post_page-----1d85bc861358--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1d85bc861358--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1d85bc861358--------------------------------)
     [Jeff Chou](https://medium.com/@jeff.b.chou?source=post_page-----1d85bc861358--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@jeff.b.chou?source=post_page-----1d85bc861358--------------------------------)[![Jeff
+    Chou](../Images/4b5b7a7f880209faf1e81806a0f9dfba.png)](https://medium.com/@jeff.b.chou?source=post_page-----1d85bc861358--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1d85bc861358--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1d85bc861358--------------------------------)
+    [Jeff Chou](https://medium.com/@jeff.b.chou?source=post_page-----1d85bc861358--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F124878bdd082&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358&user=Jeff+Chou&userId=124878bdd082&source=post_page-124878bdd082----1d85bc861358---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1d85bc861358--------------------------------)
     ·9 min read·Oct 17, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1d85bc861358&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358&user=Jeff+Chou&userId=124878bdd082&source=-----1d85bc861358---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F124878bdd082&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358&user=Jeff+Chou&userId=124878bdd082&source=post_page-124878bdd082----1d85bc861358---------------------post_header-----------)
+    发表在[Towards Data Science](https://towardsdatascience.com/?source=post_page-----1d85bc861358--------------------------------)
+    · 9分钟阅读 · 2023年10月17日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1d85bc861358&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358&user=Jeff+Chou&userId=124878bdd082&source=-----1d85bc861358---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1d85bc861358&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358&source=-----1d85bc861358---------------------bookmark_footer-----------)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1d85bc861358&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2F5-lessons-learned-from-testing-databricks-sql-serverless-dbt-1d85bc861358&source=-----1d85bc861358---------------------bookmark_footer-----------)'
 - en: '*By: Jeff Chou,* [*Stewart Bryson*](https://medium.com/@stewartbryson)'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*作者：Jeff Chou，* [*Stewart Bryson*](https://medium.com/@stewartbryson)'
 - en: '![](../Images/8b40b0fb1e2e43d5fab293779781e128.png)'
+  id: totrans-9
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8b40b0fb1e2e43d5fab293779781e128.png)'
 - en: Image by [Los Muertos Crew](https://www.pexels.com/@cristian-rojas/)
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 图片来自[Los Muertos Crew](https://www.pexels.com/@cristian-rojas/)
 - en: Databricks’ SQL warehouse products are a compelling offering for companies looking
     to streamline their production SQL queries and warehouses. However, as usage scales
     up, the cost and performance of these systems become crucial to analyze.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks的SQL仓库产品对于希望简化生产SQL查询和仓库的公司具有很大的吸引力。然而，随着使用的扩展，这些系统的成本和性能变得至关重要。
 - en: In this blog we take a technical deep dive into the cost and performance of
     their serverless SQL warehouse product by utilizing the industry standard TPC-DI
     benchmark. We hope data engineers and data platform managers can use the results
     presented here to make better decisions when it comes to their data infrastructure
     choices.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们通过利用行业标准的TPC-DI基准测试，对他们的Serverless SQL数据仓库产品的成本和性能进行了技术深入分析。我们希望数据工程师和数据平台管理者能够利用这里呈现的结果，在选择数据基础设施时做出更好的决策。
 - en: What are Databricks’ SQL warehouse offerings?
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Databricks的SQL数据仓库提供了什么？
 - en: 'Before we dive into a specific product, let’s take a step back and look at
     the different options available today. Databricks currently offers [3 different
     warehouse options](https://www.databricks.com/product/pricing/databricks-sql):'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们深入探讨特定产品之前，让我们退后一步，看看今天提供的不同选项。Databricks目前提供[3种不同的仓库选项](https://www.databricks.com/product/pricing/databricks-sql)。
 - en: '**SQL Classic** — Most basic warehouse, runs inside customer’s cloud environment'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**SQL Classic** —— 最基本的仓库，运行在客户的云环境内。'
 - en: '**SQL Pro** — Improved performance and good for exploratory data science, runs
     inside customer’s cloud environment'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**SQL Pro** —— 提升的性能，适合探索性数据科学，运行在客户的云环境内。'
 - en: '**SQL Serverless** — “Best” performance, and the compute is fully managed by
     Databricks.'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**SQL Serverless** —— 最佳性能，计算完全由Databricks管理。'
 - en: From a cost perspective, both classic and pro run inside the user’s cloud environment.
     What this means is you will get 2 bills for your databricks usage — one is your
     pure Databricks cost (DBU’s) and the other is from your cloud provider (e.g. AWS
     EC2 bill).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 从成本的角度来看，经典版和专业版都在用户的云环境内运行。这意味着您将为您的Databricks使用获得两个账单 —— 一个是纯粹的Databricks成本（DBU），另一个来自您的云提供商（例如AWS
+    EC2账单）。
 - en: 'To really understand the cost comparison, let’s just look at an example cost
     breakdown of running on a Small warehouse based on their [reported instance types](https://docs.databricks.com/en/sql/admin/warehouse-behavior.html):'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了真正了解成本比较，让我们看一个在Small数据仓库上运行的示例成本细分的示例费用分解。
 - en: '![](../Images/f6c8a672940d052d1ba0fa8858f22175.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f6c8a672940d052d1ba0fa8858f22175.png)'
 - en: Cost comparison of jobs compute, and the various SQL serverless options. Prices
     shown are based on on-demand list prices. [Spot prices will vary](https://aws.amazon.com/ec2/spot/pricing/)
     and were chosen based on the prices at the time of this publication. Image by
     author.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 作业计算成本比较，以及各种SQL Serverless选项。所显示的价格基于按需列表价格。[Spot prices will vary](https://aws.amazon.com/ec2/spot/pricing/)，并且是根据本出版物时的价格选择的。作者提供的图像。
 - en: In the table above, we look at the cost comparison of on-demand vs. spot costs
     as well. You can see from the table that the serverless option has no cloud component,
     because it’s all managed by Databricks.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上表中，我们也看到了按需与spot成本的成本比较。您可以从表中看出，Serverless选项没有云组件，因为所有管理工作都由Databricks处理。
 - en: Serverless could be cost effective compared to pro, if you were using all on-demand
     instances. But if there are cheap spot nodes available, then Pro may be cheaper.
     Overall, the pricing for serverless is pretty reasonable in my opinion since it
     also includes the cloud costs, although it’s still a “premium” price.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: Serverless相比于专业版来说可能更具成本效益，如果您使用所有按需实例的话。但如果有廉价的spot节点可用，那么专业版可能会更便宜。总体来说，我认为Serverless的定价相当合理，因为它还包括云成本，尽管它仍然是一个“高端”价格。
 - en: We also included the equivalent jobs compute cluster, which is the cheapest
     option across the board. If cost is a concern to you, you can run SQL queries
     in jobs compute as well!
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还包括了等效的作业计算集群，这是全面管理的选择中最便宜的选项。如果成本是您关注的问题，您也可以在作业计算中运行SQL查询！
 - en: Pros and cons of Serverless
+  id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Serverless的优缺点
 - en: 'The Databricks serverless option is a fully managed compute platform. This
     is pretty much identical to how [Snowflake](https://www.snowflake.com) runs, where
     all of the compute details are hidden from users. At a high level there are pros
     and cons to this:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: Databricks的Serverless选项是一个完全管理的计算平台。这基本上与Snowflake的运行方式相同，其中所有计算细节对用户隐藏。在高层次上，这种方法有其利弊：
 - en: '**Pros:**'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**优点：**'
 - en: You don’t have to think about instances or configurations
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 您不必考虑实例或配置。
 - en: Spin up time is much less than starting up a cluster from scratch (5–10 seconds
     from our observations)
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 启动时间比从头开始启动集群要少得多（根据我们的观察为5-10秒）。
 - en: '**Cons:**'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '**缺点：**'
 - en: Enterprises may have security issues with all of the compute running inside
     of Databricks
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 企业可能会对所有计算都在Databricks内部运行存在安全问题。
 - en: Enterprises may not be able to leverage their cloud contracts which may have
     special discounts on specific instances
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 企业可能无法利用其云合同中对特定实例的特殊折扣
 - en: No ability to optimize the cluster, so you don’t know if the instances and configurations
     picked by Databricks are actually good for your job
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 无法优化集群，因此你不知道 Databricks 选择的实例和配置是否实际上适合你的作业
 - en: The compute is a black box — users have no idea what is going on or what changes
     Databricks is implementing underneath the hood which may make stability an issue.
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算是一个黑箱——用户不知道发生了什么或 Databricks 在幕后实施了哪些更改，这可能导致稳定性问题。
 - en: 'Because of the inherent black box nature of serverless, we were curious to
     explore the various tunable parameters people do still have and their impact on
     performance. So let’s drive into what we explored:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于无服务器的固有黑箱特性，我们对人们仍然可以调整的各种参数及其对性能的影响感到好奇。因此，让我们深入探讨一下我们探索的内容：
 - en: Experiment Setup
+  id: totrans-36
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实验设置
 - en: 'We tried to take a “practical” approach to this study, and simulate what a
     real company might do when they want to run a SQL warehouse. Since [DBT](https://www.getdbt.com/)
     is such a popular tool in the modern data stack, we decided to look at 2 parameters
     to sweep and evaluate:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们尝试采用“实用”方法来进行这项研究，并模拟当一家真实公司希望运行 SQL 仓库时可能采取的措施。由于[DBT](https://www.getdbt.com/)在现代数据堆栈中非常流行，我们决定检查两个参数进行扫描和评估：
 - en: '**Warehouse size** — [‘2X-Small’, ‘X-Small’, ‘Small’, ‘Medium’, ‘Large’, ‘X-Large’,
     ‘2X-Large’, ‘3X-Large’, ‘4X-Large’]'
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**仓库大小** — [‘2X-Small’, ‘X-Small’, ‘Small’, ‘Medium’, ‘Large’, ‘X-Large’, ‘2X-Large’,
+    ‘3X-Large’, ‘4X-Large’]'
 - en: '[**DBT Thread**s](https://docs.getdbt.com/docs/running-a-dbt-project/using-threads)
     — [‘4’, ‘8’, ‘16’, ‘24’, ‘32’, ‘40’, ‘48’]'
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[**DBT 线程**](https://docs.getdbt.com/docs/running-a-dbt-project/using-threads)
+    — [‘4’, ‘8’, ‘16’, ‘24’, ‘32’, ‘40’, ‘48’]'
 - en: The reason why we picked these two is they are both “universal” tuning parameters
     for any workload, and they both impact the compute side of the job. [DBT threads](https://docs.getdbt.com/docs/running-a-dbt-project/using-threads)
     in particular effectively tune the parallelism of your job as it runs through
     your DAG.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们选择这两个参数的原因是它们都是任何工作负载的“通用”调优参数，并且它们都影响作业的计算方面。[DBT 线程](https://docs.getdbt.com/docs/running-a-dbt-project/using-threads)特别有效地调整作业在
+    DAG 中运行时的并行性。
 - en: The workload we selected is the popular [TPC-DI](https://www.tpc.org/tpcdi/default5.asp)
     benchmark, with a scale factor of 1000\. This workload in particular is interesting
     because it’s actually an entire pipeline which mimics more real-world data workloads.
     For example, a screenshot of our DBT DAG is below, as you can see it’s quite complicated
     and changing the number of DBT threads could have an impact here.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们选择的工作负载是流行的[TPC-DI](https://www.tpc.org/tpcdi/default5.asp)基准测试，规模因子为 1000。这个工作负载特别有趣，因为它实际上是一个完整的管道，模拟了更真实的数据工作负载。例如，下面是我们的
+    DBT DAG 的屏幕截图，你可以看到它相当复杂，改变 DBT 线程的数量可能会对其产生影响。
 - en: '![](../Images/f1e1ab47791286c4933f311b55cee5aa.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f1e1ab47791286c4933f311b55cee5aa.png)'
 - en: DBT DAG from our TPC-DI Benchmark, Image by author
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自我们 TPC-DI 基准测试的 DBT DAG，作者图片
 - en: As a side note, Databricks has a [fantastic open source repo](https://github.com/shannon-barrow/databricks-tpc-di)
     that will help quickly set up the TPC-DI benchmark within Databricks entirely.
     (We did not use this since we are running with DBT).
+  id: totrans-44
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 顺便提一下，Databricks 有一个[出色的开源库](https://github.com/shannon-barrow/databricks-tpc-di)，可以帮助快速在
+    Databricks 中设置 TPC-DI 基准测试。（我们没有使用这个库，因为我们是使用 DBT 进行的）
 - en: To get into the weeds of how we ran the experiment, we used [Databricks Workflows](https://docs.databricks.com/en/workflows/index.html)
     with a Task Type of dbt as the “runner” for the dbt CLI, and all the jobs were
     executed concurrently; there should be no variance due to unknown environmental
     conditions on the Databricks side.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 要深入了解我们如何运行实验，我们使用了[Databricks Workflows](https://docs.databricks.com/en/workflows/index.html)并将
+    dbt 作为 dbt CLI 的“运行器”，所有作业都并行执行；由于 Databricks 方面的环境条件未知，不应存在变异。
 - en: Each job spun up a new SQL warehouse and tore it down afterwards, and ran in
     unique schemas in the same Unity Catalog. We used the [Elementary dbt package](https://docs.elementary-data.com/quickstart)
     to collect the execution results and ran a Python notebook at the end of each
     run to collect those metrics into a centralized schema.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个作业启动一个新的 SQL 仓库，然后在同一 Unity Catalog 中的独特模式中运行并随后拆除。我们使用了[Elementary dbt 包](https://docs.elementary-data.com/quickstart)来收集执行结果，并在每次运行结束时运行
+    Python 笔记本，将这些指标收集到集中式模式中。
 - en: Costs were extracted via Databricks System Tables, specifically those for Billable
     Usage.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 成本通过 Databricks 系统表提取，特别是那些用于计费使用的表。
 - en: Try this experiment yourself and clone the [Github repo here](https://github.com/synccomputingcode/databricks-tpcdi)
+  id: totrans-48
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 自己尝试这个实验并克隆[Github 仓库](https://github.com/synccomputingcode/databricks-tpcdi)
 - en: Results
+  id: totrans-49
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结果
 - en: Below are the cost and runtime vs. warehouse size graphs. We can see below that
     the runtime stops scaling when you get the medium sized warehouses. Anything larger
     than a medium pretty much had no impact on runtime (or perhaps were worse). This
     is a typical scaling trend which shows that scaling cluster size is not infinite,
     they always have some point at which adding more compute provides diminishing
     returns.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是成本和运行时间与仓库大小的图表。我们可以看到，运行时间在达到中等规模的仓库时停止扩展。比中等大一点的仓库对运行时间几乎没有影响（或许更糟）。这是一个典型的扩展趋势，显示了扩展集群规模不是无限的，它们总有一个点，增加更多计算资源的回报会递减。
 - en: For the CS enthusiasts out there, this is just the fundamental CS principal
     — [Amdahls Law.](https://en.wikipedia.org/wiki/Amdahl%27s_law)
+  id: totrans-51
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 对于计算机科学爱好者来说，这只是基本的计算机科学原理——[阿姆达尔定律](https://en.wikipedia.org/wiki/Amdahl%27s_law)
 - en: One unusual observation is that the medium warehouse outperformed the next 3
     sizes up (large to 2xlarge). We repeated this particular data point a few times,
     and obtained consistent results so it is not a strange fluke. Because of the black
     box nature of serverless, we unfortunately don’t know what’s going on under the
     hood and are unable to give an explanation.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个不寻常的观察是，中等仓库的表现优于接下来的三个尺寸（大到2xlarge）。我们重复了这个特定的数据点几次，并得到了一致的结果，所以这不是一个奇怪的偶然现象。由于无服务器的黑箱特性，我们不幸地不知道背后的情况，也无法给出解释。
 - en: '![](../Images/21006a1473f2231a3634087b518fcb73.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/21006a1473f2231a3634087b518fcb73.png)'
 - en: Runtime in Minutes across Warehouse Sizes. Image by author
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 各仓库大小的运行时间（分钟）。图片由作者提供
 - en: Because scaling stops at medium, we can see in the cost graph below that the
     costs start to skyrocket after the medium warehouse size, because well basically
     you’re throwing more expensive machines while the runtime remains constant. So,
     you’re paying for extra horsepower with zero benefit.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于扩展在中等规模处停止，我们可以在下面的成本图中看到，成本在中等仓库大小后开始急剧上升，因为基本上你投入了更昂贵的机器，而运行时间保持不变。因此，你是在为额外的计算能力支付费用，但没有获得任何好处。
 - en: '![](../Images/1128d7c301950a8939daf3a79ec097e5.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1128d7c301950a8939daf3a79ec097e5.png)'
 - en: Cost in $ across Warehouse Sizes. Image by author
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 各仓库大小的成本（美元）。图片由作者提供
 - en: The graph below shows the relative change in runtime as we change the number
     of threads and warehouse size. For values greater than the zero horizontal line,
     the runtime increased (a bad thing).
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的图表显示了我们改变线程数和仓库大小时运行时间的相对变化。对于横轴零线以上的值，运行时间增加（这是不好的）。
 - en: '![](../Images/585b9cb1320cf2ec770a9e4716c5f979.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/585b9cb1320cf2ec770a9e4716c5f979.png)'
 - en: The Percent Change in Runtime as Threads Increase. Image by author
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 线程增加时运行时间的百分比变化。图片由作者提供
 - en: 'The data here is a bit noisy, but there are some interesting insights based
     on the size of the warehouse:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的数据有些噪声，但根据仓库的大小有一些有趣的见解：
 - en: '**2x-small** — Increasing the number of threads usually made the job run longer.'
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**2x-small** — 增加线程数通常会使任务运行时间更长。'
 - en: '**X-small to large** — Increasing the number of threads usually helped make
     the job run about 10% faster, although the gains were pretty flat so continuing
     to increase thread count had no value.'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**X-small to large** — 增加线程数通常能使任务运行速度提高约10%，尽管增益相对平稳，所以继续增加线程数没有价值。'
 - en: '**2x-large** — There was an actual optimal number of threads, which was 24,
     as seen in the clear parabolic line'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**2x-large** — 实际上存在一个最佳线程数，即24，从清晰的抛物线可以看出。'
 - en: '**3x-large** — had a very unusual spike in runtime with a thread count of 8,
     why? No clue.'
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**3x-large** — 在线程数为8时运行时间出现了非常不寻常的峰值，为什么？不清楚。'
 - en: To put everything together into one comprehensive plot, we can see the plot
     below which plots the cost vs. duration of the total job. The different colors
     represent the different warehouse sizes, and the size of the bubbles are the number
     of DBT threads.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了将所有内容整合到一个综合图中，我们可以看到下面的图表，绘制了成本与总任务时长的关系。不同的颜色代表不同的仓库大小，气泡的大小表示 DBT 线程的数量。
 - en: '![](../Images/b8331017e39df72ff9b380a9c0dc67b5.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b8331017e39df72ff9b380a9c0dc67b5.png)'
 - en: Cost vs duration of the jobs. Size of the bubbles represents the number of threads.
     Image by author
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 成本与任务时长的关系。气泡的大小表示线程数量。图片由作者提供
 - en: 'In the plot above we see the typical trend that larger warehouses typically
     lead to shorter durations but higher costs. However, we do spot a few unusual
     points:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上图中，我们看到较大的仓库通常会导致较短的持续时间，但成本更高。然而，我们确实发现了一些不寻常的点：
 - en: '**Medium is the best** — From a pure cost and runtime perspective, medium is
     the best warehouse to choose'
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**中型是最佳的**——从纯成本和运行时间的角度来看，中型是最好的仓库选择'
 - en: '**Impact of DBT threads** — For the smaller warehouses, changing the number
     of threads appeared to have changed the duration by about +/- 10%, but not the
     cost much. For larger warehouses, the number of threads impacted both cost and
     runtime quite significantly.'
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**DBT线程的影响**——对于较小的仓库，线程数量的变化似乎使持续时间变化了大约+/- 10%，但成本变化不大。对于较大的仓库，线程数量显著影响了成本和运行时间。'
 - en: Conclusion
+  id: totrans-72
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'In summary, our top 5 lessons learned about Databricks SQL serverless + DBT
     products are:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，我们关于Databricks SQL无服务器 + DBT产品的前五个教训是：
 - en: '**Rules of thumbs are bad** — We cannot simply rely on “rules of thumb” about
     warehouse size or the number of dbt threads. Some expected trends do exist, but
     they are not consistent or predictable and it is entirely dependent on your workload
     and data.'
+  id: totrans-74
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**经验法则是错误的**——我们不能仅仅依赖关于仓库大小或DBT线程数量的“经验法则”。虽然确实存在一些预期的趋势，但它们并不一致或可预测，完全依赖于你的工作负载和数据。'
 - en: '**Huge variance —** For the exact same workloads the costs ranged from $5 —
     $45, and runtimes from 2 minutes to 90 minutes, all due to different combinations
     of number of threads and warehouse size.'
+  id: totrans-75
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**巨大差异——**对于完全相同的工作负载，成本范围从$5到$45，运行时间从2分钟到90分钟，所有这些都由于线程数量和仓库大小的不同组合。'
 - en: '**Serverless scaling has limits —** Serverless warehouses do not scale infinitely
     and eventually larger warehouses will cease to provide any speedup and only end
     up causing increased costs with no benefit.'
+  id: totrans-76
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**无服务器扩展有极限——**无服务器仓库不会无限扩展，最终较大的仓库将无法提供任何加速，只会导致成本增加而没有任何好处。'
 - en: '**Medium is great ?**— We found the **Medium** Serverless SQL Warehouse outperformed
     many of the larger warehouse sizes on both cost and job duration for the TPC-DI
     benchmark. We have no clue why.'
+  id: totrans-77
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**中型很棒？**——我们发现**中型**无服务器SQL仓库在TPC-DI基准测试中在成本和作业持续时间方面超越了许多较大的仓库。我们不知道原因。'
 - en: '**Jobs clusters may be cheapest** — If costs are a concern, switching to just
     standard jobs compute with notebooks may be substantially cheaper'
+  id: totrans-78
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**作业集群可能是最便宜的**——如果成本是一个问题，切换到仅使用标准作业计算和笔记本可能会便宜很多'
 - en: The results reported here reveal that the performance of black box “serverless”
     systems can result in some unusual anomalies. Since it’s all behind Databrick’s
     walls, we have no idea what is happening. Perhaps it’s all running on giant Spark
     on Kubernetes clusters, maybe they have special deals with Amazon on certain instances?
     Either way, the unpredictable nature makes controlling cost and performance tricky.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里报告的结果揭示了“无服务器”黑箱系统的性能可能会出现一些不寻常的异常。由于这一切都在Databrick的墙后，我们不知道发生了什么。也许所有这些都运行在巨大的Spark
+    on Kubernetes集群上，也许他们在某些实例上与亚马逊有特殊的交易？无论如何，不可预测的性质使得控制成本和性能变得棘手。
 - en: Because each workload is unique across so many dimensions, we can’t rely on
     “rules of thumb”, or costly experiments that are only true for a workload in its
     current state. The more chaotic nature of serverless system does beg the question
     if these systems need a [closed loop control system](https://medium.com/towards-data-science/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f)
     to keep them at bay?
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为每个工作负载在很多维度上都是独特的，我们不能依赖“经验法则”，或仅适用于当前状态的高成本实验。无服务器系统的混乱性质确实引发了这样一个问题：这些系统是否需要一个[闭环控制系统](https://medium.com/towards-data-science/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f)来加以控制？
 - en: 'As an introspective note — the business model of serverless is truly compelling.
     Assuming Databricks is a rational business and does not want to decrease their
     revenue, and they want to lower their costs, one must ask the question: “Is Databricks
     incentivized to improve the compute under the hood?”'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一种反思——无服务器的商业模式确实引人注目。假设Databricks是一个理性的企业，并且不希望降低他们的收入，同时他们也希望降低成本，那么必须提出一个问题：“Databricks是否有动力去改善底层的计算？”
 - en: The problem is this — if they make serverless 2x faster, then all of sudden
     their revenue from serverless drops by 50% — that’s a very bad day for Databricks.
     If they could make it 2x faster, and then increase the DBU costs by 2x to counteract
     the speedup, then they would remain revenue neutral (this is what they did for
     [Photon](https://synccomputing.com/databricks-photon-and-graviton-instances-worth-it/)
     actually).
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 问题是这样的——如果他们让无服务器速度提高 2 倍，那么他们的无服务器收入会突然下降 50%——这对 Databricks 来说是非常糟糕的一天。如果他们能使其速度提高
+    2 倍，然后将 DBU 成本提高 2 倍以抵消速度提升，那么他们的收入将保持不变（实际上，这就是他们为 [Photon](https://synccomputing.com/databricks-photon-and-graviton-instances-worth-it/)
+    所做的）。
 - en: So Databricks is really incentivized to decrease their internal costs while
     keeping customer runtimes about the same. While this is great for Databricks,
     it’s difficult to pass on any serverless acceleration technology to the user that
     results in a cost reduction.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，Databricks 确实有动力在保持客户运行时间大致不变的情况下降低内部成本。虽然这对 Databricks 来说是好事，但很难将任何无服务器加速技术传递给用户，从而减少成本。
 - en: Interested in learning more about how to improve your Databricks pipelines?
     Reach out to [Jeff Chou](https://www.linkedin.com/in/jeffchoumit/) and the rest
     of the [Sync Team](https://synccomputing.com/).
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 想了解如何改善你的 Databricks 管道？请联系 [Jeff Chou](https://www.linkedin.com/in/jeffchoumit/)
+    和 [Sync 团队](https://synccomputing.com/) 的其他成员。
 - en: Resources
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 资源
 - en: '[Try this experiment yourself and clone the Github repo here](https://github.com/synccomputingcode/databricks-tpcdi)'
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[自己尝试这个实验，并在此处克隆 Github 仓库](https://github.com/synccomputingcode/databricks-tpcdi)'
 - en: Related Content
+  id: totrans-87
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 相关内容
 - en: '[Why Your Data Pipelines Need Closed-Loop Feedback Control](https://medium.com/towards-data-science/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f)'
+  id: totrans-88
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[为什么你的数据管道需要闭环反馈控制](https://medium.com/towards-data-science/why-your-data-pipelines-need-closed-loop-feedback-control-76e28e3565f)'
 - en: '[Are Databricks clusters with Photon and Graviton instances worth it?](https://synccomputing.com/databricks-photon-and-graviton-instances-worth-it/)'
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Databricks 集群是否值得使用 Photon 和 Graviton 实例？](https://synccomputing.com/databricks-photon-and-graviton-instances-worth-it/)'
 - en: '[Is Databricks’s autoscaling cost efficient?](https://synccomputing.com/is-databrickss-autoscaling-cost-efficient/)'
+  id: totrans-90
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Databricks 的自动扩展是否具有成本效益？](https://synccomputing.com/is-databrickss-autoscaling-cost-efficient/)'
 - en: '[Introducing Gradient — Databricks optimization made easy](https://synccomputing.com/introducing-gradient-for-databricks/)'
+  id: totrans-91
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[介绍 Gradient — Databricks 优化变得简单](https://synccomputing.com/introducing-gradient-for-databricks/)'
