@@ -84,6 +84,7 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前开源生成 AI 工具非常流行，许多公司争相推出其 AI 驱动的应用程序。在快速构建的过程中，公司们常常忘记，要真正从生成 AI 中获得价值，他们需要构建“生产”就绪的应用程序，而不仅仅是原型。
 - en: In this article, I want to show you the performance difference for Llama 2 using
     two different inference methods. The first method of inference will be a containerized
     Llama 2 model served via Fast API, a popular choice among developers for serving
@@ -93,6 +94,9 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我想向你展示 Llama 2 使用两种不同推理方法的性能差异。第一种推理方法是通过 Fast API 服务的容器化 Llama 2 模型，这是一种在开发者中非常受欢迎的选择，用于将模型作为
+    REST API 端点进行服务。第二种方法是通过 [文本生成推理](https://github.com/huggingface/text-generation-inference)
+    服务的相同容器化模型，这是 Hugging Face 开发的开源库，用于轻松部署 LLM。
 - en: Both methods we’re looking at are meant to work well for real-world use, like
     in businesses or apps. But it’s important to realize that they don’t scale the
     same way. We’ll dive into this comparison to see how they each perform and understand
@@ -100,22 +104,26 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们正在查看的这两种方法都旨在适用于实际使用，例如在商业或应用程序中。但重要的是要认识到，它们的扩展方式不同。我们将深入比较这两种方法，看看它们各自的表现，并更好地理解差异。
 - en: What powers LLM inference at OpenAI and Cohere
   id: totrans-15
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 支撑 OpenAI 和 Cohere 的 LLM 推理
 - en: Have you ever wondered why ChatGPT is so fast?
   id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 你是否曾经好奇为什么 ChatGPT 这么快？
 - en: Large language models require a ton of computing power and due to their sheer
     size, they oftentimes need multiple GPUs. When working with large GPU clusters,
     companies have to be very mindful of how their computing is being utilized.
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 大型语言模型需要大量计算能力，由于其庞大的规模，它们往往需要多个 GPU。在处理大型 GPU 集群时，公司必须非常注意计算资源的使用情况。
 - en: LLM providers like OpenAI run large GPU clusters to power inferencing for their
     models. In order to squeeze as much performance from their GPUs they use tools
     like the [**Nvidia Triton inference server**](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html)to
@@ -123,41 +131,52 @@
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 像 OpenAI 这样的 LLM 提供商运行大型 GPU 集群来支撑其模型的推理。为了最大限度地提高 GPU 性能，他们使用像 [**Nvidia Triton
+    推理服务器**](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html)
+    这样的工具来提高吞吐量并减少延迟。
 - en: '![](../Images/ccdba02d89abddcc6f0400743e72c945.png)'
   id: totrans-19
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ccdba02d89abddcc6f0400743e72c945.png)'
 - en: Illustration inspired by — [Triton Inference Server Architecture](https://developer.nvidia.com/triton-inference-server)
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 插图灵感来源 — [Triton 推理服务器架构](https://developer.nvidia.com/triton-inference-server)
 - en: While Triton is highly performant and has many benefits, it’s quite difficult
     to use for developers. A lot of the newer models on Hugging Face are not supported
     on Triton and the process to add support for these models is not trivial.
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 Triton 性能卓越且有许多优点，但对于开发者来说使用起来非常困难。许多 Hugging Face 上的较新模型在 Triton 上不受支持，添加对这些模型的支持的过程也并不简单。
 - en: This is where [**Text Generation Inference**](https://github.com/huggingface/text-generation-inference)
     **(TGI)** comes in. This tool offers many of the same performance improvements
     as Triton, but it’s user-friendly and works well with Hugging Face models.
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 这时，[**文本生成推理**](https://github.com/huggingface/text-generation-inference) **（TGI）**
+    就派上用场了。这个工具提供了与 Triton 相同的性能提升，但它更用户友好，并且与 Hugging Face 模型兼容性好。
 - en: LLM inference optimizations
   id: totrans-23
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: LLM 推理优化
 - en: Before we jump into the benchmarks, I want to cover a few of the optimization
     techniques used by modern inference servers such as TGI to speed up LLMs.
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们深入基准测试之前，我想介绍一些现代推理服务器如 TGI 用于加速 LLM 的优化技术。
 - en: '**Tensor Parallelism**'
   id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**张量并行**'
 - en: LLMs are often too large to fit on a single GPU. Using a concept called **Model
     Parallelism**, a model can be split across multiple GPUs. **Tensor Parallelism**
     is a type of model parallelism that splits the model into multiple shards that
@@ -165,10 +184,13 @@
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: LLM 通常太大而无法容纳在单个 GPU 上。通过一种称为 **模型并行** 的概念，可以将模型分割到多个 GPU 上。**张量并行** 是一种模型并行，它将模型分割成多个由不同
+    GPU 独立处理的分片。
 - en: '![](../Images/45eec79a2e1998a5ffa7a1b793b302ed.png)'
   id: totrans-27
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/45eec79a2e1998a5ffa7a1b793b302ed.png)'
 - en: Illustration inspired by [source](https://aws.amazon.com/blogs/machine-learning/deploy-large-models-at-high-performance-using-fastertransformer-on-amazon-sagemaker/)
   id: totrans-28
   prefs: []
@@ -455,17 +477,21 @@
   id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使使用现代推理服务器的优化技术，其性能也无法与像 ChatGPT 这样的托管服务相比。OpenAI 当然运行了几个大型 GPU 集群来为他们的模型提供推理支持，并结合了他们自己内部的优化技术。
 - en: However, for generative AI use cases enterprises will likely have to adopt inference
     servers as they are far more scalable and reliable compared to traditional model
     deployment techniques.
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，对于生成式 AI 的使用场景，企业可能需要采用推理服务器，因为它们在可扩展性和可靠性方面远超传统的模型部署技术。
 - en: Thanks for reading!
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢阅读！
 - en: Peace.
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 平静。
