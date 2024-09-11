@@ -1,12 +1,15 @@
 - en: Finding Needles in a Haystack — Search Indexes for Jaccard Similarity
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/finding-needles-in-a-haystack-search-indexes-for-jaccard-similarity-db1ccdaa8d17?source=collection_archive---------4-----------------------#2023-08-18](https://towardsdatascience.com/finding-needles-in-a-haystack-search-indexes-for-jaccard-similarity-db1ccdaa8d17?source=collection_archive---------4-----------------------#2023-08-18)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: From basic concepts to exact and approximate indexes
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,23 +17,29 @@
     Zhù](../Images/d1e5938b5ebeec307a01d717e09f3b30.png)](https://ekzhu.medium.com/?source=post_page-----db1ccdaa8d17--------------------------------)[](https://towardsdatascience.com/?source=post_page-----db1ccdaa8d17--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----db1ccdaa8d17--------------------------------)
     [Eric Zhù](https://ekzhu.medium.com/?source=post_page-----db1ccdaa8d17--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F5b549f62ef70&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-needles-in-a-haystack-search-indexes-for-jaccard-similarity-db1ccdaa8d17&user=Eric+Zh%C3%B9&userId=5b549f62ef70&source=post_page-5b549f62ef70----db1ccdaa8d17---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----db1ccdaa8d17--------------------------------)
     ·15 min read·Aug 18, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fdb1ccdaa8d17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-needles-in-a-haystack-search-indexes-for-jaccard-similarity-db1ccdaa8d17&user=Eric+Zh%C3%B9&userId=5b549f62ef70&source=-----db1ccdaa8d17---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fdb1ccdaa8d17&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Ffinding-needles-in-a-haystack-search-indexes-for-jaccard-similarity-db1ccdaa8d17&source=-----db1ccdaa8d17---------------------bookmark_footer-----------)![](../Images/b908929fab9e1511d3be9e9741d26730.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Finding Needles in a Haystack. Image by the author using Midjourney.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Vector databases are in the news for being the external memory of large language
@@ -40,6 +49,7 @@
     that supports finding the approximate neighbors of a query vector in the high-dimensional
     space. It is like Google Map finds your neighbors’ houses given your house’s latitude
     and longitude, except the ANN indexes operate in a much higher dimensional space.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: This line of research has a history that dates back decades. In the late 90s,
@@ -53,18 +63,22 @@
     database benchmarks](https://github.com/erikbern/ann-benchmarks) publishing performance
     numbers on the SIFT-128 dataset, which consists of exactly the hand-crafted feature
     vectors with meaningless similarity.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: 'Despite the noise around hand-crafted features, there has been a fruitful line
     of research focusing on one high-dimensional data type with meaningful similarity:
     ***set*** and ***Jaccard***.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
 - en: In this post I cover search indexes for Jaccard similarity over sets. I will
     start with the basic concepts, and then move on to exact and approximate indexes.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
 - en: Set and Jaccard
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -73,30 +87,38 @@
     extracted from this blog post also form a set. Set is a natural way to represent
     data points in application scenarios like music recommendation, social network,
     and plagiarism detection.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
 - en: 'Let’s say on Spotify, I follow these artists:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: '`[the weekend, taylor swift, wasia project]`'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: 'and my daughter follows these artists:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
 - en: '`[the weekend, miley cyrus, sza]`'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
 - en: A reasonable way to measure the similarity of our music tastes is to see how
     many artists we both follow — the intersection size. In this case we both follow
     `the weekend`, so the intersection size is 1.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/d00f4cc116700727294fa5a4fd4940a5.png)'
+  id: totrans-20
   prefs: []
   type: TYPE_IMG
 - en: Each set represents a user’s following list. The intersection shows the common
     followings shared by both users. Image by the author.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
 - en: However, you could imagine another pair of users each follows 100 artists, and
@@ -106,15 +128,19 @@
     with the union size. This way, the similarity between my daughter’s and my followings
     is `1 / 5 = 0.2`, and the similarity between the other pair of users’ followings
     is `1 / 199 ~= 0.005`. This is called Jaccard similarity.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: 'For a set `A` and a set `B`, the formula for Jaccard similarity is:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/952c0040f88159f0452076f2a213b264.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
 - en: Jaccard similarity formula for set A and B.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
 - en: 'Why is set a high-dimensional data type? A set can be encoded as a “one-hot”
@@ -122,22 +148,27 @@
     on Spotify). A dimension in this vector has a value of 1 if the set contains the
     element corresponding to this dimension, and 0 otherwise. So, the vectorized set
     of my followed artists look like the following:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/d15e8385c01a2ba371ac1326433d9454.png)'
+  id: totrans-27
   prefs: []
   type: TYPE_IMG
 - en: High-dimensional vector representation of the set of followings. Image by the
     author.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: where the second, third, and the third from the last dimensions are `the weekend`,
     `taylor swift`, and `wasia project`. There are over 10 million artists on Spotify,
     so a vector like this is extremely high dimensional and very sparse — most dimensions
     are 0s.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: Inverted Indexes for Jaccard Search
+  id: totrans-30
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -145,6 +176,7 @@
     called indexes to make search performance satisfactory for software applications.
     Specifically, a Jaccard search index is built on a collection of sets, given a
     query set, it returns `k` sets that have the highest Jaccard with the query set.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: 'Search index for Jaccard is based on a data structure called inverted index.
@@ -154,27 +186,34 @@
     table whose keys are all possible set elements, and values are lists of set IDs.
     In this example, each list in the inverted index represents the IDs of the followers
     of an artist.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/e35f6d3782a0eef367f83e38a706f6e2.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
 - en: Inverted index contains lists of set IDs matching the query set. Image by the
     author.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/c7d321e010b7d33cd3e21f2838a58265.png)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
 - en: Original sets are stored in a separate table for lookup by their set IDs. Image
     by the author.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: 'You can see the reason why this is called “inverted index”: it allows you to
     go from a set element to find sets that contain the element.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
 - en: Exact Search Algorithm
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -183,27 +222,34 @@
     each with the query set — very expensive if you have millions of sets, you only
     need to process the IDs of the sets that share at least one element with the query
     set. You can obtain the set IDs directly from the inverted index lists.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
 - en: 'This idea is implemented by the following search algorithm:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In plain English, the algorithm walks through every inverted index list matched
     by elements in the query set and uses a candidate table to keep track of the number
     of times each set ID appears. If a set ID appears `n` times, the indexed set has
     `n` overlapping elements with the query set. In the end, the algorithm uses all
     the information in the candidate table to calculate Jaccard similarities, and
     then returns the IDs of the top-k most similar sets.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/092291d3e27e5e73587c9a307a19cd96.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
 - en: The candidate table in the **search_top_k_merge_list** algorithm is used to
     keep track of the overlap counts of indexed sets found through the inverted index.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
 - en: 'The `search_top_k_merge_list` algorithm can be fast when: (1) the number of
@@ -213,6 +259,7 @@
     more-or-less the same number of followers (not true). We all know it is a fact
     that a few top artists are followed by most people and most artists have few followers.
     After all, the music industry follows the [Pareto Distribution](https://en.wikipedia.org/wiki/Pareto_distribution).'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: Taylor Swift has 78 million followers on Spotify, and The Weekend has 67 million.
@@ -222,14 +269,17 @@
     today are fast and powerful, on my Intel i7 machine, creating a table of this
     size still takes at least 30 seconds (Python) and dynamically allocates 2.5 GB
     of memory.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
 - en: Most people follow some of these super star artists. So, if you use this algorithm
     in your search application, you will for sure get a gargantuan cloud hosting bill
     for large resource usage and terrible user experience for high search latency.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: Branch and Bound Optimization
+  id: totrans-48
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -237,6 +287,7 @@
     potential candidates in a breadth-first fashion because it only uses the inverted
     index to compute intersection. This algorithm performs poorly due to super star
     artists with millions of followers.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: Another approach is to be more selective about potential candidates. Imagine
@@ -246,6 +297,7 @@
     hit the criteria your care about the most. As you are interviewing them one by
     one you evaluate whether each one actually hit all or most of your criteria and
     stop interviewing when you found someone.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
 - en: This approach also works when it comes to finding similar sets of followed artists.
@@ -257,24 +309,30 @@
     `taylor swift`. Those much smaller number of people that follows `wasian project`
     has the same potential to be in the best `k` candidates than those much larger
     number of people that follow `taylor swift`.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: The key insight here is that we do not want to process all potential candidate
     lists but stop when we processed enough. The tricky part is to know when to stop.
     The following is a modified version of the previous algorithm that implements
     the idea.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The `search_top_k_probe_set` algorithm computes Jaccard similarity for every
     new candidate it found. It keeps track of the current best `k` candidates at all
     times, and it stops when the upper bound Jaccard of any new candidate is no greater
     than the minimum Jaccard of the current best `k` candidates.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/ea42c9db8d21b9c284d5c1f7e8ce6b02.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
 - en: The **search_top_k_probe_set** algorithm walks through the inverted index lists
@@ -282,6 +340,7 @@
     keeps track of the current top-k candidate sets. It stops when the maximum Jaccard
     similarity of any set in the unseen lists is no greater than the minimum similarity
     of the current top-k candidates. Image by the author.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
 - en: 'How to compute the upper bound Jaccard? After processing `n` lists of candidates,
@@ -290,14 +349,17 @@
     it the most benefit of doubt by saying that such candidate may show up in every
     single one of the `|Q|-n` remaining lists. Now we can use simple math to derive
     the upper bound Jaccard of such candidate `X`.'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/149d53d26af727515829448b9532d6c1.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
 - en: The formula for calculating the upper bound of Jaccard similarity between an
     unseen candidate indexed set X and query set Q, after walking through n lists
     of candidates.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
 - en: This clever technique is called *Prefix Filter* in set similarity search research
@@ -306,9 +368,11 @@
     I also created a Python library [SetSimilaritySearch](https://github.com/ekzhu/SetSimilaritySearch)
     that implements a much more optimized version of the the `search_top_k_probe_set`
     algorithm that also supports cosine and containment similarity measures.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
 - en: Approximate Index for Jaccard Search
+  id: totrans-61
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -317,6 +381,7 @@
     return are the true `k` best candidates. Sounds trite? Well, this is a question
     we should ask ourselves whenever we design search algorithms on large-scale data,
     because in many scenarios it is not necessary to get the true `k` best candidates.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
 - en: 'Think about the Spotify example again: do you really care if the result of
@@ -325,26 +390,32 @@
     never exhaustive or exact. These applications are not mission critical enough
     to justify exact search. This is why the most widely used search algorithms are
     all approximate.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
 - en: 'There are mainly two benefits of using approximate search algorithms:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
 - en: Faster. You can cut many corners if you no longer need exact results.
+  id: totrans-65
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: Predicable resource consumption. This one is less obvious, but for several approximate
     algorithms, their resource usage (e.g., memory) can be configured *a priori* independent
     of data distribution.
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: 'In this post, I write about the most widely used approximate index for Jaccard:
     Minwise Locality Sensitive Hashing (MinHash LSH).'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
 - en: What is LSH?
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -354,12 +425,14 @@
     are data-agnostic so their accuracy conditioned on similarity can be determined
     *a priori* before ingesting new data points or changing data distribution. So,
     they are more similar to inverted indexes than a model.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
 - en: An LSH index is essentially a set of hash tables each with a different hash
     function. Just like a typical hash table, an LSH index’s hash function takes a
     data point (e.g., a set, a feature vector, or an embedding vector) as input, and
     outputs a binary hash key. Except for this, they cannot be more different.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
 - en: A typical hash function outputs keys that are pseudo-randomly and uniformly
@@ -371,19 +444,23 @@
     key space. This is a desired property of a hash function, because you want even
     distribution of keys over hash buckets to avoid chaining or constantly resizing
     your hash table.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
 - en: 'An LSH’s hash function does something opposite: for a pair of similar inputs,
     with similarity defined through some metric space measure, their hash keys should
     be more likely to be equal, than another pair of hash keys of dis-similar inputs.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
 - en: What does this mean? It means that an LSH hash function has higher probability
     of hash key collision for data points that are more similar. Effectively, we are
     utilizing this higher collision probability for similarity-based retrieval.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
 - en: '**MinHash LSH**'
+  id: totrans-74
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -392,38 +469,48 @@
     input set, a MinHash function consumes all elements with a random hash function
     and keeps track of the minimum hash value observed. You can build an LSH index
     using a single MinHash function. See the diagram below.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/3339dcd8002b6e5e406823b1a84c18ad.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
 - en: A MinHash LSH index with a single random hash function. Image by the author.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
 - en: The mathematical theory behind MinHash function states that the probability
     of two sets having the same minimum hash value (i.e., hash key collision) is the
     same as their Jaccard.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/7ab93444444bf7a11030ccfd10bbd501.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
 - en: h(A) is the hash values of all elements in A by random hash function h.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
 - en: min(h(A)) is the minimum hash value of all elements in A.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
 - en: It is a magical result, but the [proof](https://cs.stackexchange.com/questions/11256/proving-calculating-minhash)
     is quite simple.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
 - en: A MinHash LSH index with a single MinHash function does not give you satisfactory
     accuracy because the collision probability is linearly proportional to the Jaccard.
     See the following plot to understand why.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/b0fdfc8e67178d1960da592910366887.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
 - en: Collision probability of a single MinHash function over Jaccard between query
@@ -432,6 +519,7 @@
     set having Jaccard = 0.8 with the query set has 80% probability to be retrieved
     by the index; another indexed set having Jaccard 0.2 with the query set has 20%
     probability to be retrieved. Image by the author.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
 - en: 'Imagine we draw a threshold at Jaccard = 0.9: results with higher Jaccard than
@@ -441,13 +529,16 @@
     that relevant results are not returned. Based on the plot above and looking at
     the area corresponding to false positive: if the index only uses a single MinHash
     function, it is going to produce false positives at a very high probability.'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
 - en: '**Boosting the Accuracy of MinHash LSH**'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
 - en: 'This why we need another LSH magic: a process called *boosting.* We can boost
     the index to be much more attuned to the relevancy threshold specified.'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
 - en: Instead of only one, we use `m` MinHash functions generated through a process
@@ -455,18 +546,22 @@
     *—* basically `m` random permutations of the same hash function of 32-bit or 64-bit
     integer. For every indexed set, we generate `m` minimum hash values using universal
     hashing.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
 - en: Imagine you list the `m` minimum hash values for an indexed set. We group every
     `r` number of hash values into a band of hash values, and we make `b` such bands.
     This requires `m = b * r`.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/bd82df942ac0ca697f4bec44ec66d8fa.png)'
+  id: totrans-91
   prefs: []
   type: TYPE_IMG
 - en: Minimum hash values of an indexed set in MinHash LSH with m= 16, b = 4 and r=
     4\. Image by the author.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
 - en: The probability that two sets having “band collision” — all the hash values
@@ -474,36 +569,44 @@
     B)^r`. That’s a lot smaller than a single hash value. However, the probability
     of having at least one “band collision” between two sets is `1 — (1-Jaccard(A,
     B)^r)^b`.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
 - en: 'Why do we care about `1 — (1-Jaccard(A, B)^r)^b`? Because this function has
     a special shape:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/7a54154a0bb345a3050b88640e266687.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
 - en: Boosted probability function for retrieval over Jaccard for MinHash LSH Index
     using b = 32 and r = 32\. Image by the author.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
 - en: In the plot above, you can see by using `m` MinHash functions, the “at-least-one
     band collision” probability is an S-curve function with a steep rise around Jaccard
     = 0.9\. Assuming the relevancy threshold is 0.9, the false positive probability
     of this index is much smaller than the index that uses only one random hash function.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
 - en: Because of this, an LSH index always uses `b` bands of `r` MinHash functions
     to boost accuracy. Each band is a hash table storing pointers to indexed sets.
     During search, any indexed set collides with the query set on any band is returned.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/9fe2d7543be0e5790c3983e78e155cd6.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
 - en: A MinHash LSH Index using b = 4 and r = 4\. Each band is a hash table whose
     hash key is a concatenation of minimum hash values from 4 MinHash functions. Image
     by the author.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
 - en: To build an MinHash LSH index, we can specify *a prior* a relevancy threshold
@@ -511,25 +614,30 @@
     similarity, and [calculate](https://github.com/ekzhu/datasketch/blob/4676353c1374b2e0b33b0da2dd6596fa47fdd4c8/datasketch/lsh.py#L22)
     the optimal `m`, `b` and `r`, before indexing any data points. This is a great
     advantage of using LSH over other approximate indexes.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
 - en: You can find my implementation of MinHash LSH in the Python package [datasketch](https://github.com/ekzhu/datasketch).
     It also has other MinHash-related algorithms like LSH Forest and Weighted MinHash.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
 - en: Final Thoughts
+  id: totrans-103
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 'I have covered a lot of topics in this post, but I barely scratched the surface
     of search indexes for Jaccard similarity. If you are interested in reading more
     about these topics, I have a list of further readings for you:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
 - en: '[Mining of Massive Datasets](http://mmds.org/) by Jure Leskovec, Anand Rajaraman
     and Jeff Ullman. The 3rd chapter goes into detail about MinHash and LSH. I think
     it is a great chapter for gaining the intuition of MinHash. Be aware the application
     described in the chapter is focused on n-gram based text matching.'
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -537,6 +645,7 @@
     The preliminary section of this paper explains the intuitation behind the `search_top_k_merge_list`
     and `search_top_k_probe_set` algorithms. The main section explains how to take
     cost into consideration when input sets are large, such as a table column.'
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -545,10 +654,12 @@
     similarity search indexes. The [issues list of the datasketch project](https://github.com/ekzhu/datasketch/issues)
     is a treasure trove of application scenarios and practical considerations when
     applying MinHash LSH.'
+  id: totrans-107
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: What about Embeddings?
+  id: totrans-108
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -557,16 +668,19 @@
     is meaningful when the input data is part of the same domain that the embedding
     model trained on. The main differences between that scenario and the search scenario
     described in this post are:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
 - en: 'Embedding vectors are dense vectors with typically 60 to 700 dimensions. Every
     dimension is non-zero. In contrast, sets, when represented as one-hot vectors
     are sparse: 10k to millions of dimensions, but most dimensions are zeros.'
+  id: totrans-110
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
 - en: Cosine similarity (or dot-product on normalized vectors) is typically used for
     embedding vectors. For sets we use Jaccard similarity.
+  id: totrans-111
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
@@ -574,12 +688,16 @@
     vectors, because the vectors are learned black-box representations of the original
     data such as image or text. On the other hand, Jaccard similarity threshold for
     sets is much easier to specify because **sets are the original data**.
+  id: totrans-112
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 很难为嵌入向量之间的相似性指定一个相关性阈值，因为这些向量是对原始数据（如图像或文本）的黑箱表示。另一方面，集合的Jaccard相似度阈值要容易得多，因为**集合是原始数据**。
 - en: Due to the above differences, it is not straightforward to compare embeddings
     and sets because they are distinctively different data types, even though you
     could classify both of them as high-dimensional. They are suitable for different
     application scenarios.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于上述差异，比较嵌入和集合并不是直接的，因为它们是明显不同的数据类型，即使你可以将它们都归类为高维数据。它们适用于不同的应用场景。
