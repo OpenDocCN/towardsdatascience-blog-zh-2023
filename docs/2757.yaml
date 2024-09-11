@@ -129,6 +129,8 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们[之前的文章](/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9#7fbd-af822198c08)中，我们定义了一个数据输入管道，从解码一个*533*x*800*
+    JPEG 图像开始，然后提取一个随机的*256*x*256*裁剪区域，经过一些额外的变换后，送入训练循环。我们使用了[PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)和[TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)来测量从文件加载图像的时间，并**承认了解码的浪费**。为了完整性，我们在下面复制了代码：
 - en: '[PRE0]'
   id: totrans-14
   prefs: []
@@ -143,11 +145,14 @@
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 回顾我们之前的文章，我们达到的优化平均步骤时间是**0.72秒**。可以推测，如果我们能够仅解码感兴趣的裁剪区域，我们的管道将运行得更快。不幸的是，截至本文写作时，PyTorch
+    并没有包含支持这一功能的函数。然而，利用自定义操作符创建工具，我们可以定义并实现自己的函数！
 - en: Custom JPEG-Image-Decode-and-Crop Function
   id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自定义 JPEG 图像解码和裁剪函数
 - en: 'The [libjpeg-turbo](https://libjpeg-turbo.org/) library is a JPEG image codec
     that includes a number of enhancements and optimizations compared to [libjpeg](http://www.ijg.org/).
     In particular, [libjpeg-turbo](https://libjpeg-turbo.org/) includes a number of
@@ -157,6 +162,8 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '[libjpeg-turbo](https://libjpeg-turbo.org/)库是一个 JPEG 图像编解码器，相比于[libjpeg](http://www.ijg.org/)，包含了许多增强和优化功能。特别是，[libjpeg-turbo](https://libjpeg-turbo.org/)包括许多功能，使我们能够仅解码图像中的预定义裁剪区域，例如*jpeg_skip_scanlines*和*jpeg_crop_scanline*。如果你在
+    conda 环境中运行，可以使用以下命令进行安装：'
 - en: '[PRE1]'
   id: totrans-18
   prefs: []
@@ -168,12 +175,16 @@
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，[libjpeg-turbo](https://libjpeg-turbo.org/)已预装在我们将在下面实验中使用的官方[AWS PyTorch
+    2.0 深度学习 Docker 镜像](https://github.com/aws/deep-learning-containers)中。
 - en: In the code block below we modify the [*decode_jpeg*](https://github.com/pytorch/vision/blob/release/0.15/torchvision/csrc/io/image/cpu/decode_jpeg.cpp#L72)
     function of [torchvision 0.15](https://pytorch.org/vision/stable/index.html) to
     decode and return a requested crop from an input JPEG encoded image.
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下面的代码块中，我们修改了[*decode_jpeg*](https://github.com/pytorch/vision/blob/release/0.15/torchvision/csrc/io/image/cpu/decode_jpeg.cpp#L72)函数，来自[torchvision
+    0.15](https://pytorch.org/vision/stable/index.html)，以解码并返回来自输入JPEG编码图像的请求裁剪。
 - en: '[PRE2]'
   id: totrans-21
   prefs: []
@@ -183,17 +194,20 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整的 C++ 文件可以在[这里](https://github.com/czmrand/jpeg-decode-and-crop/blob/main/custom_op/decode_and_crop_jpeg.cpp)找到。
 - en: In the next section, we will follow the steps in the PyTorch tutorial in order
     to convert this into a PyTorch operator that we can use in our pre-processing
     pipeline.
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的部分中，我们将按照 PyTorch 教程中的步骤，将其转换为一个 PyTorch 操作符，以便在我们的预处理管道中使用。
 - en: Deploying a PyTorch Extension
   id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 部署 PyTorch 扩展
 - en: 'As described in the [PyTorch tutorial](https://pytorch.org/tutorials/advanced/cpp_extension.html),
     there are different ways of deploying a custom operator. There are a number of
     considerations that might factor into your deployment design. Here are a few examples
@@ -201,6 +215,7 @@
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 如[PyTorch 教程](https://pytorch.org/tutorials/advanced/cpp_extension.html)中所述，有多种方式来部署自定义操作符。设计部署时需要考虑许多因素。以下是我们认为重要的一些例子：
 - en: '**Just in time compilation**: In order to ensure that our C++ extension is
     compiled against the same version of PyTorch that we train with, we program our
     deployment script to compile the code right before training **within the training
