@@ -74,6 +74,9 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '[SIMD](https://en.wikipedia.org/wiki/Single_instruction,_multiple_data)（单指令、多数据）操作自
+    2000 年代初以来一直是 Intel/AMD 和 ARM CPU 的一个特性。这些操作使你可以，例如，只用一个 CPU 操作 **在单核** 上将八个 `i32`
+    的数组加到另一个八个 `i32` 的数组上。使用 SIMD 操作大大加快了某些任务的速度。如果你没有使用 SIMD，你可能没有充分利用你 CPU 的能力。'
 - en: Is this “Yet Another Rust and SIMD” article? Yes and no. Yes, I did apply SIMD
     to a programming problem and then feel compelled to write an article about it.
     No, I hope that this article also goes into enough depth that it can guide you
@@ -85,6 +88,9 @@
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章是“另一个 Rust 和 SIMD”文章吗？是的，也不是。是的，我确实将 SIMD 应用于一个编程问题，然后觉得有必要写一篇文章。不是，我希望这篇文章也能深入到足以指导你完成*你的*项目。它解释了
+    Rust nightly 中新提供的 SIMD 功能和设置。它包括一个 Rust SIMD 速查表。它展示了如何在不离开安全 Rust 的情况下使你的 SIMD
+    代码通用。它让你开始使用如 Godbolt 和 Criterion 等工具。最后，它介绍了简化过程的新 cargo 命令。
 - en: The `[range-set-blaze](https://crates.io/crates/range-set-blaze)` crate uses
     its `RangeSetBlaze::from_iter` method to ingest potentially long sequences of
     integers. When the integers are “clumpy”, it can do this [30 times faster](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)
@@ -93,6 +99,9 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '`[range-set-blaze](https://crates.io/crates/range-set-blaze)` crate 使用其 `RangeSetBlaze::from_iter`
+    方法来处理可能很长的整数序列。当整数是“clumpy”时，它可以比 Rust 的标准 `HashSet::from_iter` [快 30 倍](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)。如果我们使用
+    SIMD 操作，能做到更好吗？是的！'
 - en: See [this documentation](https://docs.rs/range-set-blaze/latest/range_set_blaze/struct.RangeSetBlaze.html#constructor-performance)
     for the definition of “clumpy”. Also, what happens if the integers are not clumpy?
     `RangeSetBlaze` is [2 to 3 times *slower*](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)
@@ -101,6 +110,8 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 查看 [此文档](https://docs.rs/range-set-blaze/latest/range_set_blaze/struct.RangeSetBlaze.html#constructor-performance)
+    了解“clumpy”的定义。此外，当整数不不规则时会发生什么？`RangeSetBlaze` 比 `HashSet` [慢 2 到 3 倍](https://github.com/CarlKCarlK/range-set-blaze/blob/main/docs/bench.md)。
 - en: On clumpy integers, `RangeSetBlaze::from_slice` — a new method based on SIMD
     operations — is 7 times faster than `RangeSetBlaze::from_iter.` That makes it
     more than 200 times faster than `HashSet::from_iter`. (When the integers are not
@@ -108,57 +119,70 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于不规则整数，`RangeSetBlaze::from_slice` — 基于 SIMD 操作的新方法 — 比 `RangeSetBlaze::from_iter`
+    快 7 倍。这使它比 `HashSet::from_iter` 快超过 200 倍。（当整数不不规则时，它仍然比 `HashSet` 慢 2 到 3 倍。）
 - en: Over the course of implementing this speed up, I learned nine rules that can
     help you accelerate your projects with SIMD operations.
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实现这一加速的过程中，我学到了九条规则，这些规则可以帮助你使用 SIMD 操作加速你的项目。
 - en: 'The rules are:'
   id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些规则是：
 - en: Use nightly Rust and `core::simd`, Rust’s experimental standard SIMD module.
   id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 nightly Rust 和 `core::simd`，Rust 的实验性标准 SIMD 模块。
 - en: 'CCC: Check, Control, and Choose your computer’s SIMD capabilities.'
   id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 'CCC: 检查、控制并选择你计算机的 SIMD 能力。'
 - en: Learn `core::simd`, but selectively.
   id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 学习 `core::simd`，但要有选择地。
 - en: Brainstorm candidate algorithms.
   id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 头脑风暴候选算法。
 - en: Use Godbolt and AI to understand your code’s assembly, even if you don’t know
     assembly language.
   id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 Godbolt 和 AI 来理解你代码的汇编，即使你不懂汇编语言。
 - en: Generalize to all types and LANES with in-lined generics, (and when that doesn’t
     work) macros, and (when that doesn’t work) traits.
   id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用内联泛型（当这不起作用时）宏，（当宏不起作用时）特性，将其推广到所有类型和 LANES。
 - en: 'See [Part 2](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3)
     for these rules:'
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看 [第 2 部分](/nine-rules-for-simd-acceleration-of-your-rust-code-part-2-6a104b3be6f3)
+    以获取这些规则：
 - en: '*7\. Use Criterion benchmarking to pick an algorithm and to discover that LANES
     should (almost) always be 32 or 64.*'
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '*7\. 使用 Criterion 基准测试来选择算法，并发现 LANES 应该（几乎）始终为 32 或 64。*'
 - en: '*8\. Integrate your best SIMD algorithm into your project with* `*as_simd*`*,
     special code for* `*i128*`*/*`*u128*`*, and additional in-context benchmarking.*'
   id: totrans-25
@@ -964,6 +988,7 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '`*100..=499, 501..=999, 999..=999, 100..=100, 0..=0.*`'
 - en: ''
   id: totrans-144
   prefs:
@@ -974,10 +999,12 @@
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*如果是这样，* `*from_iter*` *可以快速完成处理。*'
 - en: 'Let’s start by writing `is_consecutive` with regular Rust:'
   id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们先用常规 Rust 编写 `is_consecutive`：
 - en: '[PRE14]'
   id: totrans-147
   prefs: []
@@ -988,16 +1015,19 @@
   id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 算法只是顺序遍历数组，检查每个值是否比前一个值多 1。它还避免了溢出。
 - en: 'Looping over the items seemed so easy, I wasn’t sure if SIMD could do any better.
     Here was my first attempt:'
   id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 遍历这些项似乎很简单，我不确定 SIMD 是否能做得更好。这是我的第一次尝试：
 - en: Splat0
   id: totrans-150
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Splat0
 - en: '[PRE15]'
   id: totrans-151
   prefs: []
@@ -1007,14 +1037,17 @@
   id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是它的计算概要：
 - en: '![](../Images/420908b8497341c078410b9436eaa6d1.png)'
   id: totrans-153
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/420908b8497341c078410b9436eaa6d1.png)'
 - en: 'Source: This and all following images by author.'
   id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 来源：这张图及所有后续图片均由作者提供。
 - en: It first (needlessly) checks that the first and last items are 15 apart. It
     then creates `added` by adding 15 to the 0th item, 14 to the next, etc. Finally,
     to see if all items in `added` are the same, it creates a new `Simd` based on
@@ -1023,16 +1056,21 @@
   id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 它首先（不必要地）检查第一个和最后一个项目是否相隔 15。然后，它通过将 15 加到第 0 项，将 14 加到下一个项，以此类推来创建 `added`。最后，为了查看
+    `added` 中的所有项是否相同，它基于 `added` 的第 0 项创建一个新的 `Simd`，然后进行比较。请记住，`splat` 从一个值创建一个
+    `Simd` 结构。
 - en: Splat1 & Splat2
   id: totrans-156
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Splat1 & Splat2
 - en: 'When I mentioned the `is_consecutive` problem to Ben Lichtman, he independently
     came up with this, Splat1:'
   id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我向 Ben Lichtman 提到 `is_consecutive` 问题时，他独立地提出了这个，即 Splat1：
 - en: '[PRE16]'
   id: totrans-158
   prefs: []
@@ -1043,31 +1081,38 @@
   id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: Splat1 从 `chunk` 中减去比较值，并检查结果是否与 `chunk` 的第一个元素相同，经过 splat。
 - en: '![](../Images/074c54b0d26c8842f648e64d7246ad79.png)'
   id: totrans-160
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/074c54b0d26c8842f648e64d7246ad79.png)'
 - en: He also came up with a variation called Splat2 that splats the first element
     of `subtracted` rather than `chunk`. That would seemingly avoid one memory access.
   id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 他还提出了一个变体，称为 Splat2，它 splat `subtracted` 的第一个元素，而不是 `chunk`。这似乎可以避免一次内存访问。
 - en: I’m sure you are wondering which of these is best, but before we discuss that
     let’s look at two more candidates.
   id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 我相信你一定在想这些方法中哪一个最好，但在我们讨论这个问题之前，让我们再看两个候选者。
 - en: Swizzle
   id: totrans-163
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Swizzle
 - en: Swizzle is like Splat2 but uses `simd_swizzle!` instead of `splat`. Macro `simd_swizzle!`
     creates a new `Simd` by rearranging the lanes of an old `Simd` according to an
     array of indexes.
   id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: Swizzle 类似于 Splat2，但使用 `simd_swizzle!` 而不是 `splat`。宏 `simd_swizzle!` 通过根据索引数组重新排列旧
+    `Simd` 的通道来创建一个新的 `Simd`。
 - en: '[PRE17]'
   id: totrans-165
   prefs: []
@@ -1078,10 +1123,12 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Rotate
 - en: This one is different. I had high hopes for it.
   id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个方法不同。我对它寄予厚望。
 - en: '[PRE18]'
   id: totrans-168
   prefs: []
@@ -1093,61 +1140,75 @@
   id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个想法是将所有元素向右旋转一个位置。然后，我们从 `rotated` 中减去原始的 `chunk`。如果输入是连续的，结果应该是“−15”后跟所有 1。
+    （使用包装减法，-15 是 `4294967281u32`。）
 - en: '![](../Images/9d8b9ae021da7778af8e11f6ed860b16.png)'
   id: totrans-170
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9d8b9ae021da7778af8e11f6ed860b16.png)'
 - en: Now that we have candidates, let’s start to evaluate them.
   id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有了候选者，让我们开始评估它们。
 - en: 'Rule 5: Use Godbolt and AI to understand your code’s assembly, even if you
     don’t know assembly language.'
   id: totrans-172
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 规则 5：使用 Godbolt 和 AI 来理解你的代码的汇编语言，即使你不知道汇编语言。
 - en: We’ll evaluate the candidates in two ways. First, in this rule, we’ll look at
     the assembly language generated from our code. Second, in Rule 7, we’ll benchmark
     the code’s speed.
   id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将通过两种方式评估这些候选者。首先，在这个规则中，我们将查看从代码生成的汇编语言。其次，在规则 7 中，我们将基准测试代码的速度。
 - en: Don’t worry if you don’t know assembly language, you can still get something
     out of looking at it.
   id: totrans-174
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果你不知道汇编语言，也不要担心，你仍然可以从中获得一些信息。
 - en: 'The easiest way to see the generated assembly language is with the [Compiler
     Explorer, AKA Godbolt](https://godbolt.org/z/j5GdGah89). It works best on short
     bits of code that don’t use outside crates. It looks like this:'
   id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看生成的汇编语言的最简单方法是使用 [Compiler Explorer, AKA Godbolt](https://godbolt.org/z/j5GdGah89)。它在不使用外部
+    crate 的简短代码片段上效果最佳。它看起来像这样：
 - en: '![](../Images/1013810e2972f3eb9449156e4404a98f.png)'
   id: totrans-176
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1013810e2972f3eb9449156e4404a98f.png)'
 - en: 'Referring to the numbers in the figure above, follow these steps to use Godbolt:'
   id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 参考上图中的数字，按照以下步骤使用 Godbolt：
 - en: Open [godbolt.org](https://godbolt.org/z/odrPv5WcG) with your web browser.
   id: totrans-178
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用你的网页浏览器打开 [godbolt.org](https://godbolt.org/z/odrPv5WcG)。
 - en: Add a new source editor.
   id: totrans-179
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 添加一个新的源编辑器。
 - en: Select Rust as your language.
   id: totrans-180
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择 Rust 作为你的语言。
 - en: Paste in the code of interest. Make the functions of interest public (`pub fn`).
     Do not include a main or unneeded functions. The tool doesn’t support external
     crates.
