@@ -1,631 +1,929 @@
 - en: Implementing a Transformer Encoder from Scratch with JAX and Haiku 🤖
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 JAX 和 Haiku 从头实现 Transformer 编码器 🤖
 - en: 原文：[https://towardsdatascience.com/implementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd?source=collection_archive---------7-----------------------#2023-11-07](https://towardsdatascience.com/implementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd?source=collection_archive---------7-----------------------#2023-11-07)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/implementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd?source=collection_archive---------7-----------------------#2023-11-07](https://towardsdatascience.com/implementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd?source=collection_archive---------7-----------------------#2023-11-07)
 - en: Understanding the fundamental building blocks of Transformers.
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 理解 Transformers 的基本构建模块。
 - en: '[](https://medium.com/@ryanpegoud?source=post_page-----791d31b4f0dd--------------------------------)[![Ryan
     Pégoud](../Images/9314b76c2be56bda8b73b4badf9e3e4d.png)](https://medium.com/@ryanpegoud?source=post_page-----791d31b4f0dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----791d31b4f0dd--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----791d31b4f0dd--------------------------------)
     [Ryan Pégoud](https://medium.com/@ryanpegoud?source=post_page-----791d31b4f0dd--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@ryanpegoud?source=post_page-----791d31b4f0dd--------------------------------)[![Ryan
+    Pégoud](../Images/9314b76c2be56bda8b73b4badf9e3e4d.png)](https://medium.com/@ryanpegoud?source=post_page-----791d31b4f0dd--------------------------------)[](https://towardsdatascience.com/?source=post_page-----791d31b4f0dd--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----791d31b4f0dd--------------------------------)
+    [Ryan Pégoud](https://medium.com/@ryanpegoud?source=post_page-----791d31b4f0dd--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F27fba63b402e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=post_page-27fba63b402e----791d31b4f0dd---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----791d31b4f0dd--------------------------------)
     ·12 min read·Nov 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F791d31b4f0dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=-----791d31b4f0dd---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F27fba63b402e&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=post_page-27fba63b402e----791d31b4f0dd---------------------post_header-----------)
+    发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----791d31b4f0dd--------------------------------)
+    ·12分钟阅读·2023年11月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F791d31b4f0dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd&user=Ryan+P%C3%A9goud&userId=27fba63b402e&source=-----791d31b4f0dd---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F791d31b4f0dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd&source=-----791d31b4f0dd---------------------bookmark_footer-----------)![](../Images/bdeff665e8c9cb3e1a1bdb370c5de52f.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F791d31b4f0dd&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fimplementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd&source=-----791d31b4f0dd---------------------bookmark_footer-----------)![](../Images/bdeff665e8c9cb3e1a1bdb370c5de52f.png)'
 - en: Transformers, in the style of Edward Hopper (generated by Dall.E 3)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformers，以爱德华·霍珀（由 Dall.E 3 生成）的风格
 - en: Introduced in 2017 in the seminal paper “[***Attention is all you need***](https://arxiv.org/pdf/1706.03762.pdf)***”***[0],
     the Transformer architecture is arguably one of the most impactful breakthroughs
     in recent Deep Learning history, enabling the rise of large language models and
     even finding use in fields such as computer vision.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在2017年的开创性论文“[***注意力机制就是你需要的***](https://arxiv.org/pdf/1706.03762.pdf)***”***[0]中介绍的
+    Transformer 架构可以说是近期深度学习历史上最具影响力的突破之一，它使大型语言模型的兴起成为可能，并且在计算机视觉等领域也找到了应用。
 - en: Succeeding to former state-of-the-art architectures relying on **recurrence**
     such as Long Short-Term Memory (**LSTM**) networks or Gated Recurrent Units (**GRU**),
     **Transformers** introduce the concept of **self-attention**, coupled with an
     **encoder/decoder** architecture.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 继承了依赖于**递归**的前沿架构，如长短期记忆（**LSTM**）网络或门控循环单元（**GRU**），**Transformer**引入了**自注意力**的概念，并结合了**编码器/解码器**架构。
 - en: In this article, we’ll implement the first half of a Transformer, the **Encoder**,
     from scratch and step by step. We’ll use **JAX** as our main framework along with
     **Haiku,** one of DeepMind’s deep learning libraries.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们将从零开始一步一步实现Transformer的前半部分，即**编码器**。我们将使用**JAX**作为主要框架，并结合**Haiku**，这是DeepMind的深度学习库之一。
 - en: 'In case you are unfamiliar with JAX or need a fresh reminder about its amazing
     functionalities, I’ve already covered the topic in the context of Reinforcement
     Learning in my **previous article**:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对JAX不熟悉或需要对其惊人功能有一个新的提醒，我在我的**上一篇文章**中已经涵盖了这个话题：
 - en: '[](/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=post_page-----791d31b4f0dd--------------------------------)
     [## Vectorize and Parallelize RL Environments with JAX: Q-learning at the Speed
     of Light⚡'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## 使用JAX向量化和并行化强化学习环境：光速Q-learning⚡](/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=post_page-----791d31b4f0dd--------------------------------)'
 - en: Learn to vectorize a GridWorld environment and train 30 Q-learning agents in
     parallel on a CPU, at 1.8 million step per…
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 学习如何向量化一个GridWorld环境，并在CPU上并行训练30个Q-learning代理，步数达到180万……
 - en: towardsdatascience.com](/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=post_page-----791d31b4f0dd--------------------------------)
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '[towardsdatascience.com](/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5?source=post_page-----791d31b4f0dd--------------------------------)'
 - en: 'We’ll go over each of the blocks that make up the encoder and learn to implement
     them efficiently. In particular, the outline of this article contains:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将逐一讲解构成编码器的每个模块，并学习如何高效地实现它们。特别是，本文的纲要包括：
 - en: The **Embedding Layer** and **Positional Encodings**
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**嵌入层** 和 **位置编码**'
 - en: '**Multi-Head Attention**'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**多头注意力**'
 - en: '**Residual Connections** and **Layer Normalization**'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**残差连接** 和 **层归一化**'
 - en: '**Position-wise Feed-Forward Networks**'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**位置-wise前馈网络**'
 - en: '*Disclaimer: this article is not intended to be a complete introduction to
     these notions as we’ll focus on implementation first. If needed, please refer
     to the resources at the end of this post.*'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*免责声明：本文并非这些概念的完整介绍，我们将首先关注实现部分。如有需要，请参阅本文末尾的资源。*'
 - en: '***As always, the fully commented code for this article as well as illustrated
     notebooks are available on*** [***GitHub***](https://github.com/RPegoud/jab)***,
     feel free to star the repository if you enjoyed the article!***'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '***一如既往，本文的完整注释代码以及插图笔记本可在*** [***GitHub***](https://github.com/RPegoud/jab)***上获得，如果你喜欢这篇文章，欢迎给仓库加星！***'
 - en: '[](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)
     [## GitHub — RPegoud/jab: A collection of foundational Deep Learning models implemented
     in JAX'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '[## GitHub — RPegoud/jab: 一系列在JAX中实现的基础深度学习模型](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)'
 - en: 'A collection of foundational Deep Learning models implemented in JAX — GitHub
     — RPegoud/jab: A collection of…'
+  id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: '在JAX中实现的一系列基础深度学习模型 — GitHub — RPegoud/jab: 一系列…'
 - en: github.com](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '[github.com](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)'
 - en: Main parameters
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 主要参数
 - en: 'Before we get started, we need to define a few parameters that will play a
     crucial role in the encoder block:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们开始之前，我们需要定义几个在编码器模块中发挥重要作用的参数：
 - en: '**Sequence Length** (`seq_len`): The number of tokens or words in a sequence.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**序列长度** (`seq_len`): 序列中的标记或词的数量。'
 - en: '**Embedding Dimension** (`embed_dim`): The dimension of the embeddings, in
     other words, the number of numerical values used to describe a single token or
     word.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**嵌入维度** (`embed_dim`): 嵌入的维度，换句话说，就是用来描述单个标记或词的数值数量。'
 - en: '**Batch Size (**`batch_size`**):** The size of a batch of inputs, i.e. the
     number of sequences processed at the same time.'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**批量大小 (**`batch_size`**):** 输入批量的大小，即同时处理的序列数量。'
 - en: The input sequences to our encoder model will typically be of shape **(**`batch_size`**,**
     `seq_len`**)**. In this article, we’ll use `batch_size=32` and `seq_len=10`, which
     means that our encoder will simultaneously process 32 sequences of 10 words.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的编码器模型的输入序列通常是**（**`batch_size`**，** `seq_len`**）**的形状。在本文中，我们将使用`batch_size=32`和`seq_len=10`，这意味着我们的编码器将同时处理32个10词的序列。
 - en: 'Paying attention to the shape of our data at each step of the processing will
     enable us to better visualize and understand how the data flows in the encoder
     block. Here’s a high-level overview of our encoder, we’ll start from the bottom
     with the **embedding layer** and **positional encodings**:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 关注每一步处理中的数据形状将使我们更好地可视化和理解数据在编码器块中的流动。以下是我们编码器的高级概述，我们将从底部开始，介绍**嵌入层**和**位置编码**：
 - en: '![](../Images/818dc653dc223239b2d0b4bd7739222f.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/818dc653dc223239b2d0b4bd7739222f.png)'
 - en: Representation of the **Transformer Encoder block** (made by the author)
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Transformer编码器块**的表示（由作者制作）'
 - en: Embedding Layer and Positional Encodings
+  id: totrans-35
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 嵌入层和位置编码
 - en: As mentioned previously, our model takes batched sequences of tokens as inputs.
     Generating those tokens could be as simple as collecting a set of unique words
     in our dataset, and assigning an index to each of them. Then we would sample **32**
     **sequences** of **10 words** and replace each word with its index in the vocabulary.
     This procedure would provide us with an array of shape **(**`batch_size`**,**
     `seq_len`**)**, as expected.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 如前所述，我们的模型接受批处理的令牌序列作为输入。生成这些令牌可能像收集数据集中一组唯一词汇并为每个词汇分配一个索引一样简单。然后，我们将采样**32**个**10词**的**序列**，并用词汇中的索引替换每个词。这一过程将为我们提供一个形状为**（**`batch_size`**，**
+    `seq_len`**）**的数组，正如预期的那样。
 - en: We are now ready to get started with our Encoder. The first step is to create
     “***positional embeddings***” for our sequences. Positional embeddings are the
     **sum** of **word embeddings** and **positional encodings**.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们现在准备开始使用编码器。第一步是为我们的序列创建“***位置嵌入***”。位置嵌入是**词嵌入**和**位置编码**的**和**。
 - en: Word Embeddings
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 词嵌入
 - en: Word embeddings allow us to encode the **meaning** and **semantic relations**
     **between words** in our vocabulary. In this article, the embedding dimension
     is fixed to **64**. This means that each word is represented by a **64-dimensional
     vector** so that words with similar meanings have similar coordinates. Moreover,
     we can manipulate these vectors to **extract relations between words**, as depicted
     below.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 词嵌入使我们能够编码**词汇中**的**意义**和**语义关系**。在本文中，嵌入维度固定为**64**。这意味着每个词由一个**64维向量**表示，从而具有相似意义的词具有相似的坐标。此外，我们可以操作这些向量来**提取词之间的关系**，如下所示。
 - en: '![](../Images/55b06988518a9554add4ad341f107320.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/55b06988518a9554add4ad341f107320.png)'
 - en: Example of analogies derived from word embeddings (image from developers.google.com)
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 从词嵌入派生的类比示例（图片来自 developers.google.com）
 - en: 'Using Haiku, generating learnable embeddings is as simple as calling:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Haiku，生成可学习的嵌入就像调用一样简单：
 - en: '[PRE0]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: These embeddings will be updated along with other learnable parameters during
     model training *(more on that in a second)*.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些嵌入将在模型训练期间与其他可学习的参数一起更新（*稍后会详细介绍*）。
 - en: Positional Encodings
+  id: totrans-45
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 位置编码
 - en: As opposed to recurrent neural nets, Transformers can’t infer the position of
     a token given a shared hidden state as they **lack recurrent** or **convolutional
     structures**. Hence the introduction of **positional encodings, vectors** that
     convey a **token’s position** in the **input sequence**.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 与递归神经网络不同，Transformers无法根据共享的隐藏状态推断令牌的位置，因为它们**缺乏递归**或**卷积结构**。因此，引入了**位置编码**，这些向量传达了**令牌在输入序列中的位置**。
 - en: Essentially, each token is assigned a **positional vector** composed of **alternating
     sine and cosine values**. Those vectors match the dimensionality of word embeddings
     so that both can be summed.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 从本质上讲，每个令牌被分配一个由**交替的正弦和余弦值**组成的**位置向量**。这些向量的维度与词嵌入相匹配，以便两者可以相加。
 - en: 'In particular, the original Transformer paper uses the following functions:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是，原始的 Transformer 论文使用了以下函数：
 - en: '![](../Images/683d82eb429e0126a88dbded90881ceb.png)![](../Images/c29c91a5570ead1acef50cc6df4c3e59.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/683d82eb429e0126a88dbded90881ceb.png)![](../Images/c29c91a5570ead1acef50cc6df4c3e59.png)'
 - en: Positional Encoding functions (reproduced from “Attention is all you need”,
     Vaswani et al. 2017)
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 位置编码函数（转载自“Attention is all you need”，Vaswani等，2017）
 - en: The below figures enable us to further understand the functioning of positional
     encodings. Let’s take a look at the first row of the uppermost plot, we can see
     **alternating sequences of zeros and ones.** Indeed, rows represent the position
     of a token in the sequence (the `pos` variable) while columns represent the embedding
     dimension (the `i` variable).
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面的图使我们能够进一步理解位置编码的功能。让我们来看一下最上面图的第一行，我们可以看到**交替的零和一序列**。实际上，行表示序列中一个 token
+    的位置（`pos` 变量），而列表示嵌入维度（`i` 变量）。
 - en: Therefore, when `pos=0`, the previous equations return `sin(0)=0` for even embedding
     dimensions and `cos(0)=1` for odd dimensions.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，当 `pos=0` 时，之前的方程对偶数嵌入维度返回 `sin(0)=0`，对奇数维度返回 `cos(0)=1`。
 - en: Moreover, we see that adjacent rows share similar values, whereas the first
     and last rows are wildly different. This property is helpful for the model to
     assess the **distance between words** in the sequence as well as their **ordering**.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们看到相邻的行具有相似的值，而第一行和最后一行则差异很大。这一特性有助于模型评估序列中**单词之间的距离**以及它们的**顺序**。
 - en: Finally, the third plot represents the sum of positional encodings and embeddings,
     which is the output of the embedding block.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，第三个图表示位置编码和嵌入的总和，这就是嵌入块的输出。
 - en: Representation of word embeddings and positional encodings, with seq_len=16
     and embed_dim=64 (made by the author)
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 单词嵌入和位置编码的表示，seq_len=16 和 embed_dim=64（由作者制作）
 - en: Using Haiku, we define the embedding layer as follows. Similarly to other deep
     learning frameworks, Haiku allows us to define **custom modules** (here `hk.Module`)
     to **store learnable parameters** and **define the behavior** of our model’s components.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Haiku，我们将嵌入层定义如下。与其他深度学习框架类似，Haiku 允许我们定义**自定义模块**（此处为 `hk.Module`），以**存储可学习的参数**和**定义模型组件的行为**。
 - en: Each Haiku module needs to have an `__init__`and `__call__`function. Here, the
     call function simply computes the embeddings using the `hk.Embed` function and
     the positional encodings, before summing them.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个 Haiku 模块需要有一个 `__init__` 和 `__call__` 函数。在这里，call 函数简单地使用 `hk.Embed` 函数和位置编码计算嵌入，然后对其进行求和。
 - en: The positional encoding function uses JAX functionalities such as `vmap`and`lax.cond`for
     performance. If you are unfamiliar with those functions, feel free to check out
     my [previous post](https://medium.com/towards-data-science/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5)
     where they are presented more in-depth.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 位置编码函数使用 JAX 功能，如 `vmap` 和 `lax.cond` 来提高性能。如果你对这些函数不熟悉，可以查看我的[上一篇文章](https://medium.com/towards-data-science/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5)，那里对这些函数进行了更深入的介绍。
 - en: Put simply, `vmap`allows us to define a function for a **single sample** and
     **vectorize it** so that it can be applied to **batches** of data. The `in_axes`parameter
     is used to specify that we want to iterate over the first axis of the `dim`input,
     which is the embedding dimension. On the other hand, `lax.cond`is an XLA-compatible
     version of a Python if/else statement.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，`vmap` 允许我们为**单个样本**定义一个函数并**将其向量化**，以便它可以应用于**数据批次**。`in_axes` 参数用于指定我们要遍历
+    `dim` 输入的第一个轴，即嵌入维度。另一方面，`lax.cond` 是 XLA 兼容版本的 Python if/else 语句。
 - en: Self-attention and MultiHead-Attention
+  id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自注意力和多头注意力
 - en: 'Attention aims to compute the **importance of each word in a sequence**, **relative
     to an input word**. For example, in the sentence:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意力旨在计算**序列中每个单词的重要性**，**相对于输入单词**。例如，在句子中：
 - en: “The black cat jumped on the sofa, lied down and fell asleep, as it was tired”.
+  id: totrans-62
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “那只黑猫跳上沙发，躺下并入睡，因为它累了。”
 - en: The word “**it**” could be quite ambiguous for the model, as *technically*,
     it could refer to both “**cat**” and “**sofa**”. A well-trained attention model
     would be able to understand that “**it**” refers to “**cat**” and therefore assign
     attention values to the rest of the sentence accordingly.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 词语“**它**”对于模型来说可能会相当模糊，因为*从技术上讲*，它可以指代“**猫**”或“**沙发**”。一个经过良好训练的注意力模型能够理解“**它**”指的是“**猫**”，并因此为句子的其余部分分配相应的注意力值。
 - en: Essentially, **attention values** could be seen as **weights** that describe
     the **importance** of a certain word **given the context of the input** word.
     For instance, the attention vector for the word “**jumped**” would have high values
     for words like “**cat**” (*what* jumped?), “**on**”, and “**sofa**” (*where* did
     it jump?) as these words are **relevant to its context**.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 本质上，**注意力值**可以视为**权重**，描述了某个单词**在给定输入上下文中的重要性**。例如，“**跳跃**”一词的注意力向量会对“**猫**”（*跳跃了什么？*）、“**在**”和“**沙发**”（*跳跃到哪里？*）等词具有较高的值，因为这些词**与其上下文相关**。
 - en: '![](../Images/31016a82455c64d4f840c4bbe4861bad.png)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/31016a82455c64d4f840c4bbe4861bad.png)'
 - en: Visual representation of an **attention vector** (made by the author)
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意力向量**的可视化表示（由作者制作）'
 - en: 'In the Transformer paper, attention is computed using ***Scaled Dot-Product
     Attention***. Which is summarized by the formula:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Transformer 论文中，注意力是使用***缩放点积注意力***计算的。其公式总结如下：
 - en: '![](../Images/252c2d3a224b203a09510ff5ba3d43a9.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/252c2d3a224b203a09510ff5ba3d43a9.png)'
 - en: Scaled Dot-Product Attention (reproduced from “Attention is all you need”, *Vaswani
     et al. 2017*)
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 缩放点积注意力（重现自“Attention is all you need”，*Vaswani et al. 2017*）
 - en: Here, Q,K and V stand for ***Queries, Keys*** and ***Values****.* These matrices
     are obtained by multiplying learned weight vectors WQ, WK and WV with positional
     embeddings.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，Q、K 和 V 分别代表***查询、键***和***值***。这些矩阵是通过将学习到的权重向量 WQ、WK 和 WV 与位置嵌入相乘得到的。
 - en: These names are mainly **abstractions** used to help understand how the information
     is processed and weighted in the attention block. They are an allusion to **retrieval
     systems** vocabulary[2] (e.g. searching a video on YouTube for instance).
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些名称主要是**抽象概念**，用于帮助理解信息在注意力块中的处理和加权方式。它们暗指**检索系统**的词汇[2]（例如，在 YouTube 上搜索视频）。
 - en: 'Here’s an **intuitive** explanation:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一个**直观的**解释：
 - en: '**Queries**: They can be interpreted as a “*set of questions*” about all the
     positions in a sequence. For instance, interrogating the context of a word and
     trying to identify the most relevant parts of the sequence.'
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**查询**：它们可以被理解为关于序列中所有位置的“*一组问题*”。例如，询问一个单词的上下文并试图识别序列中最相关的部分。'
 - en: '**Keys**: They can be seen as holding information that the queries interact
     with, the compatibility between a query and a key determines how much attention
     the query should pay to the corresponding value.'
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**键**：它们可以被视为包含查询交互的信息，查询与键之间的兼容性决定了查询应该给予对应值多少注意力。'
 - en: '**Values**: Matching keys and queries allows us to decide which keys are relevant,
     values are the actual content paired with the keys.'
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**值**：匹配的键和查询使我们能够决定哪些键是相关的，值是与键配对的实际内容。'
 - en: In the following figure, the query is a YouTube search, the keys are the video
     descriptions and metadata, while the value are the associated videos.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下图中，查询是 YouTube 搜索，键是视频描述和元数据，而值是相关联的视频。
 - en: '![](../Images/483f936afe83dcd9d81810153894e7b2.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/483f936afe83dcd9d81810153894e7b2.png)'
 - en: Intuitive representation of the Queries, Keys, Values concept (made by the author)
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 查询、键、值概念的直观表示（由作者制作）
 - en: In our case, queries, keys, and values come from the **same source** (as they’re
     derived from the input sequences), hence the name **self-attention**.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的情况下，查询、键和值来自于**同一来源**（因为它们是从输入序列派生的），因此被称为**自注意力**。
 - en: The computation of attention scores is usually executed **multiple times in
     parallel**, each time with a **fraction of the embeddings**. This mechanism is
     called “**Multi-Head Attention**” and enables each head to learn several different
     representations of the data in parallel, leading to a more **robust** model.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意力分数的计算通常是**多次并行执行**的，每次使用**部分嵌入**。这一机制被称为“**多头注意力**”，使每个头可以并行地学习数据的几种不同表示，从而形成更**强健**的模型。
 - en: A single attention head would generally process arrays with shape (`batch_size,
     seq_len, d_k`**)**where `d_k`can be set as the ratio between the number of heads
     and the dimension of the embeddings (`d_k = n_heads/embed_dim`). This way, concatenating
     the outputs of each head conveniently gives an array with shape **(**`batch_size,
     seq_len, embed_dim`**)**, as the input.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 单个注意力头通常处理形状为 (`batch_size, seq_len, d_k`**)** 的数组，其中 `d_k` 可以设置为头数与嵌入维度的比率（`d_k
+    = n_heads/embed_dim`）。这样，连接每个头的输出就能方便地得到形状为**（`batch_size, seq_len, embed_dim`**）的数组，作为输入。
 - en: 'The computation of attention matrices can be broken down into several steps:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意力矩阵的计算可以分解为几个步骤：
 - en: First, we define **learnable weight vectors** WQ, WK, and WV. These vectors
     have shapes **(**`n_heads, embed_dim, d_k`**)**.
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，我们定义**可学习的权重向量** WQ、WK 和 WV。这些向量的形状为（`n_heads, embed_dim, d_k`）。
 - en: In parallel, we **multiply** the **positional embeddings** with the **weight
     vectors**. We obtain Q, K, and V matrices with shapes **(**`batch_size, seq_len,
     d_k`**)**.
+  id: totrans-84
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 同时，我们将**位置嵌入**与**权重向量**相乘。我们得到形状为（`batch_size, seq_len, d_k`）的 Q、K 和 V 矩阵。
 - en: We then **scale** the **dot-product** of Q and K (transposed). This scaling
     involves dividing the result of the dot-product by the square root of `d_k`and
     applying the softmax function on the matrices rows. Therefore, attention scores
     for an input token (i.e. a row) sum up to one, this helps prevent values from
     becoming too large and slowing down computation. The output has shape (`batch_size,
     seq_len, seq_len`)
+  id: totrans-85
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后，我们对 Q 和 K（转置）的点积进行**缩放**。这个缩放操作包括将点积的结果除以 `d_k` 的平方根，并在矩阵的行上应用 softmax 函数。因此，对于输入的令牌（即一行），注意力分数总和为一，这有助于防止值变得过大而减慢计算速度。输出的形状为
+    (`batch_size, seq_len, seq_len`)。
 - en: Finally, we dot the result of the previous operation with V, making the shape
     of the output (`batch_size, seq_len, d_k`).
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，我们将上一操作的结果与 V 进行点乘，输出的形状为 (`batch_size, seq_len, d_k`)。
 - en: '![](../Images/53a16f4b352d266f793268e64d9cd1e6.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/53a16f4b352d266f793268e64d9cd1e6.png)'
 - en: Visual representation of matrix operations inside **an attention block** (made
     by the author)
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '**注意块**内部的矩阵操作的可视化表示（作者制作）'
 - en: The outputs of each attention head can then be **concatenated** to form a matrix
     with shape (`batch_size, seq_len, embed_dim`). The Transformer paper also adds
     a **linear layer** at the end of the multi-head attention module, to **aggregate**
     and **combine** the learned representations from **all the attention heads**.
+  id: totrans-89
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后，每个注意力头的输出可以**串联**起来形成一个形状为（`batch_size, seq_len, embed_dim`）的矩阵。Transformer论文还在多头注意力模块的最后添加了一个**线性层**，用于**汇聚**和**组合**来自**所有注意力头**的学习表示。
 - en: '![](../Images/2b83a1bf528562df5c6794e0dffe2819.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2b83a1bf528562df5c6794e0dffe2819.png)'
 - en: Concatenation of multi-head attention matrices and linear layer (made by the
     author)
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 多头注意力矩阵的串联和线性层（作者制作）
 - en: In Haiku, the Multi-Head Attention module can be implemented as follows. The
     `__call__`function follows the same logic as the above graph while the class methods
     take advantage of JAX utilities such as `vmap`(to vectorize our operations over
     the different attention heads and matrices) and `tree_map`(to map matrix dot-products
     over weight vectors).
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Haiku中，多头注意力模块可以如下实现。`__call__`函数遵循与上述图表相同的逻辑，而类方法利用JAX实用程序，如`vmap`（在不同注意力头和矩阵上向量化我们的操作）和`tree_map`（在权重向量上映射矩阵点积）。
 - en: Residual Connections and Layer Normalization
+  id: totrans-93
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 残差连接和层归一化
 - en: As you might have noticed on the Transformer graph, the multi-head attention
     block and the feed-forward net are followed by **residual connections** and **layer
     normalization**.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你在Transformer图中所注意到的，多头注意力块和前馈网络之后跟着**残差连接**和**层归一化**。
 - en: Residual or skip connections
+  id: totrans-95
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 残差连接或跳跃连接
 - en: Residual connections are a standard solution to **solve** the **vanishing gradient
     problem**, which occurs when gradients become too small to effectively update
     the model’s parameters.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 残差连接是解决**梯度消失问题**的标准解决方案，即当梯度变得太小以至于无法有效更新模型参数时。
 - en: As this issue naturally arises in particularly deep architectures, residual
     connections are used in a variety of complex models such as **ResNet** *(*[*Kaiming
     et al*](https://arxiv.org/abs/1512.03385v1)*, 2015)* in computer vision, **AlphaZero**
     ([*Silver et al*](https://arxiv.org/abs/1712.01815v1)*, 2017*) in reinforcement
     learning, and of course, **Transformers**.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这个问题在特别深的架构中自然而然地出现，所以残差连接被用在各种复杂模型中，比如在计算机视觉中的**ResNet**（[*Kaiming et al*](https://arxiv.org/abs/1512.03385v1)，2015年），在强化学习中的**AlphaZero**（[*Silver
+    et al*](https://arxiv.org/abs/1712.01815v1)，2017年），当然还有**Transformers**。
 - en: In practice, residual connections simply forward the output of a specific layer
     to a following one, **skipping one or more layers** on the way. For instance,
     the residual connection around the multi-head attention is equivalent to summing
     the output of multi-head attention with positional embeddings.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实践中，残差连接简单地将特定层的输出直接转发到下一层，**跳过一个或多个层**。例如，围绕多头注意力的残差连接相当于将多头注意力的输出与位置嵌入求和。
 - en: This enables gradients to flow more efficiently through the architecture during
     backpropagation and can usually lead to **faster convergence** and more **stable
     training**.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 这使得梯度在反向传播过程中更有效地流动，通常可以导致**更快的收敛**和更**稳定的训练**。
 - en: '![](../Images/abba4a948e3ceaf4187f0f3469983f17.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/abba4a948e3ceaf4187f0f3469983f17.png)'
 - en: Representation of **residual connections** in Transformers (made by the author)
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformer 中**残差连接**的表示（由作者制作）
 - en: Layer Normalization
+  id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 层归一化
 - en: Layer normalization helps ensure that the values propagated through the model
     do not “***explode***” (tend toward infinity), which could easily happen in attention
     blocks, where several matrices are multiplied during each forward pass.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 层归一化有助于确保通过模型传播的值不会“***爆炸***”（趋向无穷大），这种情况在注意力模块中很容易发生，因为在每次前向传递中会有多个矩阵相乘。
 - en: Unlike batch normalization, which normalizes across the batch dimension assuming
     a uniform distribution, **layer normalization operates** **across the features**.
     This approach is suitable for sentence batches where each may have **unique distributions**
     due to **varying meanings** and **vocabularies**.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 与在批次维度上进行归一化并假设均匀分布的批量归一化不同，**层归一化在特征**上进行归一化。此方法适用于句子批次，因为每个句子可能由于**不同的意义**和**词汇**而具有**独特的分布**。
 - en: By normalizing across **features**, such as **embeddings** or **attention values**,
     layer normalization **standardizes data** to a consistent scale **without conflating
     distinct sentence characteristics**, maintaining the unique distribution of each.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过在**特征**上进行归一化，例如**嵌入**或**注意力值**，层归一化**将数据标准化**为一致的尺度，**而不会混淆不同句子的特征**，保持每个句子的独特分布。
 - en: '![](../Images/ac49f30b74e842229d2043091b9ef894.png)'
+  id: totrans-106
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ac49f30b74e842229d2043091b9ef894.png)'
 - en: Representation of **Layer Normalization** in the context of Transformers (made
     by the author)
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformer 中**层归一化**的表示（由作者制作）
 - en: The implementation of layer normalization is pretty straightforward, we initialize
     the learnable parameters alpha and beta and normalize along the desired feature
     axis.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 层归一化的实现非常简单，我们初始化可学习的参数 alpha 和 beta，并在所需的特征轴上进行归一化。
 - en: '**Position-wise Feed-Forward Network**'
+  id: totrans-109
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**位置-wise 前馈网络**'
 - en: The last component of the encoder that we need to cover is the **position-wise
     feed-forward network**. This fully connected network takes the normalized outputs
     of the attention block as inputs and is used to introduce **non-linearity** and
     increase the **model’s capacity** to learn complex functions.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器中我们需要覆盖的最后一个组件是**位置-wise 前馈网络**。这个全连接网络以注意力块的归一化输出作为输入，用于引入**非线性**并增加**模型的容量**以学习复杂的函数。
 - en: 'It is composed of two dense layers separated by a [gelu activation](https://paperswithcode.com/method/gelu):'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 它由两个密集层组成，中间隔着一个 [gelu 激活函数](https://paperswithcode.com/method/gelu)。
 - en: After this block, we have another residual connection and layer normalization
     to complete the encoder.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个模块之后，我们有另一个残差连接和层归一化，以完成编码器。
 - en: Wrapping up
+  id: totrans-113
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: 'There we have it! By now you should be familiar with the main concepts of the
     Transformer encoder. Here’s the full encoder class, notice that in Haiku, we assign
     a name to each layer, so that learnable parameters are separated and easy to access.
     The `__call__`function provides a good summary of the different steps of our encoder:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 就这样！到现在你应该对 Transformer 编码器的主要概念很熟悉了。这是完整的编码器类，请注意，在 Haiku 中，我们为每一层分配了一个名称，以便学习参数分开且易于访问。`__call__`函数很好地总结了我们编码器的不同步骤：
 - en: To use this module on actual data, we have to apply `hk.transform` to a function
     encapsulating the encoder class. Indeed, you might remember that JAX embraces
     the **functional programming** paradigm, therefore, Haiku follows the same principles.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 要在实际数据上使用此模块，我们必须将 `hk.transform` 应用于封装编码器类的函数。确实，你可能会记得 JAX 采用了**函数式编程**范式，因此，Haiku
+    遵循相同的原则。
 - en: 'We define a function containing an instance of the encoder class and return
     the output of a forward pass. Applying `hk.transform` returns a transformed object
     having access to two functions: `init` and `apply`.'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们定义了一个包含编码器类实例的函数，并返回前向传递的输出。应用 `hk.transform` 返回一个转换对象，具有两个函数：`init` 和 `apply`。
 - en: The former enables us to initialize the module with a random key as well as
     some dummy data (notice that here we pass an array of zeros with shape `batch_size,
     seq_len`) while the latter allows us to process real data.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 前者使我们能够用一个随机键和一些虚拟数据初始化模块（请注意这里我们传递的是一个形状为`batch_size, seq_len`的零数组），而后者则允许我们处理真实数据。
 - en: '[PRE1]'
+  id: totrans-118
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: In the next article, we’ll **complete the transformer** architecture by adding
     a **decoder**, which reuses most of the blocks we introduced so far, and learn
     how to **train a model** on a specific task using Optax!
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 在下一篇文章中，我们将**完成 Transformer** 架构，通过添加一个 **解码器**，它重用了我们迄今为止介绍的大部分模块，并学习如何使用 Optax
+    **训练模型** 以完成特定任务！
 - en: '**Conclusion**'
+  id: totrans-120
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**结论**'
 - en: '**Thank you for reading this far**, if you are interested in dabbling with
     the code, you can find it fully commented on GitHub, along with additional details
     and a walkthrough using a toy dataset.'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '**感谢你读到这里**，如果你对代码感兴趣，可以在 GitHub 上找到完整的注释以及额外的细节和使用玩具数据集的示例。'
 - en: '[](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)
     [## GitHub - RPegoud/jab: A collection of foundational Deep Learning models implemented
     in JAX'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)
+    [## GitHub - RPegoud/jab: 一组用 JAX 实现的基础深度学习模型'
 - en: 'A collection of foundational Deep Learning models implemented in JAX - GitHub
     - RPegoud/jab: A collection of…'
+  id: totrans-123
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: '一组用 JAX 实现的基础深度学习模型 - GitHub - RPegoud/jab: 一组…'
 - en: github.com](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: github.com](https://github.com/RPegoud/jab?source=post_page-----791d31b4f0dd--------------------------------)
 - en: If you’d like to dig deeper into Transformers, the following section contains
     some articles that helped me redact this article.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想更深入了解 Transformers，以下部分包含了一些帮助我撰写本文的文章。
 - en: Until next time 👋
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次见 👋
 - en: 'References and Resources:'
+  id: totrans-127
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献和资源：
 - en: '[1] [***Attention is all you need***](https://arxiv.org/pdf/1706.03762.pdf)
     (2017), Vaswani et al, Google'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] [***Attention is all you need***](https://arxiv.org/pdf/1706.03762.pdf)
+    (2017), Vaswani 等，谷歌'
 - en: '[2] [***What exactly are keys, queries, and values in attention mechanisms?***](https://stats.stackexchange.com/questions/421935/what-exactly-are-keys-queries-and-values-in-attention-mechanisms)*(2019)*Stack
     Exchange'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [***注意机制中的键、查询和值到底是什么？***](https://stats.stackexchange.com/questions/421935/what-exactly-are-keys-queries-and-values-in-attention-mechanisms)*(2019)*Stack
+    Exchange'
 - en: '[3] [***The Illustrated Transformer***](http://jalammar.github.io/illustrated-transformer/)*(2018),*
     [Jay Alammar](http://jalammar.github.io/)'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] [***图解 Transformer***](http://jalammar.github.io/illustrated-transformer/)*(2018)，*
+    [Jay Alammar](http://jalammar.github.io/)'
 - en: '[4] [***A Gentle Introduction to Positional Encoding in Transformer Models***](https://machinelearningmastery.com/a-gentle-introduction-to-positional-encoding-in-transformer-models-part-1/)*(2023),*
     [**Mehreen Saeed**](https://machinelearningmastery.com/author/msaeed/), Machine
     Learning Mastery'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] [***Transformer 模型中位置编码的温和介绍***](https://machinelearningmastery.com/a-gentle-introduction-to-positional-encoding-in-transformer-models-part-1/)*(2023)，*
+    [**Mehreen Saeed**](https://machinelearningmastery.com/author/msaeed/)，Machine
+    Learning Mastery'
 - en: '[***JAX documentation***](https://jax.readthedocs.io/en/latest/index.html)'
+  id: totrans-132
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[***JAX 文档***](https://jax.readthedocs.io/en/latest/index.html)'
 - en: '[***Haiku documentation***](https://dm-haiku.readthedocs.io/en/latest/notebooks/basics.html)'
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[***Haiku 文档***](https://dm-haiku.readthedocs.io/en/latest/notebooks/basics.html)'
 - en: Image Credits
+  id: totrans-134
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 图片来源
 - en: '[Word embeddings](https://developers.google.com/machine-learning/crash-course/embeddings/translating-to-a-lower-dimensional-space?hl=fr),
     developers.google.com'
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[词嵌入](https://developers.google.com/machine-learning/crash-course/embeddings/translating-to-a-lower-dimensional-space?hl=fr)，developers.google.com'
 - en: Cat picture, [Karsten Winegeart](https://unsplash.com/fr/photos/bulldog-francese-marrone-che-indossa-una-camicia-gialla-5PVXkqt2s9k),
     Unsplash
+  id: totrans-136
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 猫的照片，[Karsten Winegeart](https://unsplash.com/fr/photos/bulldog-francese-marrone-che-indossa-una-camicia-gialla-5PVXkqt2s9k)，Unsplash
 - en: Norway landscape, [Pascal Debrunner](https://unsplash.com/fr/photos/corpo-de-agua-perto-da-montanha-LKOuYT5_dyw),
     Unsplash
+  id: totrans-137
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 挪威风景，[Pascal Debrunner](https://unsplash.com/fr/photos/corpo-de-agua-perto-da-montanha-LKOuYT5_dyw)，Unsplash
 - en: Dog picture, [Loan](https://unsplash.com/fr/photos/chaton-tabby-argente-sur-marbre-7AIDE8PrvA0),
     Unsplash
+  id: totrans-138
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 狗的照片，[Loan](https://unsplash.com/fr/photos/chaton-tabby-argente-sur-marbre-7AIDE8PrvA0)，Unsplash
