@@ -125,11 +125,13 @@
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管制定和调整像上面这些 AI 开发原则可能会提高您的生产力并减少浪费，但它们并不能完全防护所有可能的失败。例如，专用的故障检测运行时进程可能无法解决培训实验停滞的情况（例如，由于培训应用程序进程中的死锁），而培训任务仍然保持活动状态，直到它被主动停止或超时。
 - en: Second Line of Defense — Deploy Cross-project Guardrails
   id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 第二道防线 — 部署跨项目的保护措施
 - en: In this post we propose instituting a second line of defense that monitors all
     of the training activities in the project (or organization), verifies their compliance
     with a predetermined set of rules, and takes appropriate action in the case that
@@ -142,11 +144,14 @@
   id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们提议建立第二道防线，监控项目（或组织）中的所有培训活动，验证其是否符合预定的规则，并在发现异常培训实验时采取适当的措施。一种方法是使用专用的**无服务器函数**，这些函数会在培训任务的不同阶段触发，并编程以评估任务的状态，并根据需要停止或重新启动（可能会更改任务设置）任务。在接下来的章节中，我们将演示如何使用
+    AWS Lambda 作为对抗异常 Amazon SageMaker 培训实验的第二道防线的几个示例。
 - en: Disclaimers
   id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 免责声明
 - en: Although we have chosen Amazon SageMaker and AWS Lambda for our demonstrations,
     the contents of the post are just as relevant to other services and similar functionality
     can be implemented for them. Please do not interpret our choice of these services
@@ -156,6 +161,7 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管我们选择了 Amazon SageMaker 和 AWS Lambda 进行演示，但本文内容同样适用于其他服务，并且可以为它们实现类似的功能。请不要将我们选择这些服务解读为对其使用的推荐。云端培训有多种选项，每种选项都有其自身的优缺点。最适合您的选择将极大地取决于您项目的具体细节。
 - en: While we will share a few Python examples of server-less code, we will not go
     into the details of how to create and deploy them as AWS Lambda functions. There
     are many ways of interacting with AWS Lambda. We refer the reader to the [official
@@ -164,6 +170,8 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然我们将分享一些无服务器代码的 Python 示例，但我们不会详细讲解如何创建和部署它们作为 AWS Lambda 函数。与 AWS Lambda 交互的方式有很多种。我们建议读者参阅[官方
+    AWS 文档](https://docs.aws.amazon.com/lambda/latest/dg/python-tracing.html)以了解更多信息。
 - en: The examples below were created for demonstrative purposes. They will likely
     require modification to suit the specific needs of your project. Be sure to fully
     understand all of the details of the code and the associated service costs before
@@ -175,16 +183,20 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下示例是为演示目的而创建的。它们可能需要修改以适应您项目的具体需求。在调整我们提议的解决方案之前，请确保充分理解所有代码细节及相关服务费用。重要的是，我们将分享的代码没有经过严格测试。任何涉及创建和调用多个
+    Lambda 函数以及[Amazon CloudWatch 警报](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/AlarmThatSendsEmail.html)（如本文所述）的解决方案都需要进行适当的验证，以防止冗余/孤立工件的积累。
 - en: We highly advise that you verify the details of this post against the most up-to-date
     AWS Lambda documentation and most up-to-date versions of the supporting libraries.
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们强烈建议您将本文的详细信息与最新的 AWS Lambda 文档和支持库的最新版本进行核对。
 - en: Enforcing Developer Compliance
   id: totrans-25
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 强制执行开发者合规性
 - en: 'While [cloud governance](https://www.redhat.com/en/topics/automation/what-is-cloud-governance)
     is often vital for successful and efficient use of cloud services, its enforcement
     can sometimes be challenging. For example: Amazon SageMaker includes an API for
