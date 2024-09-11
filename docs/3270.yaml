@@ -82,6 +82,7 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇博客文章中，我们证明了这样一个通用推理模型的存在，至少对于知识图谱（KGs）是如此。我们创建了**ULTRA**，这是一个单一的预训练推理模型，能够泛化到任意实体和关系词汇的新KG，这为任何KG推理问题提供了默认解决方案。
 - en: '*This post is based on our recent paper (*[*preprint*](https://arxiv.org/abs/2310.04562)*)
     and was written together with* [*Xinyu Yuan*](https://github.com/KatarinaYuan)
     *(Mila),* [*Zhaocheng Zhu*](https://kiddozhu.github.io/) *(Mila), and* [*Bruno
@@ -92,46 +93,59 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这篇文章基于我们最近的论文（[*preprint*](https://arxiv.org/abs/2310.04562)），由* [*Xinyu Yuan*](https://github.com/KatarinaYuan)
+    *(Mila)，* [*Zhaocheng Zhu*](https://kiddozhu.github.io/) *(Mila) 和* [*Bruno Ribeiro*](https://www.cs.purdue.edu/homes/ribeirob/)
+    *(Purdue / Stanford) 共同撰写。关注* [*Michael*](https://twitter.com/michael_galkin)*、*
+    [*Xinyu*](https://twitter.com/XinyuYuan402)*、* [*Zhaocheng*](https://twitter.com/zhu_zhaocheng)*
+    和* [*Bruno*](https://twitter.com/brunofmr) *在Twitter上获取更多Graph ML内容。*'
 - en: Outline
   id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 大纲
 - en: '[Why KG representation learning is stuck in 2018](#974c)'
   id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Why KG representation learning is stuck in 2018](#974c)'
 - en: '[Theory: What makes a model inductive and transferable?](#062b)'
   id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Theory: What makes a model inductive and transferable?](#062b)'
 - en: '[Theory: Equivariance in multi-relational graphs](#fbb0)'
   id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Theory: Equivariance in multi-relational graphs](#fbb0)'
 - en: '[ULTRA: A Foundation Model for KG Reasoning](#86f8)'
   id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[ULTRA: A Foundation Model for KG Reasoning](#86f8)'
 - en: '[Experiments: Best even in the zero-shot inference, Scaling behavior](#2517)'
   id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Experiments: Best even in the zero-shot inference, Scaling behavior](#2517)'
 - en: '[Code, Data, Checkpoints](#71ab)'
   id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Code, Data, Checkpoints](#71ab)'
 - en: Why KG representation learning is stuck in 2018
   id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 为什么KG表示学习停留在2018年
 - en: The pretrain-finetune paradigm has been with us since 2018 when [ELMo](https://arxiv.org/abs/1802.05365)
     and [ULMFit](https://arxiv.org/abs/1801.06146) showed first promising results
     and they were later cemented with [BERT](https://arxiv.org/abs/1810.04805) and
@@ -139,6 +153,7 @@
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 预训练-微调范式自2018年起就存在，当时[ELMo](https://arxiv.org/abs/1802.05365)和[ULMFit](https://arxiv.org/abs/1801.06146)展示了首次有希望的结果，随后这些成果在[BERT](https://arxiv.org/abs/1810.04805)和[GPT](https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf)的助力下得到了巩固。
 - en: In the era of *large language models* (LLM) and more general *foundation models*
     (FMs), we often have a single model (like GPT-4 or Llama-2) pre-trained on enormous
     amounts of data and capable of performing a sheer variety of language tasks in
@@ -148,34 +163,40 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在*大型语言模型*（LLM）和更通用的*基础模型*（FMs）时代，我们常常拥有一个（如GPT-4或Llama-2）在大量数据上预训练的单一模型，能够以零样本方式执行各种语言任务（或者至少在特定数据集上进行微调）。如今，多模态FMs甚至支持在同一个模型中进行语言、视觉、音频和其他模态的处理。
 - en: 'Things work a little differently in Graph ML. Particularly, **what’s up with
     representation learning on KGs at the end of 2023?** The main tasks here are edge-level:'
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 图形机器学习（Graph ML）中的情况稍有不同。特别是，**2023年底KG上的表示学习怎么样了？** 这里的主要任务是边级：
 - en: 'Entity prediction (or knowledge graph completion) `(h,r,?)`: given a head node
     and relation, rank all nodes in the graph that can potentially be true tails.'
   id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 实体预测（或知识图谱补全）`(h,r,?)`：给定一个头节点和关系，对图中所有可能成为真实尾节点的节点进行排名。
 - en: 'Relation prediction `(h,?,t)`: given two nodes, predict a relation type between
     them'
   id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 关系预测`(h,?,t)`：给定两个节点，预测它们之间的关系类型。
 - en: 'Turns out, up until now it has been somewhere in pre-2018\. The key problem
     is:'
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实证明，到目前为止，它一直停留在2018年前的阶段。关键问题是：
 - en: Each KG has its own set of entities and relations, there is no single pre-trained
     model that would transfer to any graph.
   id: totrans-28
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 每个KG都有自己的一组实体和关系，没有单一的预训练模型可以适用于任何图。
 - en: For example, if we look at Freebase (a KG behind Google Knowledge Graph) and
     Wikidata (the largest open-source KG), they have absolutely different sets of
     entities (86M vs 100M) and relations (1500 vs 6000). Is there any hope for current
