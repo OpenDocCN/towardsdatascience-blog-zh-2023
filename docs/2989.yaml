@@ -1,12 +1,15 @@
 - en: Deep Dive into Pandas Copy-on-Write Mode — Part III
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-iii-c024eaa16ed4?source=collection_archive---------10-----------------------#2023-09-29](https://towardsdatascience.com/deep-dive-into-pandas-copy-on-write-mode-part-iii-c024eaa16ed4?source=collection_archive---------10-----------------------#2023-09-29)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '*Explaining the migration path for Copy-on-Write*'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -14,27 +17,34 @@
     Hoefler](../Images/35ca9ef1100d8c93dbadd374f0569fe1.png)](https://medium.com/@patrick_hoefler?source=post_page-----c024eaa16ed4--------------------------------)[](https://towardsdatascience.com/?source=post_page-----c024eaa16ed4--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----c024eaa16ed4--------------------------------)
     [Patrick Hoefler](https://medium.com/@patrick_hoefler?source=post_page-----c024eaa16ed4--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F103b3417e0f5&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-iii-c024eaa16ed4&user=Patrick+Hoefler&userId=103b3417e0f5&source=post_page-103b3417e0f5----c024eaa16ed4---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----c024eaa16ed4--------------------------------)
     ·4 min read·Sep 29, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fc024eaa16ed4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-iii-c024eaa16ed4&user=Patrick+Hoefler&userId=103b3417e0f5&source=-----c024eaa16ed4---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fc024eaa16ed4&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fdeep-dive-into-pandas-copy-on-write-mode-part-iii-c024eaa16ed4&source=-----c024eaa16ed4---------------------bookmark_footer-----------)![](../Images/4c3dc59cff33a2049e06fcb3cf63d410.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Zoe Nicolaou](https://unsplash.com/@lekneuro?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
     on [Unsplash](https://unsplash.com/photos/44g_jwn3JzY?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: Introduction
+  id: totrans-9
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -44,185 +54,279 @@
     for the pandas 3.0 release, which is scheduled for April 2024\. [The first post](https://medium.com/towards-data-science/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6)
     in this series explained the behavior of Copy-on-Write while [the second post](https://medium.com/towards-data-science/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334)
     dove into performance optimizations that are related to Copy-on-Write.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 引入写时复制（CoW）是一个重大变更，将对现有的 pandas 代码产生一定影响。我们将研究如何调整我们的代码以避免在 CoW 默认启用时出现错误。这目前计划在
+    2024 年 4 月发布的 pandas 3.0 版本中实现。[本系列的第一篇帖子](https://medium.com/towards-data-science/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6)解释了写时复制的行为，而[第二篇帖子](https://medium.com/towards-data-science/deep-dive-into-pandas-copy-on-write-mode-part-ii-b023432a5334)则深入探讨了与写时复制相关的性能优化。
 - en: We are planning on adding a warning mode that will warn for all operations that
     will change behavior with CoW. The warning will be very noisy for users and thus
     has to be treated with some care. This post explains common cases and how you
     can adapt your code to avoid changes in behavior.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们计划添加一个警告模式，该模式将对所有使用 CoW（写时复制）可能改变行为的操作发出警告。由于警告可能会对用户产生很大的干扰，因此必须谨慎处理。本文解释了常见情况以及如何调整代码以避免行为变化。
 - en: Chained assignment
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 链式赋值
 - en: Chained assignment is a technique where one object is updated through 2 subsequent
     operations.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 链式赋值是一种通过两个连续操作更新一个对象的技术。
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The first operation selects the column `"x"` while the second operation restricts
     the number of rows. There are many different combinations of these operations
     (e.g. combined with `loc` or `iloc`). None of these combinations will work under
     CoW. Instead, they will raise a warning `ChainedAssignmentError` to remove these
     patterns instead of silently doing nothing.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个操作选择了列`"x"`，而第二个操作限制了行数。这些操作有许多不同的组合（例如，与`loc`或`iloc`结合使用）。在 CoW 下，这些组合都不会起作用。相反，它们会引发`ChainedAssignmentError`警告，以便移除这些模式，而不是默默无闻地什么也不做。
 - en: 'Generally, you can use `loc` instead:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常，你可以使用`loc`来代替：
 - en: '[PRE1]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The first dimension of `loc` always corresponds to the `row-indexer`. This means
     that you are able to select a subset of rows. The second dimension corresponds
     to the `column-indexer`, which enables you to select a subset of columns.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '`loc`的第一个维度总是对应于`row-indexer`。这意味着你可以选择一个行的子集。第二个维度对应于`column-indexer`，这使你能够选择一个列的子集。'
 - en: It is generally faster using `loc` when you want to set values into a subset
     of rows, so this will clean up your code and provide a performance improvement.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你想要在行的子集上设置值时，使用`loc`通常会更快，因此这将清理你的代码并提供性能提升。
 - en: 'This is the obvious case where CoW will have an impact. It will also impact
     chained inplace operations:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是 CoW 将产生影响的明显情况。它也会影响链式的就地操作：
 - en: '[PRE2]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The pattern is the same as above. The column selection is the first operation.
     The `replace` method tries to operate on the temporary object, which will fail
     to update the initial object. You can also remove these patterns pretty easily
     through specifying the columns you want to operate on.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 模式与上述相同。列选择是第一个操作。`replace`方法尝试在临时对象上操作，这将无法更新初始对象。你也可以通过指定要操作的列来轻松移除这些模式。
 - en: '[PRE3]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Patterns to avoid
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 避免的模式
 - en: '[My previous post](https://medium.com/towards-data-science/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6)
     explains how the CoW mechanism works and how DataFrames share the underlying data.
     A defensiv copy will be performed if two objects share the same data while you
     are modifying one object inplace.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '[我之前的帖子](https://medium.com/towards-data-science/deep-dive-into-pandas-copy-on-write-mode-part-i-26982e7408c6)解释了
+    CoW 机制如何工作以及 DataFrames 如何共享底层数据。如果两个对象共享相同的数据，而你在就地修改一个对象时，将会执行防御性复制。'
 - en: '[PRE4]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The `reset_index` operation will create a view of the underlying data. The result
     is assigned to a new variable `df2`, this means that two objects share the same
     data. This holds true until `df` is garbage collected. The `setitem` operation
     will thus trigger a copy. This is completely unnecessary if you don't need the
     initial object `df` anymore. Simply reassigning to the same variable will invalidate
     the reference that is held by the object.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '`reset_index` 操作将创建底层数据的视图。结果分配给一个新变量 `df2`，这意味着两个对象共享相同的数据。这在 `df` 被垃圾回收之前一直有效。因此，`setitem`
+    操作会触发复制。如果你不再需要初始对象 `df`，这完全没有必要。只需重新分配到相同的变量将使对象所持有的引用失效。'
 - en: '[PRE5]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Summarizing, creating multiple references in the same method keeps unnecessary
     references alive.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结来说，在同一方法中创建多个引用会保持不必要的引用活跃。
 - en: Temporary references that are created when chaining different methods together
     are fine.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 链接不同方法时创建的临时引用是可以的。
 - en: '[PRE6]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: This will only keep one reference alive.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这只会保持一个引用活跃。
 - en: Accessing the underlying NumPy array
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 访问底层 NumPy 数组
 - en: 'pandas currently gives us access to the underlying NumPy array through `to_numpy`
     or `.values`. The returned array is a copy, if your DataFrame consists of different
     dtypes, e.g.:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: pandas 目前通过 `to_numpy` 或 `.values` 让我们访问底层的 NumPy 数组。如果你的 DataFrame 由不同的数据类型组成，例如：
 - en: '[PRE7]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: The DataFrame is backed by two arrays which have to be combined into one. This
     triggers the copy.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: DataFrame 由两个数组支持，这两个数组必须合并为一个。这会触发复制。
 - en: 'The other case is a DataFrame that is only backed by a single NumPy array,
     e.g.:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种情况是 DataFrame 仅由一个 NumPy 数组支持，例如：
 - en: '[PRE8]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: We can directly access the array and get a view instead of a copy. This is much
     faster than copying all data. We can now operate on the NumPy array and potentially
     modify it inplace, which will also update the DataFrame and potentially all other
     DataFrames that share data. This becomes much more complicated with Copy-on-Write,
     since we removed many defensive copies. Many more DataFrames will now share memory
     with each other.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以直接访问数组并获取视图，而不是复制。这比复制所有数据要快得多。我们现在可以对 NumPy 数组进行操作，并可能就地修改它，这也会更新 DataFrame，并可能更新所有共享数据的其他
+    DataFrame。由于我们移除了许多防御性复制，这在写时复制的情况下变得更加复杂。现在，更多的 DataFrame 将相互共享内存。
 - en: '`to_numpy` and `.values` will return a read-only array because of this. This
     means that the resulting array is not writeable.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '`to_numpy` 和 `.values` 将因而返回只读数组。这意味着结果数组是不可写的。'
 - en: '[PRE9]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'This will trigger a `ValueError`:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将触发一个 `ValueError`：
 - en: '[PRE10]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'You can avoid this in two different ways:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以通过两种不同的方式避免这种情况：
 - en: Trigger a copy manually if you want to avoid updating DataFrames that share
     memory with your array.
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果你想避免更新与数组共享内存的 DataFrame，请手动触发复制。
 - en: Make the array writeable. This is a more performant solution but circumvents
     Copy-on-Write rules, so it should be used with caution.
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使数组可写。这是一种更高效的解决方案，但会绕过写时复制（Copy-on-Write）规则，因此应谨慎使用。
 - en: '[PRE11]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'There are cases where this is not possible. One common occurrence is, if you
     are accessing a single column which was backed by PyArrow:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在某些情况下，这不可能实现。一个常见的情况是，当你访问由 PyArrow 支持的单列时：
 - en: '[PRE12]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'This returns a `ValueError`:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将返回一个 `ValueError`：
 - en: '[PRE13]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Arrow arrays are immutable, hence it is not possible to make the NumPy array
     writeable. The conversion from Arrow to NumPy is zero-copy in this case.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: Arrow 数组是不可变的，因此无法使 NumPy 数组可写。在这种情况下，Arrow 到 NumPy 的转换是零复制的。
 - en: Conclusion
+  id: totrans-53
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结论
 - en: We’ve looked at the most invasive Copy-on-Write related changes. These changes
     will become the default behavior in pandas 3.0\. We’ve also investigated how we
     can adapt our code to avoid breaking our code when Copy-on-Write is enabled. The
     upgrade process should be pretty smooth if you can avoid these patterns.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经看到了最具侵入性的写时复制相关更改。这些更改将成为 pandas 3.0 的默认行为。我们还研究了如何调整代码，以避免在启用写时复制时破坏代码。如果你能避免这些模式，升级过程应该会非常顺利。
