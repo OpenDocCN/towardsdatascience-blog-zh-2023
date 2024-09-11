@@ -1,222 +1,333 @@
 - en: How SQL Execution Orders Varies Across Databases
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SQL 执行顺序在不同数据库中的差异
 - en: 原文：[https://towardsdatascience.com/how-sql-execution-orders-varies-across-databases-b5b949f34f31?source=collection_archive---------0-----------------------#2023-12-07](https://towardsdatascience.com/how-sql-execution-orders-varies-across-databases-b5b949f34f31?source=collection_archive---------0-----------------------#2023-12-07)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://towardsdatascience.com/how-sql-execution-orders-varies-across-databases-b5b949f34f31?source=collection_archive---------0-----------------------#2023-12-07](https://towardsdatascience.com/how-sql-execution-orders-varies-across-databases-b5b949f34f31?source=collection_archive---------0-----------------------#2023-12-07)
 - en: '*Why you can’t GROUP BY ordinal positions in SQL Server but can in others*'
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '*为什么在 SQL Server 中不能按顺序位置进行 GROUP BY，但其他数据库可以*'
 - en: '[](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)[![Tobi
     Sam](../Images/daffb5aeec33842e42fd8ad68fc94b72.png)](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)
     [Tobi Sam](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)[![Tobi
+    Sam](../Images/daffb5aeec33842e42fd8ad68fc94b72.png)](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)[](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)[![Towards
+    Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)
+    [Tobi Sam](https://medium.com/@tobisam?source=post_page-----b5b949f34f31--------------------------------)'
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: ·
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F92fab82e0c7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&user=Tobi+Sam&userId=92fab82e0c7a&source=post_page-92fab82e0c7a----b5b949f34f31---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)
     ·4 min read·Dec 7, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5b949f34f31&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&user=Tobi+Sam&userId=92fab82e0c7a&source=-----b5b949f34f31---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[关注](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F92fab82e0c7a&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&user=Tobi+Sam&userId=92fab82e0c7a&source=post_page-92fab82e0c7a----b5b949f34f31---------------------post_header-----------)
+    发表在 [Towards Data Science](https://towardsdatascience.com/?source=post_page-----b5b949f34f31--------------------------------)
+    ·4 min 阅读·2023年12月7日[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2Fb5b949f34f31&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&user=Tobi+Sam&userId=92fab82e0c7a&source=-----b5b949f34f31---------------------clap_footer-----------)'
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: --
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5b949f34f31&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&source=-----b5b949f34f31---------------------bookmark_footer-----------)![](../Images/8fc3fd8afa97a4a245a0cc1f3bff5fc7.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2Fb5b949f34f31&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fhow-sql-execution-orders-varies-across-databases-b5b949f34f31&source=-----b5b949f34f31---------------------bookmark_footer-----------)![](../Images/8fc3fd8afa97a4a245a0cc1f3bff5fc7.png)'
 - en: Transact-SQL vs MySQL execution order (image by author)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: Transact-SQL 与 MySQL 执行顺序（作者提供的图片）
 - en: After working regularly with open-source databases such as MySQL and PostgreSQL,
     I recently had the chance to work on a SQL Server project and discovered a subtle
     but important difference in the SQL landscapes. I observed that in SQL Server,
     I was unable to GROUP BY ordinal positions (GROUP BY 1, 2, 3…), which is a functionality
     I frequently used within other databases, particularly for rapid testing.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在与 MySQL 和 PostgreSQL 等开源数据库定期工作之后，我最近有机会参与一个 SQL Server 项目，并发现了 SQL 环境中的一个微妙但重要的区别。我观察到在
+    SQL Server 中，我无法按顺序位置进行 GROUP BY（GROUP BY 1, 2, 3…），而这是我在其他数据库中经常使用的功能，特别是用于快速测试。
 - en: This discovery led me to explore several nuances of both database systems, particularly
     the **SQL execution order**, which will be the focus of this article.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一发现让我探讨了这两个数据库系统的几个细微差别，特别是**SQL 执行顺序**，这将是本文的重点。
 - en: Why does this matter? When working with database systems, understanding the
     subtle differences can greatly impact your workflow and increase your productivity.
     It can save you significant troubleshooting time. Also, **by** **understanding
     the SQL execution order of various databases, you can craft more optimal SQL queries**
     based on the system you are working with.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么这很重要？在使用数据库系统时，了解这些细微差别可以极大地影响你的工作流程，提高你的生产力。它可以节省你大量的故障排除时间。此外，**通过** **理解各种数据库的SQL执行顺序，你可以根据你所使用的系统编写更优化的SQL查询**。
 - en: In this article, we will look into one major use case where this behaviour occurs
     — GROUP BY — and investigate why. However, this insight can be applied to the
     HAVING, WHERE or any other SQL command clause.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们将探讨一个主要的用例——GROUP BY——并调查其原因。然而，这些见解也可以应用于HAVING、WHERE或任何其他SQL命令子句。
 - en: Let’s begin
+  id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 让我们开始吧
 - en: 'Let’s look at this example in the query below. This will **not** work in SQL
     Server even though it works in MySQL:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看下面这个查询示例。虽然在MySQL中它可以正常工作，但在SQL Server中这将**不起作用**：
 - en: '[PRE0]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'If you run this, you will probably get an error like this:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你运行这个，你可能会得到类似这样的错误：
 - en: '`Each GROUP BY expression must contain at least one column that is not an outer
     reference.`'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '`每个GROUP BY表达式必须包含至少一个不是外部引用的列。`'
 - en: 'However, this revised query works after replacing the GROUP BY ordinal reference
     with the explicit expression. You will also notice that you can reference the
     ordinal positions in the ORDER BY clause, which I found strange:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在将GROUP BY序号引用替换为显式表达式后，这个修订的查询可以正常工作。你还会注意到，在ORDER BY子句中可以引用序号位置，这让我觉得很奇怪：
 - en: '[PRE1]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: In SQL Server, I quickly learned that I had to use explicit column names or
     expressions in the GROUP BY clause. **This is considered a best practice as it
     makes the code easier to understand**. However, I was curious about why this behavior
     differed between databases. Additionally, I found it interesting that the `ORDER
     BY` clause in SQL Server works with ordinal positions, which further piqued my
     curiosity.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在SQL Server中，我很快了解到我必须在GROUP BY子句中使用显式的列名或表达式。**这被认为是一种最佳实践，因为它使代码更易于理解**。然而，我对为什么不同数据库之间会有这种行为差异感到好奇。此外，我发现SQL
+    Server中的`ORDER BY`子句与序号位置一起使用，这进一步激起了我的好奇心。
 - en: '**Exploring the SELECT statement execution order**'
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**探索SELECT语句执行顺序**'
 - en: To find out, lets look at the `SELECT` statement execution/processing order
     for SQL server vs. other databases. It’s important to note that in SQL databases,
     each part of a query is executed sequentially and that order differs from how
     it is written.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了了解情况，我们来看一下`SELECT`语句在SQL Server和其他数据库中的执行/处理顺序。需要注意的是，在SQL数据库中，每部分查询都是按顺序执行的，这一顺序与书写的顺序不同。
 - en: In SQL Server, for instance, we can see from the image below and from [Microsoft
     docs](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16&redirectedfrom=MSDN#logical-processing-order-of-the-select-statement)
     that the FROM clause is the first command to be evaluated. Furthermore, **the
     SELECT clause runs after the GROUP BY clause**. That is why we were unable to
     reference a column‘s position or even its alias in the GROUP BY clause in our
     first example!
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，在SQL Server中，我们可以从下面的图片和[Microsoft文档](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16&redirectedfrom=MSDN#logical-processing-order-of-the-select-statement)中看到，FROM子句是第一个被评估的命令。此外，**SELECT子句在GROUP
+    BY子句之后运行**。这就是为什么在第一个示例中我们无法在GROUP BY子句中引用列的位置或其别名的原因！
 - en: However, we are free to reference the ordinal position and/or alias in the ORDER
     BY clause, as that is evaluated after the SELECT clause. The SELECT clause tells
     the database what columns will be returned and thus, the positioning is known
     at this point. Cool, right?
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们可以在ORDER BY子句中自由引用序号位置和/或别名，因为这是在SELECT子句之后被评估的。SELECT子句告诉数据库哪些列将被返回，因此此时位置是已知的。很酷，对吧？
 - en: SQL Server execution order
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: SQL Server执行顺序
 - en: '![](../Images/a122deac3dc1a4cc59ea0163ac976429.png)'
+  id: totrans-26
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a122deac3dc1a4cc59ea0163ac976429.png)'
 - en: SQL Server SELECT statement processing order (Image by author)
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: SQL Server SELECT语句处理顺序（图片由作者提供）
 - en: MySQL
+  id: totrans-28
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: MySQL
 - en: In MySQL however, I found it difficult to find clear documentation stating the
     order of execution of a SQL query. The execution order seems to depend on the
     contents of the query and what the query optimiser defines as the best path.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在MySQL中，我发现很难找到明确的文档说明SQL查询的执行顺序。执行顺序似乎依赖于查询的内容以及查询优化器定义的最佳路径。
 - en: 'But from what we can see from the MySQL docs [here](https://dev.mysql.com/doc/refman/8.0/en/select.html),
     the clue shows us how the execution order might be and that the **SELECT clause
     is evaluated before the GROUP BY clause**:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 但从我们从MySQL文档中看到的情况来看，这些线索显示了执行顺序可能的方式，即**在评估GROUP BY子句之前，SELECT子句先被评估**：
 - en: For GROUP BY or HAVING clauses, it searches the FROM clause before searching
     in the **select_expr** values. (For GROUP BY and HAVING, this differs from the
     pre-MySQL 5.0 behavior that used the same rules as for ORDER BY.)
+  id: totrans-31
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 对于GROUP BY或HAVING子句，它在搜索**select_expr**值之前先搜索FROM子句。（对于GROUP BY和HAVING，这与MySQL
+    5.0之前的行为不同，后者使用与ORDER BY相同的规则。）
 - en: GoogleSQL
+  id: totrans-32
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: GoogleSQL
 - en: 'If we also look at the GoogleSQL (formerly Standard SQL) [docs](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#implicit_aliases)
     which is the syntax used in Google BigQuery, you will see similar deviation from
     the way queries are executed in SQL Server:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们再看看GoogleSQL（前称标准SQL）的[文档](https://cloud.google.com/bigquery/docs/reference/standard-sql/query-syntax#implicit_aliases)，这是Google
+    BigQuery中使用的语法，你会看到与SQL Server查询执行方式不同的类似偏差：
 - en: 'GROUP BY and ORDER BY can also refer to a third group: Integer literals, which
     refer to items in the SELECT list. The integer 1 refers to the first item in the
     SELECT list, 2 refers to the second item, etc.'
+  id: totrans-34
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: GROUP BY和ORDER BY还可以引用第三组：整数文字，它们指的是SELECT列表中的项。整数1指的是SELECT列表中的第一项，2指的是第二项，依此类推。
 - en: As you can see, this behaviour is not supported in SQL Server. The Google docs
     also mention that GROUP BY, ORDER BY, and HAVING, can refer to aliases from the
     SELECT list.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 如你所见，这种行为在SQL Server中不受支持。Google文档还提到，GROUP BY、ORDER BY和HAVING可以引用来自SELECT列表的别名。
 - en: 'With that, we can conclude with a high probability that the execution order
     for these other databases follows a path similar to the image below:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 综上所述，我们可以有很大把握认为其他数据库的执行顺序与下图类似：
 - en: MySQL, PostgreSQL & BigQuery probable execution order
+  id: totrans-37
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MySQL、PostgreSQL和BigQuery可能的执行顺序
 - en: '![](../Images/083618d9b2e8b3c3ff2dfe2af4db2ce8.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/083618d9b2e8b3c3ff2dfe2af4db2ce8.png)'
 - en: MySQL SELECT statement execution order (Image by author)
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: MySQL SELECT语句执行顺序（作者提供的图片）
 - en: Conclusion
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结论
 - en: This was a short post where we looked at how the execution order in MySQL, GoogleSQL
     and other databases’ SQL syntaxes, differ from SQL Server’s, based on the observed
     behaviours and documentation. SQL Server emphasises explicitness in the GROUP
     BY clause for code clarity, while MySQL’s execution order definitely evaluates
     that SELECT clause before the GROUP BY clause, allowing us to reference the ordinal
     positions in it.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章简短地介绍了MySQL、GoogleSQL和其他数据库SQL语法的执行顺序，与SQL Server的区别，基于观察到的行为和文档。SQL Server强调在GROUP
+    BY子句中显式声明以提高代码清晰度，而MySQL的执行顺序明确将SELECT子句评估在GROUP BY子句之前，允许我们引用其中的序号位置。
 - en: Feel free to share your thoughts on this subject and catch you in the next one.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 欢迎分享您对这个主题的想法，并期待在下一篇中与您见面。
 - en: You can [become a Medium member](https://medium.com/@tobisam/membership) to
     support me and enjoy more stories like this.
+  id: totrans-43
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 您可以[成为Medium会员](https://medium.com/@tobisam/membership)来支持我，享受更多类似的故事。
 - en: References
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 参考资料
 - en: '[SELECT — Transact-SQL](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16&redirectedfrom=MSDN#logical-processing-order-of-the-select-statement)'
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[SELECT — Transact-SQL](https://learn.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql?view=sql-server-ver16&redirectedfrom=MSDN#logical-processing-order-of-the-select-statement)'
 - en: '[ROWNUM](https://blogs.oracle.com/connect/post/on-rownum-and-limiting-results)
     — Oracle'
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[ROWNUM](https://blogs.oracle.com/connect/post/on-rownum-and-limiting-results)
+    — Oracle'
 - en: '[MySQL reference](https://dev.mysql.com/doc/refman/8.0/en/select.html)'
+  id: totrans-47
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[MySQL参考文档](https://dev.mysql.com/doc/refman/8.0/en/select.html)'
 - en: '[PostgreSQL](https://www.postgresql.org/docs/current/using-explain.html) -
     EXPLAIN'
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[PostgreSQL](https://www.postgresql.org/docs/current/using-explain.html) -
+    EXPLAIN'
