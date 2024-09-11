@@ -1,13 +1,16 @@
 - en: PyTorch Model Performance Analysis and Optimization — Part 3
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 原文：[https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2?source=collection_archive---------4-----------------------#2023-08-10](https://towardsdatascience.com/pytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2?source=collection_archive---------4-----------------------#2023-08-10)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: How to reduce “Cuda Memcpy Async” events and why you should beware of boolean
     mask operations
+  id: totrans-2
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
@@ -15,24 +18,30 @@
     Rand](../Images/c52659c389f167ad5d6dc139940e7955.png)](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)[](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------)[![Towards
     Data Science](../Images/a6ff2676ffcc0c7aad8aaf1d79379785.png)](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------)
     [Chaim Rand](https://chaimrand.medium.com/?source=post_page-----1c5876d78fe2--------------------------------)'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: ·
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
 - en: '[Follow](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fsubscribe%2Fuser%2F9440b37e27fe&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&user=Chaim+Rand&userId=9440b37e27fe&source=post_page-9440b37e27fe----1c5876d78fe2---------------------post_header-----------)
     Published in [Towards Data Science](https://towardsdatascience.com/?source=post_page-----1c5876d78fe2--------------------------------)
     ·11 min read·Aug 10, 2023[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fvote%2Ftowards-data-science%2F1c5876d78fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&user=Chaim+Rand&userId=9440b37e27fe&source=-----1c5876d78fe2---------------------clap_footer-----------)'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
 - en: --
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: '[](https://medium.com/m/signin?actionUrl=https%3A%2F%2Fmedium.com%2F_%2Fbookmark%2Fp%2F1c5876d78fe2&operation=register&redirect=https%3A%2F%2Ftowardsdatascience.com%2Fpytorch-model-performance-analysis-and-optimization-part-3-1c5876d78fe2&source=-----1c5876d78fe2---------------------bookmark_footer-----------)![](../Images/f0e37ec189e53254268fdae595fb5d6e.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: Photo by [Braden Jarvis](https://unsplash.com/@jarvisphoto?utm_source=medium&utm_medium=referral)
     on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
 - en: This is the third part of a series of posts on the topic of analyzing and optimizing
@@ -46,8 +55,15 @@
     to all ML developers. **You do not need to be a CUDA expert in order to derive
     meaningful performance gains** from applying the techniques we discuss in our
     posts.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是关于使用 [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    和 [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    分析和优化 PyTorch 模型的系列文章的第三部分。我们的意图是突出**性能分析和优化**在 GPU 训练负载中的好处及其对训练速度和成本的潜在影响。特别是，我们希望展示诸如
+    [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    和 [TensorBoard](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    等分析工具对所有 ML 开发者的可及性。**你不需要成为 CUDA 专家即可从我们讨论的技术中获得有意义的性能提升**。
 - en: In our [first post](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
     we demonstrated how the different *views* of the [PyTorch Profiler TensorBoard
     plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
@@ -66,45 +82,64 @@
     and the [PyTorch Profiler TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
     *Trace View*, and the potential performance benefits of building your model in
     a way that minimizes such synchronization events.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的 [第一篇文章](https://medium.com/@chaimrand/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
+    中，我们演示了 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    的不同*视图*如何用于识别性能问题，并回顾了几种加速训练的流行技术。在 [第二篇文章](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)
+    中，我们展示了 [TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    *Trace View* 如何用于识别张量从 CPU 到 GPU 的拷贝以及反向拷贝的情况。这种数据移动——可能会导致同步点并显著降低训练速度——通常是无意的，有时可以很容易地避免。本篇文章的主题是我们遇到的
+    GPU 和 CPU 之间的同步点，这些同步点**不**与张量拷贝有关。与张量拷贝的情况一样，这些同步点可能会导致训练步骤的停滞，显著减慢整体训练时间。我们将展示此类情况的存在、如何使用
+    [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
+    和 [PyTorch Profiler TensorBoard 插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
+    *Trace View* 进行识别，以及以最小化此类同步事件的方式构建模型的潜在性能收益。
 - en: As in our previous posts, we will define a toy PyTorch model and then *iteratively*
     profile its performance, identify bottlenecks, and attempt to fix them. We will
     run our experiments on an [Amazon EC2 g5.2xlarge](https://aws.amazon.com/ec2/instance-types/g5/)
     instance (containing an NVIDIA A10G GPU and 8 vCPUs) and using the official [AWS
     PyTorch 2.0 Docker image](https://github.com/aws/deep-learning-containers). Keep
     in mind that some of the behaviors we describe may vary between versions of PyTorch.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
 - en: Toy Example
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: In the following blocks we introduce a toy PyTorch model that performs semantic
     segmentation on a 256x256 input image, i.e., it takes a 256x256 RGB image and
     outputs a 256x256 map of “per-pixel” labels from a class of ten semantic categories.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'To train our model we will use the standard [cross-entropy loss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html)
     with a few modifications:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
 - en: We will assume that the target labels include an *ignore* value indicating pixels
     that we want to exclude from the loss calculation.
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: We will assume that one of the semantic labels identifies certain pixels as
     belonging to the “background” of the image. We define our loss function to treat
     these as *ignore* labels.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: We will update our model weights only when we encounter batches with targets
     tensors that include at least two unique values.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -114,40 +149,52 @@
     already gone ahead and wrapped each of the operations in our loss function with
     a [torch.profiler.record_function](https://pytorch.org/tutorials/beginner/profiler.html#performance-debugging-using-profiler)
     context manager, (as described in our [second post](/pytorch-model-performance-analysis-and-optimization-part-2-3bc241be91)).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE1]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Our loss function seems innocent enough, right? Wrong! As we will see below,
     the loss function includes a number of operations that trigger host-device synchronization
     events that slow the speed of training considerably — none of which involve copying
     tensors into or out of the GPU. As in our previous post, we challenge you to try
     to identify three opportunities for performance optimization before reading on.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
 - en: For the purposes of our demo, we use randomly generated images and per-pixel
     label maps, as defined below.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE2]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Last, we define our training step with the [PyTorch Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
     configured to our desire:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE3]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: If you were to naively run this training script, you would probably see high
     GPU (~90%) utilization and not know that there was anything wrong with it. It
     is only through profiling that we are able to identify the underlying performance
     bottlenecks and potential opportunities for training acceleration. So, without
     further ado, let’s see how our model performs.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
 - en: Initial Performance Results
+  id: totrans-27
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -155,16 +202,20 @@
     plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
     Please see our [previous posts](/pytorch-model-performance-analysis-and-optimization-10c3c5822869)
     for tips on how to use some of the other *views* supported by the plugin.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
 - en: In the image below we show the *Trace View* of a single training step of our
     toy model.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/e9f0678cc9de59ec988d0c458fd7e050.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
 - en: Trace View of Baseline Model (Captured by Author)
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
 - en: We can clearly see that our 1.3 second long training step is *completely* dominated
@@ -172,6 +223,7 @@
     operator in the first line of our loss function. All the other operations appear
     bunched together on either side of the huge *cudaMemcpyAsyn* event. What is going
     on??!! Why would such a seemingly innocent operation cause such a huge eyesore?
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
 - en: 'Perhaps we should not be so surprised, as the [torch.nonzero](https://pytorch.org/docs/stable/generated/torch.nonzero.html)
@@ -183,6 +235,7 @@
     are in the input tensor ahead of time. It needs to wait for the sync event from
     the GPU in order to perform the appropriate GPU memory allocation and appropriately
     prepare the subsequent PyTorch ops.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
 - en: Note that the length of *cudaMempyAsync* is not indicative of the complexity
@@ -194,10 +247,12 @@
     appear significantly shorter than the first since the CPU and GPU are already
     more or less “in sync”. (Keep in mind that this explanation is coming from a non-CUDA
     expert, so make of it what you will…)
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
 - en: 'Optimization #1: Reduce the use of the [torch.nonzero](https://pytorch.org/docs/stable/generated/torch.nonzero.html)
     op'
+  id: totrans-35
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -206,18 +261,24 @@
     that does *not* trigger a host-device synchronization event. In the case of our
     loss function, we can easily accomplish this using the [torch.where](https://pytorch.org/docs/stable/generated/torch.where.html)
     operator as shown in the code block below:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE4]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: In the image below we show the *Trace View* following this change.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/6dbd9a5565a840bc4c1f2fdb38130aca.png)'
+  id: totrans-39
   prefs: []
   type: TYPE_IMG
 - en: 'Trace View Following Optimization #1 (Captured by Author)'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
 - en: While we have succeeded in removing the *cudaMempyAsync* coming from the [torch.nonzero](https://pytorch.org/docs/stable/generated/torch.nonzero.html)
@@ -226,10 +287,12 @@
     but based on our previous experience we can assume that, once again, we are suffering
     from a host-device synchronization event due to our use of tensors with undetermined
     size.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
 - en: 'Optimization #2: Reduce the use of the [torch.unique](https://pytorch.org/docs/stable/generated/torch.unique.html)
     op'
+  id: totrans-42
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
@@ -240,22 +303,29 @@
     [torch.sort](https://pytorch.org/docs/stable/generated/torch.sort.html) op on
     the flattened *target* tensor and counting the number of steps in the resultant
     step function.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE5]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'In the image below we capture the *Trace View* following our second optimization:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/ca57df982059830ca04dc4ddae4df288.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
 - en: 'Trace View Following Optimization #2 (Captured by Author)'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
 - en: Once again, we have solved one bottleneck only to be faced with a new one, this
     time coming from the boolean mask routine.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
 - en: Boolean masking is a routine we commonly use in order to reduce the overall
@@ -265,26 +335,34 @@
     As before, applying a boolean mask results in a tensor of undetermined size, and
     the *cudaMempyAsync* that it triggers greatly overshadows any of the savings from
     excluding the “ignore” pixels.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
 - en: 'Optimization #3: Beware of boolean mask operations'
+  id: totrans-50
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: In our case, fixing this issue is rather simple as the [PyTorch CrossEntropyLoss](https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html)
     has a built-in option for setting an *ignore_index*.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE6]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'In the image below we show the resultant *Trace View*:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
 - en: '![](../Images/0b0585885e68560323544aec83256de0.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
 - en: Final Trace View (Captured by Author)
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
 - en: Holy cow!! Our step time has dropped all the way down to 5.4 milliseconds. What
@@ -303,8 +381,11 @@
     is recommended to average the step time over a large number of steps. See [here](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)
     for more on the impact of [asynchronous execution](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)
     on the accuracy of time measurement.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 天哪！！我们的步骤时间已经降到了5.4毫秒。发生了什么？！！通过简单地调整几个函数调用，而无需修改损失函数逻辑，我们能够从训练步骤中移除同步点。重要的是，当计算几百个步骤的平均时间时，实际上为~**330毫秒，大约是我们开始时的四倍快**。这比上面报告的5.4毫秒要高得多。这个差异源于PyTorch
+    Profiler测量的是每个训练步骤的CPU活动时间（例如，内核加载），这不一定与GPU活动对齐。虽然上述同步事件引入了不必要的开销，但它们有一个积极的副作用，即提高了CPU和GPU活动之间的对齐，并提高了时间测量的准确性。在它们不存在的情况下，通过分析器测量的步骤时间出现大幅波动并不罕见。在这种情况下，建议对大量步骤的步骤时间进行平均。有关[异步执行](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)对时间测量准确性影响的更多信息，请参见[这里](https://pytorch.org/docs/stable/notes/cuda.html#asynchronous-execution)。
 - en: '**Important Note**: In the toy example we have chosen, the steps that we took
     to reduce the number *cudaMempyAsync* events had a clear impact on the training
     step time. However, there may be situations where the same types of changes will
@@ -313,12 +394,16 @@
     savings in computation from applying the mask might outweigh the price of the
     host-device synchronization. Importantly, the impact of each optimization should
     be evaluated on a case-by-case basis.'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '**重要说明**：在我们选择的示例中，我们采取的步骤减少了*cudaMempyAsync*事件的数量，对训练步骤时间产生了明显的影响。然而，也可能存在一些情况，相同类型的改变可能会损害性能而不是提升它。例如，在布尔掩码的情况下，如果我们的掩码极其稀疏且原始张量非常大，应用掩码所节省的计算可能会超过主机与设备同步的成本。重要的是，每种优化的影响应根据具体情况进行评估。'
 - en: Summary
+  id: totrans-58
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 总结
 - en: In this post we have focused on performance issues in training applications
     that are caused by host-device synchronization events. We saw several examples
     of PyTorch operators that trigger such events — the common property of all of
@@ -328,23 +413,32 @@
     Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)
     and its associated [TensorBoard plugin](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)
     can be used to identify these kinds of events.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们重点讨论了由于主机与设备同步事件而引发的训练应用中的性能问题。我们看到了一些触发这些事件的PyTorch操作符的例子——它们的共同特点是它们输出的张量的*大小*取决于输入。你也可能会遇到其他操作符引发的同步事件，这些操作符在这篇文章中没有涉及。我们展示了如何使用性能分析器，如[PyTorch
+    Profiler](https://pytorch.org/tutorials/recipes/recipes/profiler_recipe.html)及其关联的[TensorBoard插件](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html)来识别这些类型的事件。
 - en: In the case of our toy example, we were able to find equivalent alternatives
     to the problematic operators that use fixed sized tensors and avoid the need for
     synchronization events. These led to a significant improvement in training time.
     However, in practice you might find it much harder — even impossible — to solve
     these kinds of bottlenecks. Sometimes, overcoming them might require redesigning
     parts of your model.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的示例中，我们找到了使用固定大小张量的替代操作符，避免了同步事件的需求，从而显著改善了训练时间。然而，在实际应用中，你可能会发现解决这些瓶颈要困难得多——甚至不可能。有时，克服这些问题可能需要重新设计模型的部分内容。
 - en: What Next?
+  id: totrans-61
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 下一步是什么？
 - en: In [next part](/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9)
     of our series of posts on the topic of PyTorch model optimization, we will analyze
     and address performance bottlenecks in the data pre-processing pipeline of a DL
     training workload. Be sure to [check it out](/how-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206).
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们关于PyTorch模型优化的系列文章的[下一部分](/solving-bottlenecks-on-the-data-input-pipeline-with-pytorch-profiler-and-tensorboard-5dced134dbe9)中，我们将分析和解决DL训练工作负载的数据预处理管道中的性能瓶颈。一定要[查看](/how-to-optimize-your-dl-data-input-pipeline-with-a-custom-pytorch-operator-7f8ea2da5206)。
