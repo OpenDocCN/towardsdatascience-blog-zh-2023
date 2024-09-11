@@ -69,23 +69,28 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 多亏了 LoRA，微调成本可以显著降低。LoRA 在冻结的原始参数上添加了低秩张量，即少量参数（百万级）。在微调过程中，只有添加的张量中的参数会被训练。
 - en: LoRA still requires the model to be loaded in memory. To reduce the memory cost
     and speed-up fine-tuning, a new approach proposes quantization-aware LoRA (QA-LoRA)
     fine-tuning.
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: LoRA 仍然需要将模型加载到内存中。为了降低内存成本并加快微调速度，一种新的方法提出了量化感知 LoRA (QA-LoRA) 微调。
 - en: In this article, I explain QA-LoRA and review its performance compared with
     previous work (especially QLoRA). I also show how to use QA-LoRA to fine-tune
     your own quantization-aware LoRA for Llama 2.
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我将解释 QA-LoRA，并对其与之前的工作（特别是 QLoRA）的性能进行评估。我还展示了如何使用 QA-LoRA 来微调你自己量化感知的
+    LoRA 以适应 Llama 2。
 - en: What’s Wrong with QLoRA?
   id: totrans-13
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: QLoRA 存在什么问题？
 - en: Fine-tuning LoRA on top of a quantized LLM is something that can already be
     done with QLoRA. In my previous articles, I used it many times to fine-tune LLMs,
     for instance, Llama 2 and GPT-NeoX, on my desktop computer or using the free instance
@@ -93,36 +98,45 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在量化的 LLM 上微调 LoRA 是 QLoRA 已经可以做到的事情。在我之前的文章中，我多次使用它来微调 LLM，例如 Llama 2 和 GPT-NeoX，在我的台式电脑上或使用免费的
+    Google Colab 实例。
 - en: '[](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----c7291866706c--------------------------------)
     [## Fine-tune Llama 2 on Your Computer with QLoRa and TRL'
   id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----c7291866706c--------------------------------)
+    [## 在你的计算机上使用 QLoRa 和 TRL 微调 Llama 2'
 - en: On Guanaco and with the correct padding
   id: totrans-16
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在 Guanaco 上以及使用正确的填充
 - en: kaitchup.substack.com](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----c7291866706c--------------------------------)
   id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: kaitchup.substack.com](https://kaitchup.substack.com/p/fine-tune-llama-2-on-your-computer?source=post_page-----c7291866706c--------------------------------)
 - en: Before delving into QA-LoRA, it is interesting to understand what are the current
     limits of QLoRA.
   id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入探讨 QA-LoRA 之前，了解 QLoRA 的当前局限性是很有趣的。
 - en: The NormalFloat4 (NF4) Quantization
   id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: NormalFloat4 (NF4) 量化
 - en: LLM quantization algorithms usually quantize parameters to a 4-bit precision
     using the INT4 data type. Computation with this data type is more and more optimized
     with recent GPUs.
   id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: LLM 量化算法通常将参数量化为 4 位精度，使用 INT4 数据类型。使用这种数据类型的计算在最近的 GPU 上得到了越来越多的优化。
 - en: QLoRA doesn’t use INT4 by default but another data type called NormalFloat4
     (NF4). You can see it as a compressed float number. According to the authors of
     [QLoRA](https://arxiv.org/abs/2305.14314), NF4 is superior to INT4\. LLMs quantized
@@ -130,46 +144,58 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: QLoRA 默认不使用 INT4，而是另一种称为 NormalFloat4 (NF4) 的数据类型。你可以将其视为压缩的浮点数。根据 [QLoRA](https://arxiv.org/abs/2305.14314)
+    作者的说法，NF4 优于 INT4。使用 NF4 量化的 LLM 实现了更低的困惑度。
 - en: However, NF4 computation is not optimal for fast inference. This is one of the
     reasons why models quantized with GPTQ are faster than models quantized with bitsandbytes
     NF4\. In previous articles, I confirmed that GPTQ models are indeed faster.
   id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，NF4 计算对于快速推理并不理想。这是为什么使用 GPTQ 量化的模型比使用 bitsandbytes NF4 量化的模型更快的原因之一。在之前的文章中，我确认了
+    GPTQ 模型确实更快。
 - en: '[](https://kaitchup.substack.com/p/gptq-or-bitsandbytes-which-quantization?source=post_page-----c7291866706c--------------------------------)
     [## GPTQ or bitsandbytes: Which Quantization Method to Use for LLMs - Examples
     with Llama 2'
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '[](https://kaitchup.substack.com/p/gptq-or-bitsandbytes-which-quantization?source=post_page-----c7291866706c--------------------------------)
+    [## GPTQ 或 bitsandbytes：哪个量化方法适用于 LLM - Llama 2 的示例'
 - en: Large language model quantization for affordable fine-tuning and inference on
     your computer
   id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 大型语言模型量化，以便在你的计算机上进行负担得起的微调和推理
 - en: kaitchup.substack.com](https://kaitchup.substack.com/p/gptq-or-bitsandbytes-which-quantization?source=post_page-----c7291866706c--------------------------------)
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: kaitchup.substack.com](https://kaitchup.substack.com/p/gptq-or-bitsandbytes-which-quantization?source=post_page-----c7291866706c--------------------------------)
 - en: NF4 is also one of the weaknesses pointed out by the authors of [QA-LoRA](https://arxiv.org/abs/2309.14717).
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: NF4 也是 [QA-LoRA](https://arxiv.org/abs/2309.14717) 作者指出的一个弱点。
 - en: NF4 Base Model, But FP16 LoRA
   id: totrans-27
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: NF4 基础模型，但 FP16 LoRA
 - en: While the base model is quantized with NF4, the trained LoRA’s parameters remain
     at a higher precision which is usually FP16, as illustrated in the figure below.
   id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然基础模型使用 NF4 进行量化，但训练后的 LoRA 参数仍保持较高的精度，通常是 FP16，如下图所示。
 - en: '![](../Images/c43d096218c9bbe4f6315cd7d0b00846.png)'
   id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c43d096218c9bbe4f6315cd7d0b00846.png)'
 - en: Figure by the author
   id: totrans-30
   prefs: []
@@ -322,55 +348,66 @@
   id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看 QA-LoRA 的作者报告的性能。他们报告了许多实验，但我认为下面的表格最能概述 QA-LoRA 的性能，相比 QLoRA 以及在各种量化精度下：
 - en: '![](../Images/21d796605ac260448e91c2c6283f2339.png)'
   id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/21d796605ac260448e91c2c6283f2339.png)'
 - en: Table by [Xu et al. (2023)](https://arxiv.org/abs/2309.14717)
   id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 表格来自 [Xu et al. (2023)](https://arxiv.org/abs/2309.14717)
 - en: 'In this table, we have the performance of the original LLaMA 7B (16-bit) compared
     to:'
   id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 在此表中，我们比较了原始的 LLaMA 7B（16-bit）与：
 - en: Standard QLoRA with NF4 quantized base LLM and FP16 LoRA (denoted QLoRA”)
   id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 标准 QLoRA 与 NF4 量化基础 LLM 和 FP16 LoRA（标记为 QLoRA”）
 - en: LLaMA 7B quantized with GPTQ to INT4 (denoted “LLaMA-7B w/ GPTQ”)
   id: totrans-58
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: LLaMA 7B 量化为 GPTQ 到 INT4（标记为 “LLaMA-7B w/ GPTQ”）
 - en: Merged QLoRA adapter quantized with GTPQ (denoted “QLoRA w/ GPTQ”)
   id: totrans-59
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 合并的 QLoRA 适配器量化为 GTPQ（标记为 “QLoRA w/ GPTQ”）
 - en: QA-LoRA
   id: totrans-60
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: QA-LoRA
 - en: The standard QLoRA performs the best. This is expected since it uses a very
     good data type for quantization (NF4) while LoRA’s parameters remain FP16.
   id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 标准 QLoRA 的表现最佳。这是预期的，因为它使用了非常好的量化数据类型（NF4），而 LoRA 的参数仍然是 FP16。
 - en: We can see that when we want to merge QLoRA adapters and then quantize the merged
     models (QLoRA w/ GPTQ), the performance significantly drops. Again, as we discussed
     in the previous section of this article, this is expected.
   id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到，当我们想要合并 QLoRA 适配器并对合并后的模型进行量化（QLoRA w/ GPTQ）时，性能显著下降。正如我们在本文前面的部分讨论的那样，这是预期中的情况。
 - en: QA-LoRA on the other hand performs almost as well as the standard QLoRA while
     the LLM is entirely quantized with INT4\. In other words, QA-LoRA works.
   id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，QA-LoRA 的表现几乎与标准 QLoRA 相当，同时 LLM 完全量化为 INT4。换句话说，QA-LoRA 能够正常工作。
 - en: QA-LoRA is also more flexible than QLoRA by allowing fine-tuning with LLMs quantized
     to the lower precisions. QA-LoRA with 3-bit precision is superior to QLoRA merged
     and quantized to 4-bit (60.1% accuracy for QA-LoRA 3-bit against 59.8% for QLoRA
@@ -378,27 +415,35 @@
   id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: QA-LoRA 也比 QLoRA 更灵活，允许用量化到较低精度的 LLM 进行微调。QA-LoRA 的 3-bit 精度优于 QLoRA 合并并量化到
+    4-bit（QA-LoRA 3-bit 的准确率为 60.1%，而 QLoRA w/ GPTQ 4-bit 为 59.8%）。
 - en: Overall, QA-LoRA results look very impressive.
   id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，QA-LoRA 的结果看起来非常令人印象深刻。
 - en: Overview of the Implementation of QA-LoRA
   id: totrans-66
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: QA-LoRA 实现概述
 - en: 'The authors of [QA-LoRA released their implementation on GitHub](https://github.com/yuhuixu1993/qa-lora/tree/main)
     (MIT license). [Note: The original implementation is no longer available. I made
     a fork that you can find here.](https://github.com/benjamin-marie/qa-lora)'
   id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '[QA-LoRA 的作者在 GitHub 上发布了他们的实现](https://github.com/yuhuixu1993/qa-lora/tree/main)（MIT
+    许可证）。[注意：原始实现已不再提供。我做了一个分支，你可以在这里找到。](https://github.com/benjamin-marie/qa-lora)'
 - en: The QA-LoRA implementation heavily relies on [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)
     (MIT license). It exploits a specific branch of AutoGPTQ and replaces several
     functions.
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: QA-LoRA 实现严重依赖于 [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)（MIT 许可证）。它利用
+    AutoGPTQ 的一个特定分支并替换了几个函数。
 - en: The LLM that you wish to fine-tune must be already quantized with this specific
     branch of AutoGPTQ. You may try with quantized LLMs from the Hugging Face Hub
     but since AutoGPTQ often changes, these quantized LLMs might not be all compatible
@@ -408,6 +453,9 @@
   id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 你希望微调的 LLM 必须已经用这个特定的 AutoGPTQ 分支进行量化。你可以尝试使用来自 Hugging Face Hub 的量化 LLM，但由于
+    AutoGPTQ 经常变化，这些量化的 LLM 可能不完全兼容 QA-LoRA。例如，[我为上一篇文章量化的 Llama 2 7B](https://huggingface.co/kaitchup/llama-2-7b-4bit-autogptq)
+    的量化配置不受这个 AutoGPTQ 分支支持。
 - en: 'If you wish to see what QA-LoRA changes in AutoGPTQ, have a closer look at
     the file “[peft_utils.py](https://github.com/yuhuixu1993/qa-lora/blob/main/peft_utils.py)”
     where there is a class “GPTQLoraLinear”. The main innovation behind QA-LoRA holds
@@ -415,6 +463,8 @@
   id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想了解 QA-LoRA 在 AutoGPTQ 中的更改，可以更详细地查看文件 “[peft_utils.py](https://github.com/yuhuixu1993/qa-lora/blob/main/peft_utils.py)”
+    中的 “GPTQLoraLinear” 类。QA-LoRA 的主要创新在于两行代码：
 - en: '[PRE0]'
   id: totrans-71
   prefs: []
@@ -425,23 +475,28 @@
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**Llama 2** 支持的代码适配'
 - en: I had to patch the implementation of QA-LoRA to make it work for Llama 2.
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 我不得不修补 QA-LoRA 的实现，使其在 Llama 2 上运行。
 - en: 'If QA-LoRA still doesn’t run Llama 2 when you read this article, replace the
     file “qalora.py” with this one:'
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果 QA-LoRA 在你阅读本文时仍然无法运行 Llama 2，可以用这个文件替换 “qalora.py”：
 - en: '[https://about.benjaminmarie.com/data/py/qalora/qalora.py](https://about.benjaminmarie.com/data/py/qalora/qalora.py)'
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://about.benjaminmarie.com/data/py/qalora/qalora.py](https://about.benjaminmarie.com/data/py/qalora/qalora.py)'
 - en: 'I only made two modifications:'
   id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 我只做了两个修改：
 - en: Replace “model.config.torch_dtype=(torch.float32 if args.fp16 else (torch.bfloat16
     if args.bf16 else torch.float32))” with “model.config.torch_dtype=torch.float16”
     (line 300 of the current version)
@@ -449,18 +504,24 @@
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将“model.config.torch_dtype=(torch.float32 if args.fp16 else (torch.bfloat16
+    if args.bf16 else torch.float32))”替换为“model.config.torch_dtype=torch.float16”（当前版本的第
+    300 行）
 - en: Replace “module = module.to(torch.float32)” with “module = module.to(torch.float16)”
     (line 340 of the current version)
   id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将“module = module.to(torch.float32)”替换为“module = module.to(torch.float16)”（当前版本的第
+    340 行）
 - en: 'The current implementation only works for models using a pad token. Llama 2
     doesn’t use one. I had to manually modify the config.json of the quantized Llama
     2 to add this line:'
   id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 当前实现仅适用于使用 pad token 的模型。Llama 2 不使用 pad token。我不得不手动修改量化的 Llama 2 的 config.json，添加这一行：
 - en: '[PRE1]'
   id: totrans-80
   prefs: []
@@ -470,39 +531,47 @@
   id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 它仅指定了用于填充的“unk_token”，其 ID 为 0。
 - en: Requirements for Fine-tuning Llama 2 with QA-LoRA
   id: totrans-82
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用 QA-LoRA 微调 Llama 2 的要求
 - en: 'I implemented all the following sections in a notebook that you can find here:'
   id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在一个笔记本中实现了以下所有部分，你可以在这里找到：
 - en: '[Get the notebook (#21)](https://kaitchup.substack.com/p/notebooks)'
   id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '[获取笔记本 (#21)](https://kaitchup.substack.com/p/notebooks)'
 - en: QA-LoRA Dependencies
   id: totrans-85
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: QA-LoRA 依赖项
 - en: I recommend creating a sandbox, for instance using conda, before setting up
     QA-LoRA. The current implementation uses outdated versions of several packages.
   id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 我建议在设置 QA-LoRA 之前创建一个沙箱，例如使用 conda。当前实现使用了几个包的过时版本。
 - en: AutoGPTQ must be compiled from source since we have to replace a source file
     in AutoGPTQ to add QA-LoRA support.
   id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们必须替换 AutoGPTQ 中的源文件以添加 QA-LoRA 支持，AutoGPTQ 必须从源代码编译。
 - en: 'Because of this replacement, we must first clone both repositories, AutoGPTQ
     and QA-LoRA, and then replace the file in AutoGPTQ:'
   id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这一替换，我们必须首先克隆 AutoGPTQ 和 QA-LoRA 两个存储库，然后替换 AutoGPTQ 中的文件：
 - en: '[PRE2]'
   id: totrans-89
   prefs: []
@@ -512,6 +581,7 @@
   id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 应用我的补丁（如有必要）：
 - en: '[PRE3]'
   id: totrans-91
   prefs: []
@@ -521,6 +591,7 @@
   id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: AutoGPTQ 现在可以安装了：
 - en: '[PRE4]'
   id: totrans-93
   prefs: []
@@ -530,10 +601,12 @@
   id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可能需要多达 10 分钟。
 - en: 'Install QA-LoRA dependencies:'
   id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 安装 QA-LoRA 依赖项：
 - en: '[PRE5]'
   id: totrans-96
   prefs: []
@@ -545,6 +618,7 @@
   id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还根据 QA-LoRA 文档的推荐从源代码安装了 bitsandbytes，但我认为这不是必须的。你可以尝试使用“pip install bitsandbytes”代替（速度更快）。
 - en: '[PRE6]'
   id: totrans-98
   prefs: []
@@ -555,58 +629,70 @@
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 预量化 LLM
 - en: For now, QA-LoRA only fine-tunes LLMs already quantized with AutoGPTQ (INT4,
     INT3, and INT2 are all supported). If you want to fine-tune an fp16/32 LLM, you
     would have to quantize it before with the version of AutoGPTQ that we have installed.
   id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前，QA-LoRA 仅微调已经通过 AutoGPTQ 量化的 LLM（支持 INT4、INT3 和 INT2）。如果你想微调一个 fp16/32 LLM，你需要先使用我们安装的
+    AutoGPTQ 版本进行量化。
 - en: 'You can also look at the end of the notebook where I wrote the code for quantization.
     For this article, I quantized Llama 2 7B and uploaded it on the Hugging Face Hub.
     You can use it to run this tutorial:'
   id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 你也可以查看笔记本末尾，我在其中写了量化代码。对于本文，我量化了 Llama 2 7B 并将其上传到 Hugging Face Hub。你可以使用它来运行本教程：
 - en: '[kaitchup/Llama-2-7b-4bit-32g-autogptq](https://huggingface.co/kaitchup/Llama-2-7b-4bit-32g-autogptq)'
   id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[kaitchup/Llama-2-7b-4bit-32g-autogptq](https://huggingface.co/kaitchup/Llama-2-7b-4bit-32g-autogptq)'
 - en: '*Note: safetensors format is not supported yet. QA-LoRA expects to find a file
     pytorch_model.bin in the repository.*'
   id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意：safetensors 格式尚不支持。QA-LoRA 期望在存储库中找到文件 pytorch_model.bin。*'
 - en: The group size for quantization was set to 32 (32g). I chose this group size
     because it’s hardcoded to 32 in QA-LoRA.
   id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化的组大小设置为 32（32g）。我选择这个组大小是因为在 QA-LoRA 中硬编码为 32。
 - en: Hardware Requirements
   id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 硬件要求
 - en: The following sections can run on the free instance of Google Colab or a GPU
     with at least 10 GB of VRAM.
   id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下部分可以在免费的 Google Colab 实例或至少具有 10 GB VRAM 的 GPU 上运行。
 - en: QA-LoRA Fine-tuning
   id: totrans-107
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: QA-LoRA 微调
 - en: I fine-tuned with the default dataset, Alpaca, for only 100 steps. With a batch
     size of 1 and gradient_accumulation_steps at 16\. It consumes around 7 GB of VRAM.
   id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用默认数据集 Alpaca 进行了 100 步的微调。批次大小为 1，梯度累积步骤为 16。它消耗了大约 7 GB 的 VRAM。
 - en: If your fine-tuning appears unstable, changing the learning rate and/or LoRA
     alpha/rank may also improve the stability.
   id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你的微调出现不稳定的情况，调整学习率和/或 LoRA alpha/rank 也可能提高稳定性。
 - en: '[PRE7]'
   id: totrans-110
   prefs: []
@@ -616,6 +702,7 @@
   id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Google Colab 的 T4 GPU，这次微调用了 28 分钟。
 - en: 'I uploaded the final checkpoint on the Hugging Face Hub:'
   id: totrans-112
   prefs: []
